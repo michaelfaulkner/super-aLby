@@ -1,0 +1,57 @@
+## Core latex/pdflatex auxiliary files:
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+*.tex~
+
+## Intermediate documents:
+*.swp
+*.backup
+*.dvi
+*-converted-to.*
+
+## Image files:
+*.ps
+*.eps
+*.pdf
+
+# Exclude ignore for .pdf files in figures directory
+# !projects/bkt-correlated-dynamics/factsheets/figures/*.pdf
+
+## Bibliography auxiliary files (bibtex/biblatex/biber):
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+*.brf
+*.run.xml
+
+## Build tool auxiliary files:
+*.fdb_latexmk
+*.synctex
+*.synctex(busy)
+*.synctex.gz
+*.synctex.gz(busy)
+*.pdfsync
+
+## Python temp files:
+*.pyc
+*__pycache__
+
+## Mac compilation file:
+*.DS_Store
+
+## Microsoft Office files
+*.pptx
+*.ppt
+*.docx
+*.doc
