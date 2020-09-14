@@ -1,0 +1,908 @@
+
+% Default to the notebook output style
+
+    
+
+
+% Inherit from the specified cell style.
+
+
+
+
+    
+\documentclass[11pt]{article}
+
+    
+    
+    \usepackage[T1]{fontenc}
+    % Nicer default font (+ math font) than Computer Modern for most use cases
+    \usepackage{mathpazo}
+
+    % Basic figure setup, for now with no caption control since it's done
+    % automatically by Pandoc (which extracts ![](path) syntax from Markdown).
+    \usepackage{graphicx}
+    % We will generate all images so they have a width \maxwidth. This means
+    % that they will get their normal width if they fit onto the page, but
+    % are scaled down if they would overflow the margins.
+    \makeatletter
+    \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth
+    \else\Gin@nat@width\fi}
+    \makeatother
+    \let\Oldincludegraphics\includegraphics
+    % Set max figure width to be 80% of text width, for now hardcoded.
+    \renewcommand{\includegraphics}[1]{\Oldincludegraphics[width=.8\maxwidth]{#1}}
+    % Ensure that by default, figures have no caption (until we provide a
+    % proper Figure object with a Caption API and a way to capture that
+    % in the conversion process - todo).
+    \usepackage{caption}
+    \DeclareCaptionLabelFormat{nolabel}{}
+    \captionsetup{labelformat=nolabel}
+
+    \usepackage{adjustbox} % Used to constrain images to a maximum size 
+    \usepackage{xcolor} % Allow colors to be defined
+    \usepackage{enumerate} % Needed for markdown enumerations to work
+    \usepackage{geometry} % Used to adjust the document margins
+    \usepackage{amsmath} % Equations
+    \usepackage{amssymb} % Equations
+    \usepackage{textcomp} % defines textquotesingle
+    % Hack from http://tex.stackexchange.com/a/47451/13684:
+    \AtBeginDocument{%
+        \def\PYZsq{\textquotesingle}% Upright quotes in Pygmentized code
+    }
+    \usepackage{upquote} % Upright quotes for verbatim code
+    \usepackage{eurosym} % defines \euro
+    \usepackage[mathletters]{ucs} % Extended unicode (utf-8) support
+    \usepackage[utf8x]{inputenc} % Allow utf-8 characters in the tex document
+    \usepackage{fancyvrb} % verbatim replacement that allows latex
+    \usepackage{grffile} % extends the file name processing of package graphics 
+                         % to support a larger range 
+    % The hyperref package gives us a pdf with properly built
+    % internal navigation ('pdf bookmarks' for the table of contents,
+    % internal cross-reference links, web links for URLs, etc.)
+    \usepackage{hyperref}
+    \usepackage{longtable} % longtable support required by pandoc >1.10
+    \usepackage{booktabs}  % table support for pandoc > 1.12.2
+    \usepackage[inline]{enumitem} % IRkernel/repr support (it uses the enumerate* environment)
+    \usepackage[normalem]{ulem} % ulem is needed to support strikethroughs (\sout)
+                                % normalem makes italics be italics, not underlines
+    
+
+    
+    
+    % Colors for the hyperref package
+    \definecolor{urlcolor}{rgb}{0,.145,.698}
+    \definecolor{linkcolor}{rgb}{.71,0.21,0.01}
+    \definecolor{citecolor}{rgb}{.12,.54,.11}
+
+    % ANSI colors
+    \definecolor{ansi-black}{HTML}{3E424D}
+    \definecolor{ansi-black-intense}{HTML}{282C36}
+    \definecolor{ansi-red}{HTML}{E75C58}
+    \definecolor{ansi-red-intense}{HTML}{B22B31}
+    \definecolor{ansi-green}{HTML}{00A250}
+    \definecolor{ansi-green-intense}{HTML}{007427}
+    \definecolor{ansi-yellow}{HTML}{DDB62B}
+    \definecolor{ansi-yellow-intense}{HTML}{B27D12}
+    \definecolor{ansi-blue}{HTML}{208FFB}
+    \definecolor{ansi-blue-intense}{HTML}{0065CA}
+    \definecolor{ansi-magenta}{HTML}{D160C4}
+    \definecolor{ansi-magenta-intense}{HTML}{A03196}
+    \definecolor{ansi-cyan}{HTML}{60C6C8}
+    \definecolor{ansi-cyan-intense}{HTML}{258F8F}
+    \definecolor{ansi-white}{HTML}{C5C1B4}
+    \definecolor{ansi-white-intense}{HTML}{A1A6B2}
+
+    % commands and environments needed by pandoc snippets
+    % extracted from the output of `pandoc -s`
+    \providecommand{\tightlist}{%
+      \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+    \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+    % Add ',fontsize=\small' for more characters per line
+    \newenvironment{Shaded}{}{}
+    \newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{{#1}}}
+    \newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+    \newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{{#1}}}}
+    \newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{{#1}}}
+    \newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{{#1}}}
+    \newcommand{\RegionMarkerTok}[1]{{#1}}
+    \newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+    \newcommand{\NormalTok}[1]{{#1}}
+    
+    % Additional commands for more recent versions of Pandoc
+    \newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{{#1}}}
+    \newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+    \newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{{#1}}}
+    \newcommand{\ImportTok}[1]{{#1}}
+    \newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{{#1}}}}
+    \newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{{#1}}}
+    \newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+    \newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{{#1}}}
+    \newcommand{\BuiltInTok}[1]{{#1}}
+    \newcommand{\ExtensionTok}[1]{{#1}}
+    \newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{{#1}}}
+    \newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{{#1}}}
+    \newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    \newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{{#1}}}}}
+    
+    
+    % Define a nice break command that doesn't care if a line doesn't already
+    % exist.
+    \def\br{\hspace*{\fill} \\* }
+    % Math Jax compatability definitions
+    \def\gt{>}
+    \def\lt{<}
+    % Document parameters
+    \title{Quantile Regression}
+    
+    
+    
+
+    % Pygments definitions
+    
+\makeatletter
+\def\PY@reset{\let\PY@it=\relax \let\PY@bf=\relax%
+    \let\PY@ul=\relax \let\PY@tc=\relax%
+    \let\PY@bc=\relax \let\PY@ff=\relax}
+\def\PY@tok#1{\csname PY@tok@#1\endcsname}
+\def\PY@toks#1+{\ifx\relax#1\empty\else%
+    \PY@tok{#1}\expandafter\PY@toks\fi}
+\def\PY@do#1{\PY@bc{\PY@tc{\PY@ul{%
+    \PY@it{\PY@bf{\PY@ff{#1}}}}}}}
+\def\PY#1#2{\PY@reset\PY@toks#1+\relax+\PY@do{#2}}
+
+\expandafter\def\csname PY@tok@gd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gu\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.50,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@gt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.27,0.87}{##1}}}
+\expandafter\def\csname PY@tok@gs\endcsname{\let\PY@bf=\textbf}
+\expandafter\def\csname PY@tok@gr\endcsname{\def\PY@tc##1{\textcolor[rgb]{1.00,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@cm\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@vg\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@vi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@vm\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@mh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@cs\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@ge\endcsname{\let\PY@it=\textit}
+\expandafter\def\csname PY@tok@vc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@il\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@go\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.53,0.53}{##1}}}
+\expandafter\def\csname PY@tok@cp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.74,0.48,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@gh\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@ni\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.60,0.60,0.60}{##1}}}
+\expandafter\def\csname PY@tok@nl\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.63,0.63,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@no\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.53,0.00,0.00}{##1}}}
+\expandafter\def\csname PY@tok@na\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.49,0.56,0.16}{##1}}}
+\expandafter\def\csname PY@tok@nb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@nd\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@ne\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.82,0.25,0.23}{##1}}}
+\expandafter\def\csname PY@tok@nf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@si\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@s2\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@nt\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@nv\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@s1\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@dl\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@ch\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@m\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@gp\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,0.50}{##1}}}
+\expandafter\def\csname PY@tok@sh\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@ow\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.67,0.13,1.00}{##1}}}
+\expandafter\def\csname PY@tok@sx\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@bp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@c1\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@fm\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.00,1.00}{##1}}}
+\expandafter\def\csname PY@tok@o\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@kc\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@c\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@mf\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@err\endcsname{\def\PY@bc##1{\setlength{\fboxsep}{0pt}\fcolorbox[rgb]{1.00,0.00,0.00}{1,1,1}{\strut ##1}}}
+\expandafter\def\csname PY@tok@mb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@ss\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.10,0.09,0.49}{##1}}}
+\expandafter\def\csname PY@tok@sr\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.53}{##1}}}
+\expandafter\def\csname PY@tok@mo\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@kd\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@mi\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.40,0.40,0.40}{##1}}}
+\expandafter\def\csname PY@tok@kn\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@cpf\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.25,0.50,0.50}{##1}}}
+\expandafter\def\csname PY@tok@kr\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@s\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@kp\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@w\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.73,0.73}{##1}}}
+\expandafter\def\csname PY@tok@kt\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.69,0.00,0.25}{##1}}}
+\expandafter\def\csname PY@tok@sc\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sb\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sa\endcsname{\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+\expandafter\def\csname PY@tok@k\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.00,0.50,0.00}{##1}}}
+\expandafter\def\csname PY@tok@se\endcsname{\let\PY@bf=\textbf\def\PY@tc##1{\textcolor[rgb]{0.73,0.40,0.13}{##1}}}
+\expandafter\def\csname PY@tok@sd\endcsname{\let\PY@it=\textit\def\PY@tc##1{\textcolor[rgb]{0.73,0.13,0.13}{##1}}}
+
+\def\PYZbs{\char`\\}
+\def\PYZus{\char`\_}
+\def\PYZob{\char`\{}
+\def\PYZcb{\char`\}}
+\def\PYZca{\char`\^}
+\def\PYZam{\char`\&}
+\def\PYZlt{\char`\<}
+\def\PYZgt{\char`\>}
+\def\PYZsh{\char`\#}
+\def\PYZpc{\char`\%}
+\def\PYZdl{\char`\$}
+\def\PYZhy{\char`\-}
+\def\PYZsq{\char`\'}
+\def\PYZdq{\char`\"}
+\def\PYZti{\char`\~}
+% for compatibility with earlier versions
+\def\PYZat{@}
+\def\PYZlb{[}
+\def\PYZrb{]}
+\makeatother
+
+
+    % Exact colors from NB
+    \definecolor{incolor}{rgb}{0.0, 0.0, 0.5}
+    \definecolor{outcolor}{rgb}{0.545, 0.0, 0.0}
+
+
+
+    
+    % Prevent overflowing lines due to hard-to-break entities
+    \sloppy 
+    % Setup hyperref package
+    \hypersetup{
+      breaklinks=true,  % so long urls are correctly broken across lines
+      colorlinks=true,
+      urlcolor=urlcolor,
+      linkcolor=linkcolor,
+      citecolor=citecolor,
+      }
+    % Slightly bigger margins than the latex defaults
+    
+    \geometry{verbose,tmargin=1in,bmargin=1in,lmargin=1in,rmargin=1in}
+    
+    
+
+    \begin{document}
+    
+    
+    \maketitle
+    
+    
+
+    
+    \section{Quantile Regression}\label{quantile-regression}
+
+    To demonstrate the effect of different composite gradients on the speed
+of convergence of Hamiltonian Monte Carlo we fit a quantile regression,
+using the following model suggested by Fasiolo et al. (2016) and
+regularizing using the bridge estimator of Park and Casella (2008).
+Given a set of observations \(\{(x_i,y_i)\}_{i=1}^n\), the goal is to
+estimate the \(\tau\)th quantile of the conditional distribution of
+\(y|x\). If \(F(y|x)\) denotes the cumulative distribution function of
+\(y\) conditioned on \(x\), then this can be written
+
+\begin{equation}
+\mu(x) = F_{Y|X}^{-1}(\tau).
+\end{equation}
+
+Typically it is assumed that \(\mu(x_i)=\sum_{j=1}^d x_{ij}\beta_j\),
+where each \(\beta_j\) is a real-valued coefficient to be estimated. We
+therefore write \(\mu(x)=\mu(x,\beta)\) to indicate that the quantile
+estimator depends on \(\beta\). The resulting potential takes the form
+
+\begin{equation}
+U(\beta) = \sum_{i=1}^n L_\tau(\beta,x_i,y_i) + \lambda \sum_{j=1}^d |\beta_j|^q,
+\end{equation}
+
+for some choice \(1 < q < 2\). Here \(L_\tau(\beta,x,y)\) is a smoothed
+version of the \emph{pinball} loss function. Setting
+\(z = (y-\mu(x,\beta))/\sigma\), this is given by
+
+\begin{equation}
+L_\tau(\beta,x,y) = (\tau-1)\left\{ \frac{y-\mu(x,\beta)}{\sigma} \right\} 
++ \xi \log \left[ 1+ \exp\left\{ \frac{y-\mu(x,\beta)}{\sigma} \right\} \right]
++ \xi \sigma \text{Beta}[\xi(1-\tau),\xi\tau].
+\end{equation}
+
+where \(\xi \to 0\) gives the non-differentiable pinball loss function,
+but for any \(\xi>0\) this is a smooth function. The scale parameter
+\(\sigma\) is known as the learning rate. The regularizer \(\lambda>0\)
+is an inverse scale parameter for the prior. The partial derivative of
+the potential with respect to each \(\beta_j\) is
+
+\begin{equation}
+\partial_j U(\beta) = \frac{1-\tau}{\sigma} \sum_{i=1}^n x_{ij} + \xi \sum_{i=1}^n \frac{ \exp\left\{ \frac{y-\mu(x,\beta)}{\sigma} \right\} }{ 1 + \exp\left\{ \frac{y-\mu(x,\beta)}{\sigma} \right\} } x_{ij} + q\lambda\text{sgn}(\beta_j)|\beta_j|^{q-1}.
+\end{equation}
+
+In the numerical implementation care must be taken to ensure that the
+logistic functions are calculated in a numerically stable way.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}1}]:} \PY{o}{\PYZpc{}}\PY{k}{matplotlib} inline
+        
+        \PY{k+kn}{import} \PY{n+nn}{matplotlib}
+        \PY{k+kn}{import} \PY{n+nn}{numpy} \PY{k+kn}{as} \PY{n+nn}{np}
+        \PY{k+kn}{import} \PY{n+nn}{matplotlib.cm} \PY{k+kn}{as} \PY{n+nn}{cm}
+        \PY{k+kn}{import} \PY{n+nn}{matplotlib.mlab} \PY{k+kn}{as} \PY{n+nn}{mlab}
+        \PY{k+kn}{import} \PY{n+nn}{matplotlib.pyplot} \PY{k+kn}{as} \PY{n+nn}{plt}
+        
+        \PY{c+c1}{\PYZsh{} specific functions}
+        \PY{k+kn}{import} \PY{n+nn}{HMC} \PY{k+kn}{as} \PY{n+nn}{h}
+        \PY{k+kn}{from} \PY{n+nn}{k\PYZus{}energies} \PY{k+kn}{import} \PY{o}{*}
+        \PY{k+kn}{import} \PY{n+nn}{MC\PYZus{}diag} \PY{k+kn}{as} \PY{n+nn}{d}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}2}]:} \PY{c+c1}{\PYZsh{} Define the potential class for the quantile regression model.}
+        
+        \PY{c+c1}{\PYZsh{} Beta function}
+        \PY{k+kn}{import} \PY{n+nn}{math}
+        \PY{k}{def} \PY{n+nf}{Beta\PYZus{}func}\PY{p}{(}\PY{n}{a}\PY{p}{,}\PY{n}{b}\PY{p}{)}\PY{p}{:}
+            \PY{l+s+sd}{\PYZsq{}\PYZsq{}\PYZsq{}uses gamma function or inbuilt math.gamma() to compute values of beta function\PYZsq{}\PYZsq{}\PYZsq{}}
+            \PY{n}{Beta} \PY{o}{=} \PY{n}{math}\PY{o}{.}\PY{n}{gamma}\PY{p}{(}\PY{n}{a}\PY{p}{)}\PY{o}{*}\PY{n}{math}\PY{o}{.}\PY{n}{gamma}\PY{p}{(}\PY{n}{b}\PY{p}{)}\PY{o}{/}\PY{n}{math}\PY{o}{.}\PY{n}{gamma}\PY{p}{(}\PY{n}{a}\PY{o}{+}\PY{n}{b}\PY{p}{)}
+            \PY{k}{return} \PY{n}{Beta}
+        
+        \PY{c+c1}{\PYZsh{} numerically stable logistic function}
+        \PY{k}{def} \PY{n+nf}{logistic\PYZus{}func}\PY{p}{(}\PY{n}{x}\PY{p}{)}\PY{p}{:}  
+            \PY{l+s+sd}{\PYZsq{}\PYZsq{}\PYZsq{}computes logistic function in numerically stable way\PYZsq{}\PYZsq{}\PYZsq{}}
+            \PY{k}{return} \PY{n}{np}\PY{o}{.}\PY{n}{exp}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{n}{np}\PY{o}{.}\PY{n}{logaddexp}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{o}{\PYZhy{}}\PY{n}{x}\PY{p}{)}\PY{p}{)}
+        
+        \PY{c+c1}{\PYZsh{} Potential function for quantile regression (with sigma fixed)}
+        \PY{k}{class} \PY{n+nc}{Quantile}\PY{p}{:}
+            \PY{l+s+sd}{\PYZdq{}\PYZdq{}\PYZdq{}Quantile regression\PYZdq{}\PYZdq{}\PYZdq{}}
+            \PY{k}{def} \PY{n+nf+fm}{\PYZus{}\PYZus{}init\PYZus{}\PYZus{}}\PY{p}{(}\PY{n+nb+bp}{self}\PY{p}{,} \PY{n}{tau}\PY{p}{,} \PY{n}{sigma}\PY{p}{,} \PY{n}{l}\PY{p}{,} \PY{n}{B}\PY{p}{,} \PY{n}{y}\PY{p}{,} \PY{n}{xi} \PY{o}{=} \PY{l+m+mf}{0.1}\PY{p}{,} \PY{n}{q} \PY{o}{=} \PY{l+m+mi}{2}\PY{p}{)}\PY{p}{:}
+                \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{tau} \PY{o}{=} \PY{n}{tau} \PY{c+c1}{\PYZsh{} quantile}
+                \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{sigma} \PY{o}{=} \PY{n}{sigma} \PY{c+c1}{\PYZsh{} learning rate / observation noise}
+                \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{xi} \PY{o}{=} \PY{n}{xi} \PY{c+c1}{\PYZsh{} pinball smoother}
+                \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{l} \PY{o}{=} \PY{n}{l} \PY{c+c1}{\PYZsh{} regulariser}
+                \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{q} \PY{o}{=} \PY{n}{q} \PY{c+c1}{\PYZsh{} prior power}
+                \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{B} \PY{o}{=} \PY{n}{B} \PY{c+c1}{\PYZsh{} design matrix}
+                \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{y} \PY{o}{=} \PY{n}{y} \PY{c+c1}{\PYZsh{} response}
+                
+            \PY{k}{def} \PY{n+nf}{value}\PY{p}{(}\PY{n+nb+bp}{self}\PY{p}{,} \PY{n}{beta}\PY{p}{)}\PY{p}{:}
+                \PY{c+c1}{\PYZsh{} fixed parameters}
+                \PY{n}{tau} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{tau}
+                \PY{n}{sigma} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{sigma}
+                \PY{n}{xi} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{xi}
+                \PY{n}{l} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{l}
+                \PY{n}{q} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{q}
+                \PY{n}{B} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{B}
+                \PY{n}{y} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{y}
+                
+                \PY{n}{z1} \PY{o}{=} \PY{p}{(}\PY{n}{y} \PY{o}{\PYZhy{}} \PY{n}{np}\PY{o}{.}\PY{n}{inner}\PY{p}{(}\PY{n}{B}\PY{p}{,}\PY{n}{beta}\PY{p}{)}\PY{p}{)}\PY{o}{/}\PY{n}{sigma}
+                \PY{n}{z2} \PY{o}{=} \PY{p}{(}\PY{n}{y} \PY{o}{\PYZhy{}} \PY{n}{np}\PY{o}{.}\PY{n}{inner}\PY{p}{(}\PY{n}{B}\PY{p}{,}\PY{n}{beta}\PY{p}{)}\PY{p}{)}\PY{o}{/}\PY{p}{(}\PY{n}{xi}\PY{o}{*}\PY{n}{sigma}\PY{p}{)}
+                
+                \PY{n}{L\PYZus{}vec} \PY{o}{=} \PY{p}{(}\PY{n}{tau} \PY{o}{\PYZhy{}} \PY{l+m+mi}{1}\PY{p}{)}\PY{o}{*}\PY{n}{z1} \PY{o}{+} \PY{n}{xi}\PY{o}{*}\PY{n}{np}\PY{o}{.}\PY{n}{logaddexp}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,}\PY{n}{z2}\PY{p}{)} \PY{o}{+} \PY{n}{np}\PY{o}{.}\PY{n}{log}\PY{p}{(}\PY{n}{xi}\PY{o}{*}\PY{n}{sigma}\PY{o}{*}\PY{n}{Beta\PYZus{}func}\PY{p}{(}\PY{n}{xi}\PY{o}{*}\PY{p}{(}\PY{l+m+mi}{1}\PY{o}{\PYZhy{}}\PY{n}{tau}\PY{p}{)}\PY{p}{,} \PY{n}{xi}\PY{o}{*}\PY{n}{tau}\PY{p}{)}\PY{p}{)}
+                \PY{n}{prior\PYZus{}vec} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{absolute}\PY{p}{(}\PY{n}{beta}\PY{p}{)} \PY{o}{*}\PY{o}{*} \PY{n}{q}
+                \PY{n}{U} \PY{o}{=} \PY{n+nb}{sum}\PY{p}{(}\PY{n}{L\PYZus{}vec}\PY{p}{)} \PY{o}{+} \PY{n}{l}\PY{o}{*}\PY{n+nb}{sum}\PY{p}{(}\PY{n}{prior\PYZus{}vec}\PY{p}{)}
+                \PY{k}{return} \PY{n}{U}
+            
+            \PY{k}{def} \PY{n+nf}{grad}\PY{p}{(}\PY{n+nb+bp}{self}\PY{p}{,} \PY{n}{beta}\PY{p}{)}\PY{p}{:}
+                \PY{c+c1}{\PYZsh{} fixed parameters}
+                \PY{n}{tau} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{tau}
+                \PY{n}{sigma} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{sigma}
+                \PY{n}{xi} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{xi}
+                \PY{n}{l} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{l}
+                \PY{n}{q} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{q}
+                \PY{n}{B} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{B}
+                \PY{n}{y} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{y}
+                
+                \PY{n}{z2} \PY{o}{=} \PY{p}{(}\PY{n}{y} \PY{o}{\PYZhy{}} \PY{n}{np}\PY{o}{.}\PY{n}{inner}\PY{p}{(}\PY{n}{B}\PY{p}{,}\PY{n}{beta}\PY{p}{)}\PY{p}{)}\PY{o}{/}\PY{p}{(}\PY{n}{xi}\PY{o}{*}\PY{n}{sigma}\PY{p}{)}
+                
+                \PY{n}{B\PYZus{}csum} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{n}{B}\PY{p}{,} \PY{n}{axis}\PY{o}{=}\PY{l+m+mi}{0}\PY{p}{)}
+                \PY{n}{prior\PYZus{}grad} \PY{o}{=} \PY{n}{q}\PY{o}{*}\PY{n}{l}\PY{o}{*}\PY{n}{np}\PY{o}{.}\PY{n}{sign}\PY{p}{(}\PY{n}{beta}\PY{p}{)}\PY{o}{*}\PY{n}{np}\PY{o}{.}\PY{n}{absolute}\PY{p}{(}\PY{n}{beta}\PY{p}{)}\PY{o}{*}\PY{o}{*}\PY{p}{(}\PY{n}{q}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{)}
+                \PY{n}{logistic\PYZus{}term} \PY{o}{=} \PY{n}{logistic\PYZus{}func}\PY{p}{(}\PY{n}{z2}\PY{p}{)}
+                
+                \PY{n}{midterm} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{beta}\PY{p}{)}\PY{p}{)}
+                \PY{k}{for} \PY{n}{j} \PY{o+ow}{in} \PY{n+nb}{xrange}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{beta}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+                    \PY{n}{midterm}\PY{p}{[}\PY{n}{j}\PY{p}{]} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{inner}\PY{p}{(}\PY{n}{logistic\PYZus{}term}\PY{p}{,}\PY{n}{B}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{n}{j}\PY{p}{]}\PY{p}{)}
+                
+                \PY{n}{grad} \PY{o}{=} \PY{p}{(}\PY{l+m+mi}{1}\PY{o}{\PYZhy{}}\PY{n}{tau}\PY{p}{)}\PY{o}{/}\PY{n}{sigma} \PY{o}{*} \PY{n}{B\PYZus{}csum} \PY{o}{+} \PY{l+m+mi}{1}\PY{o}{/}\PY{n}{sigma} \PY{o}{*} \PY{n}{midterm} \PY{o}{+} \PY{n}{prior\PYZus{}grad}
+                \PY{c+c1}{\PYZsh{} insert middle term refinement}
+                
+                \PY{k}{return} \PY{n}{grad}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}3}]:} \PY{c+c1}{\PYZsh{} A test run with one dimensional data}
+        \PY{n}{x} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{ones}\PY{p}{(}\PY{p}{(}\PY{l+m+mi}{5}\PY{p}{,}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)}
+        \PY{n}{y} \PY{o}{=} \PY{p}{(}\PY{l+m+mi}{2} \PY{o}{*} \PY{n}{x}\PY{p}{)}\PY{o}{.}\PY{n}{ravel}\PY{p}{(}\PY{p}{)}
+        \PY{n}{U} \PY{o}{=} \PY{n}{Quantile}\PY{p}{(}\PY{n}{tau} \PY{o}{=} \PY{l+m+mf}{0.5}\PY{p}{,} \PY{n}{sigma} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{l} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{B} \PY{o}{=} \PY{n}{x}\PY{p}{,} \PY{n}{y} \PY{o}{=} \PY{n}{y}\PY{p}{)}
+        
+        \PY{n}{beta\PYZus{}opt} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{p}{[}\PY{l+m+mf}{1.0}\PY{p}{]}\PY{p}{)}
+        \PY{n}{beta\PYZus{}sub} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{p}{[}\PY{o}{\PYZhy{}}\PY{l+m+mf}{1.0}\PY{p}{]}\PY{p}{)}
+        
+        \PY{n}{beta\PYZus{}test} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{p}{[}\PY{l+m+mf}{10.0}\PY{p}{]}\PY{p}{)}
+        
+        \PY{k}{print} \PY{p}{(}\PY{n}{U}\PY{o}{.}\PY{n}{value}\PY{p}{(}\PY{n}{beta\PYZus{}test} \PY{o}{+} \PY{l+m+mf}{0.01}\PY{p}{)} \PY{o}{\PYZhy{}} \PY{n}{U}\PY{o}{.}\PY{n}{value}\PY{p}{(}\PY{n}{beta\PYZus{}test} \PY{o}{\PYZhy{}} \PY{l+m+mf}{0.01}\PY{p}{)}\PY{p}{)} \PY{o}{/} \PY{l+m+mf}{0.02}
+        \PY{k}{print} \PY{n}{U}\PY{o}{.}\PY{n}{grad}\PY{p}{(}\PY{n}{beta\PYZus{}test}\PY{p}{)} \PY{c+c1}{\PYZsh{} derivatives seem to agree with finite differences}
+        \PY{n}{beta\PYZus{}seq} \PY{o}{=} \PY{n+nb}{range}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{l+m+mi}{10}\PY{p}{,}\PY{l+m+mi}{10}\PY{p}{)}
+        \PY{n}{U\PYZus{}seq} \PY{o}{=} \PY{p}{[}\PY{p}{]}
+        \PY{k}{for} \PY{n}{i} \PY{o+ow}{in} \PY{n+nb}{xrange}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{beta\PYZus{}seq}\PY{p}{)}\PY{p}{)}\PY{p}{:}
+            \PY{n}{U\PYZus{}seq}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{U}\PY{o}{.}\PY{n}{value}\PY{p}{(}\PY{p}{[}\PY{n}{beta\PYZus{}seq}\PY{p}{[}\PY{n}{i}\PY{p}{]}\PY{p}{]}\PY{p}{)}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{beta\PYZus{}seq}\PY{p}{,} \PY{n}{U\PYZus{}seq}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{o}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+22.5
+[ 22.5]
+
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_4_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}4}]:} \PY{c+c1}{\PYZsh{} Simple quantile regression data set}
+        \PY{n}{x1} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{random}\PY{o}{.}\PY{n}{normal}\PY{p}{(}\PY{n}{size} \PY{o}{=} \PY{l+m+mi}{20}\PY{p}{)}
+        \PY{n}{x2} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{random}\PY{o}{.}\PY{n}{normal}\PY{p}{(}\PY{n}{size} \PY{o}{=} \PY{l+m+mi}{20}\PY{p}{)}
+        \PY{n}{y\PYZus{}test} \PY{o}{=} \PY{l+m+mi}{2}\PY{o}{*}\PY{n}{x1} \PY{o}{\PYZhy{}}\PY{l+m+mi}{2}\PY{o}{*}\PY{n}{x2} \PY{o}{+} \PY{l+m+mf}{0.1}\PY{o}{*}\PY{n}{np}\PY{o}{.}\PY{n}{random}\PY{o}{.}\PY{n}{normal}\PY{p}{(}\PY{n}{size} \PY{o}{=} \PY{l+m+mi}{20}\PY{p}{)}
+        
+        \PY{n}{X\PYZus{}test} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{empty}\PY{p}{(}\PY{p}{(}\PY{l+m+mi}{20}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{)}
+        \PY{n}{X\PYZus{}test}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{]} \PY{o}{=} \PY{n}{x1}
+        \PY{n}{X\PYZus{}test}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{1}\PY{p}{]} \PY{o}{=} \PY{n}{x2}
+        
+        \PY{c+c1}{\PYZsh{} Assessing derivatives}
+        \PY{n}{U} \PY{o}{=} \PY{n}{Quantile}\PY{p}{(}\PY{n}{tau} \PY{o}{=} \PY{l+m+mf}{0.5}\PY{p}{,} \PY{n}{sigma} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{l} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{B} \PY{o}{=} \PY{n}{X\PYZus{}test}\PY{p}{,} \PY{n}{y} \PY{o}{=} \PY{n}{y\PYZus{}test}\PY{p}{)}
+        \PY{n}{K\PYZus{}g} \PY{o}{=} \PY{n}{Gauss}\PY{p}{(}\PY{p}{)}
+        
+        \PY{n}{start\PYZus{}vec} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{ones}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}
+        
+        \PY{k}{print} \PY{n}{U}\PY{o}{.}\PY{n}{value}\PY{p}{(}\PY{n}{start\PYZus{}vec}\PY{p}{)}
+        \PY{k}{print} \PY{n}{U}\PY{o}{.}\PY{n}{grad}\PY{p}{(}\PY{n}{start\PYZus{}vec}\PY{p}{)}
+        \PY{n}{samples} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{flow\PYZus{}verb}\PY{p}{(}\PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{,} \PY{n}{np}\PY{o}{.}\PY{n}{ones}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{,} \PY{n}{U}\PY{o}{.}\PY{n}{grad}\PY{p}{,} \PY{n}{K\PYZus{}g}\PY{o}{.}\PY{n}{grad}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{100}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.1}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{samples}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,}\PY{n}{samples}\PY{p}{[}\PY{l+m+mi}{3}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{o}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+53.3203626329
+[ 6.01352735 -9.76629119]
+
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_5_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    All seems to be in order so we can proceed with the sampling.
+
+    \subsection{Starting the sampler in the
+tails}\label{starting-the-sampler-in-the-tails}
+
+    Here we illustrate how appropriate tuning of the composite gradient
+helps the sampler. We first set a Gaussian prior, and then a
+heavier-tailed prior, to show how the optimal choice differs in these
+two instances.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}5}]:} \PY{c+c1}{\PYZsh{} MCMC run with Gaussian priors for the coefficients}
+        \PY{n}{U\PYZus{}q2} \PY{o}{=} \PY{n}{Quantile}\PY{p}{(}\PY{n}{tau} \PY{o}{=} \PY{l+m+mf}{0.75}\PY{p}{,} \PY{n}{sigma} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{l} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{B} \PY{o}{=} \PY{n}{X\PYZus{}test}\PY{p}{,} \PY{n}{y} \PY{o}{=} \PY{n}{y\PYZus{}test}\PY{p}{)}
+        \PY{n}{K\PYZus{}g} \PY{o}{=} \PY{n}{Gauss}\PY{p}{(}\PY{p}{)}
+        \PY{n}{K\PYZus{}l} \PY{o}{=} \PY{n}{Laplace}\PY{p}{(}\PY{p}{)}
+        \PY{n}{K\PYZus{}t8} \PY{o}{=} \PY{n}{Student}\PY{p}{(}\PY{l+m+mi}{8}\PY{p}{)}
+        \PY{n}{K\PYZus{}t4} \PY{o}{=} \PY{n}{Student}\PY{p}{(}\PY{l+m+mi}{4}\PY{p}{)}
+        
+        \PY{n}{start\PYZus{}vec} \PY{o}{=} \PY{l+m+mi}{200}\PY{o}{*}\PY{n}{np}\PY{o}{.}\PY{n}{ones}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}
+        \PY{n}{nits} \PY{o}{=} \PY{l+m+mi}{10000}
+        
+        \PY{n}{samples\PYZus{}g\PYZus{}q2} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q2}\PY{p}{,} \PY{n}{K\PYZus{}g}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.05}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+        \PY{n}{samples\PYZus{}l\PYZus{}q2} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q2}\PY{p}{,} \PY{n}{K\PYZus{}l}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.05}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+        \PY{n}{samples\PYZus{}t8\PYZus{}q2} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q2}\PY{p}{,} \PY{n}{K\PYZus{}t8}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.05}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+        \PY{n}{samples\PYZus{}t4\PYZus{}q2} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q2}\PY{p}{,} \PY{n}{K\PYZus{}t4}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.05}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+        
+        \PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q2} \PY{o}{=} \PY{n}{samples\PYZus{}g\PYZus{}q2}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+        \PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q2} \PY{o}{=} \PY{n}{samples\PYZus{}l\PYZus{}q2}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+        \PY{n}{x\PYZus{}samples\PYZus{}t8\PYZus{}q2} \PY{o}{=} \PY{n}{samples\PYZus{}t8\PYZus{}q2}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+        \PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q2} \PY{o}{=} \PY{n}{samples\PYZus{}t4\PYZus{}q2}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Acceptance rate: 0.734800
+LF Steps: 1, Step-size: 0.050
+Numerical divergences: 0
+Acceptance rate: 0.804600
+LF Steps: 1, Step-size: 0.050
+Numerical divergences: 0
+Acceptance rate: 0.802100
+LF Steps: 1, Step-size: 0.050
+Numerical divergences: 0
+Acceptance rate: 0.716200
+LF Steps: 1, Step-size: 0.050
+Numerical divergences: 0
+
+    \end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}6}]:} \PY{c+c1}{\PYZsh{} plots in separate window so they can be executed without re\PYZhy{}running the chains}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q2}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Gauss}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q2}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Laplace}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t8\PYZus{}q2}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{t(8)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q2}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{t(4)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+        
+        \PY{n}{plt}\PY{o}{.}\PY{n}{xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Iterations}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{ylabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Chain position}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Trace plot for quantile regression with Gaussian prior}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{legend}\PY{p}{(}\PY{n}{loc}\PY{o}{=}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{;}
+\end{Verbatim}
+
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_10_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    We can clearly see that the Gaussian choice, which is optimal here,
+provides the fastest convergence towards a high-probability region at
+equilibrium. The heavy-tailed choices display the negligible moves
+property, moving very small amounts initially before picking up speed
+when the chain is closer to equilibrium.
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}7}]:} \PY{c+c1}{\PYZsh{} MCMC run with Bridge regression prior, q = 1.5.  Now a cubic family choice should be more desirable.}
+        \PY{n}{U\PYZus{}q15} \PY{o}{=} \PY{n}{Quantile}\PY{p}{(}\PY{n}{tau} \PY{o}{=} \PY{l+m+mf}{0.75}\PY{p}{,} \PY{n}{sigma} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{l} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{B} \PY{o}{=} \PY{n}{X\PYZus{}test}\PY{p}{,} \PY{n}{y} \PY{o}{=} \PY{n}{y\PYZus{}test}\PY{p}{,} \PY{n}{q} \PY{o}{=} \PY{l+m+mf}{1.5}\PY{p}{)}
+        
+        \PY{n}{K\PYZus{}g} \PY{o}{=} \PY{n}{Gauss}\PY{p}{(}\PY{p}{)}
+        \PY{n}{K\PYZus{}l} \PY{o}{=} \PY{n}{Laplace}\PY{p}{(}\PY{p}{)}
+        \PY{n}{K\PYZus{}PE3} \PY{o}{=} \PY{n}{PE\PYZus{}family}\PY{p}{(}\PY{l+m+mi}{3}\PY{p}{)}
+        \PY{n}{K\PYZus{}t4} \PY{o}{=} \PY{n}{Student}\PY{p}{(}\PY{l+m+mi}{4}\PY{p}{)}
+        
+        \PY{n}{start\PYZus{}vec} \PY{o}{=} \PY{l+m+mi}{500}\PY{o}{*}\PY{n}{np}\PY{o}{.}\PY{n}{ones}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}
+        \PY{n}{nits} \PY{o}{=} \PY{l+m+mi}{20000}
+        
+        \PY{n}{samples\PYZus{}g\PYZus{}q15} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q15}\PY{p}{,} \PY{n}{K\PYZus{}g}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.06}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+        \PY{n}{samples\PYZus{}l\PYZus{}q15} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q15}\PY{p}{,} \PY{n}{K\PYZus{}l}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.06}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+        \PY{n}{samples\PYZus{}PE3\PYZus{}q15} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q15}\PY{p}{,} \PY{n}{K\PYZus{}PE3}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.06}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+        \PY{n}{samples\PYZus{}t4\PYZus{}q15} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q15}\PY{p}{,} \PY{n}{K\PYZus{}t4}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.06}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+        
+        \PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q15} \PY{o}{=} \PY{n}{samples\PYZus{}g\PYZus{}q15}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+        \PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q15} \PY{o}{=} \PY{n}{samples\PYZus{}l\PYZus{}q15}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+        \PY{n}{x\PYZus{}samples\PYZus{}PE3\PYZus{}q15} \PY{o}{=} \PY{n}{samples\PYZus{}PE3\PYZus{}q15}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+        \PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q15} \PY{o}{=} \PY{n}{samples\PYZus{}t4\PYZus{}q15}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Acceptance rate: 0.831850
+LF Steps: 1, Step-size: 0.060
+Numerical divergences: 0
+Acceptance rate: 0.826950
+LF Steps: 1, Step-size: 0.060
+Numerical divergences: 0
+Acceptance rate: 0.806100
+LF Steps: 1, Step-size: 0.060
+Numerical divergences: 0
+Acceptance rate: 0.863300
+LF Steps: 1, Step-size: 0.060
+Numerical divergences: 0
+
+    \end{Verbatim}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}8}]:} \PY{c+c1}{\PYZsh{} plots in separate window so they can be executed without re\PYZhy{}running the chains}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}PE3\PYZus{}q15}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Exponential Power 3}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q15}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Gauss}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q15}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Laplace}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q15}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{t(4)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+        
+        \PY{n}{plt}\PY{o}{.}\PY{n}{xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Iterations}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{ylabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Chain position}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Trace plot for quantile regression}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{legend}\PY{p}{(}\PY{n}{loc}\PY{o}{=}\PY{l+m+mi}{1}\PY{p}{)}\PY{p}{;}
+\end{Verbatim}
+
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_13_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    In this case the faster growing kinetic energy provides faster
+convergence to the centre of the space. Here the effects when comparing
+the Laplacian and t-distributed kinetic energies are not so pronounced
+because the potential growth isn't as fast, meaning the negligible moves
+property is not as pronounced.
+
+    \subsection{Sampling in the centre of the
+space}\label{sampling-in-the-centre-of-the-space}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}9}]:} \PY{c+c1}{\PYZsh{} MCMC run with Gaussian priors for the coefficients}
+        \PY{n}{U\PYZus{}q2} \PY{o}{=} \PY{n}{Quantile}\PY{p}{(}\PY{n}{tau} \PY{o}{=} \PY{l+m+mf}{0.75}\PY{p}{,} \PY{n}{sigma} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{l} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{B} \PY{o}{=} \PY{n}{X\PYZus{}test}\PY{p}{,} \PY{n}{y} \PY{o}{=} \PY{n}{y\PYZus{}test}\PY{p}{)}
+        \PY{n}{K\PYZus{}g} \PY{o}{=} \PY{n}{Gauss}\PY{p}{(}\PY{p}{)}
+        \PY{n}{K\PYZus{}l} \PY{o}{=} \PY{n}{Laplace}\PY{p}{(}\PY{p}{)}
+        \PY{n}{K\PYZus{}t8} \PY{o}{=} \PY{n}{Student}\PY{p}{(}\PY{l+m+mi}{8}\PY{p}{)}
+        \PY{n}{K\PYZus{}t4} \PY{o}{=} \PY{n}{Student}\PY{p}{(}\PY{l+m+mi}{4}\PY{p}{)}
+        
+        \PY{n}{start\PYZus{}vec} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{,}\PY{o}{\PYZhy{}}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{)}
+        \PY{n}{nits} \PY{o}{=} \PY{l+m+mi}{20000}
+        
+        \PY{n}{samples\PYZus{}g\PYZus{}q2\PYZus{}centre} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q2}\PY{p}{,} \PY{n}{K\PYZus{}g}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.05}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+        \PY{n}{samples\PYZus{}l\PYZus{}q2\PYZus{}centre} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q2}\PY{p}{,} \PY{n}{K\PYZus{}l}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.05}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+        \PY{n}{samples\PYZus{}t8\PYZus{}q2\PYZus{}centre} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q2}\PY{p}{,} \PY{n}{K\PYZus{}t8}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.05}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+        \PY{n}{samples\PYZus{}t4\PYZus{}q2\PYZus{}centre} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q2}\PY{p}{,} \PY{n}{K\PYZus{}t4}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.05}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+        
+        \PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q2\PYZus{}centre} \PY{o}{=} \PY{n}{samples\PYZus{}g\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+        \PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q2\PYZus{}centre} \PY{o}{=} \PY{n}{samples\PYZus{}l\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+        \PY{n}{x\PYZus{}samples\PYZus{}t8\PYZus{}q2\PYZus{}centre} \PY{o}{=} \PY{n}{samples\PYZus{}t8\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+        \PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q2\PYZus{}centre} \PY{o}{=} \PY{n}{samples\PYZus{}t4\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+        
+        \PY{k}{print} \PY{n}{d}\PY{o}{.}\PY{n}{ess}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{)}
+        \PY{k}{print} \PY{n}{d}\PY{o}{.}\PY{n}{ess}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{)}
+        \PY{k}{print} \PY{n}{d}\PY{o}{.}\PY{n}{ess}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t8\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{)}
+        \PY{k}{print} \PY{n}{d}\PY{o}{.}\PY{n}{ess}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{)}
+        
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{r\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{b\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t8\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{r\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+        \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{b\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Acceptance rate: 0.703500
+LF Steps: 1, Step-size: 0.050
+Numerical divergences: 0
+Acceptance rate: 0.709150
+LF Steps: 1, Step-size: 0.050
+Numerical divergences: 0
+Acceptance rate: 0.724550
+LF Steps: 1, Step-size: 0.050
+Numerical divergences: 0
+Acceptance rate: 0.739700
+LF Steps: 1, Step-size: 0.050
+Numerical divergences: 0
+[1] 120.082
+
+[1] 162.602
+
+[1] 106.4344
+
+[1] 133.0704
+
+
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_16_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}10}]:} \PY{c+c1}{\PYZsh{} autocorrelation plots, Gaussian prior}
+         \PY{k+kn}{from} \PY{n+nn}{statsmodels.tsa.stattools} \PY{k+kn}{import} \PY{n}{acf}
+         \PY{n}{acf\PYZus{}g\PYZus{}q2} \PY{o}{=} \PY{n}{acf}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{n}{nlags}\PY{o}{=}\PY{l+m+mi}{1000}\PY{p}{)}
+         \PY{n}{acf\PYZus{}l\PYZus{}q2} \PY{o}{=} \PY{n}{acf}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{n}{nlags}\PY{o}{=}\PY{l+m+mi}{1000}\PY{p}{)}
+         \PY{n}{acf\PYZus{}t8\PYZus{}q2} \PY{o}{=} \PY{n}{acf}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t8\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{n}{nlags}\PY{o}{=}\PY{l+m+mi}{1000}\PY{p}{)}
+         \PY{n}{acf\PYZus{}t4\PYZus{}q2} \PY{o}{=} \PY{n}{acf}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q2\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{n}{nlags}\PY{o}{=}\PY{l+m+mi}{1000}\PY{p}{)}
+         
+         \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}g\PYZus{}q2}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}l\PYZus{}q2}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}t8\PYZus{}q2}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}t4\PYZus{}q2}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+         
+         \PY{n}{plt}\PY{o}{.}\PY{n}{xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Lag}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{ylabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Autocorrelation}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Autocorrelations, Gaussian prior}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+\end{Verbatim}
+
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_17_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}11}]:} \PY{c+c1}{\PYZsh{} MCMC run with Bridge regression prior, q = 1.5.  Now a cubic family choice should be more desirable.}
+         \PY{n}{U\PYZus{}q15} \PY{o}{=} \PY{n}{Quantile}\PY{p}{(}\PY{n}{tau} \PY{o}{=} \PY{l+m+mf}{0.75}\PY{p}{,} \PY{n}{sigma} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{l} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{B} \PY{o}{=} \PY{n}{X\PYZus{}test}\PY{p}{,} \PY{n}{y} \PY{o}{=} \PY{n}{y\PYZus{}test}\PY{p}{,} \PY{n}{q} \PY{o}{=} \PY{l+m+mf}{1.5}\PY{p}{)}
+         
+         \PY{n}{K\PYZus{}g} \PY{o}{=} \PY{n}{Gauss}\PY{p}{(}\PY{p}{)}
+         \PY{n}{K\PYZus{}l} \PY{o}{=} \PY{n}{Laplace}\PY{p}{(}\PY{p}{)}
+         \PY{n}{K\PYZus{}PE3} \PY{o}{=} \PY{n}{PE\PYZus{}family}\PY{p}{(}\PY{l+m+mi}{3}\PY{p}{)}
+         \PY{n}{K\PYZus{}t4} \PY{o}{=} \PY{n}{Student}\PY{p}{(}\PY{l+m+mi}{4}\PY{p}{)}
+         
+         \PY{n}{start\PYZus{}vec} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{p}{[}\PY{l+m+mi}{2}\PY{p}{,}\PY{o}{\PYZhy{}}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{)}
+         \PY{n}{nits} \PY{o}{=} \PY{l+m+mi}{20000}
+         
+         \PY{n}{samples\PYZus{}g\PYZus{}q15\PYZus{}centre} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q15}\PY{p}{,} \PY{n}{K\PYZus{}g}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.06}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+         \PY{n}{samples\PYZus{}l\PYZus{}q15\PYZus{}centre} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q15}\PY{p}{,} \PY{n}{K\PYZus{}l}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.06}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+         \PY{n}{samples\PYZus{}PE3\PYZus{}q15\PYZus{}centre} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q15}\PY{p}{,} \PY{n}{K\PYZus{}PE3}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.06}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+         \PY{n}{samples\PYZus{}t4\PYZus{}q15\PYZus{}centre} \PY{o}{=} \PY{n}{h}\PY{o}{.}\PY{n}{HMC}\PY{p}{(}\PY{n}{nits}\PY{p}{,} \PY{n}{start\PYZus{}vec}\PY{p}{,} \PY{n}{U\PYZus{}q15}\PY{p}{,} \PY{n}{K\PYZus{}t4}\PY{p}{,} \PY{n}{L} \PY{o}{=} \PY{l+m+mi}{1}\PY{p}{,} \PY{n}{e} \PY{o}{=} \PY{l+m+mf}{0.06}\PY{p}{)} \PY{c+c1}{\PYZsh{}, BurnIn = 500)}
+         
+         \PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q15\PYZus{}centre} \PY{o}{=} \PY{n}{samples\PYZus{}g\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+         \PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q15\PYZus{}centre} \PY{o}{=} \PY{n}{samples\PYZus{}l\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+         \PY{n}{x\PYZus{}samples\PYZus{}PE3\PYZus{}q15\PYZus{}centre} \PY{o}{=} \PY{n}{samples\PYZus{}PE3\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+         \PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q15\PYZus{}centre} \PY{o}{=} \PY{n}{samples\PYZus{}t4\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]}
+         
+         \PY{k}{print} \PY{n}{d}\PY{o}{.}\PY{n}{ess}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{)}
+         \PY{k}{print} \PY{n}{d}\PY{o}{.}\PY{n}{ess}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{)}
+         \PY{k}{print} \PY{n}{d}\PY{o}{.}\PY{n}{ess}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}PE3\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{)}
+         \PY{k}{print} \PY{n}{d}\PY{o}{.}\PY{n}{ess}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{)}
+         
+         \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{r\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{b\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}PE3\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{r\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{b\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+\end{Verbatim}
+
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+Acceptance rate: 0.702450
+LF Steps: 1, Step-size: 0.060
+Numerical divergences: 0
+Acceptance rate: 0.682100
+LF Steps: 1, Step-size: 0.060
+Numerical divergences: 0
+Acceptance rate: 0.682250
+LF Steps: 1, Step-size: 0.060
+Numerical divergences: 0
+Acceptance rate: 0.714100
+LF Steps: 1, Step-size: 0.060
+Numerical divergences: 0
+[1] 221.2105
+
+[1] 233.622
+
+[1] 143.7314
+
+[1] 182.777
+
+
+    \end{Verbatim}
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_18_1.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}12}]:} \PY{c+c1}{\PYZsh{} autocorrelation plots, q = 1.5 prior}
+         \PY{n}{acf\PYZus{}g\PYZus{}q15} \PY{o}{=} \PY{n}{acf}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{n}{nlags}\PY{o}{=}\PY{l+m+mi}{1000}\PY{p}{)}
+         \PY{n}{acf\PYZus{}l\PYZus{}q15} \PY{o}{=} \PY{n}{acf}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{n}{nlags}\PY{o}{=}\PY{l+m+mi}{1000}\PY{p}{)}
+         \PY{n}{acf\PYZus{}PE3\PYZus{}q15} \PY{o}{=} \PY{n}{acf}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}PE3\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{n}{nlags}\PY{o}{=}\PY{l+m+mi}{1000}\PY{p}{)}
+         \PY{n}{acf\PYZus{}t4\PYZus{}q15} \PY{o}{=} \PY{n}{acf}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q15\PYZus{}centre}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{n}{nlags}\PY{o}{=}\PY{l+m+mi}{1000}\PY{p}{)}
+         
+         \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}g\PYZus{}q15}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}l\PYZus{}q15}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}PE3\PYZus{}q15}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}t4\PYZus{}q15}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+         
+         \PY{n}{plt}\PY{o}{.}\PY{n}{xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Lag}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{ylabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Autocorrelation}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{plt}\PY{o}{.}\PY{n}{title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Autocorrelations, q=1.5 prior}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+\end{Verbatim}
+
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_19_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \subsection{Plotting everything
+together}\label{plotting-everything-together}
+
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}13}]:} \PY{c+c1}{\PYZsh{} All four plots in one window would be ideal!}
+         \PY{n}{f}\PY{p}{,} \PY{p}{(}\PY{p}{(}\PY{n}{ax1}\PY{p}{,} \PY{n}{ax2}\PY{p}{)}\PY{p}{,} \PY{p}{(}\PY{n}{ax3}\PY{p}{,} \PY{n}{ax4}\PY{p}{)}\PY{p}{)} \PY{o}{=} \PY{n}{plt}\PY{o}{.}\PY{n}{subplots}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}
+         
+         \PY{c+c1}{\PYZsh{} first subplot}
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q2}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Gauss}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q2}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Laplace}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t8\PYZus{}q2}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{t(8)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q2}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{t(4)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+         
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{set\PYZus{}title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Trace plot (q=2)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{fontweight}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{bold}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Iteration}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Position}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{set\PYZus{}xticks}\PY{p}{(}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{l+m+mi}{5000}\PY{p}{,}\PY{l+m+mi}{10000}\PY{p}{]}\PY{p}{)}
+         
+         \PY{c+c1}{\PYZsh{} second subplot}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}PE3\PYZus{}q15}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Exponential Power 3}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q15}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Gauss}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q15}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Laplace}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q15}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{t(4)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}\PY{p}{;}
+         
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{set\PYZus{}title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Trace plot (q=1.5)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{fontweight}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{bold}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Iteration}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Position}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{set\PYZus{}xticks}\PY{p}{(}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{l+m+mi}{5000}\PY{p}{,}\PY{l+m+mi}{10000}\PY{p}{]}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{set\PYZus{}ylim}\PY{p}{(}\PY{p}{[}\PY{o}{\PYZhy{}}\PY{l+m+mi}{50}\PY{p}{,}\PY{l+m+mi}{200}\PY{p}{]}\PY{p}{)}
+         
+         \PY{c+c1}{\PYZsh{} third subplot}
+         \PY{n}{ax3}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}g\PYZus{}q2}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax3}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}l\PYZus{}q2}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax3}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}t8\PYZus{}q2}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax3}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}t4\PYZus{}q2}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+         
+         \PY{n}{ax3}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Lag}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax3}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Autocorrelation}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax3}\PY{o}{.}\PY{n}{set\PYZus{}title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Autocorrelations (q=2)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{fontweight}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{bold}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+         
+         \PY{c+c1}{\PYZsh{} fourth subplot}
+         \PY{n}{ax4}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}g\PYZus{}q15}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax4}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}l\PYZus{}q15}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{:}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax4}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}PE3\PYZus{}q15}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax4}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{acf\PYZus{}t4\PYZus{}q15}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+         
+         \PY{n}{ax4}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Lag}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax4}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Autocorrelation}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+         \PY{n}{ax4}\PY{o}{.}\PY{n}{set\PYZus{}title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Autocorrelations (q=1.5)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{fontweight}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{bold}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{;}
+         
+         \PY{n}{plt}\PY{o}{.}\PY{n}{tight\PYZus{}layout}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+         
+         \PY{n}{plt}\PY{o}{.}\PY{n}{savefig}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Qreg.eps}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_21_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+    \begin{Verbatim}[commandchars=\\\{\}]
+{\color{incolor}In [{\color{incolor}14}]:} \PY{c+c1}{\PYZsh{} And plot with just the two trace plots, using Arial font as in R}
+         \PY{c+c1}{\PYZsh{} All four plots in one window would be ideal!}
+         \PY{k+kn}{from} \PY{n+nn}{pylab} \PY{k+kn}{import} \PY{n}{rcParams}
+         \PY{n}{rcParams}\PY{p}{[}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{figure.figsize}\PY{l+s+s1}{\PYZsq{}}\PY{p}{]} \PY{o}{=} \PY{l+m+mi}{8}\PY{p}{,} \PY{l+m+mi}{3}
+         
+         \PY{n}{f}\PY{p}{,} \PY{p}{(}\PY{n}{ax1}\PY{p}{,} \PY{n}{ax2}\PY{p}{)} \PY{o}{=} \PY{n}{plt}\PY{o}{.}\PY{n}{subplots}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}
+         
+         \PY{n}{arialfont} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{fontname}\PY{l+s+s1}{\PYZsq{}}\PY{p}{:}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Arial}\PY{l+s+s1}{\PYZsq{}}\PY{p}{\PYZcb{}}
+         
+         \PY{c+c1}{\PYZsh{} first subplot}
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q2}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Gauss}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q2}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Laplace}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+         \PY{c+c1}{\PYZsh{}ax1.plot(x\PYZus{}samples\PYZus{}t8\PYZus{}q2[1,:], \PYZsq{}\PYZhy{}\PYZsq{}, color=\PYZsq{}0.5\PYZsq{}, label = \PYZdq{}t(8)\PYZdq{})}
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q2}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{t(4)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+         
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{set\PYZus{}title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Trace plot (q=2)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{fontweight}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{bold}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{o}{*}\PY{o}{*}\PY{n}{arialfont}\PY{p}{)}
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Iteration}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{o}{*}\PY{o}{*}\PY{n}{arialfont}\PY{p}{)}
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Position}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{o}{*}\PY{o}{*}\PY{n}{arialfont}\PY{p}{)}
+         \PY{n}{ax1}\PY{o}{.}\PY{n}{set\PYZus{}xticks}\PY{p}{(}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{l+m+mi}{5000}\PY{p}{,}\PY{l+m+mi}{10000}\PY{p}{]}\PY{p}{)}
+         
+         \PY{c+c1}{\PYZsh{} second subplot}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}PE3\PYZus{}q15}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Exponential Power 3}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}g\PYZus{}q15}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Gauss}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}l\PYZus{}q15}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Laplace}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{plot}\PY{p}{(}\PY{n}{x\PYZus{}samples\PYZus{}t4\PYZus{}q15}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,}\PY{p}{:}\PY{p}{]}\PY{p}{,} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{\PYZhy{}\PYZhy{}}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{color} \PY{o}{=} \PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{0.5}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{label} \PY{o}{=} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{t(4)}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}\PY{p}{;}
+         
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{set\PYZus{}title}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Trace plot (q=1.5)}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{fontweight}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{bold}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{o}{*}\PY{o}{*}\PY{n}{arialfont}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{set\PYZus{}xlabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Iteration}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{o}{*}\PY{o}{*}\PY{n}{arialfont}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{set\PYZus{}ylabel}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Position}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{o}{*}\PY{o}{*}\PY{n}{arialfont}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{set\PYZus{}xticks}\PY{p}{(}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,}\PY{l+m+mi}{10000}\PY{p}{,}\PY{l+m+mi}{20000}\PY{p}{]}\PY{p}{)}
+         \PY{n}{ax2}\PY{o}{.}\PY{n}{set\PYZus{}ylim}\PY{p}{(}\PY{p}{[}\PY{o}{\PYZhy{}}\PY{l+m+mi}{100}\PY{p}{,}\PY{l+m+mi}{500}\PY{p}{]}\PY{p}{)}
+         
+         \PY{n}{plt}\PY{o}{.}\PY{n}{tight\PYZus{}layout}\PY{p}{(}\PY{p}{)}\PY{p}{;}
+         
+         \PY{n}{plt}\PY{o}{.}\PY{n}{savefig}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{Qreg2.eps}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+
+
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_22_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+
+    % Add a bibliography block to the postdoc
+    
+    
+    
+    \end{document}

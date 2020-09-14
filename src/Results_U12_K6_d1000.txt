@@ -1,0 +1,77 @@
+Kinetic power: 6.000
+Potential power: 1.200
+Iterations: 10000
+ 
+------------------------------------
+------------------------------------
+ 
+Acceptance rate: 0.374600
+LF Steps: 100, Step-size: 0.040
+Numerical divergences: 0
+Effective sample size: 2862.783
+ 
+------------------------------------
+ 
+Acceptance rate: 0.126800
+LF Steps: 100, Step-size: 0.045
+Numerical divergences: 0
+Effective sample size: 456.586
+ 
+------------------------------------
+ 
+Acceptance rate: 0.117700
+LF Steps: 100, Step-size: 0.050
+Numerical divergences: 0
+Effective sample size: 130.151
+ 
+------------------------------------
+ 
+Acceptance rate: 0.059600
+LF Steps: 100, Step-size: 0.055
+Numerical divergences: 0
+Effective sample size: 3.535
+ 
+------------------------------------
+ 
+Acceptance rate: 0.138500
+LF Steps: 100, Step-size: 0.060
+Numerical divergences: 0
+Effective sample size: 139.244
+ 
+------------------------------------
+ 
+Acceptance rate: 0.002500
+LF Steps: 100, Step-size: 0.065
+Numerical divergences: 0
+Effective sample size: 10.260
+ 
+------------------------------------
+ 
+Acceptance rate: 0.000100
+LF Steps: 100, Step-size: 0.070
+Numerical divergences: 0
+Effective sample size: 6.774
+ 
+------------------------------------
+ 
+Acceptance rate: 0.005200
+LF Steps: 100, Step-size: 0.075
+Numerical divergences: 0
+Effective sample size: 39.177
+ 
+------------------------------------
+ 
+Acceptance rate: 0.002200
+LF Steps: 100, Step-size: 0.080
+Numerical divergences: 0
+Effective sample size: 40.522
+ 
+------------------------------------
+ 
+Acceptance rate: 0.000600
+LF Steps: 100, Step-size: 0.085
+Numerical divergences: 0
+Effective sample size: 6.982
+ 
+------------------------------------
+ 
