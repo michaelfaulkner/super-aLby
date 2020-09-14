@@ -22,6 +22,7 @@
 *.ps
 *.eps
 *.pdf
+*.png
 
 # Exclude ignore for .pdf files in figures directory
 # !projects/bkt-correlated-dynamics/factsheets/figures/*.pdf
