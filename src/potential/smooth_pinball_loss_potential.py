@@ -40,14 +40,14 @@ class SmoothPinballLossPotential(Potential):
         """
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__)
         super().__init__(prefactor=prefactor)
-        self.tau = tau  # quantile
-        self.sigma = sigma  # learning rate / observation noise
-        self.xi = xi  # pinball smoother
+        self.tau = tau
+        self.sigma = sigma
+        self.xi = xi
         self.xi_dot_sigma = xi * sigma
-        self.lambda_hyperparameter = lambda_hyperparameter  # regulariser
-        self.q = q  # prior power
-        self.x = x  # design matrix (measured data)
-        self.y = y  # response (measured data)
+        self.lambda_hyperparameter = lambda_hyperparameter
+        self.q = q
+        self.x = x
+        self.y = y
         self.beta_function_value = self.__beta_function(xi * (1 - tau), xi * tau)
         self.x_sum = np.sum(self.x, axis=0)
 
