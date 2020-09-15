@@ -6,7 +6,7 @@ class Potential(metaclass=ABCMeta):
     """
     Abstract class for potentials used in the algorithm code.
 
-    A general potential provides the function itself and its derivative. Note that, for the case of periodic boundaries,
+    A general potential provides the function itself and its gradient. Note that, for the case of periodic boundaries,
     periodicity is taken into account by the periodic_boundaries package.
     """
 
@@ -36,9 +36,9 @@ class Potential(metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @abstractmethod
-    def derivative(self, separation, charges=None):
+    def gradient(self, separation, charges=None):
         """
-        Return the derivative of the potential for certain separation and charges.
+        Return the gradient of the potential for certain separation and charges.
 
         Parameters
         ----------

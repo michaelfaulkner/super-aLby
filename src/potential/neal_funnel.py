@@ -27,9 +27,9 @@ class NealFunnel(Potential):
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__)
         super().__init__(prefactor=prefactor)
 
-    def derivative(self, separation):
+    def gradient(self, separation):
         """
-        Return the derivative of the potential.
+        Return the gradient of the potential.
 
         Parameters
         ----------
