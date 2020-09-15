@@ -34,7 +34,7 @@ class NealFunnelPotential(Potential):
         Parameters
         ----------
         support_variable
-            For physics models, the separation vector r_ij; in this case, the Bayesian parameter value.
+            For soft-matter models, the separation vector r_ij; in this case, the Bayesian parameter value.
 
         Returns
         -------
@@ -55,7 +55,7 @@ class NealFunnelPotential(Potential):
         Parameters
         ----------
         support_variable
-            For physics models, the separation vector r_ij; in this case, the Bayesian parameter value.
+            For soft-matter models, the separation vector r_ij; in this case, the Bayesian parameter value.
 
         Returns
         -------

@@ -43,7 +43,7 @@ class Potential(metaclass=ABCMeta):
         Parameters
         ----------
         support_variable
-            For physics models, the separation vector r_ij; for Bayesian models, the parameter value.
+            For soft-matter models, the separation vector r_ij; for Bayesian models, the parameter value.
         charges : optional
             All the charges needed to calculate the derivative.
 
@@ -62,7 +62,7 @@ class Potential(metaclass=ABCMeta):
         Parameters
         ----------
         support_variable
-            For physics models, the separation vector r_ij; for Bayesian models, the parameter value.
+            For soft-matter models, the separation vector r_ij; for Bayesian models, the parameter value.
         charges : optional
             All the charges needed to calculate the potential function.
 
