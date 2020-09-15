@@ -41,7 +41,7 @@ class NealFunnelPotential(Potential):
         numpy array
             The gradient.
         """
-        gradient = np.array([0.0 for _ in range(len(support_variable))])
+        gradient = np.zeroes(len(support_variable))
         gradient[0] = support_variable[0] / 9.0 + 9 / 2.0 - (
                 math.exp(-support_variable[0]) * np.sum(support_variable[1:len(support_variable)] ** 2) / 2.0)
         gradient[1:len(support_variable)] = 2.0 * support_variable[1:len(support_variable)] * math.exp(
