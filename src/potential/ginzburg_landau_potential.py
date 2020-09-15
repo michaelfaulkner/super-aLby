@@ -65,7 +65,7 @@ class GinzburgLandauPotential(Potential):
         psi_posy = self.__pos_y(psi)
         psi_posz = self.__pos_z(psi)
         psi_negx = self.__neg_x(psi)
-        psi_negy = self.negy(psi)
+        psi_negy = self.__neg_y(psi)
         psi_negz = self.__neg_z(psi)
         vec = np.empty(Len ** 3)
         vec = z1 * psi - z2 * (
@@ -125,7 +125,7 @@ class GinzburgLandauPotential(Potential):
         e = np.delete(d, self.lattice_length, 2)
         return np.reshape(e, self.lattice_volume)
 
-    def negy(self, psi):
+    def __neg_y(self, psi):
         a = np.reshape(psi, (self.lattice_length, self.lattice_length, self.lattice_length))
         b = np.pad(a, (1, 0), mode='wrap')
         c = np.delete(b, 0, 0)
@@ -140,12 +140,6 @@ class GinzburgLandauPotential(Potential):
         d = np.delete(c, 0, 1)
         e = np.delete(d, 0, 2)
         return np.reshape(e, self.lattice_volume)
-
-    def __reshape_and_pad(self, psi):
-        # reshape to a self.lattice_length * self.lattice_length * self.lattice_length matrix
-        a = np.reshape(psi, (self.lattice_length, self.lattice_length, self.lattice_length))
-        # copies the 0th entry at each matrix level to (self.lattice_length + 1)th entry
-        return np.pad(a, (0, 1), mode='wrap')
 
     def __reshape_and_pad(self, psi, positive_translation):
         # reshape to a self.lattice_length * self.lattice_length * self.lattice_length matrix
