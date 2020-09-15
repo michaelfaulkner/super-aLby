@@ -141,6 +141,7 @@ class GinzburgLandauPotential(Potential):
         e = np.delete(d, 0, 2)
         return np.reshape(e, self.lattice_volume)
 
+    # todo integrer __reshape_and_pad() dans les fonctions ci-dessous
     def __reshape_and_pad(self, psi, positive_translation):
         # reshape to a self.lattice_length * self.lattice_length * self.lattice_length matrix
         a = np.reshape(psi, (self.lattice_length, self.lattice_length, self.lattice_length))
