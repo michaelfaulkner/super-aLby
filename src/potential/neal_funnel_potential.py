@@ -1,4 +1,4 @@
-"""Module for the InversePowerPotential class."""
+"""Module for the NealFunnelPotential class."""
 import logging
 import math
 import numpy as np
@@ -7,7 +7,7 @@ from .potential import Potential
 
 
 # noinspection PyMethodOverriding
-class NealFunnel(Potential):
+class NealFunnelPotential(Potential):
     """
     This class implements the Neal's funnel potential
         U = x[0] ** 2 / 18.0 + 9 * x[0] / 2.0 + exp(-x[0]) * np.sum(x[1:len(x)] ** 2) / 2.0
