@@ -38,15 +38,15 @@ class NealFunnelPotential(Potential):
 
         Returns
         -------
-        float
-            The derivative.
+        numpy array
+            The gradient.
         """
-        deriv = np.array([0.0 for _ in range(len(support_variable))])
-        deriv[0] = support_variable[0] / 9.0 + 9 / 2.0 - (
+        gradient = np.array([0.0 for _ in range(len(support_variable))])
+        gradient[0] = support_variable[0] / 9.0 + 9 / 2.0 - (
                 math.exp(-support_variable[0]) * np.sum(support_variable[1:len(support_variable)] ** 2) / 2.0)
-        deriv[1:len(support_variable)] = 2.0 * support_variable[1:len(support_variable)] * math.exp(
+        gradient[1:len(support_variable)] = 2.0 * support_variable[1:len(support_variable)] * math.exp(
             -support_variable[0])
-        return deriv
+        return gradient
 
     def potential(self, support_variable):
         """
@@ -63,4 +63,4 @@ class NealFunnelPotential(Potential):
             The potential.
         """
         return support_variable[0] ** 2 / 18.0 + 9 * support_variable[0] / 2.0 + (
-                    math.exp(-support_variable[0]) * np.sum(support_variable[1:len(support_variable)] ** 2) / 2.0)
+                math.exp(-support_variable[0]) * np.sum(support_variable[1:len(support_variable)] ** 2) / 2.0)

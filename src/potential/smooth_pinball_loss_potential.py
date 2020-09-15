@@ -62,8 +62,8 @@ class SmoothPinballLossPotential(Potential):
 
         Returns
         -------
-        float
-            The derivative.
+        numpy array
+            The gradient.
         """
         prior_gradient = np.array(
             [self.q * self.lambda_hyperparameter * np.sign(component) * np.absolute(component) ** (self.q - 1) for
