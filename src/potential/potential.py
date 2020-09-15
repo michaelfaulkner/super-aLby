@@ -36,13 +36,13 @@ class Potential(metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @abstractmethod
-    def gradient(self, separation, charges=None):
+    def gradient(self, support_variable, charges=None):
         """
         Return the gradient of the potential for certain separation and charges.
 
         Parameters
         ----------
-        separation
+        support_variable
             For physics models, the separation vector r_ij; for Bayesian models, the parameter value.
         charges : optional
             All the charges needed to calculate the derivative.
@@ -55,13 +55,13 @@ class Potential(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def potential(self, separation, charges=None):
+    def potential(self, support_variable, charges=None):
         """
         Return the potential function for certain separations and charges.
 
         Parameters
         ----------
-        separation
+        support_variable
             For physics models, the separation vector r_ij; for Bayesian models, the parameter value.
         charges : optional
             All the charges needed to calculate the potential function.

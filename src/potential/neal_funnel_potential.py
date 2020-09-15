@@ -27,13 +27,13 @@ class NealFunnelPotential(Potential):
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__)
         super().__init__(prefactor=prefactor)
 
-    def gradient(self, separation):
+    def gradient(self, support_variable):
         """
         Return the gradient of the potential.
 
         Parameters
         ----------
-        separation
+        support_variable
             For physics models, the separation vector r_ij; in this case, the Bayesian parameter value.
 
         Returns
@@ -41,19 +41,20 @@ class NealFunnelPotential(Potential):
         float
             The derivative.
         """
-        deriv = np.array([0.0 for _ in range(len(separation))])
-        deriv[0] = separation[0] / 9.0 + 9 / 2.0 - (
-                    math.exp(-separation[0]) * np.sum(separation[1:len(separation)] ** 2) / 2.0)
-        deriv[1:len(separation)] = 2.0 * separation[1:len(separation)] * math.exp(-separation[0])
+        deriv = np.array([0.0 for _ in range(len(support_variable))])
+        deriv[0] = support_variable[0] / 9.0 + 9 / 2.0 - (
+                math.exp(-support_variable[0]) * np.sum(support_variable[1:len(support_variable)] ** 2) / 2.0)
+        deriv[1:len(support_variable)] = 2.0 * support_variable[1:len(support_variable)] * math.exp(
+            -support_variable[0])
         return deriv
 
-    def potential(self, separation):
+    def potential(self, support_variable):
         """
         Return the potential for the given separation.
 
         Parameters
         ----------
-        separation
+        support_variable
             For physics models, the separation vector r_ij; in this case, the Bayesian parameter value.
 
         Returns
@@ -61,5 +62,5 @@ class NealFunnelPotential(Potential):
         float
             The potential.
         """
-        return separation[0] ** 2 / 18.0 + 9 * separation[0] / 2.0 + math.exp(-separation[0]) * np.sum(
-            separation[1:10] ** 2) / 2.0
+        return support_variable[0] ** 2 / 18.0 + 9 * support_variable[0] / 2.0 + (
+                    math.exp(-support_variable[0]) * np.sum(support_variable[1:len(support_variable)] ** 2) / 2.0)
