@@ -27,6 +27,7 @@ class SuperRelativisticKineticEnergy(KineticEnergy):
             A general multiplicative prefactor of the potential (and therefore of the kinetic energy).
         """
         self._one_over_gamma = 1.0 / gamma
+        self._power_over_two = power / 2
         super().__init__(power=power, prefactor=prefactor)
 
     def gradient(self, momentum):
@@ -60,4 +61,4 @@ class SuperRelativisticKineticEnergy(KineticEnergy):
         float
             The kinetic energy.
         """
-        return np.sum((1 + self._one_over_gamma * momentum ** 2) ** self._power_over_two) / self._power
+        return self._one_over_power * np.sum((1 + self._one_over_gamma * momentum ** 2) ** self._power_over_two)

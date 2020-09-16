@@ -22,6 +22,7 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         prefactor : float, optional
             A general multiplicative prefactor of the potential (and therefore of the kinetic energy).
         """
+        self._power = power
         super().__init__(power=power, prefactor=prefactor)
 
     def gradient(self, momentum):
@@ -54,4 +55,4 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         float
             The kinetic energy.
         """
-        return np.sum(np.absolute(momentum ** self._power)) / self._power
+        return self._one_over_power * np.sum(np.absolute(momentum ** self._power))
