@@ -9,7 +9,7 @@ class KineticEnergy(metaclass=ABCMeta):
     A general kinetic-energy class provides the function itself and its gradient.
     """
 
-    def __init__(self, power, prefactor=1.0, **kwargs):
+    def __init__(self, power=2, prefactor=1.0, **kwargs):
         """
         The constructor of the KineticEnergy class.
 
@@ -29,8 +29,10 @@ class KineticEnergy(metaclass=ABCMeta):
 
         Raises
         ------
-        base.exceptions.ConfigurationError
-            If the prefactor equals 0.
+        base.exceptions.ValueError
+            If the power equals 0.
+        base.exceptions.ValueError
+            If the prefactor equals 0.0.
         """
         if power == 0:
             raise ValueError("Give a value not equal to 0 as the power associated with the kinetic energy {0}.".format(
@@ -49,7 +51,7 @@ class KineticEnergy(metaclass=ABCMeta):
 
         Parameters
         ----------
-        momentum
+        momentum : numpy_array
             The momentum associated with each support_variable.
 
         Returns
@@ -66,7 +68,7 @@ class KineticEnergy(metaclass=ABCMeta):
 
         Parameters
         ----------
-        momentum
+        momentum : numpy_array
             The momentum associated with each support_variable.
 
         Returns
