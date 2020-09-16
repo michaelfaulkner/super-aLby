@@ -29,7 +29,7 @@ class Potential(metaclass=ABCMeta):
             If the prefactor equals 0.
         """
         if prefactor == 0.0:
-            raise ValueError("Give a prefactor not equal to 0.0 as the prefactor for the potential {0}.".format(
+            raise ValueError("Give a value not equal to 0.0 as the prefactor for the potential {0}.".format(
                 self.__class__.__name__))
         self._prefactor = prefactor
         super().__init__(**kwargs)
