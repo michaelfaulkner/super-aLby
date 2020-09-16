@@ -55,9 +55,9 @@ class GinzburgLandauPotential(Potential):
             The gradient.
         """
         return (self.one_minus_beta * support_variable - self.beta_dot_alpha * (
-                self.__pos_x(support_variable) + self.__neg_x(support_variable) +
-                self.__pos_y(support_variable) + self.__neg_y(support_variable) +
-                self.__pos_z(support_variable) + self.__neg_z(support_variable) -
+                self.__pos_x_translation(support_variable) + self.__neg_x_translation(support_variable) +
+                self.__pos_y_translation(support_variable) + self.__neg_y_translation(support_variable) +
+                self.__pos_z_translation(support_variable) + self.__neg_z_translation(support_variable) -
                 6 * support_variable) + self.beta_dot_lambda * support_variable ** 3)
 
     def potential(self, support_variable):
@@ -78,12 +78,12 @@ class GinzburgLandauPotential(Potential):
         """
         return np.sum(
             0.5 * self.one_minus_beta * support_variable ** 2 + 0.5 * self.beta_dot_alpha * (
-                    (self.__pos_x(support_variable) - support_variable) ** 2 +
-                    (self.__pos_y(support_variable) - support_variable) ** 2 +
-                    (self.__pos_z(support_variable) - support_variable) ** 2) +
+                    (self.__pos_x_translation(support_variable) - support_variable) ** 2 +
+                    (self.__pos_y_translation(support_variable) - support_variable) ** 2 +
+                    (self.__pos_z_translation(support_variable) - support_variable) ** 2) +
             0.25 * self.beta_dot_lambda * support_variable ** 4)
 
-    def __pos_x(self, psi):
+    def __pos_x_translation(self, psi):
         a = np.reshape(psi, (self.lattice_length, self.lattice_length, self.lattice_length))  # reshapes to a Len*Len*Len matrix
         b = np.pad(a, (0, 1), mode='wrap')  # copies the 0th entry at each matrix level to (Len+1)th entry
         c = np.delete(b, self.lattice_length, 0)  # deletes the (Len)th entry at the highest matrix level
@@ -91,7 +91,7 @@ class GinzburgLandauPotential(Potential):
         e = np.delete(d, 0, 2)  # deletes the 0th entry at the lowest matrix level
         return np.reshape(e, self.lattice_volume)  # reshapes to an Len**3-dim vector
 
-    def __pos_y(self, psi):
+    def __pos_y_translation(self, psi):
         a = np.reshape(psi, (self.lattice_length, self.lattice_length, self.lattice_length))
         b = np.pad(a, (0, 1), mode='wrap')
         c = np.delete(b, self.lattice_length, 0)
@@ -99,7 +99,7 @@ class GinzburgLandauPotential(Potential):
         e = np.delete(d, self.lattice_length, 2)
         return np.reshape(e, self.lattice_volume)
 
-    def __pos_z(self, psi):
+    def __pos_z_translation(self, psi):
         a = np.reshape(psi, (self.lattice_length, self.lattice_length, self.lattice_length))
         b = np.pad(a, (0, 1), mode='wrap')
         c = np.delete(b, 0, 0)
@@ -107,7 +107,7 @@ class GinzburgLandauPotential(Potential):
         e = np.delete(d, self.lattice_length, 2)
         return np.reshape(e, self.lattice_volume)
 
-    def __neg_x(self, psi):
+    def __neg_x_translation(self, psi):
         a = np.reshape(psi, (self.lattice_length, self.lattice_length, self.lattice_length))
         b = np.pad(a, (1, 0), mode='wrap')
         c = np.delete(b, 0, 0)
@@ -115,7 +115,7 @@ class GinzburgLandauPotential(Potential):
         e = np.delete(d, self.lattice_length, 2)
         return np.reshape(e, self.lattice_volume)
 
-    def __neg_y(self, psi):
+    def __neg_y_translation(self, psi):
         a = np.reshape(psi, (self.lattice_length, self.lattice_length, self.lattice_length))
         b = np.pad(a, (1, 0), mode='wrap')
         c = np.delete(b, 0, 0)
@@ -123,7 +123,7 @@ class GinzburgLandauPotential(Potential):
         e = np.delete(d, 0, 2)
         return np.reshape(e, self.lattice_volume)
 
-    def __neg_z(self, psi):
+    def __neg_z_translation(self, psi):
         a = np.reshape(psi, (self.lattice_length, self.lattice_length, self.lattice_length))
         b = np.pad(a, (1, 0), mode='wrap')
         c = np.delete(b, self.lattice_length, 0)
