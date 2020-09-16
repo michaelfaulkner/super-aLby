@@ -1,17 +1,18 @@
 import numpy as np
 import random
 
+
 class AdaptiveRejectionSampling():
-    '''
+    """
     This class implements the Adaptive Rejection Sampling technique of Gilks and Wild '92.
     Where possible, naming convention has been borrowed from this paper.
     The PDF must be log-concave.
     Currently does not exploit lower hull described in paper- which is fine for drawing
     only small amount of samples at a time.
-    '''
+    """
 
-    def __init__(self, f, fprima, xi=[-4,1,4], lb=-np.Inf, ub=np.Inf, use_lower=False, ns=100, **fargs):
-        '''
+    def __init__(self, f, fprima, xi=[-4, 1, 4], lb=-np.Inf, ub=np.Inf, use_lower=False, ns=100, **fargs):
+        """
         initialize the upper (and if needed lower) hulls with the specified params
 
         Parameters
@@ -29,7 +30,7 @@ class AdaptiveRejectionSampling():
         ub: upper bound of the domain
         ns: maximum number of points defining the hulls
         fargs: arguments for f and fprima
-        '''
+        """
 
         self.lb = lb
         self.ub = ub
@@ -37,14 +38,14 @@ class AdaptiveRejectionSampling():
         self.fprima = fprima
         self.fargs = fargs
 
-        #set limit on how many points to maintain on hull
+        # set limit on how many points to maintain on hull
         self.ns = 50
         self.x = np.array(xi) # initialize x, the vector of absicassae at which the function h has been evaluated
         self.h = self.f(self.x, **self.fargs)
         self.hprime = self.fprima(self.x, **self.fargs)
 
-        #Avoid under/overflow errors. the envelope and pdf are only
-        # proporitional to the true pdf, so can choose any constant of proportionality.
+        # Avoid under/overflow errors. the envelope and pdf are only
+        # proportional to the true pdf, so can choose any constant of proportionality.
         self.offset = np.amax(self.h)
         self.h = self.h-self.offset
 
@@ -54,15 +55,14 @@ class AdaptiveRejectionSampling():
         if not(self.hprime[-1] < 0): raise IOError('initial anchor points must span mode of PDF')
         self.insert()
 
-
     def draw(self, N):
-        '''
+        """
         Draw N samples and update upper and lower hulls accordingly
-        '''
+        """
         samples = np.zeros(N)
         n=0
         while n < N:
-            [xt,i] = self.sampleUpper()
+            [xt,i] = self.sample_upper()
             ht = self.f(xt, **self.fargs)
             hprimet = self.fprima(xt, **self.fargs)
             ht = ht - self.offset
@@ -80,17 +80,16 @@ class AdaptiveRejectionSampling():
 
         return samples
 
-
-    def insert(self,xnew=[],hnew=[],hprimenew=[]):
-        '''
+    def insert(self, x_new=[], h_new=[], h_prime_new=[]):
+        """
         Update hulls with new point(s) if none given, just recalculate hull from existing x,h,hprime
-        '''
-        if xnew.__len__() > 0:
-            x = np.hstack([self.x,xnew])
+        """
+        if x_new.__len__() > 0:
+            x = np.hstack([self.x, x_new])
             idx = np.argsort(x)
             self.x = x[idx]
-            self.h = np.hstack([self.h, hnew])[idx]
-            self.hprime = np.hstack([self.hprime, hprimenew])[idx]
+            self.h = np.hstack([self.h, h_new])[idx]
+            self.hprime = np.hstack([self.hprime, h_prime_new])[idx]
 
         self.z = np.zeros(self.x.__len__()+1)
         self.z[1:-1] = (np.diff(self.h) - np.diff(self.x*self.hprime))/-np.diff(self.hprime)
@@ -102,11 +101,10 @@ class AdaptiveRejectionSampling():
         self.s = np.hstack([0,np.cumsum(np.diff(np.exp(self.u))/self.hprime)])
         self.cu = self.s[-1]
 
-
-    def sampleUpper(self):
-        '''
+    def sample_upper(self):
+        """
         Return a single value randomly sampled from the upper hull and index of segment
-        '''
+        """
         u = random.random()
 
         # Find the largest z such that sc(z) < u
@@ -116,4 +114,4 @@ class AdaptiveRejectionSampling():
         xt = self.x[i] + (-self.h[i] + np.log(self.hprime[i]*(self.cu*u - self.s[i]) +
         np.exp(self.u[i]))) / self.hprime[i]
 
-        return [xt,i]
+        return [xt, i]
