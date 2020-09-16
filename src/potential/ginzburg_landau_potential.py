@@ -36,7 +36,7 @@ class GinzburgLandauPotential(Potential):
         self._beta_dot_alpha = beta * alpha
         self._beta_dot_lambda = beta * lambda_hyperparameter
 
-    def gradient(self, support_variable):
+    def gradient(self, support_variable, charges=None):
         """
         Return the gradient of the potential.
 
@@ -45,6 +45,8 @@ class GinzburgLandauPotential(Potential):
         support_variable : numpy array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
             array of superconducting phase.
+        charges : optional
+            All the charges needed to calculate the gradient; not used in this potential.
 
         Returns
         -------
@@ -57,7 +59,7 @@ class GinzburgLandauPotential(Potential):
                 self.__pos_z_translation(support_variable) + self.__neg_z_translation(support_variable) -
                 6 * support_variable) + self._beta_dot_lambda * support_variable ** 3)
 
-    def potential(self, support_variable):
+    def potential(self, support_variable, charges=None):
 
         """
         Return the potential for the given separation.
@@ -67,6 +69,8 @@ class GinzburgLandauPotential(Potential):
         support_variable : numpy array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
             array of superconducting phase.
+        charges : optional
+            All the charges needed to calculate the potential; not used in this potential.
 
         Returns
         -------

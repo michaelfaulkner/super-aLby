@@ -47,7 +47,7 @@ class SmoothPinballLossPotential(Potential):
         self._beta_function_value = self.__beta_function(xi * (1 - tau), xi * tau)
         self._x_sum = np.sum(self._x, axis=0)
 
-    def gradient(self, support_variable):
+    def gradient(self, support_variable, charges=None):
         """
         Return the gradient of the potential.
 
@@ -56,6 +56,8 @@ class SmoothPinballLossPotential(Potential):
         support_variable : numpy array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
+        charges : optional
+            All the charges needed to calculate the gradient; not used in this potential.
 
         Returns
         -------
@@ -69,7 +71,7 @@ class SmoothPinballLossPotential(Potential):
         mid_term = np.array([np.inner(logistic_term, self._x[:, i]) for i in range(len(support_variable))])
         return (1 - self._tau) / self._sigma * self._x_sum + 1 / self._sigma * mid_term + prior_gradient
 
-    def potential(self, support_variable):
+    def potential(self, support_variable, charges=None):
         """
         Return the potential for the given separation.
 
@@ -78,6 +80,8 @@ class SmoothPinballLossPotential(Potential):
         support_variable : numpy array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
+        charges : optional
+            All the charges needed to calculate the potential; not used in this potential.
 
         Returns
         -------
