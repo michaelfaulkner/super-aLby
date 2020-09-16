@@ -46,8 +46,8 @@ class GinzburgLandauPotential(Potential):
         Parameters
         ----------
         support_variable : numpy array
-            For soft-matter models, a single particle-particle separation vector r_ij; in this case, the entire array
-            of superconducting phase.
+            For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
+            array of superconducting phase.
 
         Returns
         -------
@@ -68,8 +68,8 @@ class GinzburgLandauPotential(Potential):
         Parameters
         ----------
         support_variable : numpy array
-            For soft-matter models, a single particle-particle separation vector r_ij; in this case, the entire array
-            of superconducting phase.
+            For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
+            array of superconducting phase.
 
         Returns
         -------

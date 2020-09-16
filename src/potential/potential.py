@@ -43,7 +43,8 @@ class Potential(metaclass=ABCMeta):
         Parameters
         ----------
         support_variable
-            For soft-matter models, the separation vector r_ij; for Bayesian models, the parameter value.
+            For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
+            parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
         charges : optional
             All the charges needed to calculate the derivative.
 
@@ -62,7 +63,8 @@ class Potential(metaclass=ABCMeta):
         Parameters
         ----------
         support_variable
-            For soft-matter models, the separation vector r_ij; for Bayesian models, the parameter value.
+            For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
+            parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
         charges : optional
             All the charges needed to calculate the potential function.
 
