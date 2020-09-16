@@ -1,11 +1,10 @@
 """Module for the RelativisticKineticEnergy class."""
-from .kinetic_energy import KineticEnergy
-from adaptive_rejection_sampling import AdaptiveRejectionSampling
+from .kinetic_energy_with_adaptive_rejection_sampling import KineticEnergyWithAdaptiveRejectionSampling
 import numpy as np
 
 
 # noinspection PyMethodOverriding
-class RelativisticKineticEnergy(KineticEnergy):
+class RelativisticKineticEnergy(KineticEnergyWithAdaptiveRejectionSampling):
     """
     This class implements the relativistic kinetic energy K = \sum_i (1 + gamma^(-1) p[i] ** 2) ** (1 / 2)
     """
@@ -60,20 +59,3 @@ class RelativisticKineticEnergy(KineticEnergy):
             The kinetic energy.
         """
         return self._one_over_power * np.sum((1 + self._one_over_gamma * momentum ** 2) ** 0.5)
-
-    def momentum_observation(self, momentum):
-        """
-        Return an observation of the momentum from the kinetic-energy distribution.
-
-        Parameters
-        ----------
-        momentum : numpy_array
-            The current momentum associated with each support_variable.
-
-        Returns
-        -------
-        numpy_array
-            A new momentum associated with each support_variable.
-        """
-        return np.array(
-            AdaptiveRejectionSampling(self.kinetic_energy(momentum), self.gradient(momentum)).draw(len(momentum)))
