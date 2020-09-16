@@ -55,3 +55,19 @@ class LaplacianKineticEnergy(KineticEnergy):
             The kinetic energy.
         """
         return np.sum(np.absolute(momentum))
+
+    def momentum_observation(self, momentum):
+        """
+        Return an observation of the momentum from the kinetic-energy distribution.
+
+        Parameters
+        ----------
+        momentum : numpy_array
+            The current momentum associated with each support_variable.
+
+        Returns
+        -------
+        numpy_array
+            A new momentum associated with each support_variable.
+        """
+        return np.random.laplace(size=len(momentum))

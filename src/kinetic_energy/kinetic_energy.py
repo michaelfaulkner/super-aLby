@@ -47,7 +47,7 @@ class KineticEnergy(metaclass=ABCMeta):
     @abstractmethod
     def gradient(self, momentum):
         """
-        Return the gradient of the potential for certain separation and charges.
+        Return the gradient of the kinetic energy.
 
         Parameters
         ----------
@@ -64,7 +64,7 @@ class KineticEnergy(metaclass=ABCMeta):
     @abstractmethod
     def kinetic_energy(self, momentum):
         """
-        Return the potential function for certain separations and charges.
+        Return the kinetic-energy function.
 
         Parameters
         ----------
@@ -75,5 +75,22 @@ class KineticEnergy(metaclass=ABCMeta):
         -------
         float
             The kinetic-energy function.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def momentum_observation(self, momentum):
+        """
+        Return an observation of the momentum from the kinetic-energy distribution.
+
+        Parameters
+        ----------
+        momentum : numpy_array
+            The current momentum associated with each support_variable.
+
+        Returns
+        -------
+        numpy_array
+            A new momentum associated with each support_variable.
         """
         raise NotImplementedError

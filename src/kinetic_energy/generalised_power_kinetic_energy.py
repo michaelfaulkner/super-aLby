@@ -1,6 +1,10 @@
 """Module for the GeneralisedPowerKineticEnergy class."""
-import numpy as np
 from .kinetic_energy import KineticEnergy
+import numpy as np
+import rpy2.robjects.packages as r_packages
+import rpy2.robjects.numpy2ri as n2ri
+n2ri.activate()
+generalised_power_distribution = r_packages.importr('normalp')
 
 
 # noinspection PyMethodOverriding
@@ -56,3 +60,19 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
             The kinetic energy.
         """
         return self._one_over_power * np.sum(np.absolute(momentum ** self._power))
+
+    def momentum_observation(self, momentum):
+        """
+        Return an observation of the momentum from the kinetic-energy distribution.
+
+        Parameters
+        ----------
+        momentum : numpy_array
+            The current momentum associated with each support_variable.
+
+        Returns
+        -------
+        numpy_array
+            A new momentum associated with each support_variable.
+        """
+        return np.array(generalised_power_distribution.rnormp(len(momentum), p=self._power))
