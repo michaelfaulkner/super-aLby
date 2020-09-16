@@ -1,4 +1,4 @@
-"""Module for the GeneralisedPowerKineticEnergy class."""
+"""Module for the SuperRelativisticKineticEnergy class."""
 import numpy as np
 from .kinetic_energy import KineticEnergy
 
@@ -28,6 +28,7 @@ class SuperRelativisticKineticEnergy(KineticEnergy):
         """
         self._one_over_gamma = 1.0 / gamma
         self._power_over_two = power / 2
+        self._power_over_two_minus_one = self._power_over_two - 1
         super().__init__(power=power, prefactor=prefactor)
 
     def gradient(self, momentum):
@@ -45,7 +46,7 @@ class SuperRelativisticKineticEnergy(KineticEnergy):
             The gradient of the kinetic energy.
         """
         return self._one_over_gamma * momentum * (
-                1 + self._one_over_gamma * momentum ** 2) ** (self._power_over_two - 1)
+                1 + self._one_over_gamma * momentum ** 2) ** self._power_over_two_minus_one
 
     def kinetic_energy(self, momentum):
         """
