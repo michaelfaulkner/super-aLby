@@ -1,6 +1,7 @@
 """Module for the SuperRelativisticKineticEnergy class."""
-import numpy as np
 from .kinetic_energy import KineticEnergy
+from adaptive_rejection_sampling import AdaptiveRejectionSampling
+import numpy as np
 
 
 # noinspection PyMethodOverriding
@@ -29,6 +30,8 @@ class SuperRelativisticKineticEnergy(KineticEnergy):
         self._one_over_gamma = 1.0 / gamma
         self._power_over_two = power / 2
         self._power_over_two_minus_one = self._power_over_two - 1
+        self._power_minus_one = power - 1
+        self._power_minus_two = power - 2
         super().__init__(power=power, prefactor=prefactor)
 
     def gradient(self, momentum):
@@ -63,3 +66,20 @@ class SuperRelativisticKineticEnergy(KineticEnergy):
             The kinetic energy.
         """
         return self._one_over_power * np.sum((1 + self._one_over_gamma * momentum ** 2) ** self._power_over_two)
+
+    def momentum_observation(self, momentum):
+        """
+        Return an observation of the momentum from the kinetic-energy distribution.
+
+        Parameters
+        ----------
+        momentum : numpy_array
+            The current momentum associated with each support_variable.
+
+        Returns
+        -------
+        numpy_array
+            A new momentum associated with each support_variable.
+        """
+        return np.array(
+            AdaptiveRejectionSampling(self.kinetic_energy(momentum), self.gradient(momentum)).draw(len(momentum)))
