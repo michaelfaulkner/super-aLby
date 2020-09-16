@@ -22,9 +22,10 @@ class KineticEnergyWithAdaptiveRejectionSampling(KineticEnergy, metaclass=ABCMet
         Parameters
         ----------
         power : int
-            Either the power to which each momentum variable is raised (the generalised-power case) or twice the power
-            to which each momentum-dependent part of the relativistic kinetic energy are raised (the super-relativistic
-            case).
+            Either the power to which each momentum component is raised (the generalised-power case) or twice the power
+            to which each momentum-dependent part of the relativistic kinetic energy is raised (the super-relativistic
+            case). For potentials with leading order term |x|^a, the optimal choice that ensures robust dynamics is
+            given by power = 1 + 1 / (a - 1) for a >= 2 and power = 1 + 1 / (a + 1) for a <= -1.
         prefactor : float, optional
             A general multiplicative prefactor of the potential (and therefore of the kinetic energy).
         kwargs : Any

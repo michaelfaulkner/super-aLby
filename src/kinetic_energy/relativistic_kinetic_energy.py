@@ -18,9 +18,7 @@ class RelativisticKineticEnergy(KineticEnergyWithAdaptiveRejectionSampling):
             The tuning parameter that controls the momentum values near which the kinetic energy transforms from
             Gaussian to generalised-power behaviour.
         power : int
-            Either the power to which each momentum variable is raised (the generalised-power case) or twice the power
-            to which each momentum-dependent part of the relativistic kinetic energy are raised (the super-relativistic
-            case).
+            Twice the power to which each momentum-dependent part of the relativistic kinetic energy is raised.
         prefactor : float, optional
             A general multiplicative prefactor of the potential (and therefore of the kinetic energy).
         """

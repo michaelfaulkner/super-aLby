@@ -19,9 +19,7 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         Parameters
         ----------
         power : int
-            Either the power to which each momentum variable is raised (the generalised-power case) or twice the power
-            to which each momentum-dependent part of the relativistic kinetic energy are raised (the super-relativistic
-            case).
+            The power to which each momentum component is raised.
         prefactor : float, optional
             A general multiplicative prefactor of the potential (and therefore of the kinetic energy).
         """
