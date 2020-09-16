@@ -1,7 +1,5 @@
-import logging
-import math
+"""Module for the GinzburgLandauPotential class."""
 import numpy as np
-from base.logging import log_init_arguments
 from .potential import Potential
 
 

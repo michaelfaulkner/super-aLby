@@ -1,8 +1,6 @@
 """Module for the NealFunnelPotential class."""
-import logging
 import math
 import numpy as np
-from base.logging import log_init_arguments
 from .potential import Potential
 
 
