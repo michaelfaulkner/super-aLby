@@ -39,16 +39,16 @@ class SmoothPinballLossPotential(Potential):
             The prefactor k of the potential.
         """
         super().__init__(prefactor=prefactor)
-        self.tau = tau
-        self.sigma = sigma
-        self.xi = xi
-        self.xi_dot_sigma = xi * sigma
-        self.lambda_hyperparameter = lambda_hyperparameter
-        self.q = q
-        self.x = x
-        self.y = y
-        self.beta_function_value = self.__beta_function(xi * (1 - tau), xi * tau)
-        self.x_sum = np.sum(self.x, axis=0)
+        self._tau = tau
+        self._sigma = sigma
+        self._xi = xi
+        self._xi_dot_sigma = xi * sigma
+        self._lambda_hyperparameter = lambda_hyperparameter
+        self._q = q
+        self._x = x
+        self._y = y
+        self._beta_function_value = self.__beta_function(xi * (1 - tau), xi * tau)
+        self._x_sum = np.sum(self._x, axis=0)
 
     def gradient(self, support_variable):
         """
@@ -66,11 +66,11 @@ class SmoothPinballLossPotential(Potential):
             The gradient.
         """
         prior_gradient = np.array(
-            [self.q * self.lambda_hyperparameter * np.sign(component) * np.absolute(component) ** (self.q - 1) for
+            [self._q * self._lambda_hyperparameter * np.sign(component) * np.absolute(component) ** (self._q - 1) for
              component in support_variable])
-        logistic_term = self.__logistic_function((self.y - np.inner(self.x, support_variable)) / self.xi_dot_sigma)
-        mid_term = np.array([np.inner(logistic_term, self.x[:, i]) for i in range(len(support_variable))])
-        return (1 - self.tau) / self.sigma * self.x_sum + 1 / self.sigma * mid_term + prior_gradient
+        logistic_term = self.__logistic_function((self._y - np.inner(self._x, support_variable)) / self._xi_dot_sigma)
+        mid_term = np.array([np.inner(logistic_term, self._x[:, i]) for i in range(len(support_variable))])
+        return (1 - self._tau) / self._sigma * self._x_sum + 1 / self._sigma * mid_term + prior_gradient
 
     def potential(self, support_variable):
         """
@@ -87,11 +87,11 @@ class SmoothPinballLossPotential(Potential):
         float
             The potential.
         """
-        x_dot_beta = np.inner(self.x, support_variable)
-        pinball_loss = (self.tau - 1) * (self.y - x_dot_beta) / self.sigma + self.xi * np.logaddexp(
-            0.0, (self.y - x_dot_beta) / self.xi_dot_sigma) + np.log(self.xi * self.sigma * self.beta_function_value)
-        prior_vec = np.absolute(support_variable) ** self.q
-        return np.sum(pinball_loss) + self.lambda_hyperparameter * np.sum(prior_vec)
+        x_dot_beta = np.inner(self._x, support_variable)
+        pinball_loss = (self._tau - 1) * (self._y - x_dot_beta) / self._sigma + self._xi * np.logaddexp(
+            0.0, (self._y - x_dot_beta) / self._xi_dot_sigma) + np.log(self._xi * self._sigma * self._beta_function_value)
+        prior_vec = np.absolute(support_variable) ** self._q
+        return np.sum(pinball_loss) + self._lambda_hyperparameter * np.sum(prior_vec)
 
     @staticmethod
     def __beta_function(self, a, b):
