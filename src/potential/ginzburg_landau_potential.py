@@ -46,39 +46,30 @@ class GinzburgLandauPotential(Potential):
         Parameters
         ----------
         support_variable : numpy array
-            For soft-matter models, the separation vector r_ij; in this case, the superconducting phase.
+            For soft-matter models, a single particle-particle separation vector r_ij; in this case, the entire array
+            of superconducting phase.
 
         Returns
         -------
         numpy array
             The gradient.
         """
-        lamb = self.lamb
-        beta = self.beta
-        alpha = self.alpha
-        Len = self.Len
-        z1 = (1 - beta)
-        z2 = beta * alpha
-        z3 = beta * lamb
-        psi_posx = self.__pos_x(psi)
-        psi_posy = self.__pos_y(psi)
-        psi_posz = self.__pos_z(psi)
-        psi_negx = self.__neg_x(psi)
-        psi_negy = self.__neg_y(psi)
-        psi_negz = self.__neg_z(psi)
-        vec = np.empty(Len ** 3)
-        vec = z1 * psi - z2 * (
-                    psi_posx + psi_negx + psi_posy + psi_negy + psi_posz + psi_negz - 6 * psi) + z3 * psi ** 3
-        return vec
+        return (self.one_minus_beta * support_variable - self.beta_dot_alpha * (
+                self.__pos_x(support_variable) + self.__neg_x(support_variable) +
+                self.__pos_y(support_variable) + self.__neg_y(support_variable) +
+                self.__pos_z(support_variable) + self.__neg_z(support_variable) -
+                6 * support_variable) + self.beta_dot_lambda * support_variable ** 3)
 
     def potential(self, support_variable):
+
         """
         Return the potential for the given separation.
 
         Parameters
         ----------
         support_variable : numpy array
-            For soft-matter models, the separation vector r_ij; in this case, the superconducting phase.
+            For soft-matter models, a single particle-particle separation vector r_ij; in this case, the entire array
+            of superconducting phase.
 
         Returns
         -------
