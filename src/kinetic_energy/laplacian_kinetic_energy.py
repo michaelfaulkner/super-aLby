@@ -1,15 +1,15 @@
-"""Module for the GeneralisedPowerKineticEnergy class."""
+"""Module for the LaplacianKineticEnergy class."""
 import numpy as np
 from .kinetic_energy import KineticEnergy
 
 
 # noinspection PyMethodOverriding
-class GeneralisedPowerKineticEnergy(KineticEnergy):
+class LaplacianKineticEnergy(KineticEnergy):
     """
-    This class implements the generalised-power kinetic energy K = \sum_i p[i] ** power / power
+    This class implements the Laplacian kinetic energy K = \sum_i |p[i]|
     """
 
-    def __init__(self, power=2, prefactor=1.0):
+    def __init__(self, power=1, prefactor=1.0):
         """
         The constructor of the GeneralisedPowerKineticEnergy class.
 
@@ -38,7 +38,7 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         numpy array
             The gradient of the kinetic energy.
         """
-        return momentum * np.absolute(momentum) ** (self._power - 2)
+        return np.sign(momentum)
 
     def kinetic_energy(self, momentum):
         """
@@ -54,4 +54,4 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         float
             The kinetic energy.
         """
-        return np.sum(np.absolute(momentum ** self._power)) / self._power
+        return np.sum(np.absolute(momentum))

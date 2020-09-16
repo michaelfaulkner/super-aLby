@@ -62,7 +62,7 @@ class KineticEnergy(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def potential(self, momentum):
+    def kinetic_energy(self, momentum):
         """
         Return the potential function for certain separations and charges.
 
