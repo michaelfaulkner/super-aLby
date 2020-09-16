@@ -33,7 +33,7 @@ class NealFunnelPotential(Potential):
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
         charges : optional
-            All the charges needed to calculate the gradient; not used in this potential.
+            All the charges needed to calculate the gradient; not used in this potential class.
 
         Returns
         -------
@@ -57,7 +57,7 @@ class NealFunnelPotential(Potential):
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
         charges : optional
-            All the charges needed to calculate the potential; not used in this potential.
+            All the charges needed to calculate the potential; not used in this potential class.
 
         Returns
         -------
