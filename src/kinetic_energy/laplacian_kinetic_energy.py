@@ -11,7 +11,7 @@ class LaplacianKineticEnergy(KineticEnergy):
 
     def __init__(self, power=1, prefactor=1.0):
         """
-        The constructor of the GeneralisedPowerKineticEnergy class.
+        The constructor of the LaplacianKineticEnergy class.
 
         Parameters
         ----------

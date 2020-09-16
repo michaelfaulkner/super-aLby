@@ -11,7 +11,7 @@ class GaussianKineticEnergy(KineticEnergy):
 
     def __init__(self, power=2, prefactor=1.0):
         """
-        The constructor of the GeneralisedPowerKineticEnergy class.
+        The constructor of the GaussianKineticEnergy class.
 
         Parameters
         ----------
