@@ -41,7 +41,7 @@ class Potential(metaclass=ABCMeta):
 
         Parameters
         ----------
-        support_variable
+        support_variable : numpy_array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
             parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
         charges : optional
@@ -61,7 +61,7 @@ class Potential(metaclass=ABCMeta):
 
         Parameters
         ----------
-        support_variable
+        support_variable : numpy_array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
             parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
         charges : optional
