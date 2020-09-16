@@ -2,7 +2,7 @@
 from math import *
 import numpy as np
 import sys
-import Modules_ARS as AdaptReject
+import adaptive_rejection_sampling as AdaptReject
 
 # import R sample functions for EP family
 import rpy2.robjects as robjects
@@ -150,7 +150,7 @@ class GR_family:
 
         #sample = ARS.ars(n, rlogpi, rdlogpi)
 
-        ars = AdaptReject.ARS(self.__logpi, self.__dlogpi)
+        ars = AdaptReject.AdaptiveRejectionSampling(self.__logpi, self.__dlogpi)
 
         return ars.draw(n)
     
@@ -198,6 +198,6 @@ class PR_family:
 
         #sample = ARS.ars(n, rlogpi, rdlogpi)
 
-        ars = AdaptReject.ARS(self.__logpi, self.__dlogpi)
+        ars = AdaptReject.AdaptiveRejectionSampling(self.__logpi, self.__dlogpi)
 
         return ars.draw(n)

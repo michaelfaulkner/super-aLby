@@ -1,7 +1,7 @@
 import numpy as np
 import random
 
-class ARS():
+class AdaptiveRejectionSampling():
     '''
     This class implements the Adaptive Rejection Sampling technique of Gilks and Wild '92.
     Where possible, naming convention has been borrowed from this paper.
