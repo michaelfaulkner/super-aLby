@@ -41,6 +41,7 @@ class KineticEnergy(metaclass=ABCMeta):
             raise ValueError("Give a value not equal to 0.0 as the prefactor for the potential {0}.".format(
                 self.__class__.__name__))
         self._power = power
+        self._power_over_two = power / 2
         self._prefactor = prefactor
         super().__init__(**kwargs)
 
