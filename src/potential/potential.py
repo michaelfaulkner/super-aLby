@@ -6,8 +6,7 @@ class Potential(metaclass=ABCMeta):
     """
     Abstract class for potentials used in the algorithm code.
 
-    A general potential provides the function itself and its gradient. Note that, for the case of periodic boundaries,
-    periodicity is taken into account by the periodic_boundaries package.
+    A general potential class provides the function itself and its gradient.
     """
 
     def __init__(self, prefactor=1.0, **kwargs):
