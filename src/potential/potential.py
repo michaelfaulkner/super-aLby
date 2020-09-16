@@ -25,7 +25,7 @@ class Potential(metaclass=ABCMeta):
 
         Raises
         ------
-        base.exceptions.ConfigurationError
+        base.exceptions.ValueError
             If the prefactor equals 0.
         """
         if prefactor == 0.0:
