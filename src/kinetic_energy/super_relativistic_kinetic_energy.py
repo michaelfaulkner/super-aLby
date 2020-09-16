@@ -6,7 +6,7 @@ import numpy as np
 class SuperRelativisticKineticEnergy(KineticEnergyWithAdaptiveRejectionSampling):
     """
     This class implements the super-relativistic kinetic energy
-        K = \sum_i (1 + gamma^(-1) p[i] ** 2) ** (power / 2) / power
+        K = sum((1 + gamma^(-1) p[i] ** 2) ** (power / 2) / power)
     """
 
     def __init__(self, gamma=1.0, power=2, prefactor=1.0):

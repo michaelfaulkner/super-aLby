@@ -9,7 +9,7 @@ generalised_power_distribution = r_packages.importr('normalp')
 
 class GeneralisedPowerKineticEnergy(KineticEnergy):
     """
-    This class implements the generalised-power kinetic energy K = \sum_i p[i] ** power / power
+    This class implements the generalised-power kinetic energy K = sum(p[i] ** power / power)
     """
 
     def __init__(self, power=2, prefactor=1.0):

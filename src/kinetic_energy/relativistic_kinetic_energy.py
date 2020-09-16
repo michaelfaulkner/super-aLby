@@ -5,7 +5,7 @@ import numpy as np
 
 class RelativisticKineticEnergy(KineticEnergyWithAdaptiveRejectionSampling):
     """
-    This class implements the relativistic kinetic energy K = \sum_i (1 + gamma^(-1) p[i] ** 2) ** (1 / 2)
+    This class implements the relativistic kinetic energy K = sum((1 + gamma^(-1) p[i] ** 2) ** (1 / 2))
     """
 
     def __init__(self, gamma=1.0, power=2, prefactor=1.0):

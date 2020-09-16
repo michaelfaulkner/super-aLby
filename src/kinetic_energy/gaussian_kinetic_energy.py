@@ -5,7 +5,7 @@ from .kinetic_energy import KineticEnergy
 
 class GaussianKineticEnergy(KineticEnergy):
     """
-    This class implements the Gaussian kinetic energy K = \sum_i p[i] ** 2 / 2
+    This class implements the Gaussian kinetic energy K = sum(p[i] ** 2 / 2)
     """
 
     def __init__(self, power=2, prefactor=1.0):

@@ -5,7 +5,7 @@ from .kinetic_energy import KineticEnergy
 
 class LaplacianKineticEnergy(KineticEnergy):
     """
-    This class implements the Laplacian kinetic energy K = \sum_i |p[i]|
+    This class implements the Laplacian kinetic energy K = sum(|p[i]|)
     """
 
     def __init__(self, power=1, prefactor=1.0):
