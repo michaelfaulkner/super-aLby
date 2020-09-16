@@ -1,10 +1,9 @@
 """Module for the SmoothPinballLossPotential class."""
+from .potential import Potential
 import math
 import numpy as np
-from .potential import Potential
 
 
-# noinspection PyMethodOverriding
 class SmoothPinballLossPotential(Potential):
     """
     This class implements the Neal's funnel potential

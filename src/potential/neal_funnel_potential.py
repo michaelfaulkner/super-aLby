@@ -1,10 +1,9 @@
 """Module for the NealFunnelPotential class."""
+from .potential import Potential
 import math
 import numpy as np
-from .potential import Potential
 
 
-# noinspection PyMethodOverriding
 class NealFunnelPotential(Potential):
     """
     This class implements the Neal's funnel potential

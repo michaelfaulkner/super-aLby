@@ -3,7 +3,6 @@ from .kinetic_energy_with_adaptive_rejection_sampling import KineticEnergyWithAd
 import numpy as np
 
 
-# noinspection PyMethodOverriding
 class RelativisticKineticEnergy(KineticEnergyWithAdaptiveRejectionSampling):
     """
     This class implements the relativistic kinetic energy K = \sum_i (1 + gamma^(-1) p[i] ** 2) ** (1 / 2)

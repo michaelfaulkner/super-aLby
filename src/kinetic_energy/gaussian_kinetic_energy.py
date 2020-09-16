@@ -3,7 +3,6 @@ import numpy as np
 from .kinetic_energy import KineticEnergy
 
 
-# noinspection PyMethodOverriding
 class GaussianKineticEnergy(KineticEnergy):
     """
     This class implements the Gaussian kinetic energy K = \sum_i p[i] ** 2 / 2

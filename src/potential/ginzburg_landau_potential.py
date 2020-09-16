@@ -1,9 +1,8 @@
 """Module for the GinzburgLandauPotential class."""
-import numpy as np
 from .potential import Potential
+import numpy as np
 
 
-# noinspection PyMethodOverriding
 class GinzburgLandauPotential(Potential):
     """
     This class implements the Ginzburg-Landau potential with one-dimensional order parameter on a three-dimensional

@@ -3,7 +3,6 @@ from .kinetic_energy_with_adaptive_rejection_sampling import KineticEnergyWithAd
 import numpy as np
 
 
-# noinspection PyMethodOverriding
 class SuperRelativisticKineticEnergy(KineticEnergyWithAdaptiveRejectionSampling):
     """
     This class implements the super-relativistic kinetic energy

@@ -7,7 +7,6 @@ n2ri.activate()
 generalised_power_distribution = r_packages.importr('normalp')
 
 
-# noinspection PyMethodOverriding
 class GeneralisedPowerKineticEnergy(KineticEnergy):
     """
     This class implements the generalised-power kinetic energy K = \sum_i p[i] ** power / power

@@ -3,7 +3,6 @@ import numpy as np
 from .kinetic_energy import KineticEnergy
 
 
-# noinspection PyMethodOverriding
 class LaplacianKineticEnergy(KineticEnergy):
     """
     This class implements the Laplacian kinetic energy K = \sum_i |p[i]|
