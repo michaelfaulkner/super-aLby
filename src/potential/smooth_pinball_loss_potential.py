@@ -49,7 +49,7 @@ class SmoothPinballLossPotential(Potential):
 
     def gradient(self, support_variable, charges=None):
         """
-        Return the gradient of the potential.
+        Returns the gradient of the potential for the given support_variable.
 
         Parameters
         ----------
@@ -73,7 +73,7 @@ class SmoothPinballLossPotential(Potential):
 
     def potential(self, support_variable, charges=None):
         """
-        Return the potential for the given separation.
+        Returns the potential for the given support_variable.
 
         Parameters
         ----------
