@@ -23,12 +23,11 @@ class SuperRelativisticKineticEnergy(KineticEnergyWithAdaptiveRejectionSampling)
             potentials with leading order term |x|^a, the optimal choice that ensures robust dynamics is given by
             power = 1 + 1 / (a - 1) for a >= 2 and power = 1 + 1 / (a + 1) for a <= -1.
         """
-        self._one_over_gamma = 1.0 / gamma
         self._power_over_two = power / 2
         self._power_over_two_minus_one = self._power_over_two - 1
         self._power_minus_one = power - 1
         self._power_minus_two = power - 2
-        super().__init__(power=power)
+        super().__init__(gamma=gamma, power=power)
 
     def gradient(self, momentum):
         """

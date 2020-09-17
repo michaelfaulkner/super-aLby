@@ -20,8 +20,7 @@ class RelativisticKineticEnergy(KineticEnergyWithAdaptiveRejectionSampling):
         power : int
             Twice the power to which each momentum-dependent part of the relativistic kinetic energy is raised.
         """
-        self._one_over_gamma = 1.0 / gamma
-        super().__init__(power=power)
+        super().__init__(gamma=gamma, power=power)
 
     def gradient(self, momentum):
         """

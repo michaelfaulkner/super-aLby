@@ -12,7 +12,7 @@ class KineticEnergyWithAdaptiveRejectionSampling(KineticEnergy, metaclass=ABCMet
     A general kinetic-energy class provides the function itself and its gradient.
     """
 
-    def __init__(self, power=2, **kwargs):
+    def __init__(self, gamma=1.0, power=2, **kwargs):
         """
         The constructor of the KineticEnergyWithAdaptiveRejectionSampling class.
 
@@ -21,6 +21,9 @@ class KineticEnergyWithAdaptiveRejectionSampling(KineticEnergy, metaclass=ABCMet
 
         Parameters
         ----------
+        gamma : float
+            The tuning parameter that controls the momentum values near which the (super- and standard) relativistic
+            kinetic energies transform from Gaussian to generalised-power behaviour.
         power : int
             Either the power to which each momentum component is raised (the generalised-power case) or twice the power
             to which each momentum-dependent part of the relativistic kinetic energy is raised (the super-relativistic
@@ -36,6 +39,7 @@ class KineticEnergyWithAdaptiveRejectionSampling(KineticEnergy, metaclass=ABCMet
         base.exceptions.ValueError
             If the prefactor equals 0.0.
         """
+        self._one_over_gamma = 1.0 / gamma
         super().__init__(power=power, **kwargs)
 
     @abstractmethod
