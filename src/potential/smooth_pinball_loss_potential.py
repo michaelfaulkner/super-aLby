@@ -44,7 +44,7 @@ class SmoothPinballLossPotential(Potential):
         self._q = q
         self._x = x
         self._y = y
-        self._beta_function_value = self.__beta_function(xi * (1 - tau), xi * tau)
+        self._beta_function_value = self._beta_function(xi * (1 - tau), xi * tau)
         self._x_sum = np.sum(self._x, axis=0)
 
     def gradient(self, support_variable, charges=None):
@@ -67,7 +67,7 @@ class SmoothPinballLossPotential(Potential):
         prior_gradient = np.array(
             [self._q * self._lambda_hyperparameter * np.sign(component) * np.absolute(component) ** (self._q - 1) for
              component in support_variable])
-        logistic_term = self.__logistic_function((self._y - np.inner(self._x, support_variable)) / self._xi_dot_sigma)
+        logistic_term = self._logistic_function((self._y - np.inner(self._x, support_variable)) / self._xi_dot_sigma)
         mid_term = np.array([np.inner(logistic_term, self._x[:, i]) for i in range(len(support_variable))])
         return (1 - self._tau) / self._sigma * self._x_sum + 1 / self._sigma * mid_term + prior_gradient
 
@@ -95,9 +95,9 @@ class SmoothPinballLossPotential(Potential):
         return np.sum(pinball_loss) + self._lambda_hyperparameter * np.sum(prior_vec)
 
     @staticmethod
-    def __beta_function(self, a, b):
+    def _beta_function(self, a, b):
         return math.gamma(a) * math.gamma(b) / math.gamma(a + b)
 
     @staticmethod
-    def __logistic_function(self, a):
+    def _logistic_function(self, a):
         return np.exp(-np.logaddexp(0, -a))
