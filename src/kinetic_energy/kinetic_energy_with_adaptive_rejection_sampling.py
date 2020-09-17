@@ -12,7 +12,7 @@ class KineticEnergyWithAdaptiveRejectionSampling(KineticEnergy, metaclass=ABCMet
     A general kinetic-energy class provides the function itself and its gradient.
     """
 
-    def __init__(self, power=2, prefactor=1.0, **kwargs):
+    def __init__(self, power=2, **kwargs):
         """
         The constructor of the KineticEnergyWithAdaptiveRejectionSampling class.
 
@@ -26,8 +26,6 @@ class KineticEnergyWithAdaptiveRejectionSampling(KineticEnergy, metaclass=ABCMet
             to which each momentum-dependent part of the relativistic kinetic energy is raised (the super-relativistic
             case). For potentials with leading order term |x|^a, the optimal choice that ensures robust dynamics is
             given by power = 1 + 1 / (a - 1) for a >= 2 and power = 1 + 1 / (a + 1) for a <= -1.
-        prefactor : float, optional
-            A general multiplicative prefactor of the potential (and therefore of the kinetic energy).
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
 
@@ -38,7 +36,7 @@ class KineticEnergyWithAdaptiveRejectionSampling(KineticEnergy, metaclass=ABCMet
         base.exceptions.ValueError
             If the prefactor equals 0.0.
         """
-        super().__init__(power=power, prefactor=prefactor, **kwargs)
+        super().__init__(power=power, **kwargs)
 
     @abstractmethod
     def gradient(self, momentum):

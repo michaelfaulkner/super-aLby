@@ -12,7 +12,7 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
     This class implements the generalised-power kinetic energy K = sum(p[i] ** power / power)
     """
 
-    def __init__(self, power=2, prefactor=1.0):
+    def __init__(self, power=2):
         """
         The constructor of the GeneralisedPowerKineticEnergy class.
 
@@ -22,11 +22,8 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
             The power to which each momentum component is raised. For potentials with leading order term |x|^a, the
             optimal choice that ensures robust dynamics is given by power = 1 + 1 / (a - 1) for a >= 2 and
             power = 1 + 1 / (a + 1) for a <= -1.
-        prefactor : float, optional
-            A general multiplicative prefactor of the potential (and therefore of the kinetic energy).
         """
-        self._power = power
-        super().__init__(power=power, prefactor=prefactor)
+        super().__init__(power=power)
 
     def gradient(self, momentum):
         """

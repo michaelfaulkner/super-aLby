@@ -9,7 +9,7 @@ class KineticEnergy(metaclass=ABCMeta):
     A general kinetic-energy class provides the function itself and its gradient.
     """
 
-    def __init__(self, power=2, prefactor=1.0, **kwargs):
+    def __init__(self, power=2, **kwargs):
         """
         The constructor of the KineticEnergy class.
 
@@ -23,8 +23,6 @@ class KineticEnergy(metaclass=ABCMeta):
             to which each momentum-dependent part of the relativistic kinetic energy is raised (the super-relativistic
             case). For potentials with leading order term |x|^a, the optimal choice that ensures robust dynamics is
             given by power = 1 + 1 / (a - 1) for a >= 2 and power = 1 + 1 / (a + 1) for a <= -1.
-        prefactor : float, optional
-            A general multiplicative prefactor of the potential (and therefore of the kinetic energy).
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
 
@@ -38,11 +36,8 @@ class KineticEnergy(metaclass=ABCMeta):
         if power == 0:
             raise ValueError("Give a value not equal to 0 as the power associated with the kinetic energy {0}.".format(
                 self.__class__.__name__))
-        if prefactor == 0.0:
-            raise ValueError("Give a value not equal to 0.0 as the prefactor for the potential {0}.".format(
-                self.__class__.__name__))
         self._one_over_power = 1 / power
-        self._prefactor = prefactor
+        self._power = power
         super().__init__(**kwargs)
 
     @abstractmethod

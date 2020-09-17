@@ -9,7 +9,7 @@ class SuperRelativisticKineticEnergy(KineticEnergyWithAdaptiveRejectionSampling)
         K = sum((1 + gamma^(-1) p[i] ** 2) ** (power / 2) / power)
     """
 
-    def __init__(self, gamma=1.0, power=2, prefactor=1.0):
+    def __init__(self, gamma=1.0, power=2):
         """
         The constructor of the SuperRelativisticKineticEnergy class.
 
@@ -22,15 +22,13 @@ class SuperRelativisticKineticEnergy(KineticEnergyWithAdaptiveRejectionSampling)
             Twice the power to which each momentum-dependent part of the relativistic kinetic energy is raised. For
             potentials with leading order term |x|^a, the optimal choice that ensures robust dynamics is given by
             power = 1 + 1 / (a - 1) for a >= 2 and power = 1 + 1 / (a + 1) for a <= -1.
-        prefactor : float, optional
-            A general multiplicative prefactor of the potential (and therefore of the kinetic energy).
         """
         self._one_over_gamma = 1.0 / gamma
         self._power_over_two = power / 2
         self._power_over_two_minus_one = self._power_over_two - 1
         self._power_minus_one = power - 1
         self._power_minus_two = power - 2
-        super().__init__(power=power, prefactor=prefactor)
+        super().__init__(power=power)
 
     def gradient(self, momentum):
         """

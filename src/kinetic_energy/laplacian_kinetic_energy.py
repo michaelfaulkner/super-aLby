@@ -8,7 +8,7 @@ class LaplacianKineticEnergy(KineticEnergy):
     This class implements the Laplacian kinetic energy K = sum(|p[i]|)
     """
 
-    def __init__(self, power=1, prefactor=1.0):
+    def __init__(self, power=1):
         """
         The constructor of the LaplacianKineticEnergy class.
 
@@ -16,10 +16,8 @@ class LaplacianKineticEnergy(KineticEnergy):
         ----------
         power : int
             The power to which each momentum component is raised.
-        prefactor : float, optional
-            A general multiplicative prefactor of the potential (and therefore of the kinetic energy).
         """
-        super().__init__(power=power, prefactor=prefactor)
+        super().__init__(power=power)
 
     def gradient(self, momentum):
         """
