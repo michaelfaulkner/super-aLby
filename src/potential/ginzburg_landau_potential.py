@@ -9,32 +9,32 @@ class GinzburgLandauPotential(Potential):
         periodic cubic lattice.
     """
 
-    def __init__(self, alpha, beta, lambda_hyperparameter, lattice_length, prefactor=1.0):
+    def __init__(self, alpha, tau, lambda_hyperparameter, lattice_length, prefactor=1.0):
         """
-        The constructor of the NealFunnel class.
+        The constructor of the GinzburgLandauPotential class.
 
         Parameters
         ----------
         alpha : float
-            ajouter
-        beta : float
-            ajouter
+            the correlation coefficient (hyperparameter) of the superconducting phases.
+        tau : float
+            phase-transition parameter
         lambda_hyperparameter : float
-            ajouter
+            quartic coefficient (hyperparameter)
         lattice_length : int
             Number of lattice sites in each Cartesian direction (cubic lattice)
         prefactor : float
             The prefactor k of the potential.
         """
-        super().__init__(prefactor=prefactor)
         self._alpha = alpha
-        self._beta = beta
+        self._tau = tau
         self._lambda_hyperparameter = lambda_hyperparameter
         self._lattice_length = lattice_length
         self._lattice_volume = lattice_length ** 3
-        self._one_minus_beta = (1 - beta)
-        self._beta_dot_alpha = beta * alpha
-        self._beta_dot_lambda = beta * lambda_hyperparameter
+        self._one_minus_tau = (1 - tau)
+        self._tau_dot_alpha = tau * alpha
+        self._tau_dot_lambda = tau * lambda_hyperparameter
+        super().__init__(prefactor=prefactor)
 
     def gradient(self, support_variable, charges=None):
         """
@@ -53,11 +53,11 @@ class GinzburgLandauPotential(Potential):
         numpy array
             The gradient.
         """
-        return (self._one_minus_beta * support_variable - self._beta_dot_alpha * (
+        return (self._one_minus_tau * support_variable - self._tau_dot_alpha * (
                 self._pos_x_translation(support_variable) + self._neg_x_translation(support_variable) +
                 self._pos_y_translation(support_variable) + self._neg_y_translation(support_variable) +
                 self._pos_z_translation(support_variable) + self._neg_z_translation(support_variable) -
-                6 * support_variable) + self._beta_dot_lambda * support_variable ** 3)
+                6 * support_variable) + self._tau_dot_lambda * support_variable ** 3)
 
     def potential(self, support_variable, charges=None):
 
@@ -78,11 +78,11 @@ class GinzburgLandauPotential(Potential):
             The potential.
         """
         return np.sum(
-            0.5 * self._one_minus_beta * support_variable ** 2 + 0.5 * self._beta_dot_alpha * (
+            0.5 * self._one_minus_tau * support_variable ** 2 + 0.5 * self._tau_dot_alpha * (
                     (self._pos_x_translation(support_variable) - support_variable) ** 2 +
                     (self._pos_y_translation(support_variable) - support_variable) ** 2 +
                     (self._pos_z_translation(support_variable) - support_variable) ** 2) +
-            0.25 * self._beta_dot_lambda * support_variable ** 4)
+            0.25 * self._tau_dot_lambda * support_variable ** 4)
 
     def _pos_x_translation(self, support_variable):
         a = np.reshape(support_variable, (self._lattice_length, self._lattice_length, self._lattice_length))  # reshapes to a Len*Len*Len matrix
