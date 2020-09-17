@@ -9,7 +9,7 @@ class GinzburgLandauPotential(Potential):
         periodic cubic lattice.
     """
 
-    def __init__(self, alpha, tau, lambda_hyperparameter, lattice_length, prefactor=1.0):
+    def __init__(self, alpha, lambda_hyperparameter, tau, lattice_length, prefactor=1.0):
         """
         The constructor of the GinzburgLandauPotential class.
 
@@ -27,8 +27,8 @@ class GinzburgLandauPotential(Potential):
             The prefactor k of the potential.
         """
         self._alpha = alpha
-        self._tau = tau
         self._lambda_hyperparameter = lambda_hyperparameter
+        self._tau = tau
         self._lattice_length = lattice_length
         self._lattice_volume = lattice_length ** 3
         self._one_minus_tau = (1 - tau)
