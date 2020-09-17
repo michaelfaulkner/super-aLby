@@ -6,7 +6,8 @@ class KineticEnergy(metaclass=ABCMeta):
     """
     Abstract class for kinetic energies used in the algorithm code.
 
-    A general kinetic-energy class provides the function itself and its gradient.
+    A general kinetic-energy class provides the function itself, its gradient, and the method for drawing a new
+        observation of the momentum.
     """
 
     def __init__(self, power=2, **kwargs):
