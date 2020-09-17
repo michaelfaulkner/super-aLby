@@ -94,4 +94,4 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
             A new momentum associated with each support_variable.
         """
         return np.array(
-            AdaptiveRejectionSampling(self.kinetic_energy(momentum), self.gradient(momentum)).draw(len(momentum)))
+            AdaptiveRejectionSampling(- self.kinetic_energy(momentum), - self.gradient(momentum)).draw(len(momentum)))
