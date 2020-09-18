@@ -42,13 +42,15 @@ class MarkovChain:
             If the prefactor equals 0.
         """
         if initial_step_size == 0:
-            raise ValueError("Give a value not equal to 0 as the step size of the numerical integrator {0}.".format(
-                self.__class__.__name__))
+            raise ValueError(
+                "Give a value not equal to 0 as the initial step size of the numerical integrator {0}.".format(
+                    self.__class__.__name__))
         if max_number_of_integration_steps == 0:
-            raise ValueError("Give a value not equal to 0 as the number of numerical integration steps {0}.".format(
-                self.__class__.__name__))
+            raise ValueError(
+                "Give a value not equal to 0 as the maximum number of numerical integration steps {0}.".format(
+                    self.__class__.__name__))
         if number_of_equilibration_iterations >= number_of_observations:
-            raise ValueError("Set equilibration iterations less than the number of observations {0}.".format(
+            raise ValueError("Set equilibration iterations to less than the number of observations {0}.".format(
                 self.__class__.__name__))
         if number_of_observations == 0:
             raise ValueError(
@@ -93,7 +95,7 @@ class MarkovChain:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
             else:
                 number_of_integration_steps = self._max_number_of_integration_steps
-            support_variable_candidate, momentum_candidate = self._integrator_instance.flow(
+            support_variable_candidate, momentum_candidate = self._integrator_instance.get_flow(
                 momentum, support_variable, number_of_integration_steps, self._step_size, charges=None)
             if self._use_metropolis_accept_reject:
                 delta_hamiltonian = (self._potential_instance.potential(support_variable, charges=charges) +
