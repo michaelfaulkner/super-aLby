@@ -9,7 +9,7 @@ class SuperRelativisticKineticEnergy(RelativisticKineticEnergy):
         K = sum((1 + gamma^(-1) p[i] ** 2) ** (power / 2) / power)
     """
 
-    def __init__(self, gamma=1.0, power=2):
+    def __init__(self, gamma=1.0, power=1):
         """
         The constructor of the SuperRelativisticKineticEnergy class.
 
