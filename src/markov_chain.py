@@ -115,16 +115,17 @@ class MarkovChain:
             momentum_sample[:, i] = momentum
 
             # Adapt step-size if in equilibration phase
-            if i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
-                accept_rate = number_of_accepted_trajectories / 100.0
-                if accept_rate > 0.8:
-                    self._step_size *= 1.1  # todo verifier que ça fonctionne
-                elif accept_rate < 0.6:
+            if i < self._number_of_equilibration_iterations:
+                acceptance_rate = number_of_accepted_trajectories / (i + 1)
+                if acceptance_rate > 0.8:
+                    self._step_size *= 1.1
+                elif acceptance_rate < 0.6:
                     self._step_size *= 0.9
                 number_of_accepted_trajectories = 0
 
-        accept_rate = number_of_accepted_trajectories / float(self._number_of_observations - self._number_of_equilibration_iterations)
-        print("Acceptance rate: %f" % accept_rate)
+        acceptance_rate = number_of_accepted_trajectories / float(
+            self._number_of_observations - self._number_of_equilibration_iterations)
+        print("Acceptance rate: %f" % acceptance_rate)
         print("LF Steps: %d, Step-size: %.3f" % (self._max_number_of_integration_steps, self._step_size))
         print("Numerical divergences: %d" % number_of_numerical_divergences)
 
