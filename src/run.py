@@ -12,6 +12,6 @@ markov_chain_instance = markov_chain.MarkovChain(integrator_instance, kinetic_en
                                                  number_of_equilibration_iterations=100, number_of_observations=1100,
                                                  use_metropolis_accept_reject=True,
                                                  randomise_number_of_integration_steps=False)
-support_variable = np.zeroes(10)
+support_variable = np.zeros(10)
 momentum_sample, support_variable_sample, adapted_step_size, acceptance_rate, number_of_numerical_divergences = (
     markov_chain_instance.run(support_variable, charges=None))
