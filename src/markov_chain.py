@@ -85,18 +85,20 @@ class MarkovChain:
      """
         number_of_accepted_trajectories = 0
         number_of_numerical_divergences = 0
+        number_of_integration_steps = self._max_number_of_integration_steps
         support_variable_dimension = len(np.atleast_1d(support_variable))
-        support_variable_sample = np.empty((support_variable_dimension, self._number_of_observations))
-        momentum_sample = np.empty((support_variable_dimension, self._number_of_observations))
+        support_variable_sample = np.empty((support_variable_dimension, self._number_of_observations + 1))
+        support_variable_sample[:, 0] = support_variable
+        momentum_sample = np.empty((support_variable_dimension, self._number_of_observations + 1))
+        momentum_sample[:, 0] = np.zeros(support_variable_dimension)
 
         for i in range(self._number_of_observations):
             momentum = self._kinetic_energy_instance.momentum_observation(len(support_variable))
             if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
-            else:
-                number_of_integration_steps = self._max_number_of_integration_steps
             momentum_candidate, support_variable_candidate = self._integrator_instance.get_flow(
                 momentum, support_variable, number_of_integration_steps, self._step_size, charges=None)
+
             if self._use_metropolis_accept_reject:
                 delta_hamiltonian = (self._kinetic_energy_instance.kinetic_energy(momentum_candidate) -
                                      self._kinetic_energy_instance.kinetic_energy(momentum) +
@@ -114,27 +116,18 @@ class MarkovChain:
             support_variable_sample[:, i] = support_variable
             momentum_sample[:, i] = momentum
 
-            # Adapt step-size if in equilibration phase
-            if i < self._number_of_equilibration_iterations:
+            if i < self._number_of_equilibration_iterations:  # adapt step-size if in equilibration phase
                 acceptance_rate = number_of_accepted_trajectories / float(i + 1)
                 if acceptance_rate > 0.8:
                     self._step_size *= 1.1
                 elif acceptance_rate < 0.6:
                     self._step_size *= 0.9
                 number_of_accepted_trajectories = 0
-
         acceptance_rate = number_of_accepted_trajectories / float(
             self._number_of_observations - self._number_of_equilibration_iterations)
-        print("Acceptance rate: %f" % acceptance_rate)
-        print("LF Steps: %d, Step-size: %.3f" % (self._max_number_of_integration_steps, self._step_size))
-        print("Numerical divergences: %d" % number_of_numerical_divergences)
-
-        # bind initial values with MCMC output
-        x_return = np.empty((support_variable_dimension, self._number_of_observations + 1))
-        p_return = np.empty((support_variable_dimension, self._number_of_observations + 1))
-        x_return[:, 0] = support_variable
-        x_return[:, 1:] = support_variable_sample
-        p_return[:, 0] = np.zeros(support_variable_dimension)
-        p_return[:, 1:] = momentum_sample
-
-        return {'x': x_return, 'p': p_return}
+        print("Maximum number of integration steps = %d; numerical step size = %.3f" % (
+            self._max_number_of_integration_steps, self._step_size))
+        print("Metropolis-Hastings acceptance rate = %f" % acceptance_rate)
+        print("Number of numerical divergences = %d" % number_of_numerical_divergences)
+        return (
+            momentum_sample, support_variable_sample, self._step_size, acceptance_rate, number_of_numerical_divergences)
