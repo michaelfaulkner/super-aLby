@@ -12,7 +12,7 @@ class MarkovChain:
     def __init__(self, integrator_instance, potential_instance, kinetic_energy_instance, initial_step_size=1,
                  max_number_of_integration_steps=10, number_of_equilibration_iterations=100,
                  number_of_observations=1100, use_metropolis_accept_reject=True,
-                 random_number_of_integration_steps=False):
+                 randomise_number_of_integration_steps=False):
         """
         The constructor of the MarkovChain class.
 
@@ -34,7 +34,7 @@ class MarkovChain:
 
         use_metropolis_accept_reject : Boolean, optional
 
-        random_number_of_integration_steps : Boolean, optional
+        randomise_number_of_integration_steps : Boolean, optional
 
         Raises
         ------
@@ -64,7 +64,7 @@ class MarkovChain:
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
-        self._random_number_of_integration_steps = random_number_of_integration_steps
+        self._randomise_number_of_integration_steps = randomise_number_of_integration_steps
 
     def run(self, support_variable, charges=None):
         """
@@ -76,7 +76,7 @@ class MarkovChain:
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
             parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
         charges : optional
-            All the charges needed to calculate the gradient.
+            All the charges needed to run the Marov chain.
 
         Returns
         -------
@@ -91,11 +91,11 @@ class MarkovChain:
 
         for i in range(self._number_of_observations):
             momentum = self._kinetic_energy_instance.momentum_observation(len(support_variable))
-            if self._random_number_of_integration_steps:
+            if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
             else:
                 number_of_integration_steps = self._max_number_of_integration_steps
-            support_variable_candidate, momentum_candidate = self._integrator_instance.get_flow(
+            momentum_candidate, support_variable_candidate = self._integrator_instance.get_flow(
                 momentum, support_variable, number_of_integration_steps, self._step_size, charges=None)
             if self._use_metropolis_accept_reject:
                 delta_hamiltonian = (self._potential_instance.potential(support_variable, charges=charges) +
@@ -119,7 +119,7 @@ class MarkovChain:
             if i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
                 accept_rate = accepted / 100.0
                 if accept_rate > 0.8:
-                    self._step_size *= 1.1
+                    self._step_size *= 1.1  # todo verifier que ça fonctionne
                 elif accept_rate < 0.6:
                     self._step_size *= 0.9
                 accepted = 0
