@@ -10,7 +10,7 @@ class KineticEnergy(metaclass=ABCMeta):
         observation of the momentum.
     """
 
-    def __init__(self, power=2, **kwargs):
+    def __init__(self, **kwargs):
         """
         The constructor of the KineticEnergy class.
 
@@ -19,26 +19,9 @@ class KineticEnergy(metaclass=ABCMeta):
 
         Parameters
         ----------
-        power : int
-            Either the power to which each momentum component is raised (the generalised-power case) or twice the power
-            to which each momentum-dependent part of the relativistic kinetic energy is raised (the super-relativistic
-            case). For potentials with leading order term |x|^a, the optimal choice that ensures robust dynamics is
-            given by power = 1 + 1 / (a - 1) for a >= 2 and power = 1 + 1 / (a + 1) for a <= -1.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
-
-        Raises
-        ------
-        base.exceptions.ValueError
-            If the power equals 0.
-        base.exceptions.ValueError
-            If the prefactor equals 0.0.
         """
-        if power == 0:
-            raise ValueError("Give a value not equal to 0 as the power associated with the kinetic energy {0}.".format(
-                self.__class__.__name__))
-        self._one_over_power = 1 / power
-        self._power = power
         super().__init__(**kwargs)
 
     @abstractmethod

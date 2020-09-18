@@ -15,9 +15,9 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         observation of the momentum.
     """
 
-    def __init__(self, gamma=1.0, power=2, **kwargs):
+    def __init__(self, gamma=1.0, **kwargs):
         """
-        The constructor of the KineticEnergyWithAdaptiveRejectionSampling class.
+        The constructor of the RelativisticKineticEnergy class.
 
         This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
         init to the next class in the MRO via super.
@@ -27,23 +27,20 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         gamma : float
             The tuning parameter that controls the momentum values near which the (super- and standard) relativistic
             kinetic energies transform from Gaussian to generalised-power behaviour.
-        power : int
-            Either the power to which each momentum component is raised (the generalised-power case) or twice the power
-            to which each momentum-dependent part of the relativistic kinetic energy is raised (the super-relativistic
-            case). For potentials with leading order term |x|^a, the optimal choice that ensures robust dynamics is
-            given by power = 1 + 1 / (a - 1) for a >= 2 and power = 1 + 1 / (a + 1) for a <= -1.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
 
         Raises
         ------
         base.exceptions.ValueError
-            If the power equals 0.
-        base.exceptions.ValueError
-            If the prefactor equals 0.0.
+            If the gamma equals 0.0.
         """
+        if gamma == 0.0:
+            raise ValueError(
+                "Give a value not equal to 0.0 as the tuning parameter for the relativistic kinetic energy {0}.".format(
+                    self.__class__.__name__))
         self._one_over_gamma = 1.0 / gamma
-        super().__init__(power=power, **kwargs)
+        super().__init__(**kwargs)
 
     @abstractmethod
     def gradient(self, momentum):

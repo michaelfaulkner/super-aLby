@@ -8,16 +8,11 @@ class GaussianKineticEnergy(KineticEnergy):
     This class implements the Gaussian kinetic energy K = sum(p[i] ** 2 / 2)
     """
 
-    def __init__(self, power=2):
+    def __init__(self):
         """
         The constructor of the GaussianKineticEnergy class.
-
-        Parameters
-        ----------
-        power : int
-            The power to which each momentum component is raised.
         """
-        super().__init__(power=power)
+        super().__init__()
 
     def gradient(self, momentum):
         """
@@ -49,7 +44,7 @@ class GaussianKineticEnergy(KineticEnergy):
         float
             The kinetic energy.
         """
-        return 0.5 * np.sum(np.absolute(momentum ** 2))
+        return 0.5 * np.sum(momentum ** 2)
 
     def momentum_observation(self, momentum):
         """

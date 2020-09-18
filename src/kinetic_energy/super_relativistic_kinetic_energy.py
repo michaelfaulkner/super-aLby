@@ -19,15 +19,23 @@ class SuperRelativisticKineticEnergy(RelativisticKineticEnergy):
             The tuning parameter that controls the momentum values near which the kinetic energy transforms from
             Gaussian to generalised-power behaviour.
         power : int
-            Twice the power to which each momentum-dependent part of the relativistic kinetic energy is raised. For
-            potentials with leading order term |x|^a, the optimal choice that ensures robust dynamics is given by
-            power = 1 + 1 / (a - 1) for a >= 2 and power = 1 + 1 / (a + 1) for a <= -1.
+            The power to which each momentum-dependent part of the standard relativistic kinetic energy is raised (in
+            order to form the super-relativistic kinetic energy). For potentials with leading order term |x|^a, the
+            optimal choice that ensures robust dynamics is given by power = 1 + 1 / (a - 1) for a >= 2 and
+            power = 1 + 1 / (a + 1) for a <= -1.
+
+        Raises
+        ------
+        base.exceptions.ValueError
+            If the power equals 0.
         """
+        if power == 0:
+            raise ValueError("Give a value not equal to 0 as the power associated with the kinetic energy {0}.".format(
+                self.__class__.__name__))
         self._power_over_two = power / 2
         self._power_over_two_minus_one = self._power_over_two - 1
-        self._power_minus_one = power - 1
-        self._power_minus_two = power - 2
-        super().__init__(gamma=gamma, power=power)
+        self._one_over_power = 1.0 / power
+        super().__init__(gamma=gamma)
 
     def gradient(self, momentum):
         """

@@ -22,8 +22,19 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
             The power to which each momentum component is raised. For potentials with leading order term |x|^a, the
             optimal choice that ensures robust dynamics is given by power = 1 + 1 / (a - 1) for a >= 2 and
             power = 1 + 1 / (a + 1) for a <= -1.
+
+        Raises
+        ------
+        base.exceptions.ValueError
+            If the power equals 0.
         """
-        super().__init__(power=power)
+        if power == 0:
+            raise ValueError("Give a value not equal to 0 as the power associated with the kinetic energy {0}.".format(
+                self.__class__.__name__))
+        self._one_over_power = 1 / power
+        self._power = power
+        self._power_minus_two = power - 2
+        super().__init__()
 
     def gradient(self, momentum):
         """
@@ -39,7 +50,7 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         numpy array
             The gradient of the kinetic energy.
         """
-        return momentum * np.absolute(momentum) ** (self._power - 2)
+        return momentum * np.absolute(momentum) ** self._power_minus_two
 
     def kinetic_energy(self, momentum):
         """
@@ -55,7 +66,7 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         float
             The kinetic energy.
         """
-        return self._one_over_power * np.sum(np.absolute(momentum ** self._power))
+        return self._one_over_power * np.sum(np.absolute(momentum) ** self._power)
 
     def momentum_observation(self, momentum):
         """
