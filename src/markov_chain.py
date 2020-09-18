@@ -89,11 +89,12 @@ class MarkovChain:
         support_variable_dimension = len(np.atleast_1d(support_variable))
         support_variable_sample = np.empty((support_variable_dimension, self._number_of_observations + 1))
         support_variable_sample[:, 0] = support_variable
+        momentum = np.zeros(support_variable_dimension)
         momentum_sample = np.empty((support_variable_dimension, self._number_of_observations + 1))
-        momentum_sample[:, 0] = np.zeros(support_variable_dimension)
+        momentum_sample[:, 0] = momentum
 
         for i in range(self._number_of_observations):
-            momentum = self._kinetic_energy_instance.momentum_observation(len(support_variable))
+            momentum = self._kinetic_energy_instance.momentum_observation(momentum)
             if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
             momentum_candidate, support_variable_candidate = self._integrator_instance.get_flow(
