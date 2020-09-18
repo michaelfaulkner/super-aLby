@@ -116,7 +116,7 @@ class MarkovChain:
 
             # Adapt step-size if in equilibration phase
             if i < self._number_of_equilibration_iterations:
-                acceptance_rate = number_of_accepted_trajectories / (i + 1)
+                acceptance_rate = number_of_accepted_trajectories / float(i + 1)
                 if acceptance_rate > 0.8:
                     self._step_size *= 1.1
                 elif acceptance_rate < 0.6:
