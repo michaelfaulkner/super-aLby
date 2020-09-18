@@ -9,7 +9,7 @@ class MarkovChain:
     The class provides the Markov-chain function (as run()).
     """
 
-    def __init__(self, integrator_instance, potential_instance, kinetic_energy_instance, initial_step_size=1,
+    def __init__(self, integrator_instance, kinetic_energy_instance, potential_instance, initial_step_size=1,
                  max_number_of_integration_steps=10, number_of_equilibration_iterations=100,
                  number_of_observations=1100, use_metropolis_accept_reject=True,
                  randomise_number_of_integration_steps=False):
@@ -20,9 +20,9 @@ class MarkovChain:
         ----------
         integrator_instance : Python class instance
 
-        potential_instance : Python class instance
-
         kinetic_energy_instance : Python class instance
+
+        potential_instance : Python class instance
 
         initial_step_size : int, optional
 
@@ -57,8 +57,8 @@ class MarkovChain:
                 "Give a value not equal to 0 as the number of observations of target distribution {0}.".format(
                     self.__class__.__name__))
         self._integrator_instance = integrator_instance
-        self._potential_instance = potential_instance
         self._kinetic_energy_instance = kinetic_energy_instance
+        self._potential_instance = potential_instance
         self._step_size = initial_step_size
         self._max_number_of_integration_steps = max_number_of_integration_steps
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
