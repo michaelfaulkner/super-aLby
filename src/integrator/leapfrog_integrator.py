@@ -8,7 +8,7 @@ class LeapfrogIntegrator(Integrator):
     This class implements the leapfrog numerical integrator.
     """
 
-    def __init__(self, kinetic_energy_instance, potential_instance, number_of_integration_steps=10):
+    def __init__(self, kinetic_energy_instance, potential_instance):
         """
         The constructor of the LeapfrogIntegrator class.
 
