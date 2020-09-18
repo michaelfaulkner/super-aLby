@@ -9,7 +9,7 @@ class MarkovChain:
     The class provides the Markov-chain function (as run()).
     """
 
-    def __init__(self, integrator_instance, kinetic_energy_instance, potential_instance, initial_step_size=1,
+    def __init__(self, integrator_instance, kinetic_energy_instance, potential_instance, initial_step_size=1.0,
                  max_number_of_integration_steps=10, number_of_equilibration_iterations=100,
                  number_of_observations=1100, use_metropolis_accept_reject=True,
                  randomise_number_of_integration_steps=False):
@@ -24,7 +24,7 @@ class MarkovChain:
 
         potential_instance : Python class instance
 
-        initial_step_size : int, optional
+        initial_step_size : float, optional
 
         max_number_of_integration_steps : int, optional
 
@@ -41,7 +41,7 @@ class MarkovChain:
         base.exceptions.ValueError
             If the prefactor equals 0.
         """
-        if initial_step_size == 0:
+        if initial_step_size == 0.0:
             raise ValueError(
                 "Give a value not equal to 0 as the initial step size of the numerical integrator {0}.".format(
                     self.__class__.__name__))
