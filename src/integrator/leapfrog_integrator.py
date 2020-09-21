@@ -46,16 +46,10 @@ class LeapfrogIntegrator(Integrator):
             The flow.
         """
         half_step_size = 0.5 * step_size
-        support_variable_flow = np.empty((len(support_variable), number_of_integration_steps))
-        momentum_flow = np.empty((len(momentum), number_of_integration_steps))
-        support_variable_flow[:, 0] = support_variable
-        momentum_flow[:, 0] = momentum
-        for i in range(number_of_integration_steps - 1):
-            intermediate_momentum = (momentum_flow[:, i] - half_step_size *
-                                     self._potential_instance.gradient(support_variable_flow[:, i], charges=charges))
-            support_variable_flow[:, i + 1] = (support_variable_flow[:, i] + step_size *
-                                               self._kinetic_energy_instance.gradient(intermediate_momentum))
-            momentum_flow[:, i + 1] = (intermediate_momentum - half_step_size *
-                                       self._potential_instance.gradient(support_variable_flow[:, i + 1],
-                                                                         charges=charges))
-        return momentum_flow, support_variable_flow
+        momentum = momentum - half_step_size * self._potential_instance.gradient(support_variable, charges=charges)
+        for _ in range(number_of_integration_steps - 1):
+            support_variable = support_variable + step_size * self._kinetic_energy_instance.gradient(momentum)
+            momentum = momentum - step_size * self._potential_instance.gradient(support_variable, charges=charges)
+        support_variable = support_variable + step_size * self._kinetic_energy_instance.gradient(momentum)
+        momentum = momentum - half_step_size * self._potential_instance.gradient(support_variable, charges=charges)
+        return momentum, support_variable
