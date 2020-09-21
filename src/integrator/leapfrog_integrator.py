@@ -49,7 +49,7 @@ class LeapfrogIntegrator(Integrator):
         momentum_flow = np.empty((len(momentum), number_of_integration_steps))
         support_variable_flow[:, 0] = support_variable
         momentum_flow[:, 0] = momentum
-        for i in range(number_of_integration_steps):
+        for i in range(number_of_integration_steps - 1):
             intermediate_momentum = (momentum_flow[:, i] - 0.5 * step_size *
                                      self._potential_instance.gradient(support_variable_flow[:, i], charges=charges))
             support_variable_flow[:, i + 1] = (support_variable_flow[:, i] + step_size *
