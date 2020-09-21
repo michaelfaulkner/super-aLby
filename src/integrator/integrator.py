@@ -37,7 +37,8 @@ class Integrator(metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @abstractmethod
-    def get_flow(self, momentum, support_variable, number_of_integration_steps, step_size, charges=None):
+    def get_candidate_configuration(self, momentum, support_variable, number_of_integration_steps, step_size,
+                                    charges=None):
         """
         Return the Hamiltonian / (super-)relativistic flow between times
             t_0 and t_0 + step_size * number_of_integration_steps.

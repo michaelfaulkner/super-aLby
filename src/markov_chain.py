@@ -99,7 +99,7 @@ class MarkovChain:
             momentum = self._kinetic_energy_instance.momentum_observation(momentum)
             if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
-            momentum_candidate, support_variable_candidate = self._integrator_instance.get_flow(
+            momentum_candidate, support_variable_candidate = self._integrator_instance.get_candidate_configuration(
                 momentum, support_variable, number_of_integration_steps, self._step_size, charges=None)
 
             if self._use_metropolis_accept_reject:
