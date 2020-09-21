@@ -10,7 +10,7 @@ class MarkovChain:
     """
 
     def __init__(self, integrator_instance, kinetic_energy_instance, potential_instance, initial_step_size=1.0,
-                 max_number_of_integration_steps=10, number_of_equilibration_iterations=100,
+                 max_number_of_integration_steps=10, number_of_equilibration_iterations=10000,
                  number_of_observations=1100, step_size_adaptor_is_on=True, use_metropolis_accept_reject=True,
                  randomise_number_of_integration_steps=False):
         """
@@ -83,7 +83,8 @@ class MarkovChain:
      """
         initial_step_size = self._step_size
         number_of_accepted_trajectories = 0
-        number_of_numerical_divergences = 0
+        number_of_numerical_divergences_during_equilibration = 0
+        number_of_numerical_divergences_during_equilibrated_process = 0
         number_of_integration_steps = self._max_number_of_integration_steps
         support_variable_dimension = len(np.atleast_1d(support_variable))
         support_variable_sample = np.zeros(
@@ -107,7 +108,10 @@ class MarkovChain:
                                      self._potential_instance.potential(support_variable_candidate, charges=charges) -
                                      self._potential_instance.potential(support_variable, charges=charges))
                 if abs(delta_hamiltonian) > 1000.0:
-                    number_of_numerical_divergences += 1
+                    if i < self._number_of_equilibration_iterations:
+                        number_of_numerical_divergences_during_equilibration += 1
+                    else:
+                        number_of_numerical_divergences_during_equilibrated_process += 1
                 if np.random.uniform(0, 1) < np.exp(- delta_hamiltonian):
                     support_variable = support_variable_candidate
                     momentum = momentum_candidate
@@ -130,6 +134,10 @@ class MarkovChain:
             "Max number of integration steps = %d; initial numerical step size = %.3f; final numerical step size = %.3f"
             % (self._max_number_of_integration_steps, initial_step_size, self._step_size))
         print("Metropolis-Hastings acceptance rate = %f" % acceptance_rate)
-        print("Number of numerical divergences = %d" % number_of_numerical_divergences)
-        return (
-            momentum_sample, support_variable_sample, self._step_size, acceptance_rate, number_of_numerical_divergences)
+        print("Number of numerical divergences during equilibration = %d" %
+              number_of_numerical_divergences_during_equilibration)
+        print("Number of numerical divergences during equilibrated process = %d" %
+              number_of_numerical_divergences_during_equilibrated_process)
+        return (momentum_sample, support_variable_sample, self._step_size, acceptance_rate,
+                number_of_numerical_divergences_during_equilibration,
+                number_of_numerical_divergences_during_equilibrated_process)
