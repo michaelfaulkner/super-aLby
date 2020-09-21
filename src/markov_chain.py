@@ -11,7 +11,7 @@ class MarkovChain:
 
     def __init__(self, integrator_instance, kinetic_energy_instance, potential_instance, initial_step_size=1.0,
                  max_number_of_integration_steps=10, number_of_equilibration_iterations=100,
-                 number_of_observations=1100, use_metropolis_accept_reject=True,
+                 number_of_observations=1100, step_size_adaptor_is_on=True, use_metropolis_accept_reject=True,
                  randomise_number_of_integration_steps=False):
         """
         The constructor of the MarkovChain class.
@@ -63,6 +63,7 @@ class MarkovChain:
         self._max_number_of_integration_steps = max_number_of_integration_steps
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
+        self._step_size_adaptor_is_on = step_size_adaptor_is_on
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
         self._randomise_number_of_integration_steps = randomise_number_of_integration_steps
 
@@ -117,8 +118,8 @@ class MarkovChain:
             support_variable_sample[:, i] = support_variable
             momentum_sample[:, i] = momentum
 
-            if i < self._number_of_equilibration_iterations:  # adapt step-size if in equilibration phase
-                acceptance_rate = number_of_accepted_trajectories / float(i + 1)
+            if self._step_size_adaptor_is_on and i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
+                acceptance_rate = number_of_accepted_trajectories / 100.0
                 if acceptance_rate > 0.8:
                     self._step_size *= 1.1
                 elif acceptance_rate < 0.6:
