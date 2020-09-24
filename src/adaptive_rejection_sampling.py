@@ -42,7 +42,7 @@ class AdaptiveRejectionSampling:
         self.ns = 50
         self.x = np.array(xi) # initialize x, the vector of absicassae at which the function h has been evaluated
         self.h = self.f(self.x, **self.f_args)
-        self.hprime = self.f_prime(self.x, **self.f_args)
+        self.h_prime = self.f_prime(self.x, **self.f_args)
 
         # Avoid under/overflow errors. the envelope and pdf are only
         # proportional to the true pdf, so can choose any constant of proportionality.
@@ -51,8 +51,10 @@ class AdaptiveRejectionSampling:
 
         # Derivative at first point in xi must be > 0
         # Derivative at last point in xi must be < 0
-        if not(self.hprime[0] > 0): raise IOError('initial anchor points must span mode of PDF')
-        if not(self.hprime[-1] < 0): raise IOError('initial anchor points must span mode of PDF')
+        if not(self.h_prime[0] > 0):
+            raise IOError('initial anchor points must span mode of PDF')
+        if not(self.h_prime[-1] < 0):
+            raise IOError('initial anchor points must span mode of PDF')
         self.insert()
 
     def draw(self, N):
@@ -60,23 +62,23 @@ class AdaptiveRejectionSampling:
         Draw N samples and update upper and lower hulls accordingly
         """
         samples = np.zeros(N)
-        n=0
+        n = 0
         while n < N:
-            [xt,i] = self.sample_upper()
-            ht = self.f(xt, **self.f_args)
-            hprimet = self.f_prime(xt, **self.f_args)
+            [x_t, i] = self.sample_upper()
+            ht = self.f(x_t, **self.f_args)
+            h_prime_t = self.f_prime(x_t, **self.f_args)
             ht = ht - self.offset
-            ut = self.h[i] + (xt-self.x[i])*self.hprime[i]
+            ut = self.h[i] + (x_t-self.x[i])*self.h_prime[i]
 
             # Accept sample? - Currently don't use lower
             u = random.random()
             if u < np.exp(ht-ut):
-                samples[n] = xt
-                n +=1
+                samples[n] = x_t
+                n += 1
 
             # Update hull with new function evaluations
             if self.u.__len__() < self.ns:
-                self.insert([xt],[ht],[hprimet])
+                self.insert([x_t],[ht],[h_prime_t])
 
         return samples
 
@@ -89,16 +91,16 @@ class AdaptiveRejectionSampling:
             idx = np.argsort(x)
             self.x = x[idx]
             self.h = np.hstack([self.h, h_new])[idx]
-            self.hprime = np.hstack([self.hprime, h_prime_new])[idx]
+            self.h_prime = np.hstack([self.h_prime, h_prime_new])[idx]
 
         self.z = np.zeros(self.x.__len__()+1)
-        self.z[1:-1] = (np.diff(self.h) - np.diff(self.x*self.hprime))/-np.diff(self.hprime)
+        self.z[1:-1] = (np.diff(self.h) - np.diff(self.x * self.h_prime)) / -np.diff(self.h_prime)
 
         self.z[0] = self.lb; self.z[-1] = self.ub
         N = self.h.__len__()
-        self.u = self.hprime[[0]+range(N)]*(self.z-self.x[[0]+range(N)]) + self.h[[0]+range(N)]
+        self.u = self.h_prime[[0] + range(N)] * (self.z - self.x[[0] + range(N)]) + self.h[[0] + range(N)]
 
-        self.s = np.hstack([0,np.cumsum(np.diff(np.exp(self.u))/self.hprime)])
+        self.s = np.hstack([0, np.cumsum(np.diff(np.exp(self.u)) / self.h_prime)])
         self.cu = self.s[-1]
 
     def sample_upper(self):
@@ -111,7 +113,7 @@ class AdaptiveRejectionSampling:
         i = np.nonzero(self.s/self.cu < u)[0][-1]
 
         # Figure out x from inverse cdf in relevant sector
-        xt = self.x[i] + (-self.h[i] + np.log(self.hprime[i]*(self.cu*u - self.s[i]) +
-        np.exp(self.u[i]))) / self.hprime[i]
+        xt = self.x[i] + (-self.h[i] + np.log(self.h_prime[i] * (self.cu * u - self.s[i]) +
+                                              np.exp(self.u[i]))) / self.h_prime[i]
 
         return [xt, i]
