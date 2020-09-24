@@ -76,6 +76,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def momentum_observation(self, momentum):
         """
         Returns an observation of the momentum from the kinetic-energy distribution using adaptive rejection sampling.
@@ -90,5 +91,6 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         numpy_array
             A new momentum associated with each support_variable.
         """
-        return np.array(
-            AdaptiveRejectionSampling(- self.kinetic_energy(momentum), - self.gradient(momentum)).draw(len(momentum)))
+        raise NotImplementedError
+        #  return np.array(
+        #      AdaptiveRejectionSampling(- self.kinetic_energy(momentum), - self.gradient(momentum)).draw(len(momentum)))

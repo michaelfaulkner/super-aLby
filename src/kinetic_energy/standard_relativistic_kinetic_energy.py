@@ -2,6 +2,11 @@
 from .relativistic_kinetic_energy import RelativisticKineticEnergy
 import numpy as np
 
+import rpy2.robjects.packages as r_packages
+import rpy2.robjects.numpy2ri as numpy2ri
+adaptive_rejection_sampling = r_packages.importr('ars')
+numpy2ri.activate()
+
 
 class StandardRelativisticKineticEnergy(RelativisticKineticEnergy):
     """
@@ -51,3 +56,20 @@ class StandardRelativisticKineticEnergy(RelativisticKineticEnergy):
             The kinetic energy.
         """
         return np.sum((1 + self._one_over_gamma * momentum ** 2) ** 0.5)
+
+    def momentum_observation(self, momentum):
+        """
+        Returns an observation of the momentum from the kinetic-energy distribution using adaptive rejection sampling.
+
+        Parameters
+        ----------
+        momentum : numpy_array
+            The current momentum associated with each support_variable.
+
+        Returns
+        -------
+        numpy_array
+            A new momentum associated with each support_variable.
+        """
+        return np.array(adaptive_rejection_sampling.ars(len(momentum), - self.kinetic_energy(momentum), - self.gradient(momentum)))
+
