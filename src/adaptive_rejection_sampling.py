@@ -11,7 +11,7 @@ class AdaptiveRejectionSampling:
     only small amount of samples at a time.
     """
 
-    def __init__(self, f, f_prime, xi=[-4, 1, 4], lb=-np.Inf, ub=np.Inf, use_lower=False, ns=100, **fargs):
+    def __init__(self, f, f_prime, xi=[-4, 1, 4], lb=-np.Inf, ub=np.Inf, use_lower=False, ns=100, **f_args):
         """
         initialize the upper (and if needed lower) hulls with the specified params
 
@@ -29,20 +29,20 @@ class AdaptiveRejectionSampling:
         lb: lower bound of the domain
         ub: upper bound of the domain
         ns: maximum number of points defining the hulls
-        fargs: arguments for f and fprima
+        f_args: arguments for f and fprima
         """
 
         self.lb = lb
         self.ub = ub
         self.f = f
-        self.fprima = f_prime
-        self.fargs = fargs
+        self.f_prime = f_prime
+        self.f_args = f_args
 
         # set limit on how many points to maintain on hull
         self.ns = 50
         self.x = np.array(xi) # initialize x, the vector of absicassae at which the function h has been evaluated
-        self.h = self.f(self.x, **self.fargs)
-        self.hprime = self.fprima(self.x, **self.fargs)
+        self.h = self.f(self.x, **self.f_args)
+        self.hprime = self.f_prime(self.x, **self.f_args)
 
         # Avoid under/overflow errors. the envelope and pdf are only
         # proportional to the true pdf, so can choose any constant of proportionality.
@@ -63,8 +63,8 @@ class AdaptiveRejectionSampling:
         n=0
         while n < N:
             [xt,i] = self.sample_upper()
-            ht = self.f(xt, **self.fargs)
-            hprimet = self.fprima(xt, **self.fargs)
+            ht = self.f(xt, **self.f_args)
+            hprimet = self.f_prime(xt, **self.f_args)
             ht = ht - self.offset
             ut = self.h[i] + (xt-self.x[i])*self.hprime[i]
 
