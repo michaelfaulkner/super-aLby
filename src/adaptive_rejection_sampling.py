@@ -40,7 +40,7 @@ class AdaptiveRejectionSampling:
 
         # set limit on how many points to maintain on hull
         self.ns = 50
-        self.x = np.array(xi) # initialize x, the vector of absicassae at which the function h has been evaluated
+        self.x = np.array(xi)  # initialize x, the vector of absicassae at which the function h has been evaluated
         self.h = self.f(self.x, **self.f_args)
         self.h_prime = self.f_prime(self.x, **self.f_args)
 
