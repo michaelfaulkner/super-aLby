@@ -11,7 +11,7 @@ class AdaptiveRejectionSampling:
     only small amount of samples at a time.
     """
 
-    def __init__(self, f, fprima, xi=[-4, 1, 4], lb=-np.Inf, ub=np.Inf, use_lower=False, ns=100, **fargs):
+    def __init__(self, f, f_prime, xi=[-4, 1, 4], lb=-np.Inf, ub=np.Inf, use_lower=False, ns=100, **fargs):
         """
         initialize the upper (and if needed lower) hulls with the specified params
 
@@ -19,10 +19,10 @@ class AdaptiveRejectionSampling:
         ==========
         f: function that computes log(f(u,...)), for given u, where f(u) is proportional to the
            density we want to sample from
-        fprima:  d/du log(f(u,...))
-        xi: ordered vector of starting points in wich log(f(u,...) is defined
+        f_prime:  d/du log(f(u,...))
+        xi: ordered vector of starting points in which log(f(u,...) is defined
             to initialize the hulls
-        use_lower: True means the lower sqeezing will be used; which is more efficient
+        use_lower: True means the lower squeezing will be used; which is more efficient
                    for drawing large numbers of samples
 
 
@@ -35,7 +35,7 @@ class AdaptiveRejectionSampling:
         self.lb = lb
         self.ub = ub
         self.f = f
-        self.fprima = fprima
+        self.fprima = f_prime
         self.fargs = fargs
 
         # set limit on how many points to maintain on hull
