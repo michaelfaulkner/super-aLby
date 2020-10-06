@@ -46,7 +46,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
     @abstractmethod
     def gradient(self, momentum):
         """
-        Return the gradient of the kinetic energy.
+        Returns the gradient of the kinetic energy.
 
         Parameters
         ----------
@@ -63,7 +63,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
     @abstractmethod
     def current_value(self, momentum):
         """
-        Return the kinetic-energy function.
+        Returns the kinetic-energy function.
 
         Parameters
         ----------
@@ -79,7 +79,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
 
     def _negative_gradient(self, momentum):
         """
-        Return the gradient of the kinetic energy.
+        Returns the product of minus 1 and the gradient of the kinetic energy.
 
         Parameters
         ----------
@@ -89,13 +89,13 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         Returns
         -------
         float
-            The derivative.
+            The product of minus 1 and the derivative.
         """
         return - self.gradient(momentum)
 
     def _negative_current_value(self, momentum):
         """
-        Return the kinetic-energy function.
+        Returns the product of minus 1 and the kinetic-energy function.
 
         Parameters
         ----------
@@ -105,7 +105,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         Returns
         -------
         float
-            The kinetic-energy function.
+            The product of minus 1 and the kinetic-energy function.
         """
         return - self.current_value(momentum)
 
