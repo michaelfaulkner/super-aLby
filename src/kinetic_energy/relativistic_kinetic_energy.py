@@ -40,7 +40,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
                 "Give a value not equal to 0.0 as the tuning parameter for the relativistic kinetic energy {0}.".format(
                     self.__class__.__name__))
         self._one_over_gamma = 1.0 / gamma
-        self._adaptive_rejection_sampling_instance = AdaptiveRejectionSampling(- self.kinetic_energy, - self.gradient)
+        self._adaptive_rejection_sampling_instance = AdaptiveRejectionSampling(- self.current_value, - self.gradient)
         super().__init__(**kwargs)
 
     @abstractmethod
@@ -61,7 +61,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def kinetic_energy(self, momentum):
+    def current_value(self, momentum):
         """
         Return the kinetic-energy function.
 

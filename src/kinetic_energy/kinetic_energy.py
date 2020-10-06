@@ -42,7 +42,7 @@ class KineticEnergy(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def kinetic_energy(self, momentum):
+    def current_value(self, momentum):
         """
         Return the kinetic-energy function.
 

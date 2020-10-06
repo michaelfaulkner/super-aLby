@@ -71,7 +71,7 @@ class SmoothPinballLossPotential(Potential):
         mid_term = np.array([np.inner(logistic_term, self._x[:, i]) for i in range(len(support_variable))])
         return (1 - self._tau) / self._sigma * self._x_sum + 1 / self._sigma * mid_term + prior_gradient
 
-    def potential(self, support_variable, charges=None):
+    def current_value(self, support_variable, charges=None):
         """
         Returns the potential for the given support_variable.
 

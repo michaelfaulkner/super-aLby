@@ -45,7 +45,7 @@ class ExponentialPowerPotential(Potential):
         """
         return support_variable * support_variable ** self._power_minus_two
 
-    def potential(self, support_variable, charges=None):
+    def current_value(self, support_variable, charges=None):
         """
         Returns the potential for the given support_variable.
 

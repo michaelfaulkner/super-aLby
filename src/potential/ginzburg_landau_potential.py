@@ -59,7 +59,7 @@ class GinzburgLandauPotential(Potential):
                 self._pos_z_translation(support_variable) + self._neg_z_translation(support_variable) -
                 6 * support_variable) + self._tau_dot_lambda * support_variable ** 3)
 
-    def potential(self, support_variable, charges=None):
+    def current_value(self, support_variable, charges=None):
 
         """
         Returns the potential for the given support_variable.

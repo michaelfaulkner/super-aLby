@@ -55,7 +55,7 @@ class Potential(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def potential(self, support_variable, charges=None):
+    def current_value(self, support_variable, charges=None):
         """
         Return the potential function for certain separations and charges.
 

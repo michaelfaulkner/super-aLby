@@ -36,7 +36,7 @@ class StandardRelativisticKineticEnergy(RelativisticKineticEnergy):
         """
         return self._one_over_gamma * momentum * (1 + self._one_over_gamma * momentum ** 2) ** (- 0.5)
 
-    def kinetic_energy(self, momentum):
+    def current_value(self, momentum):
         """
         Returns the kinetic energy.
 

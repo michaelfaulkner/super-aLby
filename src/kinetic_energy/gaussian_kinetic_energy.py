@@ -30,7 +30,7 @@ class GaussianKineticEnergy(KineticEnergy):
         """
         return momentum
 
-    def kinetic_energy(self, momentum):
+    def current_value(self, momentum):
         """
         Returns the kinetic energy.
 

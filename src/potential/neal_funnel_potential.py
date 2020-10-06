@@ -47,7 +47,7 @@ class NealFunnelPotential(Potential):
             -support_variable[0])
         return gradient
 
-    def potential(self, support_variable, charges=None):
+    def current_value(self, support_variable, charges=None):
         """
         Returns the potential for the given support_variable.
 

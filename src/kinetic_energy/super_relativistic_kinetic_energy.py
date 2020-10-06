@@ -54,7 +54,7 @@ class SuperRelativisticKineticEnergy(RelativisticKineticEnergy):
         return self._one_over_gamma * momentum * (
                 1 + self._one_over_gamma * momentum ** 2) ** self._power_over_two_minus_one
 
-    def kinetic_energy(self, momentum):
+    def current_value(self, momentum):
         """
         Returns the kinetic energy.
 

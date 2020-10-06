@@ -52,7 +52,7 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         """
         return momentum * np.absolute(momentum) ** self._power_minus_two
 
-    def kinetic_energy(self, momentum):
+    def current_value(self, momentum):
         """
         Returns the kinetic energy.
 
