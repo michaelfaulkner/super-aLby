@@ -40,9 +40,9 @@ class AdaptiveRejectionSampling:
 
         # set limit on how many points to maintain on hull
         self.ns = 50
-        self.x = np.array(xi)  # initialize x, the vector of absicassae at which the function h has been evaluated
-        self.h = self.f(self.x, **self.f_args)
-        self.h_prime = self.f_prime(self.x, **self.f_args)
+        self.x = np.array(xi)  # initialize x, the vector of abscissae at which the function h has been evaluated
+        self.h = np.array([self.f(abscissa, **self.f_args) for abscissa in self.x])
+        self.h_prime = np.array([self.f_prime(abscissa, **self.f_args) for abscissa in self.x])
 
         # Avoid under/overflow errors. the envelope and pdf are only
         # proportional to the true pdf, so can choose any constant of proportionality.
@@ -98,7 +98,7 @@ class AdaptiveRejectionSampling:
 
         self.z[0] = self.lb; self.z[-1] = self.ub
         N = self.h.__len__()
-        self.u = self.h_prime[[0] + range(N)] * (self.z - self.x[[0] + range(N)]) + self.h[[0] + range(N)]
+        self.u = self.h_prime[[0] + list(range(N))] * (self.z - self.x[[0] + list(range(N))]) + self.h[[0] + list(range(N))]
 
         self.s = np.hstack([0, np.cumsum(np.diff(np.exp(self.u)) / self.h_prime)])
         self.cu = self.s[-1]
