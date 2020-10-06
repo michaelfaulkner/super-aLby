@@ -91,6 +91,4 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         numpy_array
             A new momentum associated with each support_variable.
         """
-        raise NotImplementedError
-        #  return np.array(
-        #      AdaptiveRejectionSampling(- self.kinetic_energy(momentum), - self.gradient(momentum)).draw(len(momentum)))
+        return np.array(AdaptiveRejectionSampling(- self.kinetic_energy, - self.gradient).draw(len(momentum)))
