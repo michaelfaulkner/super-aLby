@@ -40,7 +40,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
                 "Give a value not equal to 0.0 as the tuning parameter for the relativistic kinetic energy {0}.".format(
                     self.__class__.__name__))
         self._one_over_gamma = 1.0 / gamma
-        self._adaptive_rejection_sampling_instance = AdaptiveRejectionSampling(- self.current_value, - self.gradient)
+        self._adaptive_rejection_sampling_instance = AdaptiveRejectionSampling(self._negative_current_value, self._negative_gradient)
         super().__init__(**kwargs)
 
     @abstractmethod
@@ -77,7 +77,38 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    @abstractmethod
+    def _negative_gradient(self, momentum):
+        """
+        Return the gradient of the kinetic energy.
+
+        Parameters
+        ----------
+        momentum : numpy_array
+            The momentum associated with each support_variable.
+
+        Returns
+        -------
+        float
+            The derivative.
+        """
+        return - self.gradient(momentum)
+
+    def _negative_current_value(self, momentum):
+        """
+        Return the kinetic-energy function.
+
+        Parameters
+        ----------
+        momentum : numpy_array
+            The momentum associated with each support_variable.
+
+        Returns
+        -------
+        float
+            The kinetic-energy function.
+        """
+        return - self.current_value(momentum)
+
     def momentum_observation(self, momentum):
         """
         Returns an observation of the momentum from the kinetic-energy distribution using adaptive rejection sampling.
