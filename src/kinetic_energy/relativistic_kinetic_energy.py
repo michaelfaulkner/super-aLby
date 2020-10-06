@@ -40,6 +40,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
                 "Give a value not equal to 0.0 as the tuning parameter for the relativistic kinetic energy {0}.".format(
                     self.__class__.__name__))
         self._one_over_gamma = 1.0 / gamma
+        self._adaptive_rejection_sampling_instance = AdaptiveRejectionSampling(- self.kinetic_energy, - self.gradient)
         super().__init__(**kwargs)
 
     @abstractmethod
@@ -91,4 +92,4 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         numpy_array
             A new momentum associated with each support_variable.
         """
-        return np.array(AdaptiveRejectionSampling(- self.kinetic_energy, - self.gradient).draw(len(momentum)))
+        return np.array(self._adaptive_rejection_sampling_instance.draw(len(momentum)))
