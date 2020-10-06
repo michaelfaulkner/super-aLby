@@ -44,23 +44,6 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @abstractmethod
-    def gradient(self, momentum):
-        """
-        Returns the gradient of the kinetic energy.
-
-        Parameters
-        ----------
-        momentum : numpy_array
-            The momentum associated with each support_variable.
-
-        Returns
-        -------
-        float
-            The derivative.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def current_value(self, momentum):
         """
         Returns the kinetic-energy function.
@@ -77,9 +60,10 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def _negative_gradient(self, momentum):
+    @abstractmethod
+    def gradient(self, momentum):
         """
-        Returns the product of minus 1 and the gradient of the kinetic energy.
+        Returns the gradient of the kinetic energy.
 
         Parameters
         ----------
@@ -89,9 +73,25 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         Returns
         -------
         float
-            The product of minus 1 and the derivative.
+            The derivative.
         """
-        return - self.gradient(momentum)
+        raise NotImplementedError
+
+    def momentum_observation(self, momentum):
+        """
+        Returns an observation of the momentum from the kinetic-energy distribution using adaptive rejection sampling.
+
+        Parameters
+        ----------
+        momentum : numpy_array
+            The current momentum associated with each support_variable.
+
+        Returns
+        -------
+        numpy_array
+            A new momentum associated with each support_variable.
+        """
+        return np.array(self._adaptive_rejection_sampling_instance.draw(len(momentum)))
 
     def _negative_current_value(self, momentum):
         """
@@ -109,18 +109,18 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         """
         return - self.current_value(momentum)
 
-    def momentum_observation(self, momentum):
+    def _negative_gradient(self, momentum):
         """
-        Returns an observation of the momentum from the kinetic-energy distribution using adaptive rejection sampling.
+        Returns the product of minus 1 and the gradient of the kinetic energy.
 
         Parameters
         ----------
         momentum : numpy_array
-            The current momentum associated with each support_variable.
+            The momentum associated with each support_variable.
 
         Returns
         -------
-        numpy_array
-            A new momentum associated with each support_variable.
+        float
+            The product of minus 1 and the derivative.
         """
-        return np.array(self._adaptive_rejection_sampling_instance.draw(len(momentum)))
+        return - self.gradient(momentum)

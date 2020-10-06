@@ -25,23 +25,6 @@ class KineticEnergy(metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @abstractmethod
-    def gradient(self, momentum):
-        """
-        Return the gradient of the kinetic energy.
-
-        Parameters
-        ----------
-        momentum : numpy_array
-            The momentum associated with each support_variable.
-
-        Returns
-        -------
-        float
-            The derivative.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def current_value(self, momentum):
         """
         Return the kinetic-energy function.
@@ -55,6 +38,23 @@ class KineticEnergy(metaclass=ABCMeta):
         -------
         float
             The kinetic-energy function.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def gradient(self, momentum):
+        """
+        Return the gradient of the kinetic energy.
+
+        Parameters
+        ----------
+        momentum : numpy_array
+            The momentum associated with each support_variable.
+
+        Returns
+        -------
+        float
+            The derivative.
         """
         raise NotImplementedError
 

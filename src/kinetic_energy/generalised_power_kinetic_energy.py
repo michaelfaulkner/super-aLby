@@ -36,22 +36,6 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         self._power_minus_two = power - 2
         super().__init__()
 
-    def gradient(self, momentum):
-        """
-        Returns the gradient of the kinetic energy.
-
-        Parameters
-        ----------
-        momentum : numpy_array
-            The momentum associated with each support_variable.
-
-        Returns
-        -------
-        numpy array
-            The gradient of the kinetic energy.
-        """
-        return momentum * np.absolute(momentum) ** self._power_minus_two
-
     def current_value(self, momentum):
         """
         Returns the kinetic energy.
@@ -67,6 +51,22 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
             The kinetic energy.
         """
         return self._one_over_power * np.sum(np.absolute(momentum) ** self._power)
+
+    def gradient(self, momentum):
+        """
+        Returns the gradient of the kinetic energy.
+
+        Parameters
+        ----------
+        momentum : numpy_array
+            The momentum associated with each support_variable.
+
+        Returns
+        -------
+        numpy array
+            The gradient of the kinetic energy.
+        """
+        return momentum * np.absolute(momentum) ** self._power_minus_two
 
     def momentum_observation(self, momentum):
         """

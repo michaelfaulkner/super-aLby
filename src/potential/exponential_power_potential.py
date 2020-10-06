@@ -26,25 +26,6 @@ class ExponentialPowerPotential(Potential):
         self._power_minus_two = power - 2
         super().__init__(prefactor=prefactor)
 
-    def gradient(self, support_variable, charges=None):
-        """
-        Returns the gradient of the potential for the given support_variable.
-
-        Parameters
-        ----------
-        support_variable : numpy_array
-            For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
-            parameter value.
-        charges : optional
-            All the charges needed to calculate the gradient; not used in this potential class.
-
-        Returns
-        -------
-        numpy array
-            The gradient.
-        """
-        return support_variable * support_variable ** self._power_minus_two
-
     def current_value(self, support_variable, charges=None):
         """
         Returns the potential for the given support_variable.
@@ -63,3 +44,22 @@ class ExponentialPowerPotential(Potential):
             The potential.
         """
         return self._one_over_power * np.sum(support_variable ** self._power)
+
+    def gradient(self, support_variable, charges=None):
+        """
+        Returns the gradient of the potential for the given support_variable.
+
+        Parameters
+        ----------
+        support_variable : numpy_array
+            For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
+            parameter value.
+        charges : optional
+            All the charges needed to calculate the gradient; not used in this potential class.
+
+        Returns
+        -------
+        numpy array
+            The gradient.
+        """
+        return support_variable * support_variable ** self._power_minus_two

@@ -20,22 +20,6 @@ class StandardRelativisticKineticEnergy(RelativisticKineticEnergy):
         """
         super().__init__(gamma=gamma)
 
-    def gradient(self, momentum):
-        """
-        Returns the gradient of the kinetic energy.
-
-        Parameters
-        ----------
-        momentum : numpy_array
-            The momentum associated with each support_variable.
-
-        Returns
-        -------
-        numpy array
-            The gradient of the kinetic energy.
-        """
-        return self._one_over_gamma * momentum * (1 + self._one_over_gamma * momentum ** 2) ** (- 0.5)
-
     def current_value(self, momentum):
         """
         Returns the kinetic energy.
@@ -51,3 +35,19 @@ class StandardRelativisticKineticEnergy(RelativisticKineticEnergy):
             The kinetic energy.
         """
         return np.sum((1 + self._one_over_gamma * momentum ** 2) ** 0.5)
+
+    def gradient(self, momentum):
+        """
+        Returns the gradient of the kinetic energy.
+
+        Parameters
+        ----------
+        momentum : numpy_array
+            The momentum associated with each support_variable.
+
+        Returns
+        -------
+        numpy array
+            The gradient of the kinetic energy.
+        """
+        return self._one_over_gamma * momentum * (1 + self._one_over_gamma * momentum ** 2) ** (- 0.5)

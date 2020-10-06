@@ -37,6 +37,22 @@ class SuperRelativisticKineticEnergy(RelativisticKineticEnergy):
         self._one_over_power = 1.0 / power
         super().__init__(gamma=gamma)
 
+    def current_value(self, momentum):
+        """
+        Returns the kinetic energy.
+
+        Parameters
+        ----------
+        momentum : numpy_array
+            The momentum associated with each support_variable.
+
+        Returns
+        -------
+        float
+            The kinetic energy.
+        """
+        return self._one_over_power * np.sum((1 + self._one_over_gamma * momentum ** 2) ** self._power_over_two)
+
     def gradient(self, momentum):
         """
         Returns the gradient of the kinetic energy.
@@ -53,19 +69,3 @@ class SuperRelativisticKineticEnergy(RelativisticKineticEnergy):
         """
         return self._one_over_gamma * momentum * (
                 1 + self._one_over_gamma * momentum ** 2) ** self._power_over_two_minus_one
-
-    def current_value(self, momentum):
-        """
-        Returns the kinetic energy.
-
-        Parameters
-        ----------
-        momentum : numpy_array
-            The momentum associated with each support_variable.
-
-        Returns
-        -------
-        float
-            The kinetic energy.
-        """
-        return self._one_over_power * np.sum((1 + self._one_over_gamma * momentum ** 2) ** self._power_over_two)

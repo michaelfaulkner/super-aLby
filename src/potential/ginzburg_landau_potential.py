@@ -36,29 +36,6 @@ class GinzburgLandauPotential(Potential):
         self._tau_dot_lambda = tau * lambda_hyperparameter
         super().__init__(prefactor=prefactor)
 
-    def gradient(self, support_variable, charges=None):
-        """
-        Returns the gradient of the potential for the given support_variable.
-
-        Parameters
-        ----------
-        support_variable : numpy array
-            For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
-            array of superconducting phase.
-        charges : optional
-            All the charges needed to calculate the gradient; not used in this potential class.
-
-        Returns
-        -------
-        numpy array
-            The gradient.
-        """
-        return (self._one_minus_tau * support_variable - self._tau_dot_alpha * (
-                self._pos_x_translation(support_variable) + self._neg_x_translation(support_variable) +
-                self._pos_y_translation(support_variable) + self._neg_y_translation(support_variable) +
-                self._pos_z_translation(support_variable) + self._neg_z_translation(support_variable) -
-                6 * support_variable) + self._tau_dot_lambda * support_variable ** 3)
-
     def current_value(self, support_variable, charges=None):
 
         """
@@ -83,6 +60,29 @@ class GinzburgLandauPotential(Potential):
                     (self._pos_y_translation(support_variable) - support_variable) ** 2 +
                     (self._pos_z_translation(support_variable) - support_variable) ** 2) +
             0.25 * self._tau_dot_lambda * support_variable ** 4)
+
+    def gradient(self, support_variable, charges=None):
+        """
+        Returns the gradient of the potential for the given support_variable.
+
+        Parameters
+        ----------
+        support_variable : numpy array
+            For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
+            array of superconducting phase.
+        charges : optional
+            All the charges needed to calculate the gradient; not used in this potential class.
+
+        Returns
+        -------
+        numpy array
+            The gradient.
+        """
+        return (self._one_minus_tau * support_variable - self._tau_dot_alpha * (
+                self._pos_x_translation(support_variable) + self._neg_x_translation(support_variable) +
+                self._pos_y_translation(support_variable) + self._neg_y_translation(support_variable) +
+                self._pos_z_translation(support_variable) + self._neg_z_translation(support_variable) -
+                6 * support_variable) + self._tau_dot_lambda * support_variable ** 3)
 
     def _pos_x_translation(self, support_variable):
         a = np.reshape(support_variable, (self._lattice_length, self._lattice_length, self._lattice_length))  # reshapes to a Len*Len*Len matrix

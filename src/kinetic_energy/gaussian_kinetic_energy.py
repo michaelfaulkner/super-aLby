@@ -14,22 +14,6 @@ class GaussianKineticEnergy(KineticEnergy):
         """
         super().__init__()
 
-    def gradient(self, momentum):
-        """
-        Returns the gradient of the kinetic energy.
-
-        Parameters
-        ----------
-        momentum : numpy_array
-            The momentum associated with each support_variable.
-
-        Returns
-        -------
-        numpy array
-            The gradient of the kinetic energy.
-        """
-        return momentum
-
     def current_value(self, momentum):
         """
         Returns the kinetic energy.
@@ -45,6 +29,22 @@ class GaussianKineticEnergy(KineticEnergy):
             The kinetic energy.
         """
         return 0.5 * np.sum(momentum ** 2)
+
+    def gradient(self, momentum):
+        """
+        Returns the gradient of the kinetic energy.
+
+        Parameters
+        ----------
+        momentum : numpy_array
+            The momentum associated with each support_variable.
+
+        Returns
+        -------
+        numpy array
+            The gradient of the kinetic energy.
+        """
+        return momentum
 
     def momentum_observation(self, momentum):
         """

@@ -47,6 +47,29 @@ class SmoothPinballLossPotential(Potential):
         self._beta_function_value = self._beta_function(xi * (1 - tau), xi * tau)
         self._x_sum = np.sum(self._x, axis=0)
 
+    def current_value(self, support_variable, charges=None):
+        """
+        Returns the potential for the given support_variable.
+
+        Parameters
+        ----------
+        support_variable : numpy array
+            For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
+            parameter value.
+        charges : optional
+            All the charges needed to calculate the potential; not used in this potential class.
+
+        Returns
+        -------
+        float
+            The potential.
+        """
+        x_dot_beta = np.inner(self._x, support_variable)
+        pinball_loss = (self._tau - 1) * (self._y - x_dot_beta) / self._sigma + self._xi * np.logaddexp(
+            0.0, (self._y - x_dot_beta) / self._xi_dot_sigma) + np.log(self._xi * self._sigma * self._beta_function_value)
+        prior_vec = np.absolute(support_variable) ** self._q
+        return np.sum(pinball_loss) + self._lambda_hyperparameter * np.sum(prior_vec)
+
     def gradient(self, support_variable, charges=None):
         """
         Returns the gradient of the potential for the given support_variable.
@@ -70,29 +93,6 @@ class SmoothPinballLossPotential(Potential):
         logistic_term = self._logistic_function((self._y - np.inner(self._x, support_variable)) / self._xi_dot_sigma)
         mid_term = np.array([np.inner(logistic_term, self._x[:, i]) for i in range(len(support_variable))])
         return (1 - self._tau) / self._sigma * self._x_sum + 1 / self._sigma * mid_term + prior_gradient
-
-    def current_value(self, support_variable, charges=None):
-        """
-        Returns the potential for the given support_variable.
-
-        Parameters
-        ----------
-        support_variable : numpy array
-            For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
-            parameter value.
-        charges : optional
-            All the charges needed to calculate the potential; not used in this potential class.
-
-        Returns
-        -------
-        float
-            The potential.
-        """
-        x_dot_beta = np.inner(self._x, support_variable)
-        pinball_loss = (self._tau - 1) * (self._y - x_dot_beta) / self._sigma + self._xi * np.logaddexp(
-            0.0, (self._y - x_dot_beta) / self._xi_dot_sigma) + np.log(self._xi * self._sigma * self._beta_function_value)
-        prior_vec = np.absolute(support_variable) ** self._q
-        return np.sum(pinball_loss) + self._lambda_hyperparameter * np.sum(prior_vec)
 
     @staticmethod
     def _beta_function(self, a, b):

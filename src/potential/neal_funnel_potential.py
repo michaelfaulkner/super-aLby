@@ -23,6 +23,26 @@ class NealFunnelPotential(Potential):
         """
         super().__init__(prefactor=prefactor)
 
+    def current_value(self, support_variable, charges=None):
+        """
+        Returns the potential for the given support_variable.
+
+        Parameters
+        ----------
+        support_variable : numpy_array
+            For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
+            parameter value.
+        charges : optional
+            All the charges needed to calculate the potential; not used in this potential class.
+
+        Returns
+        -------
+        float
+            The potential.
+        """
+        return support_variable[0] ** 2 / 18.0 + 9 * support_variable[0] / 2.0 + (
+                math.exp(-support_variable[0]) * np.sum(support_variable[1:len(support_variable)] ** 2) / 2.0)
+
     def gradient(self, support_variable, charges=None):
         """
         Returns the gradient of the potential for the given support_variable.
@@ -46,23 +66,3 @@ class NealFunnelPotential(Potential):
         gradient[1:len(support_variable)] = 2.0 * support_variable[1:len(support_variable)] * math.exp(
             -support_variable[0])
         return gradient
-
-    def current_value(self, support_variable, charges=None):
-        """
-        Returns the potential for the given support_variable.
-
-        Parameters
-        ----------
-        support_variable : numpy_array
-            For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
-            parameter value.
-        charges : optional
-            All the charges needed to calculate the potential; not used in this potential class.
-
-        Returns
-        -------
-        float
-            The potential.
-        """
-        return support_variable[0] ** 2 / 18.0 + 9 * support_variable[0] / 2.0 + (
-                math.exp(-support_variable[0]) * np.sum(support_variable[1:len(support_variable)] ** 2) / 2.0)
