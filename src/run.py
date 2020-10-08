@@ -1,19 +1,200 @@
-import markov_chain
+"""Executable script which runs the super-relativistic-mc application based on an input configuration file. This script
+    and the base package are both taken from the JeLLyFysh application, on which two of the 2-2authors worked."""
+from argparse import ArgumentParser, Namespace
+from configparser import ConfigParser
+import logging
+import platform
+import sys
+import time
+from typing import Sequence
+from base import factory
+from base.strings import to_camel_case
+from base.uuid import get_uuid
+from version import version
 import integrator.leapfrog_integrator
-import kinetic_energy.super_relativistic_kinetic_energy
-import potential.exponential_power_potential
+import markov_chain
 import numpy as np
 
-potential_instance = potential.exponential_power_potential.ExponentialPowerPotential()
-kinetic_energy_instance = kinetic_energy.super_relativistic_kinetic_energy.SuperRelativisticKineticEnergy()
-integrator_instance = integrator.leapfrog_integrator.LeapfrogIntegrator(kinetic_energy_instance, potential_instance)
-markov_chain_instance = markov_chain.MarkovChain(integrator_instance, kinetic_energy_instance, potential_instance,
-                                                 initial_step_size=1.0, max_number_of_integration_steps=10,
-                                                 number_of_equilibration_iterations=1000,
-                                                 number_of_observations=1000,
-                                                 step_size_adaptor_is_on=True, use_metropolis_accept_reject=True,
-                                                 randomise_number_of_integration_steps=False)
-support_variable = np.zeros(1000)
-(momentum_sample, support_variable_sample, adapted_step_size, acceptance_rate,
- number_of_numerical_divergences_during_equilibration,
- number_of_numerical_divergences_during_equilibrated_process) = markov_chain_instance.run(support_variable)
+
+def add_general_parser_arguments(parser: ArgumentParser) -> None:
+    """
+    Add parser arguments to the command line argument parser.
+
+    This method adds the following possible arguments:
+    1. --version, -V: Print the version of the application and exit.
+    2. --verbose, -v: Increase verbosity of logging messages. Multiple -v options increase the verbosity. The maximum
+    is 2.
+    3. --logfile LOGFILE, -l LOGFILE: Specify the logging file.
+    Per default, also the following argument is added:
+    4. --help, -h: Show the help message and exit.
+
+    Parameters
+    ----------
+    parser : argparse.ArgumentParser
+        The argument parser.
+    """
+    parser.add_argument(
+        "-V", "--version", action="version", version="super-relativistic-mc application version " + version)
+    parser.add_argument("-v", "--verbose", action="count",
+                        help="increase verbosity of logging messages "
+                             "(multiple -v options increase the verbosity, the maximum is 2)")
+    parser.add_argument("-l", "--logfile", action="store", help="specify the logging file")
+
+
+def parse_options(args: Sequence[str]) -> Namespace:
+    """
+    Convert argument strings to objects and assign them as attributes of the argparse namespace. Return the populated
+    namespace.
+
+    The argument strings can for example be sys.argv[1:] in order to parse the command line arguments. The argument
+    parser parses the arguments specified in the add_general_parser_arguments function. This function also adds the
+    configuration file as an obligatory positional argument.
+
+    Parameters
+    ----------
+    args : Sequence[str]
+        The argument strings.
+
+    Returns
+    -------
+    argparse.Namespace
+        The populated argparse namespace.
+    """
+    parser = ArgumentParser()
+    parser.add_argument("config_file", help="specify the path to config.ini file")
+    add_general_parser_arguments(parser)
+    return parser.parse_args(args)
+
+
+def set_up_logging(parsed_arguments: Namespace) -> logging.Logger:
+    """
+    Set up the logging based on the populated argparse namespace.
+
+    The level of the root logger is set based on the number of -v arguments parsed. For zero -v arguments, it is set
+    to logging.WARNING, for one to logging.INFO and for two to logging.DEBUG. If a log file was specified in the
+    parsed arguments, the logging information is written into that file.
+
+    Parameters
+    ----------
+    parsed_arguments : argparse.Namespace
+        The populated argparse namespace.
+
+    Returns
+    -------
+    logging.Logger
+        The initialized root logger.
+    """
+    logger = logging.getLogger("")
+    logger.setLevel(logging.DEBUG)
+
+    if parsed_arguments.verbose is None:
+        logger_level = logging.WARNING
+    elif parsed_arguments.verbose == 1:
+        logger_level = logging.INFO
+    else:
+        logger_level = logging.DEBUG
+
+    if parsed_arguments.logfile is not None:
+        handler = logging.FileHandler(parsed_arguments.logfile)
+    else:
+        handler = logging.StreamHandler()
+    logger.setLevel(logger_level)
+    handler.setLevel(logger_level)
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s: %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    # Don't collect information about where calls were made from (slows down PyPy)
+    logging._srcfile = None
+    return logger
+
+
+def read_config(config_file: str) -> ConfigParser:
+    """
+    Parse the configuration file.
+
+    Parameters
+    ----------
+    config_file : str
+        The filename of the configuration file.
+
+    Returns
+    -------
+    configparser.ConfigParser
+        The parsed configuration file.
+
+    Raises
+    ------
+    RuntimeError
+        If the configuration file does not exist.
+    """
+    config = ConfigParser()
+    if not config.read(config_file):
+        raise RuntimeError("Given configuration file does not exist.")
+    return config
+
+
+def get_algorithm_config(config):
+    return (config.get("Algorithm", "initial_step_size"), config.get("Algorithm", "max_number_of_integration_steps"),
+            config.get("Algorithm", "number_of_equilibration_iterations"),
+            config.get("Algorithm", "number_of_observations"), config.get("Algorithm", "step_size_adaptor_is_on"),
+            config.get("Algorithm", "use_metropolis_accept_reject"),
+            config.get("Algorithm", "randomise_number_of_integration_steps"))
+
+
+def print_start_message():
+    """Print the start message which includes the copyright."""
+    print(
+        "super-relativistic-mc (version {0}) - a Python application for super-relativistic Monte Carlo".format(version))
+    print("Copyright (C) 2020 The Super-relativistic Monte Carlo organization")
+
+
+def main(argv: Sequence[str]) -> None:
+    """
+    Use the argument strings to run the super-relativistic-mc application.
+
+    First the argument strings are parsed. The configuration file specified in the argument strings is parsed. Based on
+    the configuration file, the algorithm is built from the relevant instantiated classes.
+
+    Parameters
+    ----------
+    argv : Sequence[str]
+        The argument strings.
+    """
+    args = parse_options(argv)
+    logger = set_up_logging(args)
+
+    logger.info("Run identification hash: {0}".format(get_uuid()))
+    logger.info("Underlying platform (determined via platform.platform(aliased=True): {0}"
+                .format(platform.platform(aliased=True)))
+
+    logger.info("Setting up the run based on the configuration file {0}.".format(args.config_file))
+    config = read_config(args.config_file)
+    kinetic_energy_instance = factory.build_from_config(
+        config, to_camel_case(config.get("Hamiltonian", "kinetic_energy")), "kinetic_energy")
+    potential_instance = factory.build_from_config(
+        config, to_camel_case(config.get("Hamiltonian", "potential")), "potential")
+    integrator_instance = integrator.leapfrog_integrator.LeapfrogIntegrator(kinetic_energy_instance, potential_instance)
+    markov_chain_instance = markov_chain.MarkovChain(integrator_instance, kinetic_energy_instance, potential_instance,
+                                                     *get_algorithm_config(config))
+    support_variable = np.zeros(config.get("Hamiltonian", "dimension_of_target_distribution"))
+
+    used_sections = factory.used_sections
+    for section in config.sections():
+        if section not in used_sections and section != "Algorithm" and section != "Hamiltonian":
+            logger.warning("The section {0} in the .ini file has not been used!".format(section))
+
+    logger.info("Running the super-relativistic Monte Carlo simulation.")
+    start_time = time.time()
+    (momentum_sample, support_variable_sample, adapted_step_size, acceptance_rate,
+     number_of_numerical_divergences_during_equilibration,
+     number_of_numerical_divergences_during_equilibrated_process) = markov_chain_instance.run(support_variable)
+    end_time = time.time()
+
+    logger.info("Running the post_run method.")
+    # mediator.post_run()
+    logger.info("Runtime of the simulation: --- %s seconds ---" % (end_time - start_time))
+
+
+if __name__ == '__main__':
+    print_start_message()
+    main(sys.argv[1:])
