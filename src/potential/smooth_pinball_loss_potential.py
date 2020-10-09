@@ -1,5 +1,7 @@
 """Module for the SmoothPinballLossPotential class."""
+from base.logging import log_init_arguments
 from .potential import Potential
+import logging
 import math
 import numpy as np
 
@@ -47,6 +49,8 @@ class SmoothPinballLossPotential(Potential):
         self._beta_function_value = self._beta_function(xi * (1 - tau), xi * tau)
         self._x_sum = np.sum(self._x, axis=0)
         super().__init__(prefactor=prefactor)
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, tau=tau, sigma=sigma,
+                           lambda_hyperparameter=lambda_hyperparameter, x=x, y=y, xi=xi ,q=q, prefactor=prefactor)
 
     def current_value(self, support_variable, charges=None):
         """

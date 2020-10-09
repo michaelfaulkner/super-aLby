@@ -1,6 +1,8 @@
 """Module for the GaussianKineticEnergy class."""
-import numpy as np
+from base.logging import log_init_arguments
 from .kinetic_energy import KineticEnergy
+import logging
+import numpy as np
 
 
 class GaussianKineticEnergy(KineticEnergy):
@@ -13,6 +15,7 @@ class GaussianKineticEnergy(KineticEnergy):
         The constructor of the GaussianKineticEnergy class.
         """
         super().__init__()
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__)
 
     def current_value(self, momentum):
         """

@@ -1,7 +1,9 @@
 """Module for the abstract KineticEnergyWithAdaptiveRejectionSampling class."""
+from base.logging import log_init_arguments
 from .kinetic_energy import KineticEnergy
 from adaptive_rejection_sampling import AdaptiveRejectionSampling
 from abc import ABCMeta, abstractmethod
+import logging
 import numpy as np
 
 
@@ -43,6 +45,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         self._adaptive_rejection_sampling_instance = AdaptiveRejectionSampling(self._negative_current_value,
                                                                                self._negative_gradient)
         super().__init__(**kwargs)
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, gamma=gamma)
 
     @abstractmethod
     def current_value(self, momentum):

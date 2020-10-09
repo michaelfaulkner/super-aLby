@@ -1,5 +1,7 @@
 """Module for the GinzburgLandauPotential class."""
+from base.logging import log_init_arguments
 from .potential import Potential
+import logging
 import numpy as np
 
 
@@ -36,6 +38,9 @@ class GinzburgLandauPotential(Potential):
         self._tau_dot_alpha = tau * alpha
         self._tau_dot_lambda = tau * lambda_hyperparameter
         super().__init__(prefactor=prefactor)
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, alpha=alpha,
+                           lambda_hyperparameter=lambda_hyperparameter, tau=tau, lattice_length=lattice_length,
+                           prefactor=prefactor)
 
     def current_value(self, support_variable, charges=None):
         """

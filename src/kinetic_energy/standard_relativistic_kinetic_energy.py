@@ -1,5 +1,7 @@
 """Module for the RelativisticKineticEnergy class."""
+from base.logging import log_init_arguments
 from .relativistic_kinetic_energy import RelativisticKineticEnergy
+import logging
 import numpy as np
 
 
@@ -19,6 +21,7 @@ class StandardRelativisticKineticEnergy(RelativisticKineticEnergy):
             Gaussian to generalised-power behaviour.
         """
         super().__init__(gamma=gamma)
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, gamma=gamma)
 
     def current_value(self, momentum):
         """

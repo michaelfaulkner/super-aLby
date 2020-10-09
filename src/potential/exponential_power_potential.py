@@ -1,5 +1,7 @@
 """Module for the ExponentialPowerPotential class."""
+from base.logging import log_init_arguments
 from .potential import Potential
+import logging
 import numpy as np
 
 
@@ -25,6 +27,7 @@ class ExponentialPowerPotential(Potential):
         self._power = power
         self._power_minus_two = power - 2
         super().__init__(prefactor=prefactor)
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power, prefactor=prefactor)
 
     def current_value(self, support_variable, charges=None):
         """

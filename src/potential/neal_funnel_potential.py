@@ -1,5 +1,7 @@
 """Module for the NealFunnelPotential class."""
+from base.logging import log_init_arguments
 from .potential import Potential
+import logging
 import math
 import numpy as np
 
@@ -22,6 +24,7 @@ class NealFunnelPotential(Potential):
             The prefactor k of the potential.
         """
         super().__init__(prefactor=prefactor)
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
     def current_value(self, support_variable, charges=None):
         """

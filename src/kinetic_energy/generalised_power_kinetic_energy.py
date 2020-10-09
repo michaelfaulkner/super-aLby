@@ -1,7 +1,7 @@
 """Module for the GeneralisedPowerKineticEnergy class."""
-import logging
 from base.logging import log_init_arguments
 from .kinetic_energy import KineticEnergy
+import logging
 import numpy as np
 import rpy2.robjects.packages as r_packages
 import rpy2.robjects.numpy2ri as n2ri
