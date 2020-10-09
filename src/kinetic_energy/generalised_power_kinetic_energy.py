@@ -46,7 +46,7 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         Parameters
         ----------
         momentum : numpy_array
-            The momentum associated with each support_variable.
+            The momentum associated with each position.
 
         Returns
         -------
@@ -62,7 +62,7 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         Parameters
         ----------
         momentum : numpy_array
-            The momentum associated with each support_variable.
+            The momentum associated with each position.
 
         Returns
         -------
@@ -78,11 +78,11 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         Parameters
         ----------
         momentum : numpy_array
-            The current momentum associated with each support_variable.
+            The current momentum associated with each position.
 
         Returns
         -------
         numpy_array
-            A new momentum associated with each support_variable.
+            A new momentum associated with each position.
         """
         return np.array(generalised_power_distribution.rnormp(len(momentum), p=self._power))

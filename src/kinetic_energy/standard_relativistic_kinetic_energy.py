@@ -30,7 +30,7 @@ class StandardRelativisticKineticEnergy(RelativisticKineticEnergy):
         Parameters
         ----------
         momentum : numpy_array
-            The momentum associated with each support_variable.
+            The momentum associated with each position.
 
         Returns
         -------
@@ -46,7 +46,7 @@ class StandardRelativisticKineticEnergy(RelativisticKineticEnergy):
         Parameters
         ----------
         momentum : numpy_array
-            The momentum associated with each support_variable.
+            The momentum associated with each position.
 
         Returns
         -------

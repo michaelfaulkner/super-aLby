@@ -42,13 +42,13 @@ class GinzburgLandauPotential(Potential):
                            lambda_hyperparameter=lambda_hyperparameter, tau=tau, lattice_length=lattice_length,
                            prefactor=prefactor)
 
-    def current_value(self, support_variable, charges=None):
+    def current_value(self, position, charges=None):
         """
-        Returns the potential for the given support_variable.
+        Returns the potential for the given position.
 
         Parameters
         ----------
-        support_variable : numpy array
+        position : numpy array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
             array of superconducting phase.
         charges : optional
@@ -60,19 +60,19 @@ class GinzburgLandauPotential(Potential):
             The potential.
         """
         return np.sum(
-            0.5 * self._one_minus_tau * support_variable ** 2 + 0.5 * self._tau_dot_alpha * (
-                    (self._pos_x_translation(support_variable) - support_variable) ** 2 +
-                    (self._pos_y_translation(support_variable) - support_variable) ** 2 +
-                    (self._pos_z_translation(support_variable) - support_variable) ** 2) +
-            0.25 * self._tau_dot_lambda * support_variable ** 4)
+            0.5 * self._one_minus_tau * position ** 2 + 0.5 * self._tau_dot_alpha * (
+                    (self._pos_x_translation(position) - position) ** 2 +
+                    (self._pos_y_translation(position) - position) ** 2 +
+                    (self._pos_z_translation(position) - position) ** 2) +
+            0.25 * self._tau_dot_lambda * position ** 4)
 
-    def gradient(self, support_variable, charges=None):
+    def gradient(self, position, charges=None):
         """
-        Returns the gradient of the potential for the given support_variable.
+        Returns the gradient of the potential for the given position.
 
         Parameters
         ----------
-        support_variable : numpy array
+        position : numpy array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
             array of superconducting phase.
         charges : optional
@@ -83,55 +83,55 @@ class GinzburgLandauPotential(Potential):
         numpy array
             The gradient.
         """
-        return (self._one_minus_tau * support_variable - self._tau_dot_alpha * (
-                self._pos_x_translation(support_variable) + self._neg_x_translation(support_variable) +
-                self._pos_y_translation(support_variable) + self._neg_y_translation(support_variable) +
-                self._pos_z_translation(support_variable) + self._neg_z_translation(support_variable) -
-                6 * support_variable) + self._tau_dot_lambda * support_variable ** 3)
+        return (self._one_minus_tau * position - self._tau_dot_alpha * (
+                self._pos_x_translation(position) + self._neg_x_translation(position) +
+                self._pos_y_translation(position) + self._neg_y_translation(position) +
+                self._pos_z_translation(position) + self._neg_z_translation(position) -
+                6 * position) + self._tau_dot_lambda * position ** 3)
 
-    def _pos_x_translation(self, support_variable):
+    def _pos_x_translation(self, position):
         # reshape to a self._lattice_length x self._lattice_length x self._lattice_length matrix
-        a = np.reshape(support_variable, (self._lattice_length, self._lattice_length, self._lattice_length))
+        a = np.reshape(position, (self._lattice_length, self._lattice_length, self._lattice_length))
         b = np.pad(a, (0, 1), mode='wrap')  # copies the 0th entry at each matrix level to (Len+1)th entry
         c = np.delete(b, self._lattice_length, 0)  # deletes the (Len)th entry at the highest matrix level
         d = np.delete(c, self._lattice_length, 1)  # deletes the (Len)th entry at the second-highest matrix level
         e = np.delete(d, 0, 2)  # deletes the 0th entry at the lowest matrix level
         return np.reshape(e, self._lattice_volume)  # reshapes to an Len**3-dim vector
 
-    def _pos_y_translation(self, support_variable):
-        a = np.reshape(support_variable, (self._lattice_length, self._lattice_length, self._lattice_length))
+    def _pos_y_translation(self, position):
+        a = np.reshape(position, (self._lattice_length, self._lattice_length, self._lattice_length))
         b = np.pad(a, (0, 1), mode='wrap')
         c = np.delete(b, self._lattice_length, 0)
         d = np.delete(c, 0, 1)
         e = np.delete(d, self._lattice_length, 2)
         return np.reshape(e, self._lattice_volume)
 
-    def _pos_z_translation(self, support_variable):
-        a = np.reshape(support_variable, (self._lattice_length, self._lattice_length, self._lattice_length))
+    def _pos_z_translation(self, position):
+        a = np.reshape(position, (self._lattice_length, self._lattice_length, self._lattice_length))
         b = np.pad(a, (0, 1), mode='wrap')
         c = np.delete(b, 0, 0)
         d = np.delete(c, self._lattice_length, 1)
         e = np.delete(d, self._lattice_length, 2)
         return np.reshape(e, self._lattice_volume)
 
-    def _neg_x_translation(self, support_variable):
-        a = np.reshape(support_variable, (self._lattice_length, self._lattice_length, self._lattice_length))
+    def _neg_x_translation(self, position):
+        a = np.reshape(position, (self._lattice_length, self._lattice_length, self._lattice_length))
         b = np.pad(a, (1, 0), mode='wrap')
         c = np.delete(b, 0, 0)
         d = np.delete(c, 0, 1)
         e = np.delete(d, self._lattice_length, 2)
         return np.reshape(e, self._lattice_volume)
 
-    def _neg_y_translation(self, support_variable):
-        a = np.reshape(support_variable, (self._lattice_length, self._lattice_length, self._lattice_length))
+    def _neg_y_translation(self, position):
+        a = np.reshape(position, (self._lattice_length, self._lattice_length, self._lattice_length))
         b = np.pad(a, (1, 0), mode='wrap')
         c = np.delete(b, 0, 0)
         d = np.delete(c, self._lattice_length, 1)
         e = np.delete(d, 0, 2)
         return np.reshape(e, self._lattice_volume)
 
-    def _neg_z_translation(self, support_variable):
-        a = np.reshape(support_variable, (self._lattice_length, self._lattice_length, self._lattice_length))
+    def _neg_z_translation(self, position):
+        a = np.reshape(position, (self._lattice_length, self._lattice_length, self._lattice_length))
         b = np.pad(a, (1, 0), mode='wrap')
         c = np.delete(b, self._lattice_length, 0)
         d = np.delete(c, 0, 1)
@@ -139,9 +139,9 @@ class GinzburgLandauPotential(Potential):
         return np.reshape(e, self._lattice_volume)
 
     # todo integrer __reshape_and_pad() dans les fonctions ci-dessous
-    def _reshape_and_pad(self, support_variable, positive_translation):
+    def _reshape_and_pad(self, position, positive_translation):
         # reshape to a self.lattice_length * self.lattice_length * self.lattice_length matrix
-        a = np.reshape(support_variable, (self._lattice_length, self._lattice_length, self._lattice_length))
+        a = np.reshape(position, (self._lattice_length, self._lattice_length, self._lattice_length))
         # copies the 0th entry at each matrix level to (self.lattice_length + 1)th entry
         if positive_translation:
             return np.pad(a, (0, 1), mode='wrap')

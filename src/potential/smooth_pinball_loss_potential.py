@@ -52,13 +52,13 @@ class SmoothPinballLossPotential(Potential):
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, tau=tau, sigma=sigma,
                            lambda_hyperparameter=lambda_hyperparameter, x=x, y=y, xi=xi ,q=q, prefactor=prefactor)
 
-    def current_value(self, support_variable, charges=None):
+    def current_value(self, position, charges=None):
         """
-        Returns the potential for the given support_variable.
+        Returns the potential for the given position.
 
         Parameters
         ----------
-        support_variable : numpy array
+        position : numpy array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
         charges : optional
@@ -69,19 +69,19 @@ class SmoothPinballLossPotential(Potential):
         float
             The potential.
         """
-        x_dot_beta = np.inner(self._x, support_variable)
+        x_dot_beta = np.inner(self._x, position)
         pinball_loss = (self._tau - 1) * (self._y - x_dot_beta) / self._sigma + self._xi * np.logaddexp(
             0.0, (self._y - x_dot_beta) / self._xi_dot_sigma) + np.log(self._xi * self._sigma * self._beta_function_value)
-        prior_vec = np.absolute(support_variable) ** self._q
+        prior_vec = np.absolute(position) ** self._q
         return np.sum(pinball_loss) + self._lambda_hyperparameter * np.sum(prior_vec)
 
-    def gradient(self, support_variable, charges=None):
+    def gradient(self, position, charges=None):
         """
-        Returns the gradient of the potential for the given support_variable.
+        Returns the gradient of the potential for the given position.
 
         Parameters
         ----------
-        support_variable : numpy array
+        position : numpy array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
         charges : optional
@@ -94,9 +94,9 @@ class SmoothPinballLossPotential(Potential):
         """
         prior_gradient = np.array(
             [self._q * self._lambda_hyperparameter * np.sign(component) * np.absolute(component) ** (self._q - 1) for
-             component in support_variable])
-        logistic_term = self._logistic_function((self._y - np.inner(self._x, support_variable)) / self._xi_dot_sigma)
-        mid_term = np.array([np.inner(logistic_term, self._x[:, i]) for i in range(len(support_variable))])
+             component in position])
+        logistic_term = self._logistic_function((self._y - np.inner(self._x, position)) / self._xi_dot_sigma)
+        mid_term = np.array([np.inner(logistic_term, self._x[:, i]) for i in range(len(position))])
         return (1 - self._tau) / self._sigma * self._x_sum + 1 / self._sigma * mid_term + prior_gradient
 
     @staticmethod

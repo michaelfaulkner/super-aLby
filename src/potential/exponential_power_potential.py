@@ -19,7 +19,7 @@ class ExponentialPowerPotential(Potential):
         Parameters
         ----------
         power : int
-            The power to which each component of the support_variable is raised.
+            The power to which each component of the position is raised.
         prefactor : float
             The prefactor k of the potential.
         """
@@ -29,13 +29,13 @@ class ExponentialPowerPotential(Potential):
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power, prefactor=prefactor)
 
-    def current_value(self, support_variable, charges=None):
+    def current_value(self, position, charges=None):
         """
-        Returns the potential for the given support_variable.
+        Returns the potential for the given position.
 
         Parameters
         ----------
-        support_variable : numpy_array
+        position : numpy_array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
         charges : optional
@@ -46,15 +46,15 @@ class ExponentialPowerPotential(Potential):
         float
             The potential.
         """
-        return self._one_over_power * np.sum(support_variable ** self._power)
+        return self._one_over_power * np.sum(position ** self._power)
 
-    def gradient(self, support_variable, charges=None):
+    def gradient(self, position, charges=None):
         """
-        Returns the gradient of the potential for the given support_variable.
+        Returns the gradient of the potential for the given position.
 
         Parameters
         ----------
-        support_variable : numpy_array
+        position : numpy_array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
         charges : optional
@@ -65,4 +65,4 @@ class ExponentialPowerPotential(Potential):
         numpy array
             The gradient.
         """
-        return support_variable * support_variable ** self._power_minus_two
+        return position * position ** self._power_minus_two

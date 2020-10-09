@@ -37,7 +37,7 @@ class Integrator(metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @abstractmethod
-    def get_candidate_configuration(self, momentum, support_variable, number_of_integration_steps, step_size,
+    def get_candidate_configuration(self, momentum, position, number_of_integration_steps, step_size,
                                     charges=None):
         """
         Return the Hamiltonian / (super-)relativistic flow between times
@@ -46,8 +46,8 @@ class Integrator(metaclass=ABCMeta):
         Parameters
         ----------
         momentum : numpy_array
-            The momentum associated with each support_variable.
-        support_variable : numpy_array
+            The momentum associated with each position.
+        position : numpy_array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
             parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
         number_of_integration_steps : int, optional

@@ -21,7 +21,7 @@ class LeapfrogIntegrator(Integrator):
         """
         super().__init__(kinetic_energy_instance=kinetic_energy_instance, potential_instance=potential_instance)
 
-    def get_candidate_configuration(self, momentum, support_variable, number_of_integration_steps, step_size,
+    def get_candidate_configuration(self, momentum, position, number_of_integration_steps, step_size,
                                     charges=None):
         """
         Return the Hamiltonian / (super-)relativistic flow between times
@@ -30,8 +30,8 @@ class LeapfrogIntegrator(Integrator):
         Parameters
         ----------
         momentum : numpy_array
-            The momentum associated with each support_variable.
-        support_variable : numpy_array
+            The momentum associated with each position.
+        position : numpy_array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
             parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
         number_of_integration_steps : int, optional
@@ -47,10 +47,10 @@ class LeapfrogIntegrator(Integrator):
             The flow.
         """
         half_step_size = 0.5 * step_size
-        momentum = momentum - half_step_size * self._potential_instance.gradient(support_variable, charges=charges)
+        momentum = momentum - half_step_size * self._potential_instance.gradient(position, charges=charges)
         for _ in range(number_of_integration_steps - 1):
-            support_variable = support_variable + step_size * self._kinetic_energy_instance.gradient(momentum)
-            momentum = momentum - step_size * self._potential_instance.gradient(support_variable, charges=charges)
-        support_variable = support_variable + step_size * self._kinetic_energy_instance.gradient(momentum)
-        momentum = momentum - half_step_size * self._potential_instance.gradient(support_variable, charges=charges)
-        return momentum, support_variable
+            position = position + step_size * self._kinetic_energy_instance.gradient(momentum)
+            momentum = momentum - step_size * self._potential_instance.gradient(position, charges=charges)
+        position = position + step_size * self._kinetic_energy_instance.gradient(momentum)
+        momentum = momentum - half_step_size * self._potential_instance.gradient(position, charges=charges)
+        return momentum, position

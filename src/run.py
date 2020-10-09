@@ -58,7 +58,7 @@ def main(argv: Sequence[str]) -> None:
 
     logger.info("Running the super-relativistic Monte Carlo simulation.")
     start_time = time.time()
-    (momentum_sample, support_variable_sample, adapted_step_size, acceptance_rate,
+    (momentum_sample, position_sample, adapted_step_size, acceptance_rate,
      number_of_numerical_divergences_during_equilibration,
      number_of_numerical_divergences_during_equilibrated_process) = markov_chain_instance.run()
     end_time = time.time()

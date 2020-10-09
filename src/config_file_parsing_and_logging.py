@@ -38,8 +38,8 @@ def get_algorithm_config(config):
             get_value(config, "Algorithm", "initial_step_size"),
             get_value(config, "Algorithm", "max_number_of_integration_steps"),
             get_value(config, "Algorithm", "randomise_number_of_integration_steps"),
-            get_value(config, "Algorithm", "randomise_initial_values_of_support_variable"),
             get_value(config, "Algorithm", "randomise_initial_momenta"),
+            get_value(config, "Algorithm", "randomise_initial_position"),
             get_value(config, "Algorithm", "step_size_adaptor_is_on"),
             get_value(config, "Algorithm", "use_metropolis_accept_reject"))
 
