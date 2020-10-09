@@ -9,7 +9,7 @@ class Potential(metaclass=ABCMeta):
     A general potential class provides the function itself and its gradient.
     """
 
-    def __init__(self, prefactor=1.0, **kwargs):
+    def __init__(self, prefactor: float = 1.0, **kwargs):
         """
         The constructor of the Potential class.
 
@@ -31,8 +31,8 @@ class Potential(metaclass=ABCMeta):
         if prefactor == 0.0:
             raise ValueError("Give a value not equal to 0.0 as the prefactor for the potential {0}.".format(
                 self.__class__.__name__))
-        self._prefactor = prefactor
         super().__init__(**kwargs)
+        self._prefactor = prefactor
 
     @abstractmethod
     def current_value(self, support_variable, charges=None):

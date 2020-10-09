@@ -15,7 +15,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         observation of the momentum.
     """
 
-    def __init__(self, gamma=1.0, **kwargs):
+    def __init__(self, gamma: float = 1.0, **kwargs):
         """
         The constructor of the RelativisticKineticEnergy class.
 
@@ -39,9 +39,10 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
             raise ValueError(
                 "Give a value not equal to 0.0 as the tuning parameter for the relativistic kinetic energy {0}.".format(
                     self.__class__.__name__))
-        self._one_over_gamma = 1.0 / gamma
-        self._adaptive_rejection_sampling_instance = AdaptiveRejectionSampling(self._negative_current_value, self._negative_gradient)
         super().__init__(**kwargs)
+        self._one_over_gamma = 1.0 / gamma
+        self._adaptive_rejection_sampling_instance = AdaptiveRejectionSampling(self._negative_current_value,
+                                                                               self._negative_gradient)
 
     @abstractmethod
     def current_value(self, momentum):

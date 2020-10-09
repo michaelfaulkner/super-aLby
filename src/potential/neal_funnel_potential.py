@@ -12,7 +12,7 @@ class NealFunnelPotential(Potential):
     x is an n-dimensional vector of floats.
     """
 
-    def __init__(self, prefactor=1.0):
+    def __init__(self, prefactor: float = 1.0):
         """
         The constructor of the NealFunnel class.
 

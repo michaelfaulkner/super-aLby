@@ -12,7 +12,8 @@ class SmoothPinballLossPotential(Potential):
     x is an n-dimensional vector of floats.
     """
 
-    def __init__(self, tau, sigma, lambda_hyperparameter, x, y, xi=0.1, q=2.0, prefactor=1.0):
+    def __init__(self, tau: float, sigma: float, lambda_hyperparameter: float, x: float, y: float, xi: float = 0.1,
+                 q: float = 2.0, prefactor: float = 1.0):
         """
         The constructor of the NealFunnel class.
 

@@ -12,7 +12,7 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
     This class implements the generalised-power kinetic energy K = sum(p[i] ** power / power)
     """
 
-    def __init__(self, power=2):
+    def __init__(self, power: int = 2):
         """
         The constructor of the GeneralisedPowerKineticEnergy class.
 
@@ -31,10 +31,10 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         if power == 0:
             raise ValueError("Give a value not equal to 0 as the power associated with the kinetic energy {0}.".format(
                 self.__class__.__name__))
+        super().__init__()
         self._one_over_power = 1 / power
         self._power = power
         self._power_minus_two = power - 2
-        super().__init__()
 
     def current_value(self, momentum):
         """

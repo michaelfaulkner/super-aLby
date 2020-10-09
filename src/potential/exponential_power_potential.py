@@ -21,10 +21,10 @@ class ExponentialPowerPotential(Potential):
         prefactor : float
             The prefactor k of the potential.
         """
+        super().__init__(prefactor=prefactor)
         self._one_over_power = 1.0 / power
         self._power = power
         self._power_minus_two = power - 2
-        super().__init__(prefactor=prefactor)
 
     def current_value(self, support_variable, charges=None):
         """

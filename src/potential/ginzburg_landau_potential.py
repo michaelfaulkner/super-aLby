@@ -9,7 +9,8 @@ class GinzburgLandauPotential(Potential):
         periodic cubic lattice.
     """
 
-    def __init__(self, alpha, lambda_hyperparameter, tau, lattice_length, prefactor=1.0):
+    def __init__(self, alpha: float, lambda_hyperparameter: float, tau: float, lattice_length: int,
+                 prefactor: float = 1.0):
         """
         The constructor of the GinzburgLandauPotential class.
 
@@ -26,6 +27,7 @@ class GinzburgLandauPotential(Potential):
         prefactor : float
             The prefactor k of the potential.
         """
+        super().__init__(prefactor=prefactor)
         self._alpha = alpha
         self._lambda_hyperparameter = lambda_hyperparameter
         self._tau = tau
@@ -34,10 +36,8 @@ class GinzburgLandauPotential(Potential):
         self._one_minus_tau = (1 - tau)
         self._tau_dot_alpha = tau * alpha
         self._tau_dot_lambda = tau * lambda_hyperparameter
-        super().__init__(prefactor=prefactor)
 
     def current_value(self, support_variable, charges=None):
-
         """
         Returns the potential for the given support_variable.
 
@@ -85,7 +85,8 @@ class GinzburgLandauPotential(Potential):
                 6 * support_variable) + self._tau_dot_lambda * support_variable ** 3)
 
     def _pos_x_translation(self, support_variable):
-        a = np.reshape(support_variable, (self._lattice_length, self._lattice_length, self._lattice_length))  # reshapes to a Len*Len*Len matrix
+        # reshape to a self._lattice_length x self._lattice_length x self._lattice_length matrix
+        a = np.reshape(support_variable, (self._lattice_length, self._lattice_length, self._lattice_length))
         b = np.pad(a, (0, 1), mode='wrap')  # copies the 0th entry at each matrix level to (Len+1)th entry
         c = np.delete(b, self._lattice_length, 0)  # deletes the (Len)th entry at the highest matrix level
         d = np.delete(c, self._lattice_length, 1)  # deletes the (Len)th entry at the second-highest matrix level
