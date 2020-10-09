@@ -14,13 +14,13 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
     This class implements the generalised-power kinetic energy K = sum(p[i] ** power / power)
     """
 
-    def __init__(self, power: int = 2):
+    def __init__(self, power: float = 2.0):
         """
         The constructor of the GeneralisedPowerKineticEnergy class.
 
         Parameters
         ----------
-        power : int
+        power : float
             The power to which each momentum component is raised. For potentials with leading order term |x|^a, the
             optimal choice that ensures robust dynamics is given by power = 1 + 1 / (a - 1) for a >= 2 and
             power = 1 + 1 / (a + 1) for a <= -1.
@@ -30,12 +30,13 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         base.exceptions.ValueError
             If the power equals 0.
         """
-        if power == 0:
-            raise ValueError("Give a value not equal to 0 as the power associated with the kinetic energy {0}.".format(
-                self.__class__.__name__))
-        self._one_over_power = 1 / power
+        if power == 0.0:
+            raise ValueError(
+                "Give a value not equal to 0.0 as the power associated with the kinetic energy {0}.".format(
+                    self.__class__.__name__))
+        self._one_over_power = 1.0 / power
         self._power = power
-        self._power_minus_two = power - 2
+        self._power_minus_two = power - 2.0
         super().__init__()
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power)
 
