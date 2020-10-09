@@ -7,7 +7,7 @@ from typing import Sequence
 from base import factory
 from base.strings import to_camel_case
 from base.uuid import get_uuid
-from config_file_parsing_and_logging import get_algorithm_config, parse_options, set_up_logging, read_config
+from config_file_parsing_and_logging import get_algorithm_config, parse_options, set_up_logging, read_config, get_value
 from version import version
 import integrator.leapfrog_integrator
 import markov_chain
@@ -42,9 +42,6 @@ def main(argv: Sequence[str]) -> None:
 
     logger.info("Setting up the run based on the configuration file {0}.".format(args.config_file))
     config = read_config(args.config_file)
-    print(config)
-    algorithm_config = get_algorithm_config(config)
-    print(algorithm_config)
     kinetic_energy_instance = factory.build_from_config(
         config, to_camel_case(config.get("Hamiltonian", "kinetic_energy")), "kinetic_energy")
     potential_instance = factory.build_from_config(
@@ -52,7 +49,7 @@ def main(argv: Sequence[str]) -> None:
     integrator_instance = integrator.leapfrog_integrator.LeapfrogIntegrator(kinetic_energy_instance, potential_instance)
     markov_chain_instance = markov_chain.MarkovChain(integrator_instance, kinetic_energy_instance, potential_instance,
                                                      *get_algorithm_config(config))
-    support_variable = np.zeros(config.get("Hamiltonian", "dimension_of_target_distribution"))
+    support_variable = np.zeros(get_value(config, "Hamiltonian", "dimension_of_target_distribution"))
 
     used_sections = factory.used_sections
     for section in config.sections():
