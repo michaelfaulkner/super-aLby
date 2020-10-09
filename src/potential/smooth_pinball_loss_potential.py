@@ -36,7 +36,6 @@ class SmoothPinballLossPotential(Potential):
         prefactor : float
             The prefactor k of the potential.
         """
-        super().__init__(prefactor=prefactor)
         self._tau = tau
         self._sigma = sigma
         self._xi = xi
@@ -47,6 +46,7 @@ class SmoothPinballLossPotential(Potential):
         self._y = y
         self._beta_function_value = self._beta_function(xi * (1 - tau), xi * tau)
         self._x_sum = np.sum(self._x, axis=0)
+        super().__init__(prefactor=prefactor)
 
     def current_value(self, support_variable, charges=None):
         """

@@ -27,7 +27,6 @@ class GinzburgLandauPotential(Potential):
         prefactor : float
             The prefactor k of the potential.
         """
-        super().__init__(prefactor=prefactor)
         self._alpha = alpha
         self._lambda_hyperparameter = lambda_hyperparameter
         self._tau = tau
@@ -36,6 +35,7 @@ class GinzburgLandauPotential(Potential):
         self._one_minus_tau = (1 - tau)
         self._tau_dot_alpha = tau * alpha
         self._tau_dot_lambda = tau * lambda_hyperparameter
+        super().__init__(prefactor=prefactor)
 
     def current_value(self, support_variable, charges=None):
         """

@@ -1,4 +1,6 @@
 """Module for the GeneralisedPowerKineticEnergy class."""
+import logging
+from base.logging import log_init_arguments
 from .kinetic_energy import KineticEnergy
 import numpy as np
 import rpy2.robjects.packages as r_packages
@@ -31,10 +33,11 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         if power == 0:
             raise ValueError("Give a value not equal to 0 as the power associated with the kinetic energy {0}.".format(
                 self.__class__.__name__))
-        super().__init__()
         self._one_over_power = 1 / power
         self._power = power
         self._power_minus_two = power - 2
+        super().__init__()
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power)
 
     def current_value(self, momentum):
         """

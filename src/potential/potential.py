@@ -31,8 +31,8 @@ class Potential(metaclass=ABCMeta):
         if prefactor == 0.0:
             raise ValueError("Give a value not equal to 0.0 as the prefactor for the potential {0}.".format(
                 self.__class__.__name__))
-        super().__init__(**kwargs)
         self._prefactor = prefactor
+        super().__init__(**kwargs)
 
     @abstractmethod
     def current_value(self, support_variable, charges=None):

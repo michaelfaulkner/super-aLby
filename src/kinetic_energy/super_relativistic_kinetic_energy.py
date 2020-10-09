@@ -32,10 +32,10 @@ class SuperRelativisticKineticEnergy(RelativisticKineticEnergy):
         if power == 0:
             raise ValueError("Give a value not equal to 0 as the power associated with the kinetic energy {0}.".format(
                 self.__class__.__name__))
-        super().__init__(gamma=gamma)
         self._power_over_two = power / 2
         self._power_over_two_minus_one = self._power_over_two - 1
         self._one_over_power = 1.0 / power
+        super().__init__(gamma=gamma)
 
     def current_value(self, momentum):
         """
