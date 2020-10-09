@@ -10,9 +10,11 @@ class MarkovChain:
     """
 
     def __init__(self, dimension_of_target_distribution, integrator_instance, kinetic_energy_instance,
-                 potential_instance, initial_step_size=1.0, max_number_of_integration_steps=10,
-                 number_of_equilibration_iterations=10000, number_of_observations=1100, step_size_adaptor_is_on=True,
-                 use_metropolis_accept_reject=True, randomise_number_of_integration_steps=False):
+                 potential_instance, number_of_equilibration_iterations=1000, number_of_observations=1000,
+                 initial_step_size=1.0, max_number_of_integration_steps=10,
+                 randomise_initial_momenta=False, randomise_initial_values_of_support_variable=False,
+                 randomise_number_of_integration_steps=False, step_size_adaptor_is_on=True,
+                 use_metropolis_accept_reject=True):
         """
         The constructor of the MarkovChain class.
 
@@ -26,17 +28,23 @@ class MarkovChain:
 
         potential_instance : Python class instance
 
-        initial_step_size : float, optional
-
-        max_number_of_integration_steps : int, optional
-
         number_of_equilibration_iterations : int, optional
 
         number_of_observations : int, optional
 
-        use_metropolis_accept_reject : Boolean, optional
+        initial_step_size : float, optional
+
+        max_number_of_integration_steps : int, optional
 
         randomise_number_of_integration_steps : Boolean, optional
+
+        randomise_initial_momenta : Boolean, optional
+
+        randomise_initial_values_of_support_variable : Boolean, optional
+
+        step_size_adaptor_is_on : Boolean, optional
+
+        use_metropolis_accept_reject : Boolean, optional
 
         Raises
         ------
@@ -62,13 +70,15 @@ class MarkovChain:
         self._integrator_instance = integrator_instance
         self._kinetic_energy_instance = kinetic_energy_instance
         self._potential_instance = potential_instance
-        self._step_size = initial_step_size
-        self._max_number_of_integration_steps = max_number_of_integration_steps
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
+        self._step_size = initial_step_size
+        self._max_number_of_integration_steps = max_number_of_integration_steps
+        self._randomise_number_of_integration_steps = randomise_number_of_integration_steps
+        self._randomise_initial_values_of_support_variable = randomise_initial_values_of_support_variable
+        self._randomise_initial_momenta = randomise_initial_momenta
         self._step_size_adaptor_is_on = step_size_adaptor_is_on
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
-        self._randomise_number_of_integration_steps = randomise_number_of_integration_steps
 
     def run(self, charges=None):
         """
@@ -89,16 +99,8 @@ class MarkovChain:
         number_of_numerical_divergences_during_equilibration = 0
         number_of_numerical_divergences_during_equilibrated_process = 0
         number_of_integration_steps = self._max_number_of_integration_steps
-        support_variable = np.zeros(self._dimension_of_target_distribution)
-        support_variable_sample = np.zeros(
-            (self._dimension_of_target_distribution,
-             self._number_of_equilibration_iterations + self._number_of_observations + 1))
-        support_variable_sample[:, 0] = support_variable
-        momentum = np.zeros(self._dimension_of_target_distribution)
-        momentum_sample = np.zeros(
-            (self._dimension_of_target_distribution,
-             self._number_of_equilibration_iterations + self._number_of_observations + 1))
-        momentum_sample[:, 0] = momentum
+        support_variable, support_variable_sample = self._initialise_momentum_or_position(initialise_momentum=False)
+        momentum, momentum_sample = self._initialise_momentum_or_position(initialise_momentum=True)
 
         for i in range(self._number_of_equilibration_iterations + self._number_of_observations):
             momentum = self._kinetic_energy_instance.momentum_observation(momentum)
@@ -147,3 +149,18 @@ class MarkovChain:
         return (momentum_sample, support_variable_sample, self._step_size, acceptance_rate,
                 number_of_numerical_divergences_during_equilibration,
                 number_of_numerical_divergences_during_equilibrated_process)
+
+    def _initialise_momentum_or_position(self, initialise_momentum):
+        if initialise_momentum:
+            randomise_initial_values = self._randomise_initial_momenta
+        else:
+            randomise_initial_values = self._randomise_initial_values_of_support_variable
+        if randomise_initial_values:
+            momentum_or_position = np.random.uniform(low=-10.0, high=10.0, size=self._dimension_of_target_distribution)
+        else:
+            momentum_or_position = np.zeros(self._dimension_of_target_distribution)
+        momentum_or_position_sample = np.zeros(
+            (self._dimension_of_target_distribution,
+             self._number_of_equilibration_iterations + self._number_of_observations + 1))
+        momentum_or_position_sample[:, 0] = momentum_or_position
+        return momentum_or_position, momentum_or_position_sample
