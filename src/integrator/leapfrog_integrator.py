@@ -1,6 +1,7 @@
 """Module for the LeapfrogIntegrator class."""
+from base.logging import log_init_arguments
 from .integrator import Integrator
-import numpy as np
+import logging
 
 
 class LeapfrogIntegrator(Integrator):
@@ -20,6 +21,8 @@ class LeapfrogIntegrator(Integrator):
             instance of Potential class.
         """
         super().__init__(kinetic_energy_instance=kinetic_energy_instance, potential_instance=potential_instance)
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
+                           kinetic_energy_instance=kinetic_energy_instance, potential_instance=potential_instance)
 
     def get_candidate_configuration(self, momentum, position, number_of_integration_steps, step_size,
                                     charges=None):

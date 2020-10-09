@@ -1,4 +1,6 @@
 """Module for the MarkovChain class."""
+from base.logging import log_init_arguments
+import logging
 import numpy as np
 
 
@@ -79,6 +81,18 @@ class MarkovChain:
         self._randomise_initial_position = randomise_initial_position
         self._step_size_adaptor_is_on = step_size_adaptor_is_on
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
+                           dimension_of_target_distribution=dimension_of_target_distribution,
+                           integrator_instance=integrator_instance, kinetic_energy_instance=kinetic_energy_instance,
+                           potential_instance=potential_instance,
+                           number_of_equilibration_iterations=number_of_equilibration_iterations,
+                           number_of_observations=number_of_observations, initial_step_size=initial_step_size,
+                           max_number_of_integration_steps=max_number_of_integration_steps,
+                           randomise_initial_momenta=randomise_initial_momenta,
+                           randomise_initial_position=randomise_initial_position,
+                           randomise_number_of_integration_steps=randomise_number_of_integration_steps,
+                           step_size_adaptor_is_on=step_size_adaptor_is_on,
+                           use_metropolis_accept_reject=use_metropolis_accept_reject)
 
     def run(self, charges=None):
         """
