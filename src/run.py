@@ -1,5 +1,5 @@
 """Executable script which runs the super-relativistic-mc application based on an input configuration file. This script
-    and the base package are both taken from the JeLLyFysh application, on which two of the 2-2authors worked."""
+    and most of the base package are taken from the JeLLyFysh application, on which two of the authors worked."""
 import platform
 import sys
 import time
@@ -7,11 +7,11 @@ from typing import Sequence
 from base import factory
 from base.strings import to_camel_case
 from base.uuid import get_uuid
-from config_file_parsing_and_logging import get_algorithm_config, parse_options, set_up_logging, read_config, get_value
+from base.config_file_parsing_and_logging import get_algorithm_config, parse_options, set_up_logging, read_config, \
+    get_value
 from version import version
 import integrator.leapfrog_integrator
 import markov_chain
-import numpy as np
 
 
 def print_start_message():
