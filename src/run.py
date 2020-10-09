@@ -14,13 +14,6 @@ import integrator.leapfrog_integrator
 import markov_chain
 
 
-def print_start_message():
-    """Print the start message which includes the copyright."""
-    print(
-        "super-relativistic-mc (version {0}) - a Python application for super-relativistic Monte Carlo".format(version))
-    print("Copyright (C) 2020 The Super-relativistic Monte Carlo organization")
-
-
 def main(argv: Sequence[str]) -> None:
     """
     Use the argument strings to run the super-relativistic-mc application.
@@ -66,6 +59,13 @@ def main(argv: Sequence[str]) -> None:
     logger.info("Running the post_run method.")
     # mediator.post_run()
     logger.info("Runtime of the simulation: --- %s seconds ---" % (end_time - start_time))
+
+
+def print_start_message():
+    """Print the start message which includes the copyright."""
+    print(
+        "super-relativistic-mc (version {0}) - a Python application for super-relativistic Monte Carlo".format(version))
+    print("Copyright (C) 2020 The Super-relativistic Monte Carlo organization")
 
 
 if __name__ == '__main__':
