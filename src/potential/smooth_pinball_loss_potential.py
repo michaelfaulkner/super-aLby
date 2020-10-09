@@ -70,8 +70,9 @@ class SmoothPinballLossPotential(Potential):
             The potential.
         """
         x_dot_beta = np.inner(self._x, position)
-        pinball_loss = (self._tau - 1) * (self._y - x_dot_beta) / self._sigma + self._xi * np.logaddexp(
-            0.0, (self._y - x_dot_beta) / self._xi_dot_sigma) + np.log(self._xi * self._sigma * self._beta_function_value)
+        pinball_loss = ((self._tau - 1) * (self._y - x_dot_beta) / self._sigma + self._xi *
+                        np.logaddexp(0.0, (self._y - x_dot_beta) / self._xi_dot_sigma) +
+                        np.log(self._xi * self._sigma * self._beta_function_value))
         prior_vec = np.absolute(position) ** self._q
         return np.sum(pinball_loss) + self._lambda_hyperparameter * np.sum(prior_vec)
 
