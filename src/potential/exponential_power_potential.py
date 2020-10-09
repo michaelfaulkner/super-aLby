@@ -46,7 +46,7 @@ class ExponentialPowerPotential(Potential):
         float
             The potential.
         """
-        return self._one_over_power * np.sum(position ** self._power)
+        return self._one_over_power * np.sum(abs(position) ** self._power)
 
     def gradient(self, position, charges=None):
         """
@@ -65,4 +65,4 @@ class ExponentialPowerPotential(Potential):
         numpy array
             The gradient.
         """
-        return position * position ** self._power_minus_two
+        return position * abs(position) ** self._power_minus_two
