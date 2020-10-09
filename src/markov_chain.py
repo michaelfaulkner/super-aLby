@@ -9,15 +9,17 @@ class MarkovChain:
     The class provides the Markov-chain function (as run()).
     """
 
-    def __init__(self, integrator_instance, kinetic_energy_instance, potential_instance, initial_step_size=1.0,
-                 max_number_of_integration_steps=10, number_of_equilibration_iterations=10000,
-                 number_of_observations=1100, step_size_adaptor_is_on=True, use_metropolis_accept_reject=True,
-                 randomise_number_of_integration_steps=False):
+    def __init__(self, dimension_of_target_distribution, integrator_instance, kinetic_energy_instance,
+                 potential_instance, initial_step_size=1.0, max_number_of_integration_steps=10,
+                 number_of_equilibration_iterations=10000, number_of_observations=1100, step_size_adaptor_is_on=True,
+                 use_metropolis_accept_reject=True, randomise_number_of_integration_steps=False):
         """
         The constructor of the MarkovChain class.
 
         Parameters
         ----------
+        dimension_of_target_distribution : int
+
         integrator_instance : Python class instance
 
         kinetic_energy_instance : Python class instance
@@ -41,6 +43,9 @@ class MarkovChain:
         base.exceptions.ValueError
             If the prefactor equals 0.
         """
+        if dimension_of_target_distribution == 0:
+            raise ValueError("Give a value not equal to 0 as the dimension of the target distribution {0}.".format(
+                self.__class__.__name__))
         if initial_step_size == 0.0:
             raise ValueError(
                 "Give a value not equal to 0 as the initial step size of the numerical integrator {0}.".format(
@@ -53,6 +58,7 @@ class MarkovChain:
             raise ValueError(
                 "Give a value not equal to 0 as the number of observations of target distribution {0}.".format(
                     self.__class__.__name__))
+        self._dimension_of_target_distribution = dimension_of_target_distribution
         self._integrator_instance = integrator_instance
         self._kinetic_energy_instance = kinetic_energy_instance
         self._potential_instance = potential_instance
@@ -64,15 +70,12 @@ class MarkovChain:
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
         self._randomise_number_of_integration_steps = randomise_number_of_integration_steps
 
-    def run(self, support_variable, charges=None):
+    def run(self, charges=None):
         """
         Runs the Markov chain and returns the generated observations of the target and momentum distributions.
 
         Parameters
         ----------
-        support_variable : numpy_array
-            For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
-            parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
         charges : optional
             All the charges needed to run the Markov chain.
 
@@ -86,13 +89,15 @@ class MarkovChain:
         number_of_numerical_divergences_during_equilibration = 0
         number_of_numerical_divergences_during_equilibrated_process = 0
         number_of_integration_steps = self._max_number_of_integration_steps
-        support_variable_dimension = len(np.atleast_1d(support_variable))
+        support_variable = np.zeros(self._dimension_of_target_distribution)
         support_variable_sample = np.zeros(
-            (support_variable_dimension, self._number_of_equilibration_iterations + self._number_of_observations + 1))
+            (self._dimension_of_target_distribution,
+             self._number_of_equilibration_iterations + self._number_of_observations + 1))
         support_variable_sample[:, 0] = support_variable
-        momentum = np.zeros(support_variable_dimension)
+        momentum = np.zeros(self._dimension_of_target_distribution)
         momentum_sample = np.zeros(
-            (support_variable_dimension, self._number_of_equilibration_iterations + self._number_of_observations + 1))
+            (self._dimension_of_target_distribution,
+             self._number_of_equilibration_iterations + self._number_of_observations + 1))
         momentum_sample[:, 0] = momentum
 
         for i in range(self._number_of_equilibration_iterations + self._number_of_observations):

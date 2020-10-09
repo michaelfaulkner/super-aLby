@@ -47,9 +47,9 @@ def main(argv: Sequence[str]) -> None:
     potential_instance = factory.build_from_config(
         config, to_camel_case(config.get("Hamiltonian", "potential")), "potential")
     integrator_instance = integrator.leapfrog_integrator.LeapfrogIntegrator(kinetic_energy_instance, potential_instance)
-    markov_chain_instance = markov_chain.MarkovChain(integrator_instance, kinetic_energy_instance, potential_instance,
-                                                     *get_algorithm_config(config))
-    support_variable = np.zeros(get_value(config, "Hamiltonian", "dimension_of_target_distribution"))
+    markov_chain_instance = markov_chain.MarkovChain(
+        get_value(config, "Hamiltonian", "dimension_of_target_distribution"), integrator_instance,
+        kinetic_energy_instance, potential_instance, *get_algorithm_config(config))
 
     used_sections = factory.used_sections
     for section in config.sections():
@@ -60,7 +60,7 @@ def main(argv: Sequence[str]) -> None:
     start_time = time.time()
     (momentum_sample, support_variable_sample, adapted_step_size, acceptance_rate,
      number_of_numerical_divergences_during_equilibration,
-     number_of_numerical_divergences_during_equilibrated_process) = markov_chain_instance.run(support_variable)
+     number_of_numerical_divergences_during_equilibrated_process) = markov_chain_instance.run()
     end_time = time.time()
 
     logger.info("Running the post_run method.")
