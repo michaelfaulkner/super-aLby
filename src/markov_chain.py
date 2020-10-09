@@ -105,7 +105,8 @@ class MarkovChain:
             if self._use_metropolis_accept_reject:
                 delta_hamiltonian = (self._kinetic_energy_instance.current_value(momentum_candidate) -
                                      self._kinetic_energy_instance.current_value(momentum) +
-                                     self._potential_instance.current_value(support_variable_candidate, charges=charges) -
+                                     self._potential_instance.current_value(support_variable_candidate,
+                                                                            charges=charges) -
                                      self._potential_instance.current_value(support_variable, charges=charges))
                 if abs(delta_hamiltonian) > 1000.0:
                     if i < self._number_of_equilibration_iterations:
