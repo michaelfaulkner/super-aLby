@@ -1,1 +1,1 @@
-# super-rel-mc
+# super-relativistic-mc
