@@ -56,7 +56,7 @@ def main(argv: Sequence[str]) -> None:
     end_time = time.time()
 
     logger.info("Running the post_run method.")
-    # mediator.post_run()
+    observer_instance.output_sample(sample)
     logger.info("Runtime of the simulation: --- %s seconds ---" % (end_time - start_time))
 
 
