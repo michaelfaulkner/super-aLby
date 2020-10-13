@@ -1,3 +1,6 @@
+## Sample files
+*.dat
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
