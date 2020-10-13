@@ -155,6 +155,7 @@ class MarkovChain:
                 elif acceptance_rate < 0.6:
                     self._step_size *= 0.9
                 number_of_accepted_trajectories = 0
+
         acceptance_rate = number_of_accepted_trajectories / float(self._number_of_observations)
         print(
             "Max number of integration steps = %d; initial numerical step size = %.3f; final numerical step size = %.3f"
