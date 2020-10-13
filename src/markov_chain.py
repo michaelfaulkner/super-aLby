@@ -94,7 +94,7 @@ class MarkovChain:
                            step_size_adaptor_is_on=step_size_adaptor_is_on,
                            use_metropolis_accept_reject=use_metropolis_accept_reject)
 
-    def run(self, charges=None):
+    def get_sample(self, charges=None):
         """
         Runs the Markov chain and returns the generated observations of the target and momentum distributions.
 
@@ -160,9 +160,7 @@ class MarkovChain:
               number_of_numerical_divergences_during_equilibration)
         print("Number of numerical divergences during equilibrated process = %d" %
               number_of_numerical_divergences_during_equilibrated_process)
-        return (momentum_sample, position_sample, self._step_size, acceptance_rate,
-                number_of_numerical_divergences_during_equilibration,
-                number_of_numerical_divergences_during_equilibrated_process)
+        return momentum_sample, position_sample
 
     def _initialise_momentum_or_position(self, initialise_momentum):
         if initialise_momentum:
