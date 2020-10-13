@@ -7,14 +7,19 @@ class PositionObserver(Observer):
     Class for taking observations of the position of the system.
     """
 
-    def __init__(self):
+    def __init__(self, filename: str):
         """
         The constructor of the PotentialObserver class.
 
         This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
         init to the next class in the MRO via super.
+
+        Parameters
+        ----------
+        filename : str
+            The filename onto which the sample is written at the end of the run.
         """
-        super().__init__()
+        super().__init__(filename)
 
     def get_observation(self, momentum, position, charges=None):
         """

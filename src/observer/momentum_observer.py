@@ -1,15 +1,15 @@
-"""Module for the abstract Observer class."""
-from abc import ABCMeta, abstractmethod
+"""Module for the MomentumObserver class."""
+from .observer import Observer
 
 
-class Observer(metaclass=ABCMeta):
+class MomentumObserver(Observer):
     """
-    Abstract class for taking observations of the state of the system.
+    Class for taking observations of the momentum of the system.
     """
 
-    def __init__(self, filename: str, **kwargs):
+    def __init__(self, filename: str):
         """
-        The constructor of the Observer class.
+        The constructor of the MomentumObserver class.
 
         This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
         init to the next class in the MRO via super.
@@ -18,13 +18,9 @@ class Observer(metaclass=ABCMeta):
         ----------
         filename : str
             The filename onto which the sample is written at the end of the run.
-        kwargs : Any
-            Additional kwargs which are passed to the __init__ method of the next class in the MRO.
         """
-        self._filename = filename
-        super().__init__(**kwargs)
+        super().__init__(filename)
 
-    @abstractmethod
     def get_observation(self, momentum, position, charges=None):
         """
         Return the observation after each iteration of the Markov chain.
@@ -42,6 +38,6 @@ class Observer(metaclass=ABCMeta):
         Returns
         -------
         numpy_array
-            The observation.
+            The observation of the momentum.
         """
-        raise NotImplementedError
+        return momentum

@@ -39,19 +39,20 @@ def main(argv: Sequence[str]) -> None:
         config, to_camel_case(config.get("Hamiltonian", "kinetic_energy")), "kinetic_energy")
     potential_instance = factory.build_from_config(
         config, to_camel_case(config.get("Hamiltonian", "potential")), "potential")
+    observer_instance = factory.build_from_config(config, to_camel_case(config.get("Sampling", "observer")), "observer")
     integrator_instance = integrator.leapfrog_integrator.LeapfrogIntegrator(kinetic_energy_instance, potential_instance)
     markov_chain_instance = markov_chain.MarkovChain(
         get_value(config, "Hamiltonian", "dimension_of_target_distribution"), integrator_instance,
-        kinetic_energy_instance, potential_instance, *get_algorithm_config(config))
+        kinetic_energy_instance, potential_instance, observer_instance, *get_algorithm_config(config))
 
     used_sections = factory.used_sections
     for section in config.sections():
-        if section not in used_sections and section != "Algorithm" and section != "Hamiltonian":
+        if section not in used_sections and section not in ["Algorithm", "Hamiltonian", "Sampling"]:
             logger.warning("The section {0} in the .ini file has not been used!".format(section))
 
     logger.info("Running the super-relativistic Monte Carlo simulation.")
     start_time = time.time()
-    momentum_sample, position_sample = markov_chain_instance.get_sample()
+    sample = markov_chain_instance.get_sample()
     end_time = time.time()
 
     logger.info("Running the post_run method.")

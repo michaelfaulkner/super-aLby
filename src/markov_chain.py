@@ -12,8 +12,8 @@ class MarkovChain:
     """
 
     def __init__(self, dimension_of_target_distribution, integrator_instance, kinetic_energy_instance,
-                 potential_instance, number_of_equilibration_iterations=1000, number_of_observations=1000,
-                 initial_step_size=1.0, max_number_of_integration_steps=10,
+                 potential_instance, observer_instance, number_of_equilibration_iterations=1000,
+                 number_of_observations=1000, initial_step_size=1.0, max_number_of_integration_steps=10,
                  randomise_initial_momenta=False, randomise_initial_position=False,
                  randomise_number_of_integration_steps=False, step_size_adaptor_is_on=True,
                  use_metropolis_accept_reject=True):
@@ -29,6 +29,8 @@ class MarkovChain:
         kinetic_energy_instance : Python class instance
 
         potential_instance : Python class instance
+
+        observer_instance : Python class instance
 
         number_of_equilibration_iterations : int, optional
 
@@ -72,6 +74,7 @@ class MarkovChain:
         self._integrator_instance = integrator_instance
         self._kinetic_energy_instance = kinetic_energy_instance
         self._potential_instance = potential_instance
+        self._observer_instance = observer_instance
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
         self._step_size = initial_step_size
@@ -84,7 +87,7 @@ class MarkovChain:
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            dimension_of_target_distribution=dimension_of_target_distribution,
                            integrator_instance=integrator_instance, kinetic_energy_instance=kinetic_energy_instance,
-                           potential_instance=potential_instance,
+                           potential_instance=potential_instance, observer_instance=observer_instance,
                            number_of_equilibration_iterations=number_of_equilibration_iterations,
                            number_of_observations=number_of_observations, initial_step_size=initial_step_size,
                            max_number_of_integration_steps=max_number_of_integration_steps,
@@ -113,8 +116,10 @@ class MarkovChain:
         number_of_numerical_divergences_during_equilibration = 0
         number_of_numerical_divergences_during_equilibrated_process = 0
         number_of_integration_steps = self._max_number_of_integration_steps
-        momentum, momentum_sample = self._initialise_momentum_or_position(initialise_momentum=True)
-        position, position_sample = self._initialise_momentum_or_position(initialise_momentum=False)
+        momentum = self._initialise_momentum_or_position(initialise_momentum=True)
+        position = self._initialise_momentum_or_position(initialise_momentum=False)
+        sample = np.zeros((self._dimension_of_target_distribution,
+                           self._number_of_equilibration_iterations + self._number_of_observations + 1))
 
         for i in range(self._number_of_equilibration_iterations + self._number_of_observations):
             momentum = self._kinetic_energy_instance.momentum_observation(momentum)
@@ -141,8 +146,7 @@ class MarkovChain:
             else:
                 position = position_candidate
                 momentum = momentum_candidate
-            position_sample[:, i] = position
-            momentum_sample[:, i] = momentum
+            sample[:, i] = self._observer_instance.get_observation(momentum, position)
 
             if self._step_size_adaptor_is_on and i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
                 acceptance_rate = number_of_accepted_trajectories / 100.0
@@ -160,7 +164,7 @@ class MarkovChain:
               number_of_numerical_divergences_during_equilibration)
         print("Number of numerical divergences during equilibrated process = %d" %
               number_of_numerical_divergences_during_equilibrated_process)
-        return momentum_sample, position_sample
+        return sample
 
     def _initialise_momentum_or_position(self, initialise_momentum):
         if initialise_momentum:
@@ -168,11 +172,6 @@ class MarkovChain:
         else:
             randomise_initial_values = self._randomise_initial_position
         if randomise_initial_values:
-            momentum_or_position = np.random.uniform(low=-10.0, high=10.0, size=self._dimension_of_target_distribution)
+            return np.random.uniform(low=-10.0, high=10.0, size=self._dimension_of_target_distribution)
         else:
-            momentum_or_position = np.zeros(self._dimension_of_target_distribution)
-        momentum_or_position_sample = np.zeros(
-            (self._dimension_of_target_distribution,
-             self._number_of_equilibration_iterations + self._number_of_observations + 1))
-        momentum_or_position_sample[:, 0] = momentum_or_position
-        return momentum_or_position, momentum_or_position_sample
+            return np.zeros(self._dimension_of_target_distribution)
