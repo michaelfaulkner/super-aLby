@@ -2,24 +2,19 @@
 from .observer import Observer
 
 
-class PotentialObserver(Observer):
+class PositionObserver(Observer):
     """
     Class for taking observations of the position of the system.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         """
         The constructor of the PotentialObserver class.
 
         This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
         init to the next class in the MRO via super.
-
-        Parameters
-        ----------
-        kwargs : Any
-            Additional kwargs which are passed to the __init__ method of the next class in the MRO.
         """
-        super().__init__(**kwargs)
+        super().__init__()
 
     def get_observation(self, momentum, position, charges=None):
         """
