@@ -21,6 +21,7 @@ class MomentumObserver(Observer):
         output_directory : str
             The filename onto which the sample is written at the end of the run.
         """
+        # todo add dimension_of_target_distribution here, probably a global variable from a settings module
         super().__init__(output_directory)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            output_directory=output_directory)
