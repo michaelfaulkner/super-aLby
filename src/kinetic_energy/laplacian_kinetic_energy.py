@@ -17,7 +17,7 @@ class LaplacianKineticEnergy(KineticEnergy):
         super().__init__()
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__)
 
-    def current_value(self, momentum):
+    def get_value(self, momentum):
         """
         Returns the kinetic energy.
 
@@ -33,7 +33,7 @@ class LaplacianKineticEnergy(KineticEnergy):
         """
         return np.sum(np.absolute(momentum))
 
-    def gradient(self, momentum):
+    def get_gradient(self, momentum):
         """
         Returns the gradient of the kinetic energy.
 
@@ -49,7 +49,7 @@ class LaplacianKineticEnergy(KineticEnergy):
         """
         return np.sign(momentum)
 
-    def momentum_observation(self, momentum):
+    def get_momentum_observation(self, momentum):
         """
         Return an observation of the momentum from the kinetic-energy distribution.
 

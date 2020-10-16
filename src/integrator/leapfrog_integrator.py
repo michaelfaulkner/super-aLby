@@ -50,10 +50,10 @@ class LeapfrogIntegrator(Integrator):
             The flow.
         """
         half_step_size = 0.5 * step_size
-        momentum = momentum - half_step_size * self._potential_instance.gradient(position, charges=charges)
+        momentum = momentum - half_step_size * self._potential_instance.get_gradient(position, charges=charges)
         for _ in range(number_of_integration_steps - 1):
-            position = position + step_size * self._kinetic_energy_instance.gradient(momentum)
-            momentum = momentum - step_size * self._potential_instance.gradient(position, charges=charges)
-        position = position + step_size * self._kinetic_energy_instance.gradient(momentum)
-        momentum = momentum - half_step_size * self._potential_instance.gradient(position, charges=charges)
+            position = position + step_size * self._kinetic_energy_instance.get_gradient(momentum)
+            momentum = momentum - step_size * self._potential_instance.get_gradient(position, charges=charges)
+        position = position + step_size * self._kinetic_energy_instance.get_gradient(momentum)
+        momentum = momentum - half_step_size * self._potential_instance.get_gradient(position, charges=charges)
         return momentum, position

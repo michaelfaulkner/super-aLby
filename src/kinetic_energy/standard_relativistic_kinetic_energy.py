@@ -23,7 +23,7 @@ class StandardRelativisticKineticEnergy(RelativisticKineticEnergy):
         super().__init__(gamma=gamma)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, gamma=gamma)
 
-    def current_value(self, momentum):
+    def get_value(self, momentum):
         """
         Returns the kinetic energy.
 
@@ -39,7 +39,7 @@ class StandardRelativisticKineticEnergy(RelativisticKineticEnergy):
         """
         return np.sum((1 + self._one_over_gamma * momentum ** 2) ** 0.5)
 
-    def gradient(self, momentum):
+    def get_gradient(self, momentum):
         """
         Returns the gradient of the kinetic energy.
 

@@ -35,7 +35,7 @@ class Potential(metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @abstractmethod
-    def current_value(self, position, charges=None):
+    def get_value(self, position, charges=None):
         """
         Return the potential function for certain separations and charges.
 
@@ -55,7 +55,7 @@ class Potential(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def gradient(self, position, charges=None):
+    def get_gradient(self, position, charges=None):
         """
         Return the gradient of the potential for certain separation and charges.
 

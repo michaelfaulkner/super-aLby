@@ -29,7 +29,7 @@ class ExponentialPowerPotential(Potential):
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power, prefactor=prefactor)
 
-    def current_value(self, position, charges=None):
+    def get_value(self, position, charges=None):
         """
         Returns the potential for the given position.
 
@@ -48,7 +48,7 @@ class ExponentialPowerPotential(Potential):
         """
         return self._one_over_power * np.sum(np.absolute(position) ** self._power)
 
-    def gradient(self, position, charges=None):
+    def get_gradient(self, position, charges=None):
         """
         Returns the gradient of the potential for the given position.
 

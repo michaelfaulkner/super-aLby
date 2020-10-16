@@ -48,7 +48,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, gamma=gamma)
 
     @abstractmethod
-    def current_value(self, momentum):
+    def get_value(self, momentum):
         """
         Returns the kinetic-energy function.
 
@@ -65,7 +65,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def gradient(self, momentum):
+    def get_gradient(self, momentum):
         """
         Returns the gradient of the kinetic energy.
 
@@ -81,7 +81,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def momentum_observation(self, momentum):
+    def get_momentum_observation(self, momentum):
         """
         Returns an observation of the momentum from the kinetic-energy distribution using adaptive rejection sampling.
 
@@ -111,7 +111,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         float
             The product of minus 1 and the kinetic-energy function.
         """
-        return - self.current_value(momentum)
+        return - self.get_value(momentum)
 
     def _negative_gradient(self, momentum):
         """
@@ -127,4 +127,4 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         float
             The product of minus 1 and the derivative.
         """
-        return - self.gradient(momentum)
+        return - self.get_gradient(momentum)

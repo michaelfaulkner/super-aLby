@@ -40,7 +40,7 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         super().__init__()
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power)
 
-    def current_value(self, momentum):
+    def get_value(self, momentum):
         """
         Returns the kinetic energy.
 
@@ -56,7 +56,7 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         """
         return self._one_over_power * np.sum(np.absolute(momentum) ** self._power)
 
-    def gradient(self, momentum):
+    def get_gradient(self, momentum):
         """
         Returns the gradient of the kinetic energy.
 
@@ -72,7 +72,7 @@ class GeneralisedPowerKineticEnergy(KineticEnergy):
         """
         return momentum * np.absolute(momentum) ** self._power_minus_two
 
-    def momentum_observation(self, momentum):
+    def get_momentum_observation(self, momentum):
         """
         Return an observation of the momentum from the kinetic-energy distribution.
 

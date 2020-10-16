@@ -122,18 +122,18 @@ class MarkovChain:
                            self._number_of_equilibration_iterations + self._number_of_observations + 1))
 
         for i in range(self._number_of_equilibration_iterations + self._number_of_observations):
-            momentum = self._kinetic_energy_instance.momentum_observation(momentum)
+            momentum = self._kinetic_energy_instance.get_momentum_observation(momentum)
             if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
             momentum_candidate, position_candidate = self._integrator_instance.get_candidate_configuration(
                 momentum, position, number_of_integration_steps, self._step_size, charges=None)
 
             if self._use_metropolis_accept_reject:
-                delta_hamiltonian = (self._kinetic_energy_instance.current_value(momentum_candidate) -
-                                     self._kinetic_energy_instance.current_value(momentum) +
-                                     self._potential_instance.current_value(position_candidate,
-                                                                            charges=charges) -
-                                     self._potential_instance.current_value(position, charges=charges))
+                delta_hamiltonian = (self._kinetic_energy_instance.get_value(momentum_candidate) -
+                                     self._kinetic_energy_instance.get_value(momentum) +
+                                     self._potential_instance.get_value(position_candidate,
+                                                                        charges=charges) -
+                                     self._potential_instance.get_value(position, charges=charges))
                 if abs(delta_hamiltonian) > 1000.0:
                     if i < self._number_of_equilibration_iterations:
                         number_of_numerical_divergences_during_equilibration += 1

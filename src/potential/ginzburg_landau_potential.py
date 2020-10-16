@@ -42,7 +42,7 @@ class GinzburgLandauPotential(Potential):
                            lambda_hyperparameter=lambda_hyperparameter, tau=tau, lattice_length=lattice_length,
                            prefactor=prefactor)
 
-    def current_value(self, position, charges=None):
+    def get_value(self, position, charges=None):
         """
         Returns the potential for the given position.
 
@@ -66,7 +66,7 @@ class GinzburgLandauPotential(Potential):
                     (self._pos_z_translation(position) - position) ** 2) +
             0.25 * self._tau_dot_lambda * position ** 4)
 
-    def gradient(self, position, charges=None):
+    def get_gradient(self, position, charges=None):
         """
         Returns the gradient of the potential for the given position.
 

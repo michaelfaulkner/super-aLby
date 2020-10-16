@@ -25,7 +25,7 @@ class KineticEnergy(metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @abstractmethod
-    def current_value(self, momentum):
+    def get_value(self, momentum):
         """
         Return the kinetic-energy function.
 
@@ -42,7 +42,7 @@ class KineticEnergy(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def gradient(self, momentum):
+    def get_gradient(self, momentum):
         """
         Return the gradient of the kinetic energy.
 
@@ -59,7 +59,7 @@ class KineticEnergy(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def momentum_observation(self, momentum):
+    def get_momentum_observation(self, momentum):
         """
         Return an observation of the momentum from the kinetic-energy distribution.
 

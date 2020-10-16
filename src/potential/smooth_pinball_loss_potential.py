@@ -52,7 +52,7 @@ class SmoothPinballLossPotential(Potential):
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, tau=tau, sigma=sigma,
                            lambda_hyperparameter=lambda_hyperparameter, x=x, y=y, xi=xi ,q=q, prefactor=prefactor)
 
-    def current_value(self, position, charges=None):
+    def get_value(self, position, charges=None):
         """
         Returns the potential for the given position.
 
@@ -76,7 +76,7 @@ class SmoothPinballLossPotential(Potential):
         prior_vec = np.absolute(position) ** self._q
         return np.sum(pinball_loss) + self._lambda_hyperparameter * np.sum(prior_vec)
 
-    def gradient(self, position, charges=None):
+    def get_gradient(self, position, charges=None):
         """
         Returns the gradient of the potential for the given position.
 

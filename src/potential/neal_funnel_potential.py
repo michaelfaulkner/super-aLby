@@ -26,7 +26,7 @@ class NealFunnelPotential(Potential):
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
-    def current_value(self, position, charges=None):
+    def get_value(self, position, charges=None):
         """
         Returns the potential for the given position.
 
@@ -46,7 +46,7 @@ class NealFunnelPotential(Potential):
         return position[0] ** 2 / 18.0 + 9 * position[0] / 2.0 + (
                 math.exp(-position[0]) * np.sum(position[1:len(position)] ** 2) / 2.0)
 
-    def gradient(self, position, charges=None):
+    def get_gradient(self, position, charges=None):
         """
         Returns the gradient of the potential for the given position.
 
