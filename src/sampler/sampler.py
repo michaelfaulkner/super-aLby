@@ -1,6 +1,6 @@
 """Module for the abstract Sampler class."""
 from abc import ABCMeta, abstractmethod
-import csv
+import numpy as np
 import os
 
 
@@ -63,4 +63,4 @@ class Sampler(metaclass=ABCMeta):
 
     def _write_sample_to_file(self, sample, sample_file_string):
         with open(os.path.join(os.getcwd(), self._output_directory, sample_file_string), 'w') as file:
-            csv.writer(file).writerows(sample)
+            np.savetxt(file, sample, delimiter=',')
