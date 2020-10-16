@@ -88,3 +88,8 @@ def set_up_logging(parsed_arguments: Namespace) -> logging.Logger:
     # Don't collect information about where calls were made from (slows down PyPy)
     logging._srcfile = None
     return logger
+
+
+def print_and_log(logger, string_to_print_and_log):
+    logger.info(string_to_print_and_log)
+    print(string_to_print_and_log)

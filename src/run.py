@@ -8,7 +8,7 @@ from base import factory
 from base.strings import to_camel_case
 from base.uuid import get_uuid
 from base.parsing import get_algorithm_config, parse_options, read_config, get_value
-from base.logging import set_up_logging
+from base.logging import set_up_logging, print_and_log
 from version import version
 import integrator.leapfrog_integrator
 import markov_chain
@@ -33,7 +33,7 @@ def main(argv: Sequence[str]) -> None:
     logger.info("Underlying platform (determined via platform.platform(aliased=True): {0}"
                 .format(platform.platform(aliased=True)))
 
-    logger.info("Setting up the run based on the configuration file {0}.".format(args.config_file))
+    print_and_log(logger, "Setting up the run based on the configuration file {0}.".format(args.config_file))
     config = read_config(args.config_file)
     kinetic_energy = factory.build_from_config(config, to_camel_case(config.get("Hamiltonian", "kinetic_energy")),
                                                "kinetic_energy")
@@ -48,14 +48,14 @@ def main(argv: Sequence[str]) -> None:
         if section not in used_sections and section not in ["Settings", "Hamiltonian", "Samples"]:
             logger.warning("The section {0} in the .ini file has not been used!".format(section))
 
-    logger.info("Running the super-relativistic Monte Carlo simulation.")
+    print_and_log(logger, "Running the super-relativistic Monte Carlo simulation.")
     start_time = time.time()
     sample = algorithm.get_sample()
     end_time = time.time()
 
-    logger.info("Running the post_run method.")
+    print_and_log(logger, "Running the post-run methods.")
     sampler.output_sample(sample)
-    logger.info("Runtime of the simulation: --- %s seconds ---" % (end_time - start_time))
+    print_and_log(logger, "Runtime of the simulation: --- %s seconds ---" % (end_time - start_time))
 
 
 def print_start_message():
