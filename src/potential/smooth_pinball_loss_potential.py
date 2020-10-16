@@ -14,7 +14,7 @@ class SmoothPinballLossPotential(Potential):
     x is an n-dimensional vector of floats.
     """
 
-    def __init__(self, tau: float, sigma: float, lambda_hyperparameter: float, x: float, y: float, xi: float = 0.1,
+    def __init__(self, tau: float, sigma: float, lambda_hyperparameter: float, x: str, y: str, xi: float = 0.1,
                  q: float = 2.0, prefactor: float = 1.0):
         """
         The constructor of the NealFunnel class.
@@ -27,10 +27,10 @@ class SmoothPinballLossPotential(Potential):
             Learning rate / observation noise.
         lambda_hyperparameter : float
             Regularising factor in prior.
-        x : float
-            Design matrix (measured data).
-        y : float
-            Response (measured data).
+        x : str
+            Input data file representing the design matrix (measured data).
+        y : str
+            Input data file representing the response (measured data).
         xi : float
             Pinball smoother (xi --> 0 recovers nonsmooth pinball loss).
         q : float
@@ -44,9 +44,9 @@ class SmoothPinballLossPotential(Potential):
         self._xi_dot_sigma = xi * sigma
         self._lambda_hyperparameter = lambda_hyperparameter
         self._q = q
-        self._x = x
-        self._y = y
-        self._beta_function_value = self._beta_function(xi * (1 - tau), xi * tau)
+        self._x = np.loadtxt(x, dtype=float, delimiter=',')
+        self._y = np.loadtxt(y, dtype=float, delimiter=',')
+        self._beta_function_value = self._beta_function(xi * (1.0 - tau), xi * tau)
         self._x_sum = np.sum(self._x, axis=0)
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, tau=tau, sigma=sigma,
@@ -101,9 +101,9 @@ class SmoothPinballLossPotential(Potential):
         return (1 - self._tau) / self._sigma * self._x_sum + 1 / self._sigma * mid_term + prior_gradient
 
     @staticmethod
-    def _beta_function(self, a, b):
+    def _beta_function(a, b):
         return math.gamma(a) * math.gamma(b) / math.gamma(a + b)
 
     @staticmethod
-    def _logistic_function(self, a):
+    def _logistic_function(a):
         return np.exp(-np.logaddexp(0, -a))
