@@ -1,4 +1,3 @@
-import logging
 from argparse import ArgumentParser, Namespace
 import configparser
 import json
@@ -112,45 +111,3 @@ def parse_options(args: Sequence[str]) -> Namespace:
     parser.add_argument("config_file", help="specify the path to config.ini file")
     add_general_parser_arguments(parser)
     return parser.parse_args(args)
-
-
-def set_up_logging(parsed_arguments: Namespace) -> logging.Logger:
-    """
-    Set up the logging based on the populated argparse namespace.
-
-    The level of the root logger is set based on the number of -v arguments parsed. For zero -v arguments, it is set
-    to logging.WARNING, for one to logging.INFO and for two to logging.DEBUG. If a log file was specified in the
-    parsed arguments, the logging information is written into that file.
-
-    Parameters
-    ----------
-    parsed_arguments : argparse.Namespace
-        The populated argparse namespace.
-
-    Returns
-    -------
-    logging.Logger
-        The initialized root logger.
-    """
-    logger = logging.getLogger("")
-    logger.setLevel(logging.DEBUG)
-
-    if parsed_arguments.verbose is None:
-        logger_level = logging.WARNING
-    elif parsed_arguments.verbose == 1:
-        logger_level = logging.INFO
-    else:
-        logger_level = logging.DEBUG
-
-    if parsed_arguments.logfile is not None:
-        handler = logging.FileHandler(parsed_arguments.logfile)
-    else:
-        handler = logging.StreamHandler()
-    logger.setLevel(logger_level)
-    handler.setLevel(logger_level)
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s: %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    # Don't collect information about where calls were made from (slows down PyPy)
-    logging._srcfile = None
-    return logger
