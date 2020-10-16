@@ -1,5 +1,6 @@
 """Module for the abstract Sampler class."""
 from abc import ABCMeta, abstractmethod
+import csv
 import os
 
 
@@ -62,8 +63,4 @@ class Sampler(metaclass=ABCMeta):
 
     def _write_sample_to_file(self, sample, sample_file_string):
         with open(os.path.join(os.getcwd(), self._output_directory, sample_file_string), 'w') as file:
-            for observation in sample:
-                for component in observation:
-                    file.write(str(component))
-                    file.write('\t\t\t')
-                file.write('\n')
+            csv.writer(file).writerows(sample)
