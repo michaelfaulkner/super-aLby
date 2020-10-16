@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/super-rel-mc.iml" filepath="$PROJECT_DIR$/.idea/super-rel-mc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/super-relativistic-mc.iml" filepath="$PROJECT_DIR$/.idea/super-relativistic-mc.iml" />
     </modules>
   </component>
 </project>
