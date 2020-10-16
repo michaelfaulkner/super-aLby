@@ -71,10 +71,10 @@ class MarkovChain:
                 "Give a value not equal to 0 as the number of observations of target distribution {0}.".format(
                     self.__class__.__name__))
         self._dimension_of_target_distribution = dimension_of_target_distribution
-        self._integrator_instance = integrator_instance
-        self._kinetic_energy_instance = kinetic_energy_instance
-        self._potential_instance = potential_instance
-        self._observer_instance = observer_instance
+        self._integrator = integrator_instance
+        self._kinetic_energy = kinetic_energy_instance
+        self._potential = potential_instance
+        self._observer = observer_instance
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
         self._step_size = initial_step_size
@@ -122,18 +122,17 @@ class MarkovChain:
                            self._number_of_equilibration_iterations + self._number_of_observations + 1))
 
         for i in range(self._number_of_equilibration_iterations + self._number_of_observations):
-            momentum = self._kinetic_energy_instance.get_momentum_observation(momentum)
+            momentum = self._kinetic_energy.get_momentum_observation(momentum)
             if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
-            momentum_candidate, position_candidate = self._integrator_instance.get_candidate_configuration(
+            momentum_candidate, position_candidate = self._integrator.get_candidate_configuration(
                 momentum, position, number_of_integration_steps, self._step_size, charges=None)
 
             if self._use_metropolis_accept_reject:
-                delta_hamiltonian = (self._kinetic_energy_instance.get_value(momentum_candidate) -
-                                     self._kinetic_energy_instance.get_value(momentum) +
-                                     self._potential_instance.get_value(position_candidate,
-                                                                        charges=charges) -
-                                     self._potential_instance.get_value(position, charges=charges))
+                delta_hamiltonian = (self._kinetic_energy.get_value(momentum_candidate) -
+                                     self._kinetic_energy.get_value(momentum) +
+                                     self._potential.get_value(position_candidate, charges=charges) -
+                                     self._potential.get_value(position, charges=charges))
                 if abs(delta_hamiltonian) > 1000.0:
                     if i < self._number_of_equilibration_iterations:
                         number_of_numerical_divergences_during_equilibration += 1
@@ -146,7 +145,7 @@ class MarkovChain:
             else:
                 position = position_candidate
                 momentum = momentum_candidate
-            sample[:, i] = self._observer_instance.get_observation(momentum, position)
+            sample[:, i] = self._observer.get_observation(momentum, position)
 
             if self._step_size_adaptor_is_on and i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
                 acceptance_rate = number_of_accepted_trajectories / 100.0

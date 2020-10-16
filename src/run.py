@@ -35,15 +35,14 @@ def main(argv: Sequence[str]) -> None:
 
     logger.info("Setting up the run based on the configuration file {0}.".format(args.config_file))
     config = read_config(args.config_file)
-    kinetic_energy_instance = factory.build_from_config(
-        config, to_camel_case(config.get("Hamiltonian", "kinetic_energy")), "kinetic_energy")
-    potential_instance = factory.build_from_config(
-        config, to_camel_case(config.get("Hamiltonian", "potential")), "potential")
-    observer_instance = factory.build_from_config(config, to_camel_case(config.get("Samples", "observer")), "observer")
-    integrator_instance = integrator.leapfrog_integrator.LeapfrogIntegrator(kinetic_energy_instance, potential_instance)
+    kinetic_energy = factory.build_from_config(config, to_camel_case(config.get("Hamiltonian", "kinetic_energy")),
+                                               "kinetic_energy")
+    potential = factory.build_from_config(config, to_camel_case(config.get("Hamiltonian", "potential")), "potential")
+    observer = factory.build_from_config(config, to_camel_case(config.get("Samples", "observer")), "observer")
     markov_chain_instance = markov_chain.MarkovChain(
-        get_value(config, "Hamiltonian", "dimension_of_target_distribution"), integrator_instance,
-        kinetic_energy_instance, potential_instance, observer_instance, *get_algorithm_config(config))
+        get_value(config, "Hamiltonian", "dimension_of_target_distribution"),
+        integrator.leapfrog_integrator.LeapfrogIntegrator(kinetic_energy, potential),
+        kinetic_energy, potential, observer, *get_algorithm_config(config))
 
     used_sections = factory.used_sections
     for section in config.sections():
@@ -56,7 +55,7 @@ def main(argv: Sequence[str]) -> None:
     end_time = time.time()
 
     logger.info("Running the post_run method.")
-    observer_instance.output_sample(sample)
+    observer.output_sample(sample)
     logger.info("Runtime of the simulation: --- %s seconds ---" % (end_time - start_time))
 
 
