@@ -77,6 +77,7 @@ class MarkovChain:
         self._observer = observer_instance
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
+        self._total_number_of_iterations = number_of_equilibration_iterations + number_of_observations
         self._step_size = initial_step_size
         self._max_number_of_integration_steps = max_number_of_integration_steps
         self._randomise_number_of_integration_steps = randomise_number_of_integration_steps
@@ -118,10 +119,9 @@ class MarkovChain:
         number_of_integration_steps = self._max_number_of_integration_steps
         momentum = self._initialise_momentum_or_position(initialise_momentum=True)
         position = self._initialise_momentum_or_position(initialise_momentum=False)
-        sample = np.zeros((self._dimension_of_target_distribution,
-                           self._number_of_equilibration_iterations + self._number_of_observations + 1))
+        sample = np.zeros((self._dimension_of_target_distribution, self._total_number_of_iterations + 1))
 
-        for i in range(self._number_of_equilibration_iterations + self._number_of_observations):
+        for i in range(self._total_number_of_iterations):
             momentum = self._kinetic_energy.get_momentum_observation(momentum)
             if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
