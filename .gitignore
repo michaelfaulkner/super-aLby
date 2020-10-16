@@ -29,8 +29,6 @@
 *.pdf
 *.png
 
-# Exclude ignore for .pdf files in figures directory
-# !projects/bkt-correlated-dynamics/factsheets/figures/*.pdf
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
@@ -55,6 +53,9 @@
 
 ## Mac compilation file:
 *.DS_Store
+
+## Pycharm IDE files:
+.idea/
 
 ## Microsoft Office files
 *.pptx
