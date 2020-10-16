@@ -65,4 +65,5 @@ class Sampler(metaclass=ABCMeta):
             for observation in sample:
                 for component in observation:
                     file.write(str(component))
-                    file.write('\n')
+                    file.write('\t\t\t')
+                file.write('\n')

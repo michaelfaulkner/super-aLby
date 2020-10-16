@@ -119,8 +119,8 @@ class MarkovChain:
         number_of_integration_steps = self._max_number_of_integration_steps
         momentum = self._initialise_momentum_or_position(initialise_momentum=True)
         position = self._initialise_momentum_or_position(initialise_momentum=False)
-        sample = np.zeros((self._dimension_of_target_distribution, self._total_number_of_iterations + 1))
-        sample[:, 0] = self._observer.get_observation(momentum, position)
+        sample = np.zeros((self._total_number_of_iterations + 1, self._dimension_of_target_distribution))
+        sample[0, :] = self._observer.get_observation(momentum, position)
 
         for i in range(self._total_number_of_iterations):
             momentum = self._kinetic_energy.get_momentum_observation(momentum)
@@ -146,7 +146,7 @@ class MarkovChain:
             else:
                 position = position_candidate
                 momentum = momentum_candidate
-            sample[:, i + 1] = self._observer.get_observation(momentum, position)
+            sample[i + 1, :] = self._observer.get_observation(momentum, position)
 
             if self._step_size_adaptor_is_on and i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
                 acceptance_rate = number_of_accepted_trajectories / 100.0
