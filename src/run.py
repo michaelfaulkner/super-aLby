@@ -45,7 +45,7 @@ def main(argv: Sequence[str]) -> None:
 
     used_sections = factory.used_sections
     for section in config.sections():
-        if section not in used_sections and section not in ["Algorithm", "Hamiltonian", "Samples"]:
+        if section not in used_sections and section not in ["Settings", "Hamiltonian", "Samples"]:
             logger.warning("The section {0} in the .ini file has not been used!".format(section))
 
     logger.info("Running the super-relativistic Monte Carlo simulation.")
