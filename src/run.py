@@ -38,11 +38,10 @@ def main(argv: Sequence[str]) -> None:
     kinetic_energy = factory.build_from_config(config, to_camel_case(config.get("Hamiltonian", "kinetic_energy")),
                                                "kinetic_energy")
     potential = factory.build_from_config(config, to_camel_case(config.get("Hamiltonian", "potential")), "potential")
-    observer = factory.build_from_config(config, to_camel_case(config.get("Samples", "observer")), "observer")
-    markov_chain_instance = markov_chain.MarkovChain(
-        get_value(config, "Hamiltonian", "dimension_of_target_distribution"),
-        integrator.leapfrog_integrator.LeapfrogIntegrator(kinetic_energy, potential),
-        kinetic_energy, potential, observer, *get_algorithm_config(config))
+    sampler = factory.build_from_config(config, to_camel_case(config.get("Samples", "sampler")), "sampler")
+    algorithm = markov_chain.MarkovChain(get_value(config, "Hamiltonian", "dimension_of_target_distribution"),
+                                         integrator.leapfrog_integrator.LeapfrogIntegrator(kinetic_energy, potential),
+                                         kinetic_energy, potential, sampler, *get_algorithm_config(config))
 
     used_sections = factory.used_sections
     for section in config.sections():
@@ -51,11 +50,11 @@ def main(argv: Sequence[str]) -> None:
 
     logger.info("Running the super-relativistic Monte Carlo simulation.")
     start_time = time.time()
-    sample = markov_chain_instance.get_sample()
+    sample = algorithm.get_sample()
     end_time = time.time()
 
     logger.info("Running the post_run method.")
-    observer.output_sample(sample)
+    sampler.output_sample(sample)
     logger.info("Runtime of the simulation: --- %s seconds ---" % (end_time - start_time))
 
 
