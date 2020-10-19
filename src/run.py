@@ -35,17 +35,16 @@ def main(argv: Sequence[str]) -> None:
 
     print_and_log(logger, "Setting up the run based on the configuration file {0}.".format(args.config_file))
     config = read_config(args.config_file)
-    kinetic_energy = factory.build_from_config(config, to_camel_case(config.get("Hamiltonian", "kinetic_energy")),
+    kinetic_energy = factory.build_from_config(config, to_camel_case(config.get("Algorithm", "kinetic_energy")),
                                                "kinetic_energy")
-    potential = factory.build_from_config(config, to_camel_case(config.get("Hamiltonian", "potential")), "potential")
-    sampler = factory.build_from_config(config, to_camel_case(config.get("Samples", "sampler")), "sampler")
-    algorithm = markov_chain.MarkovChain(get_value(config, "Hamiltonian", "dimension_of_target_distribution"),
-                                         integrator.leapfrog_integrator.LeapfrogIntegrator(kinetic_energy, potential),
+    potential = factory.build_from_config(config, to_camel_case(config.get("Algorithm", "potential")), "potential")
+    sampler = factory.build_from_config(config, to_camel_case(config.get("Algorithm", "sampler")), "sampler")
+    algorithm = markov_chain.MarkovChain(integrator.leapfrog_integrator.LeapfrogIntegrator(kinetic_energy, potential),
                                          kinetic_energy, potential, sampler, *get_algorithm_config(config))
 
     used_sections = factory.used_sections
     for section in config.sections():
-        if section not in used_sections and section not in ["Settings", "Hamiltonian", "Samples"]:
+        if section not in used_sections and section not in ["Algorithm", "ModelSettings",  "MarkovChainSettings"]:
             logger.warning("The section {0} in the .ini file has not been used!".format(section))
 
     print_and_log(logger, "Running the super-relativistic Monte Carlo simulation.")
