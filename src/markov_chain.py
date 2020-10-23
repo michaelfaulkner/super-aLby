@@ -68,6 +68,7 @@ class MarkovChain:
         self._potential = potential_instance
         self._observer = observer_instance
         self._range_of_initial_particle_positions = range_of_initial_particle_positions
+        print(range_of_initial_particle_positions)
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
         self._total_number_of_iterations = number_of_equilibration_iterations + number_of_observations
@@ -76,6 +77,13 @@ class MarkovChain:
         self._randomise_number_of_integration_steps = randomise_number_of_integration_steps
         self._step_size_adaptor_is_on = step_size_adaptor_is_on
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
+        if dimensionality_of_particle_space == 1:
+            self._dimensionality_of_position_array = number_of_particles
+            self._dimensionality_of_sample_array = (self._total_number_of_iterations + 1, number_of_particles)
+        else:
+            self._dimensionality_of_position_array = (number_of_particles, dimensionality_of_particle_space)
+            self._dimensionality_of_sample_array = (
+                self._total_number_of_iterations + 1, number_of_particles, dimensionality_of_particle_space)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            integrator_instance=integrator_instance, kinetic_energy_instance=kinetic_energy_instance,
                            potential_instance=potential_instance, observer_instance=observer_instance,
@@ -106,36 +114,36 @@ class MarkovChain:
         number_of_numerical_divergences_during_equilibration = 0
         number_of_numerical_divergences_during_equilibrated_process = 0
         number_of_integration_steps = self._max_number_of_integration_steps
-        momentum = np.zeros(number_of_particles)
-        position = self._initialise_positions()
-        sample = np.zeros((self._total_number_of_iterations + 1, number_of_particles))
-        sample[0, :] = self._observer.get_observation(momentum, position)
+        momenta = np.zeros(self._dimensionality_of_position_array)
+        positions = self._initialise_position_array()
+        sample = np.zeros(self._dimensionality_of_sample_array)
+        sample[0, :] = self._observer.get_observation(momenta, positions)
 
         for i in range(self._total_number_of_iterations):
-            momentum = self._kinetic_energy.get_momentum_observation(momentum)
+            momenta = self._kinetic_energy.get_momentum_observation(momenta)
             if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
-            momentum_candidate, position_candidate = self._integrator.get_candidate_configuration(
-                momentum, position, number_of_integration_steps, self._step_size, charges=None)
+            candidate_momenta, candidate_positions = self._integrator.get_candidate_configuration(
+                momenta, positions, number_of_integration_steps, self._step_size, charges=None)
 
             if self._use_metropolis_accept_reject:
-                delta_hamiltonian = (self._kinetic_energy.get_value(momentum_candidate) -
-                                     self._kinetic_energy.get_value(momentum) +
-                                     self._potential.get_value(position_candidate, charges=charges) -
-                                     self._potential.get_value(position, charges=charges))
+                delta_hamiltonian = (self._kinetic_energy.get_value(candidate_momenta) -
+                                     self._kinetic_energy.get_value(momenta) +
+                                     self._potential.get_value(candidate_positions, charges=charges) -
+                                     self._potential.get_value(positions, charges=charges))
                 if abs(delta_hamiltonian) > 1000.0:
                     if i < self._number_of_equilibration_iterations:
                         number_of_numerical_divergences_during_equilibration += 1
                     else:
                         number_of_numerical_divergences_during_equilibrated_process += 1
                 if np.random.uniform(0, 1) < np.exp(- delta_hamiltonian):
-                    position = position_candidate
-                    momentum = momentum_candidate
+                    positions = candidate_positions
+                    momenta = candidate_momenta
                     number_of_accepted_trajectories += 1
             else:
-                position = position_candidate
-                momentum = momentum_candidate
-            sample[i + 1, :] = self._observer.get_observation(momentum, position)
+                positions = candidate_positions
+                momenta = candidate_momenta
+            sample[i + 1, :] = self._observer.get_observation(momenta, positions)
 
             if self._step_size_adaptor_is_on and i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
                 acceptance_rate = number_of_accepted_trajectories / 100.0
@@ -156,9 +164,15 @@ class MarkovChain:
               number_of_numerical_divergences_during_equilibrated_process)
         return sample
 
-    def _initialise_positions(self):
-        # todo update np.ones() and np.random.uniform() to account for dimensionality_of_particle_space
-        if type(self._range_of_initial_particle_positions) == float:
-            return self._range_of_initial_particle_positions * np.ones(number_of_particles)
+    def _initialise_position_array(self):
+        if dimensionality_of_particle_space == 1:
+            if type(self._range_of_initial_particle_positions) == float:
+                return self._range_of_initial_particle_positions * np.ones(number_of_particles)
+            else:
+                return np.random.uniform(*self._range_of_initial_particle_positions, size=number_of_particles)
         else:
-            return np.random.uniform(*self._range_of_initial_particle_positions, size=number_of_particles)
+            if type(self._range_of_initial_particle_positions[0]) == float:
+                return np.array([self._range_of_initial_particle_positions for _ in range(number_of_particles)])
+            else:
+                return np.array([[np.random.uniform(*axis_range) for axis_range in
+                                  self._range_of_initial_particle_positions] for _ in range(number_of_particles)])
