@@ -7,7 +7,7 @@ from typing import Sequence
 from base import factory
 from base.strings import to_camel_case
 from base.uuid import get_uuid
-from base.parsing import get_algorithm_config, parse_options, read_config, get_value
+from base.parsing import get_markov_chain_settings, parse_options, read_config, get_value
 from base.logging import set_up_logging, print_and_log
 from version import version
 import integrator.leapfrog_integrator
@@ -40,7 +40,7 @@ def main(argv: Sequence[str]) -> None:
     potential = factory.build_from_config(config, to_camel_case(config.get("Algorithm", "potential")), "potential")
     sampler = factory.build_from_config(config, to_camel_case(config.get("Algorithm", "sampler")), "sampler")
     algorithm = markov_chain.MarkovChain(integrator.leapfrog_integrator.LeapfrogIntegrator(kinetic_energy, potential),
-                                         kinetic_energy, potential, sampler, *get_algorithm_config(config))
+                                         kinetic_energy, potential, sampler, *get_markov_chain_settings(config))
 
     used_sections = factory.used_sections
     for section in config.sections():

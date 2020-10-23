@@ -31,7 +31,7 @@ def read_config(config_file: str) -> ConfigParser:
     return config
 
 
-def get_algorithm_config(config):
+def get_markov_chain_settings(config):
     return (get_value(config, "MarkovChainSettings", "range_of_initial_particle_positions"),
             get_value(config, "MarkovChainSettings", "number_of_equilibration_iterations"),
             get_value(config, "MarkovChainSettings", "number_of_observations"),
