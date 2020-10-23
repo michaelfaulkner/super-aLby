@@ -63,12 +63,24 @@ class MarkovChain:
             raise ValueError(
                 "Give a value not equal to 0 as the number of observations of target distribution {0}.".format(
                     self.__class__.__name__))
+        condition = ((dimensionality_of_particle_space == 1 and
+                      ((type(range_of_initial_particle_positions) == list and
+                        type(range_of_initial_particle_positions[0]) != float) or
+                       (type(range_of_initial_particle_positions) == list and
+                        len(range_of_initial_particle_positions) > 2))) or
+                     (dimensionality_of_particle_space > 1 and
+                      (type(range_of_initial_particle_positions) == float or
+                       len(range_of_initial_particle_positions) > dimensionality_of_particle_space or
+                       (type(range_of_initial_particle_positions[0]) == list and
+                        type(range_of_initial_particle_positions[0][0]) != float))))
+        if condition:
+            raise ValueError("Give initial particle positions that agree with the size of particle space {0}.".format(
+                self.__class__.__name__))
         self._integrator = integrator_instance
         self._kinetic_energy = kinetic_energy_instance
         self._potential = potential_instance
         self._observer = observer_instance
         self._range_of_initial_particle_positions = range_of_initial_particle_positions
-        print(range_of_initial_particle_positions)
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
         self._total_number_of_iterations = number_of_equilibration_iterations + number_of_observations
@@ -171,6 +183,7 @@ class MarkovChain:
             else:
                 return np.random.uniform(*self._range_of_initial_particle_positions, size=number_of_particles)
         else:
+            # todo ValueError for soft-matter models w/all particles at same initial position
             if type(self._range_of_initial_particle_positions[0]) == float:
                 return np.array([self._range_of_initial_particle_positions for _ in range(number_of_particles)])
             else:
