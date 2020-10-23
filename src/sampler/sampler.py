@@ -63,4 +63,4 @@ class Sampler(metaclass=ABCMeta):
 
     def _write_sample_to_file(self, sample, sample_file_string):
         with open(os.path.join(os.getcwd(), self._output_directory, sample_file_string), 'w') as file:
-            np.savetxt(file, sample, delimiter=',')
+            np.savetxt(file, np.reshape(sample, (sample.shape[0], -1)), delimiter=',')
