@@ -13,8 +13,8 @@ class MarkovChain:
     """
 
     def __init__(self, integrator_instance, kinetic_energy_instance, potential_instance, observer_instance,
-                 number_of_equilibration_iterations=1000, number_of_observations=1000, initial_step_size=1.0,
-                 max_number_of_integration_steps=10, randomise_initial_momenta=False, randomise_initial_position=False,
+                 range_of_initial_particle_positions, number_of_equilibration_iterations=1000,
+                 number_of_observations=1000, initial_step_size=1.0, max_number_of_integration_steps=10,
                  randomise_number_of_integration_steps=False, step_size_adaptor_is_on=True,
                  use_metropolis_accept_reject=True):
         """
@@ -30,6 +30,8 @@ class MarkovChain:
 
         observer_instance : Python class instance
 
+        range_of_initial_particle_positions : float or list of floats
+
         number_of_equilibration_iterations : int, optional
 
         number_of_observations : int, optional
@@ -39,10 +41,6 @@ class MarkovChain:
         max_number_of_integration_steps : int, optional
 
         randomise_number_of_integration_steps : Boolean, optional
-
-        randomise_initial_momenta : Boolean, optional
-
-        randomise_initial_position : Boolean, optional
 
         step_size_adaptor_is_on : Boolean, optional
 
@@ -69,25 +67,23 @@ class MarkovChain:
         self._kinetic_energy = kinetic_energy_instance
         self._potential = potential_instance
         self._observer = observer_instance
+        self._range_of_initial_particle_positions = range_of_initial_particle_positions
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
         self._total_number_of_iterations = number_of_equilibration_iterations + number_of_observations
         self._step_size = initial_step_size
         self._max_number_of_integration_steps = max_number_of_integration_steps
         self._randomise_number_of_integration_steps = randomise_number_of_integration_steps
-        self._randomise_initial_momenta = randomise_initial_momenta
-        self._randomise_initial_position = randomise_initial_position
         self._step_size_adaptor_is_on = step_size_adaptor_is_on
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            integrator_instance=integrator_instance, kinetic_energy_instance=kinetic_energy_instance,
                            potential_instance=potential_instance, observer_instance=observer_instance,
+                           randomise_number_of_integration_steps=randomise_number_of_integration_steps,
                            number_of_equilibration_iterations=number_of_equilibration_iterations,
                            number_of_observations=number_of_observations, initial_step_size=initial_step_size,
                            max_number_of_integration_steps=max_number_of_integration_steps,
-                           randomise_initial_momenta=randomise_initial_momenta,
-                           randomise_initial_position=randomise_initial_position,
-                           randomise_number_of_integration_steps=randomise_number_of_integration_steps,
+                           range_of_initial_particle_positions=range_of_initial_particle_positions,
                            step_size_adaptor_is_on=step_size_adaptor_is_on,
                            use_metropolis_accept_reject=use_metropolis_accept_reject)
 
@@ -110,8 +106,8 @@ class MarkovChain:
         number_of_numerical_divergences_during_equilibration = 0
         number_of_numerical_divergences_during_equilibrated_process = 0
         number_of_integration_steps = self._max_number_of_integration_steps
-        momentum = self._initialise_momentum_or_position(initialise_momentum=True)
-        position = self._initialise_momentum_or_position(initialise_momentum=False)
+        momentum = np.zeros(number_of_particles)
+        position = self._initialise_positions()
         sample = np.zeros((self._total_number_of_iterations + 1, number_of_particles))
         sample[0, :] = self._observer.get_observation(momentum, position)
 
@@ -160,12 +156,9 @@ class MarkovChain:
               number_of_numerical_divergences_during_equilibrated_process)
         return sample
 
-    def _initialise_momentum_or_position(self, initialise_momentum):
-        if initialise_momentum:
-            randomise_initial_values = self._randomise_initial_momenta
+    def _initialise_positions(self):
+        # todo update np.ones() and np.random.uniform() to account for dimensionality_of_particle_space
+        if type(self._range_of_initial_particle_positions) == float:
+            return self._range_of_initial_particle_positions * np.ones(number_of_particles)
         else:
-            randomise_initial_values = self._randomise_initial_position
-        if randomise_initial_values:
-            return np.random.uniform(low=-10.0, high=10.0, size=number_of_particles)
-        else:
-            return np.zeros(number_of_particles)
+            return np.random.uniform(*self._range_of_initial_particle_positions, size=number_of_particles)

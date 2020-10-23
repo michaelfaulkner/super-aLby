@@ -32,13 +32,12 @@ def read_config(config_file: str) -> ConfigParser:
 
 
 def get_algorithm_config(config):
-    return (get_value(config, "MarkovChainSettings", "number_of_equilibration_iterations"),
+    return (get_value(config, "MarkovChainSettings", "range_of_initial_particle_positions"),
+            get_value(config, "MarkovChainSettings", "number_of_equilibration_iterations"),
             get_value(config, "MarkovChainSettings", "number_of_observations"),
             get_value(config, "MarkovChainSettings", "initial_step_size"),
             get_value(config, "MarkovChainSettings", "max_number_of_integration_steps"),
             get_value(config, "MarkovChainSettings", "randomise_number_of_integration_steps"),
-            get_value(config, "MarkovChainSettings", "randomise_initial_momenta"),
-            get_value(config, "MarkovChainSettings", "randomise_initial_position"),
             get_value(config, "MarkovChainSettings", "step_size_adaptor_is_on"),
             get_value(config, "MarkovChainSettings", "use_metropolis_accept_reject"))
 
