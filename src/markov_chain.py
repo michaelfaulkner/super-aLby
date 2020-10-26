@@ -13,8 +13,8 @@ class MarkovChain:
     """
 
     def __init__(self, integrator_instance, kinetic_energy_instance, potential_instance, observer_instance,
-                 range_of_initial_particle_positions, number_of_equilibration_iterations=1000,
-                 number_of_observations=1000, initial_step_size=1.0, max_number_of_integration_steps=10,
+                 range_of_initial_particle_positions, number_of_equilibration_iterations=5000,
+                 number_of_observations=1000, initial_step_size=0.1, max_number_of_integration_steps=10,
                  randomise_number_of_integration_steps=False, step_size_adaptor_is_on=True,
                  use_metropolis_accept_reject=True):
         """
@@ -123,8 +123,6 @@ class MarkovChain:
      """
         initial_step_size = self._step_size
         number_of_accepted_trajectories = 0
-        number_of_numerical_divergences_during_equilibration = 0
-        number_of_numerical_divergences_during_equilibrated_process = 0
         number_of_integration_steps = self._max_number_of_integration_steps
         momenta = np.zeros(self._dimensionality_of_position_array)
         positions = self._initialise_position_array()
@@ -143,11 +141,6 @@ class MarkovChain:
                                      self._kinetic_energy.get_value(momenta) +
                                      self._potential.get_value(candidate_positions, charges=charges) -
                                      self._potential.get_value(positions, charges=charges))
-                if abs(delta_hamiltonian) > 1000.0:
-                    if i < self._number_of_equilibration_iterations:
-                        number_of_numerical_divergences_during_equilibration += 1
-                    else:
-                        number_of_numerical_divergences_during_equilibrated_process += 1
                 if np.random.uniform(0, 1) < np.exp(- delta_hamiltonian):
                     positions = candidate_positions
                     momenta = candidate_momenta
@@ -166,14 +159,10 @@ class MarkovChain:
                 number_of_accepted_trajectories = 0
 
         acceptance_rate = number_of_accepted_trajectories / float(self._number_of_observations)
-        print(
-            "Max number of integration steps = %d; initial numerical step size = %.3f; final numerical step size = %.3f"
-            % (self._max_number_of_integration_steps, initial_step_size, self._step_size))
+        print("Max number of integration steps = %d" % self._max_number_of_integration_steps)
+        print("Initial numerical step size = %.3f" % initial_step_size)
+        print("Final numerical step size = %.3f" % self._step_size)
         print("Metropolis-Hastings acceptance rate = %f" % acceptance_rate)
-        print("Number of numerical divergences during equilibration = %d" %
-              number_of_numerical_divergences_during_equilibration)
-        print("Number of numerical divergences during equilibrated process = %d" %
-              number_of_numerical_divergences_during_equilibrated_process)
         return sample
 
     def _initialise_position_array(self):
