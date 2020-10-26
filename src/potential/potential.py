@@ -35,7 +35,7 @@ class Potential(metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @abstractmethod
-    def get_value(self, position, charges=None):
+    def get_value(self, position):
         """
         Return the potential function for certain separations and charges.
 
@@ -44,8 +44,6 @@ class Potential(metaclass=ABCMeta):
         position : numpy_array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
             parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
-        charges : optional
-            All the charges needed to calculate the potential function.
 
         Returns
         -------
@@ -55,7 +53,7 @@ class Potential(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def get_gradient(self, position, charges=None):
+    def get_gradient(self, position):
         """
         Return the gradient of the potential for certain separation and charges.
 
@@ -64,8 +62,6 @@ class Potential(metaclass=ABCMeta):
         position : numpy_array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
             parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
-        charges : optional
-            All the charges needed to calculate the gradient.
 
         Returns
         -------

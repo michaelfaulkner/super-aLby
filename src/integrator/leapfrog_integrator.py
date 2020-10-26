@@ -24,8 +24,7 @@ class LeapfrogIntegrator(Integrator):
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            kinetic_energy_instance=kinetic_energy_instance, potential_instance=potential_instance)
 
-    def get_candidate_configuration(self, momentum, position, number_of_integration_steps, step_size,
-                                    charges=None):
+    def get_candidate_configuration(self, momentum, position, number_of_integration_steps, step_size):
         """
         Return the Hamiltonian / (super-)relativistic flow between times
             t_0 and t_0 + step_size * number_of_integration_steps.
@@ -41,8 +40,6 @@ class LeapfrogIntegrator(Integrator):
             number of  numerical integration steps between initial and candidate configurations.
         step_size : int, optional
             step size of numerical integration.
-        charges : optional
-            All the charges needed to calculate the potential and its gradient.
 
         Returns
         -------
@@ -50,10 +47,10 @@ class LeapfrogIntegrator(Integrator):
             The flow.
         """
         half_step_size = 0.5 * step_size
-        momentum = momentum - half_step_size * self._potential_instance.get_gradient(position, charges=charges)
+        momentum = momentum - half_step_size * self._potential_instance.get_gradient(position)
         for _ in range(number_of_integration_steps - 1):
             position = position + step_size * self._kinetic_energy_instance.get_gradient(momentum)
-            momentum = momentum - step_size * self._potential_instance.get_gradient(position, charges=charges)
+            momentum = momentum - step_size * self._potential_instance.get_gradient(position)
         position = position + step_size * self._kinetic_energy_instance.get_gradient(momentum)
-        momentum = momentum - half_step_size * self._potential_instance.get_gradient(position, charges=charges)
+        momentum = momentum - half_step_size * self._potential_instance.get_gradient(position)
         return momentum, position

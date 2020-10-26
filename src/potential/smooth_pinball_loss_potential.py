@@ -52,7 +52,7 @@ class SmoothPinballLossPotential(Potential):
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, tau=tau, sigma=sigma,
                            lambda_hyperparameter=lambda_hyperparameter, x=x, y=y, xi=xi ,q=q, prefactor=prefactor)
 
-    def get_value(self, position, charges=None):
+    def get_value(self, position):
         """
         Returns the potential for the given position.
 
@@ -61,8 +61,6 @@ class SmoothPinballLossPotential(Potential):
         position : numpy array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
-        charges : optional
-            All the charges needed to calculate the potential; not used in this potential class.
 
         Returns
         -------
@@ -76,7 +74,7 @@ class SmoothPinballLossPotential(Potential):
         prior_vec = np.absolute(position) ** self._q
         return np.sum(pinball_loss) + self._lambda_hyperparameter * np.sum(prior_vec)
 
-    def get_gradient(self, position, charges=None):
+    def get_gradient(self, position):
         """
         Returns the gradient of the potential for the given position.
 
@@ -85,8 +83,6 @@ class SmoothPinballLossPotential(Potential):
         position : numpy array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
-        charges : optional
-            All the charges needed to calculate the gradient; not used in this potential class.
 
         Returns
         -------

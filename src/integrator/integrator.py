@@ -37,8 +37,7 @@ class Integrator(metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @abstractmethod
-    def get_candidate_configuration(self, momentum, position, number_of_integration_steps, step_size,
-                                    charges=None):
+    def get_candidate_configuration(self, momentum, position, number_of_integration_steps, step_size):
         """
         Return the Hamiltonian / (super-)relativistic flow between times
             t_0 and t_0 + step_size * number_of_integration_steps.
@@ -54,8 +53,6 @@ class Integrator(metaclass=ABCMeta):
             number of  numerical integration steps between initial and candidate configurations.
         step_size : int, optional
             step size of numerical integration.
-        charges : optional
-            All the charges needed to calculate the potential and its gradient.
 
         Returns
         -------

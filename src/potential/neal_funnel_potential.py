@@ -26,7 +26,7 @@ class NealFunnelPotential(Potential):
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
-    def get_value(self, position, charges=None):
+    def get_value(self, position):
         """
         Returns the potential for the given position.
 
@@ -35,8 +35,6 @@ class NealFunnelPotential(Potential):
         position : numpy_array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
-        charges : optional
-            All the charges needed to calculate the potential; not used in this potential class.
 
         Returns
         -------
@@ -46,7 +44,7 @@ class NealFunnelPotential(Potential):
         return position[0] ** 2 / 18.0 + 9 * position[0] / 2.0 + (
                 math.exp(-position[0]) * np.sum(position[1:len(position)] ** 2) / 2.0)
 
-    def get_gradient(self, position, charges=None):
+    def get_gradient(self, position):
         """
         Returns the gradient of the potential for the given position.
 
@@ -55,8 +53,6 @@ class NealFunnelPotential(Potential):
         position : numpy_array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
-        charges : optional
-            All the charges needed to calculate the gradient; not used in this potential class.
 
         Returns
         -------

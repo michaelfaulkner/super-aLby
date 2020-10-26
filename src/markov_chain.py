@@ -90,14 +90,9 @@ class MarkovChain:
                            step_size_adaptor_is_on=step_size_adaptor_is_on,
                            use_metropolis_accept_reject=use_metropolis_accept_reject)
 
-    def get_sample(self, charges=None):
+    def get_sample(self):
         """
         Runs the Markov chain and returns the generated observations of the target and momentum distributions.
-
-        Parameters
-        ----------
-        charges : optional
-            All the charges needed to run the Markov chain.
 
         Returns
         -------
@@ -110,7 +105,7 @@ class MarkovChain:
         momenta = self._kinetic_energy.get_momentum_observation(np.zeros(self._dimensionality_of_position_array))
         positions = self._initialise_position_array()
         current_kinetic_energy = self._kinetic_energy.get_value(momenta)
-        current_potential = self._potential.get_value(positions, charges=charges)
+        current_potential = self._potential.get_value(positions)
         sample = np.zeros(self._dimensionality_of_sample_array)
         sample[0, :] = self._observer.get_observation(momenta, positions)
 
@@ -118,9 +113,9 @@ class MarkovChain:
             if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
             candidate_momenta, candidate_positions = self._integrator.get_candidate_configuration(
-                momenta, positions, number_of_integration_steps, self._step_size, charges=None)
+                momenta, positions, number_of_integration_steps, self._step_size)
             candidate_kinetic_energy = self._kinetic_energy.get_value(candidate_momenta)
-            candidate_potential = self._potential.get_value(candidate_positions, charges=charges)
+            candidate_potential = self._potential.get_value(candidate_positions)
 
             if self._use_metropolis_accept_reject:
                 delta_hamiltonian = (candidate_kinetic_energy - current_kinetic_energy +

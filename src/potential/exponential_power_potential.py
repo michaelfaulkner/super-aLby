@@ -29,7 +29,7 @@ class ExponentialPowerPotential(Potential):
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power, prefactor=prefactor)
 
-    def get_value(self, position, charges=None):
+    def get_value(self, position):
         """
         Returns the potential for the given position.
 
@@ -38,8 +38,6 @@ class ExponentialPowerPotential(Potential):
         position : numpy_array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
-        charges : optional
-            All the charges needed to calculate the potential; not used in this potential class.
 
         Returns
         -------
@@ -48,7 +46,7 @@ class ExponentialPowerPotential(Potential):
         """
         return self._one_over_power * np.sum(np.absolute(position) ** self._power)
 
-    def get_gradient(self, position, charges=None):
+    def get_gradient(self, position):
         """
         Returns the gradient of the potential for the given position.
 
@@ -57,8 +55,6 @@ class ExponentialPowerPotential(Potential):
         position : numpy_array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
-        charges : optional
-            All the charges needed to calculate the gradient; not used in this potential class.
 
         Returns
         -------

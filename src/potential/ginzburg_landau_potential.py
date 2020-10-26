@@ -42,7 +42,7 @@ class GinzburgLandauPotential(Potential):
                            lambda_hyperparameter=lambda_hyperparameter, tau=tau, lattice_length=lattice_length,
                            prefactor=prefactor)
 
-    def get_value(self, position, charges=None):
+    def get_value(self, position):
         """
         Returns the potential for the given position.
 
@@ -51,8 +51,6 @@ class GinzburgLandauPotential(Potential):
         position : numpy array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
             array of superconducting phase.
-        charges : optional
-            All the charges needed to calculate the potential; not used in this potential class.
 
         Returns
         -------
@@ -66,7 +64,7 @@ class GinzburgLandauPotential(Potential):
                     (self._pos_z_translation(position) - position) ** 2) +
             0.25 * self._tau_dot_lambda * position ** 4)
 
-    def get_gradient(self, position, charges=None):
+    def get_gradient(self, position):
         """
         Returns the gradient of the potential for the given position.
 
@@ -75,8 +73,6 @@ class GinzburgLandauPotential(Potential):
         position : numpy array
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
             array of superconducting phase.
-        charges : optional
-            All the charges needed to calculate the gradient; not used in this potential class.
 
         Returns
         -------
