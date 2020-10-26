@@ -1,4 +1,4 @@
-"""Module for the GeneralisedPowerKineticEnergy class."""
+"""Module for the ExponentialPowerKineticEnergy class."""
 from base.logging import log_init_arguments
 from .kinetic_energy import KineticEnergy
 import logging
@@ -9,14 +9,14 @@ n2ri.activate()
 generalised_power_distribution = r_packages.importr('normalp')
 
 
-class GeneralisedPowerKineticEnergy(KineticEnergy):
+class ExponentialPowerKineticEnergy(KineticEnergy):
     """
-    This class implements the generalised-power kinetic energy K = sum(p[i] ** power / power)
+    This class implements the exponential-power kinetic energy K = sum(p[i] ** power / power)
     """
 
     def __init__(self, power: float = 2.0):
         """
-        The constructor of the GeneralisedPowerKineticEnergy class.
+        The constructor of the ExponentialPowerKineticEnergy class.
 
         Parameters
         ----------
