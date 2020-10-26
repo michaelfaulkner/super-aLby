@@ -74,13 +74,10 @@ class MarkovChain:
         self._step_size_adaptor_is_on = step_size_adaptor_is_on
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
         if dimensionality_of_particle_space == 1:
-            self._dimensionality_of_position_array = number_of_particles
-            self._dimensionality_of_sample_array = (self._total_number_of_iterations + 1, number_of_particles)
+            dimensionality_of_momenta_array = number_of_particles
         else:
-            self._dimensionality_of_position_array = (number_of_particles, dimensionality_of_particle_space)
-            self._dimensionality_of_sample_array = (
-                self._total_number_of_iterations + 1, number_of_particles, dimensionality_of_particle_space)
-        self._momenta = self._kinetic_energy.get_momentum_observation(np.zeros(self._dimensionality_of_position_array))
+            dimensionality_of_momenta_array = (number_of_particles, dimensionality_of_particle_space)
+        self._momenta = self._kinetic_energy.get_momentum_observation(np.zeros(dimensionality_of_momenta_array))
         self._positions = self._initialise_position_array()
         self._current_kinetic_energy = self._kinetic_energy.get_value(self._momenta)
         self._current_potential = self._potential.get_value(self._positions)
@@ -106,7 +103,7 @@ class MarkovChain:
         initial_step_size = self._step_size
         number_of_accepted_trajectories = 0
         number_of_integration_steps = self._max_number_of_integration_steps
-        sample = np.zeros(self._dimensionality_of_sample_array)
+        sample = self._sampler.initialise_sample_array(self._total_number_of_iterations)
         sample[0, :] = self._sampler.get_observation(self._momenta, self._positions)
 
         for i in range(self._total_number_of_iterations):

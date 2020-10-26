@@ -59,6 +59,23 @@ class Sampler(metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def initialise_sample_array(self, total_number_of_iterations):
+        """
+        Generate array that stores the sample.
+
+        Parameters
+        ----------
+        total_number_of_iterations : int
+            The total number of iterations of the Markov chain.
+
+        Returns
+        -------
+        ndarray
+            Numpy array of zeros of the required structure.
+        """
+        raise NotImplementedError
+
     def _write_sample_to_file(self, sample, sample_file_string):
         with open(os.path.join(os.getcwd(), self._output_directory, sample_file_string), 'w') as file:
             np.savetxt(file, np.reshape(sample, (sample.shape[0], -1)), delimiter=',')
