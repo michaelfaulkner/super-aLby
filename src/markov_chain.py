@@ -107,30 +107,35 @@ class MarkovChain:
         initial_step_size = self._step_size
         number_of_accepted_trajectories = 0
         number_of_integration_steps = self._max_number_of_integration_steps
-        momenta = np.zeros(self._dimensionality_of_position_array)
+        momenta = self._kinetic_energy.get_momentum_observation(np.zeros(self._dimensionality_of_position_array))
         positions = self._initialise_position_array()
+        current_kinetic_energy = self._kinetic_energy.get_value(momenta)
+        current_potential = self._potential.get_value(positions, charges=charges)
         sample = np.zeros(self._dimensionality_of_sample_array)
         sample[0, :] = self._observer.get_observation(momenta, positions)
 
         for i in range(self._total_number_of_iterations):
-            momenta = self._kinetic_energy.get_momentum_observation(momenta)
             if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
             candidate_momenta, candidate_positions = self._integrator.get_candidate_configuration(
                 momenta, positions, number_of_integration_steps, self._step_size, charges=None)
+            candidate_kinetic_energy = self._kinetic_energy.get_value(candidate_momenta)
+            candidate_potential = self._potential.get_value(candidate_positions, charges=charges)
 
             if self._use_metropolis_accept_reject:
-                delta_hamiltonian = (self._kinetic_energy.get_value(candidate_momenta) -
-                                     self._kinetic_energy.get_value(momenta) +
-                                     self._potential.get_value(candidate_positions, charges=charges) -
-                                     self._potential.get_value(positions, charges=charges))
+                delta_hamiltonian = (candidate_kinetic_energy - current_kinetic_energy +
+                                     candidate_potential - current_potential)
                 if np.random.uniform(0, 1) < np.exp(- delta_hamiltonian):
-                    positions = candidate_positions
                     momenta = candidate_momenta
+                    positions = candidate_positions
+                    current_kinetic_energy = candidate_kinetic_energy
+                    current_potential = candidate_potential
                     number_of_accepted_trajectories += 1
             else:
-                positions = candidate_positions
                 momenta = candidate_momenta
+                positions = candidate_positions
+                current_kinetic_energy = candidate_kinetic_energy
+                current_potential = candidate_potential
             sample[i + 1, :] = self._observer.get_observation(momenta, positions)
 
             if self._step_size_adaptor_is_on and i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
