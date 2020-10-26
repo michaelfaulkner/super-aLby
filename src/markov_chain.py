@@ -1,6 +1,6 @@
 """Module for the MarkovChain class."""
 from base.logging import log_init_arguments
-from model_settings import number_of_particles, dimensionality_of_particle_space
+from model_settings import number_of_particles, dimensionality_of_particle_space, range_of_initial_particle_positions
 import logging
 import numpy as np
 
@@ -13,10 +13,9 @@ class MarkovChain:
     """
 
     def __init__(self, integrator_instance, kinetic_energy_instance, potential_instance, observer_instance,
-                 range_of_initial_particle_positions, number_of_equilibration_iterations=5000,
-                 number_of_observations=1000, initial_step_size=0.1, max_number_of_integration_steps=10,
-                 randomise_number_of_integration_steps=False, step_size_adaptor_is_on=True,
-                 use_metropolis_accept_reject=True):
+                 number_of_equilibration_iterations=5000, number_of_observations=1000, initial_step_size=0.1,
+                 max_number_of_integration_steps=10, randomise_number_of_integration_steps=False,
+                 step_size_adaptor_is_on=True, use_metropolis_accept_reject=True):
         """
         The constructor of the MarkovChain class.
 
@@ -29,8 +28,6 @@ class MarkovChain:
         potential_instance : Python class instance
 
         observer_instance : Python class instance
-
-        range_of_initial_particle_positions : float or list of floats
 
         number_of_equilibration_iterations : int, optional
 
@@ -63,19 +60,6 @@ class MarkovChain:
             raise ValueError(
                 "Give a value not equal to 0 as the number of observations of target distribution {0}.".format(
                     self.__class__.__name__))
-        condition = ((dimensionality_of_particle_space == 1 and
-                      ((type(range_of_initial_particle_positions) == list and
-                        type(range_of_initial_particle_positions[0]) != float) or
-                       (type(range_of_initial_particle_positions) == list and
-                        len(range_of_initial_particle_positions) > 2))) or
-                     (dimensionality_of_particle_space > 1 and
-                      (type(range_of_initial_particle_positions) == float or
-                       len(range_of_initial_particle_positions) > dimensionality_of_particle_space or
-                       (type(range_of_initial_particle_positions[0]) == list and
-                        type(range_of_initial_particle_positions[0][0]) != float))))
-        if condition:
-            raise ValueError("Give initial particle positions that agree with the size of particle space {0}.".format(
-                self.__class__.__name__))
         self._integrator = integrator_instance
         self._kinetic_energy = kinetic_energy_instance
         self._potential = potential_instance
@@ -103,7 +87,6 @@ class MarkovChain:
                            number_of_equilibration_iterations=number_of_equilibration_iterations,
                            number_of_observations=number_of_observations, initial_step_size=initial_step_size,
                            max_number_of_integration_steps=max_number_of_integration_steps,
-                           range_of_initial_particle_positions=range_of_initial_particle_positions,
                            step_size_adaptor_is_on=step_size_adaptor_is_on,
                            use_metropolis_accept_reject=use_metropolis_accept_reject)
 
