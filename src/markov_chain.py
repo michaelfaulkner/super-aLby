@@ -9,10 +9,10 @@ class MarkovChain:
     """
     MarkovChain class.
 
-    The class provides the Markov-chain function (as run()).
+    The class provides the Markov-chain function (as get_sample()).
     """
 
-    def __init__(self, integrator_instance, kinetic_energy_instance, potential_instance, observer_instance,
+    def __init__(self, integrator_instance, kinetic_energy_instance, potential_instance, sampler_instance,
                  number_of_equilibration_iterations=5000, number_of_observations=1000, initial_step_size=0.1,
                  max_number_of_integration_steps=10, randomise_number_of_integration_steps=False,
                  step_size_adaptor_is_on=True, use_metropolis_accept_reject=True):
@@ -27,7 +27,7 @@ class MarkovChain:
 
         potential_instance : Python class instance
 
-        observer_instance : Python class instance
+        sampler_instance : Python class instance
 
         number_of_equilibration_iterations : int, optional
 
@@ -63,7 +63,7 @@ class MarkovChain:
         self._integrator = integrator_instance
         self._kinetic_energy = kinetic_energy_instance
         self._potential = potential_instance
-        self._observer = observer_instance
+        self._sampler = sampler_instance
         self._range_of_initial_particle_positions = range_of_initial_particle_positions
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
@@ -86,7 +86,7 @@ class MarkovChain:
         self._current_potential = self._potential.get_value(self._positions)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            integrator_instance=integrator_instance, kinetic_energy_instance=kinetic_energy_instance,
-                           potential_instance=potential_instance, observer_instance=observer_instance,
+                           potential_instance=potential_instance, sampler_instance=sampler_instance,
                            randomise_number_of_integration_steps=randomise_number_of_integration_steps,
                            number_of_equilibration_iterations=number_of_equilibration_iterations,
                            number_of_observations=number_of_observations, initial_step_size=initial_step_size,
@@ -107,7 +107,7 @@ class MarkovChain:
         number_of_accepted_trajectories = 0
         number_of_integration_steps = self._max_number_of_integration_steps
         sample = np.zeros(self._dimensionality_of_sample_array)
-        sample[0, :] = self._observer.get_observation(self._momenta, self._positions)
+        sample[0, :] = self._sampler.get_observation(self._momenta, self._positions)
 
         for i in range(self._total_number_of_iterations):
             if self._randomise_number_of_integration_steps:
@@ -127,7 +127,7 @@ class MarkovChain:
             else:
                 self._update_system_state(candidate_momenta, candidate_positions, candidate_kinetic_energy,
                                           candidate_potential)
-            sample[i + 1, :] = self._observer.get_observation(self._momenta, self._positions)
+            sample[i + 1, :] = self._sampler.get_observation(self._momenta, self._positions)
 
             if self._step_size_adaptor_is_on and i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
                 acceptance_rate = number_of_accepted_trajectories / 100.0
