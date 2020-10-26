@@ -141,11 +141,11 @@ class MarkovChain:
         print("Metropolis-Hastings acceptance rate = %f" % acceptance_rate)
         return sample
 
-    def _update_system_state(self, new_momenta, new_positions, candidate_kinetic_energy, candidate_potential):
+    def _update_system_state(self, new_momenta, new_positions, new_kinetic_energy, new_potential):
         self._momenta = new_momenta
         self._positions = new_positions
-        self._current_kinetic_energy = candidate_kinetic_energy
-        self._current_potential = candidate_potential
+        self._current_kinetic_energy = new_kinetic_energy
+        self._current_potential = new_potential
 
     def _initialise_position_array(self):
         if dimensionality_of_particle_space == 1:
