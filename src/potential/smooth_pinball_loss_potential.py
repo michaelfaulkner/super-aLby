@@ -15,7 +15,7 @@ class SmoothPinballLossPotential(Potential):
     """
 
     def __init__(self, tau: float, sigma: float, lambda_hyperparameter: float, x: str, y: str, xi: float = 0.1,
-                 q: float = 2.0, prefactor: float = 1.0):
+                 power: float = 2.0, prefactor: float = 1.0):
         """
         The constructor of the NealFunnel class.
 
@@ -33,7 +33,7 @@ class SmoothPinballLossPotential(Potential):
             Input data file representing the response (measured data).
         xi : float
             Pinball smoother (xi --> 0 recovers nonsmooth pinball loss).
-        q : float
+        power : float
             Power used in prior.
         prefactor : float
             The prefactor k of the potential.
@@ -43,14 +43,16 @@ class SmoothPinballLossPotential(Potential):
         self._xi = xi
         self._xi_dot_sigma = xi * sigma
         self._lambda_hyperparameter = lambda_hyperparameter
-        self._q = q
+        self._power = power
+        self._power_minus_one = power - 1.0
         self._x = np.loadtxt(x, dtype=float, delimiter=',')
         self._y = np.loadtxt(y, dtype=float, delimiter=',')
         self._beta_function_value = self._beta_function(xi * (1.0 - tau), xi * tau)
         self._x_sum = np.sum(self._x, axis=0)
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, tau=tau, sigma=sigma,
-                           lambda_hyperparameter=lambda_hyperparameter, x=x, y=y, xi=xi ,q=q, prefactor=prefactor)
+                           lambda_hyperparameter=lambda_hyperparameter, x=x, y=y, xi=xi, power=power,
+                           prefactor=prefactor)
 
     def get_value(self, position):
         """
@@ -71,7 +73,7 @@ class SmoothPinballLossPotential(Potential):
         pinball_loss = ((self._tau - 1) * (self._y - x_dot_beta) / self._sigma + self._xi *
                         np.logaddexp(0.0, (self._y - x_dot_beta) / self._xi_dot_sigma) +
                         np.log(self._xi * self._sigma * self._beta_function_value))
-        prior_vec = np.absolute(position) ** self._q
+        prior_vec = np.absolute(position) ** self._power
         return np.sum(pinball_loss) + self._lambda_hyperparameter * np.sum(prior_vec)
 
     def get_gradient(self, position):
@@ -89,9 +91,8 @@ class SmoothPinballLossPotential(Potential):
         numpy array
             The gradient.
         """
-        prior_gradient = np.array(
-            [self._q * self._lambda_hyperparameter * np.sign(component) * np.absolute(component) ** (self._q - 1) for
-             component in position])
+        prior_gradient = np.array([self._power * self._lambda_hyperparameter * np.sign(component) * np.absolute(
+            component) ** self._power_minus_one for component in position])
         logistic_term = self._logistic_function((self._y - np.inner(self._x, position)) / self._xi_dot_sigma)
         mid_term = np.array([np.inner(logistic_term, self._x[:, i]) for i in range(len(position))])
         return (1 - self._tau) / self._sigma * self._x_sum + 1 / self._sigma * mid_term + prior_gradient
