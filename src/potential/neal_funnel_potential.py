@@ -56,7 +56,7 @@ class NealFunnelPotential(Potential):
 
         Returns
         -------
-        numpy array
+        numpy.ndarray
             The gradient.
         """
         gradient = np.zeroes(len(position))

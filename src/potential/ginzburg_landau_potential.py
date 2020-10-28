@@ -48,7 +48,7 @@ class GinzburgLandauPotential(Potential):
 
         Parameters
         ----------
-        position : numpy array
+        position : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
             array of superconducting phase.
 
@@ -70,13 +70,13 @@ class GinzburgLandauPotential(Potential):
 
         Parameters
         ----------
-        position : numpy array
+        position : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
             array of superconducting phase.
 
         Returns
         -------
-        numpy array
+        numpy.ndarray
             The gradient.
         """
         return (self._one_minus_tau * position - self._tau_dot_alpha * (

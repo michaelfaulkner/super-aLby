@@ -68,7 +68,7 @@ class SuperRelativisticKineticEnergy(RelativisticKineticEnergy):
 
         Returns
         -------
-        numpy array
+        numpy.ndarray
             The gradient of the kinetic energy.
         """
         return self._one_over_gamma * momentum * (

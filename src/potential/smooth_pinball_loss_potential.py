@@ -60,7 +60,7 @@ class SmoothPinballLossPotential(Potential):
 
         Parameters
         ----------
-        position : numpy array
+        position : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
 
@@ -82,13 +82,13 @@ class SmoothPinballLossPotential(Potential):
 
         Parameters
         ----------
-        position : numpy array
+        position : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
 
         Returns
         -------
-        numpy array
+        numpy.ndarray
             The gradient.
         """
         prior_gradient = np.array([self._power * self._lambda_hyperparameter * np.sign(component) * np.absolute(

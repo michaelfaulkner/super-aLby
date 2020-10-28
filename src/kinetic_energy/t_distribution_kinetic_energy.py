@@ -64,7 +64,7 @@ class TDistributionKineticEnergy(KineticEnergy):
 
         Returns
         -------
-        numpy array
+        numpy.ndarray
             The gradient of the kinetic energy.
         """
         return self._degrees_of_freedom_plus_one * momentum / (self._degrees_of_freedom + momentum ** 2)

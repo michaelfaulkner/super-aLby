@@ -44,7 +44,7 @@ class GaussianKineticEnergy(KineticEnergy):
 
         Returns
         -------
-        numpy array
+        numpy.ndarray
             The gradient of the kinetic energy.
         """
         return momentum

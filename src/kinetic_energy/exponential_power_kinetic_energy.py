@@ -67,7 +67,7 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
 
         Returns
         -------
-        numpy array
+        numpy.ndarray
             The gradient of the kinetic energy.
         """
         return momentum * np.absolute(momentum) ** self._power_minus_two

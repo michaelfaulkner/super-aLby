@@ -58,7 +58,7 @@ class ExponentialPowerPotential(Potential):
 
         Returns
         -------
-        numpy array
+        numpy.ndarray
             The gradient.
         """
         return position * np.absolute(position) ** self._power_minus_two
