@@ -10,30 +10,31 @@ class TDistributionKineticEnergy(KineticEnergy):
     This class implements the t-distribution kinetic energy K = sum(p[i] ** power / power)
     """
 
-    def __init__(self, nu: int = 1):
+    def __init__(self, degrees_of_freedom: int = 1):
         """
         The constructor of the TDistributionKineticEnergy class.
 
         Parameters
         ----------
-        nu : int
-            Number of degrees of freedom.
+        degrees_of_freedom : int
+            Number of degrees of freedom of t-distribution.
 
         Raises
         ------
         base.exceptions.ValueError
             If n is less than 1.
         """
-        if nu < 1:
+        if degrees_of_freedom < 1:
             raise ValueError("Give a value not less than 1 as the number of degrees of freedom of the t-distribution "
                              "kinetic energy {0}.".format(self.__class__.__name__))
-        self._nu = float(nu)
+        self._nu = float(degrees_of_freedom)
         self._nu_minus_one = self._nu - 1.0
         self._nu_plus_one = self._nu + 1.0
         self._nu_plus_one_over_two = 0.5 * self._nu_plus_one
         self._one_over_nu = 1.0 / self._nu
         super().__init__()
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, nu=nu)
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
+                           degrees_of_freedom=degrees_of_freedom)
 
     def get_value(self, momentum):
         """
