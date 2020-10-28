@@ -12,7 +12,7 @@ class TDistributionKineticEnergy(KineticEnergy):
 
     def __init__(self, nu: int = 1):
         """
-        The constructor of the ExponentialPowerKineticEnergy class.
+        The constructor of the TDistributionKineticEnergy class.
 
         Parameters
         ----------
