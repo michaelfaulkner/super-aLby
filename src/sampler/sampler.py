@@ -71,7 +71,7 @@ class Sampler(metaclass=ABCMeta):
 
         Returns
         -------
-        ndarray
+        numpy.ndarray
             Numpy array of zeros of the required structure.
         """
         raise NotImplementedError

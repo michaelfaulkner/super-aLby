@@ -51,7 +51,7 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
 
         Parameters
         ----------
-        position : ndarray
+        position : numpy.ndarray
             One or many particle-particle separation vectors {r_ij}.
 
         Returns
@@ -68,7 +68,7 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
 
         Parameters
         ----------
-        position : ndarray
+        position : numpy.ndarray
             One or many particle-particle separation vectors {r_ij}.
 
         Returns

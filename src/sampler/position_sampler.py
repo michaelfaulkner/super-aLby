@@ -68,7 +68,7 @@ class PositionSampler(Sampler):
 
         Returns
         -------
-        ndarray
+        numpy.ndarray
             Numpy array of zeros of the required structure.
         """
         if dimensionality_of_particle_space == 1:
