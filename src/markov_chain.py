@@ -107,6 +107,8 @@ class MarkovChain:
         sample[0, :] = self._sampler.get_observation(self._momenta, self._positions)
 
         for i in range(self._total_number_of_iterations):
+            if i == self._number_of_equilibration_iterations:
+                number_of_accepted_trajectories = 0
             if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
             candidate_momenta, candidate_positions = self._integrator.get_candidate_configuration(
@@ -135,10 +137,17 @@ class MarkovChain:
                 number_of_accepted_trajectories = 0
 
         acceptance_rate = number_of_accepted_trajectories / float(self._number_of_observations)
-        print("Max number of integration steps = %d" % self._max_number_of_integration_steps)
-        print("Initial numerical step size = %.3f" % initial_step_size)
-        print("Final numerical step size = %.3f" % self._step_size)
         print("Metropolis-Hastings acceptance rate = %f" % acceptance_rate)
+        if self._step_size_adaptor_is_on:
+            print("Initial numerical step size = %f" % initial_step_size)
+            print("Final numerical step size = %f" % self._step_size)
+        else:
+            print("Numerical step size = %f" % self._step_size)
+        if self._randomise_number_of_integration_steps:
+            print("Max number of integration steps = %d; number of integration steps was randomised." %
+                  self._max_number_of_integration_steps)
+        else:
+            print("Number of integration steps = %d" % self._max_number_of_integration_steps)
         return sample
 
     def _update_system_state(self, new_momenta, new_positions, new_kinetic_energy, new_potential):
