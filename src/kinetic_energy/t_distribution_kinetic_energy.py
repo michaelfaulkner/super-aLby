@@ -22,16 +22,16 @@ class TDistributionKineticEnergy(KineticEnergy):
         Raises
         ------
         base.exceptions.ValueError
-            If n is less than 1.
+            If degrees_of_freedom is less than 1.
         """
         if degrees_of_freedom < 1:
             raise ValueError("Give a value not less than 1 as the number of degrees of freedom of the t-distribution "
                              "kinetic energy {0}.".format(self.__class__.__name__))
-        self._nu = float(degrees_of_freedom)
-        self._nu_minus_one = self._nu - 1.0
-        self._nu_plus_one = self._nu + 1.0
-        self._nu_plus_one_over_two = 0.5 * self._nu_plus_one
-        self._one_over_nu = 1.0 / self._nu
+        self._degrees_of_freedom = float(degrees_of_freedom)
+        self._degrees_of_freedom_minus_one = self._degrees_of_freedom - 1.0
+        self._degrees_of_freedom_plus_one = self._degrees_of_freedom + 1.0
+        self._degrees_of_freedom_plus_one_over_two = 0.5 * self._degrees_of_freedom_plus_one
+        self._one_over_degrees_of_freedom = 1.0 / self._degrees_of_freedom
         super().__init__()
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            degrees_of_freedom=degrees_of_freedom)
@@ -50,7 +50,8 @@ class TDistributionKineticEnergy(KineticEnergy):
         float
             The kinetic energy.
         """
-        return np.sum(self._nu_plus_one_over_two * np.log(self._one_over_nu * (1.0 + momentum ** 2)))
+        return np.sum(self._degrees_of_freedom_plus_one_over_two * np.log(self._one_over_degrees_of_freedom *
+                                                                          (1.0 + momentum ** 2)))
 
     def get_gradient(self, momentum):
         """
@@ -66,7 +67,7 @@ class TDistributionKineticEnergy(KineticEnergy):
         numpy array
             The gradient of the kinetic energy.
         """
-        return self._nu_plus_one * momentum / (self._nu + momentum ** 2)
+        return self._degrees_of_freedom_plus_one * momentum / (self._degrees_of_freedom + momentum ** 2)
 
     def get_momentum_observation(self, momentum):
         """
@@ -82,4 +83,4 @@ class TDistributionKineticEnergy(KineticEnergy):
         numpy.ndarray
             A new momentum associated with each position.
         """
-        return np.random.standard_t(df=self._nu, size=len(momentum))
+        return np.random.standard_t(df=self._degrees_of_freedom, size=len(momentum))
