@@ -23,7 +23,7 @@ class LaplacianKineticEnergy(KineticEnergy):
 
         Parameters
         ----------
-        momentum : numpy_array
+        momentum : numpy.ndarray
             The momentum associated with each position.
 
         Returns
@@ -39,7 +39,7 @@ class LaplacianKineticEnergy(KineticEnergy):
 
         Parameters
         ----------
-        momentum : numpy_array
+        momentum : numpy.ndarray
             The momentum associated with each position.
 
         Returns
@@ -55,12 +55,12 @@ class LaplacianKineticEnergy(KineticEnergy):
 
         Parameters
         ----------
-        momentum : numpy_array
+        momentum : numpy.ndarray
             The current momentum associated with each position.
 
         Returns
         -------
-        numpy_array
+        numpy.ndarray
             A new momentum associated with each position.
         """
         return np.random.laplace(size=len(momentum))

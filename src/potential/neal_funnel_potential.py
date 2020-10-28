@@ -32,7 +32,7 @@ class NealFunnelPotential(Potential):
 
         Parameters
         ----------
-        position : numpy_array
+        position : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
 
@@ -50,7 +50,7 @@ class NealFunnelPotential(Potential):
 
         Parameters
         ----------
-        position : numpy_array
+        position : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
 

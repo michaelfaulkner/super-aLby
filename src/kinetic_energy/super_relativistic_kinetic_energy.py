@@ -47,7 +47,7 @@ class SuperRelativisticKineticEnergy(RelativisticKineticEnergy):
 
         Parameters
         ----------
-        momentum : numpy_array
+        momentum : numpy.ndarray
             The momentum associated with each position.
 
         Returns
@@ -63,7 +63,7 @@ class SuperRelativisticKineticEnergy(RelativisticKineticEnergy):
 
         Parameters
         ----------
-        momentum : numpy_array
+        momentum : numpy.ndarray
             The momentum associated with each position.
 
         Returns

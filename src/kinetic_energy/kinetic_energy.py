@@ -31,7 +31,7 @@ class KineticEnergy(metaclass=ABCMeta):
 
         Parameters
         ----------
-        momentum : numpy_array
+        momentum : numpy.ndarray
             The momentum associated with each position.
 
         Returns
@@ -48,7 +48,7 @@ class KineticEnergy(metaclass=ABCMeta):
 
         Parameters
         ----------
-        momentum : numpy_array
+        momentum : numpy.ndarray
             The momentum associated with each position.
 
         Returns
@@ -65,12 +65,12 @@ class KineticEnergy(metaclass=ABCMeta):
 
         Parameters
         ----------
-        momentum : numpy_array
+        momentum : numpy.ndarray
             The current momentum associated with each position.
 
         Returns
         -------
-        numpy_array
+        numpy.ndarray
             A new momentum associated with each position.
         """
         raise NotImplementedError
