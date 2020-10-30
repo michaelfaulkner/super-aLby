@@ -8,7 +8,7 @@ def main():
     reference_sample = np.loadtxt('output/convergence_tests/gaussian_potential/gaussian_reference_sample.csv', dtype=float, delimiter=',')
     reference_cdf = get_cumulative_distribution(reference_sample)
     sample = np.loadtxt('output/convergence_tests/gaussian_potential/gaussian_kinetic_energy/sample_of_positions.csv', dtype=float, delimiter=',')
-    sample_cdf = get_cumulative_distribution(sample[10000:])
+    sample_cdf = get_cumulative_distribution(sample[10001:])
     plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
     plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-rel-mc data')
 
