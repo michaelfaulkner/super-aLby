@@ -111,6 +111,7 @@ class MarkovChain:
                 number_of_accepted_trajectories = 0
             if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
+
             candidate_momenta, candidate_positions = self._integrator.get_candidate_configuration(
                 self._momenta, self._positions, number_of_integration_steps, self._step_size)
             candidate_kinetic_energy = self._kinetic_energy.get_value(candidate_momenta)
