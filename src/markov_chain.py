@@ -79,7 +79,6 @@ class MarkovChain:
             dimensionality_of_momenta_array = (number_of_particles, dimensionality_of_particle_space)
         self._momenta = self._kinetic_energy.get_momentum_observation(np.zeros(dimensionality_of_momenta_array))
         self._positions = self._initialise_position_array()
-        self._current_kinetic_energy = self._kinetic_energy.get_value(self._momenta)
         self._current_potential = self._potential.get_value(self._positions)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            integrator_instance=integrator_instance, kinetic_energy_instance=kinetic_energy_instance,
@@ -106,68 +105,43 @@ class MarkovChain:
         sample = self._sampler.initialise_sample_array(self._total_number_of_iterations)
         sample[0, :] = self._sampler.get_observation(self._momenta, self._positions)
 
-        x = self._positions  # initial value for x
-        n = len(np.atleast_1d(x))
-        p = np.zeros(n)
-        number_of_accepted_trajectories = 0
-        LeapFrogSteps = self._max_number_of_integration_steps  # initialise numer of LeapFrogSteps
-        nits = self._total_number_of_iterations
-        e = self._initial_step_size
-        MH = self._use_metropolis_accept_reject
-        U = self._potential
-        K = self._kinetic_energy
-        BurnIn = self._number_of_equilibration_iterations
-        x_store = np.empty((n, nits))
-        p_store = np.empty((n, nits))
+        for i in range(self._total_number_of_iterations):
+            if i == self._number_of_equilibration_iterations:
+                number_of_accepted_trajectories = 0
+            if self._randomise_number_of_integration_steps:
+                number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
+            candidate_momenta, candidate_positions = (
+                self._integrator.get_candidate_configuration(self._momenta, self._positions,
+                                                             number_of_integration_steps, self._initial_step_size))
+            candidate_potential = self._potential.get_value(candidate_positions)
 
-        for i in range(self._total_number_of_iterations):  # don't forget python arrays start at zero
-            # propose
-            p = self._kinetic_energy.get_momentum_observation(p)  # resample momentum from (e^(-K(p))
-            # if Random == True: # randomise LeapFrogSteps
-            #    LeapFrogSteps = np.random.randint(1,L+1)
-            p_can, x_can = self._integrator.get_candidate_configuration(p, x, self._max_number_of_integration_steps, self._initial_step_size)
-
-            # accept-reject if MH = True (otherwise accept all points)
             if self._use_metropolis_accept_reject:
-                energy_change = self._potential.get_value(x) + self._kinetic_energy.get_value(p) - self._potential.get_value(x_can) - self._kinetic_energy.get_value(p_can)
-                if np.log(np.random.uniform(0, 1)) < energy_change:
-                    x = x_can
-                    p = p_can
+                energy_change = (candidate_potential - self._current_potential +
+                                 self._kinetic_energy.get_value(candidate_momenta) -
+                                 self._kinetic_energy.get_value(self._momenta))
+                if np.random.uniform(0, 1) < np.exp(- energy_change):
+                    self._update_system_state(candidate_momenta, candidate_positions, candidate_potential)
                     number_of_accepted_trajectories += 1
             else:
-                x = x_can
-                p = p_can
+                self._update_system_state(candidate_momenta, candidate_positions, candidate_potential)
 
-            x_store[:, i] = x
-            p_store[:, i] = p
+            sample[i + 1, :] = self._sampler.get_observation(self._momenta, self._positions)
+            self._momenta = self._kinetic_energy.get_momentum_observation(self._momenta)
 
-            # Adapt step-size if BurnIn is nonzero
-            if i <= BurnIn - 1 and (i + 1) % 100 == 0:
-                accept_rate = number_of_accepted_trajectories / 100.0
-                if accept_rate > 0.8:
-                    e = e * 1.1
-                elif accept_rate < 0.6:
-                    e = e * 0.9
+            if self._step_size_adaptor_is_on and i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
+                acceptance_rate = number_of_accepted_trajectories / 100.0
+                if acceptance_rate > 0.8:
+                    self._step_size *= 1.1
+                elif acceptance_rate < 0.6:
+                    self._step_size *= 0.9
                 number_of_accepted_trajectories = 0
 
-        acceptance_rate = number_of_accepted_trajectories / float(self._number_of_observations)
-        print("Metropolis-Hastings acceptance rate = %f" % acceptance_rate)
-        if self._step_size_adaptor_is_on:
-            print("Initial numerical step size = %f" % self._initial_step_size)
-            print("Final numerical step size = %f" % self._step_size)
-        else:
-            print("Numerical step size = %f" % self._step_size)
-        if self._randomise_number_of_integration_steps:
-            print("Max number of integration steps = %d; number of integration steps was randomised." %
-                  self._max_number_of_integration_steps)
-        else:
-            print("Number of integration steps = %d" % self._max_number_of_integration_steps)
-        return x_store
+        self.print_markov_chain_summary(number_of_accepted_trajectories / self._number_of_observations)
+        return sample
 
-    def _update_system_state(self, new_momenta, new_positions, new_kinetic_energy, new_potential):
+    def _update_system_state(self, new_momenta, new_positions, new_potential):
         self._momenta = new_momenta
         self._positions = new_positions
-        self._current_kinetic_energy = new_kinetic_energy
         self._current_potential = new_potential
 
     @staticmethod
@@ -185,3 +159,16 @@ class MarkovChain:
             else:
                 return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]
                                  for _ in range(number_of_particles)])
+
+    def print_markov_chain_summary(self, acceptance_rate):
+        print("Metropolis-Hastings acceptance rate = %f" % acceptance_rate)
+        if self._step_size_adaptor_is_on:
+            print("Initial numerical step size = %f" % self._initial_step_size)
+            print("Final numerical step size = %f" % self._step_size)
+        else:
+            print("Numerical step size = %f" % self._step_size)
+        if self._randomise_number_of_integration_steps:
+            print("Max number of integration steps = %d; number of integration steps was randomised." %
+                  self._max_number_of_integration_steps)
+        else:
+            print("Number of integration steps = %d" % self._max_number_of_integration_steps)
