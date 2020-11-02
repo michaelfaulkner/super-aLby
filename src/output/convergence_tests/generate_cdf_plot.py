@@ -1,14 +1,32 @@
+import importlib
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+import sys
 
 
-def main():
+# Add the directory which contains the module plotting_functions to sys.path
+this_directory = os.path.dirname(os.path.abspath(__file__))
+src_directory = os.path.abspath(this_directory + "/../../")
+sys.path.insert(0, src_directory)
+
+
+factory = importlib.import_module("base.factory")
+strings = importlib.import_module("base.strings")
+parsing = importlib.import_module("base.parsing")
+run_module = importlib.import_module("run")
+
+
+def main(argv):
     matplotlib.rcParams['text.latex.preamble'] = [r"\usepackage{amsmath}"]
     reference_sample = np.loadtxt('output/convergence_tests/gaussian_potential/gaussian_reference_sample.csv', dtype=float, delimiter=',')
     reference_cdf = get_cumulative_distribution(reference_sample)
-    sample = np.loadtxt('output/convergence_tests/gaussian_potential/gaussian_kinetic_energy/sample_of_positions.csv', dtype=float, delimiter=',')
-    sample_cdf = get_cumulative_distribution(sample[10001:])
+    config = parsing.read_config(parsing.parse_options(argv).config_file)
+    sampler = factory.build_from_config(config, strings.to_camel_case(config.get("Algorithm", "sampler")), "sampler")
+    number_of_equilibrium_iterations = parsing.get_markov_chain_settings(config)[0]
+    sample = sampler.get_sample()
+    sample_cdf = get_cumulative_distribution(sample[number_of_equilibrium_iterations + 1:])
     plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
     plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-rel-mc data')
 
@@ -30,4 +48,4 @@ def get_cumulative_distribution(input_sample):
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

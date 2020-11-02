@@ -137,6 +137,7 @@ class MarkovChain:
                 number_of_accepted_trajectories = 0
 
         self.print_markov_chain_summary(number_of_accepted_trajectories / self._number_of_observations)
+
         return sample
 
     def _update_system_state(self, new_momenta, new_positions, new_potential):
