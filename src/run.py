@@ -7,7 +7,7 @@ from typing import Sequence
 from base import factory
 from base.strings import to_camel_case
 from base.uuid import get_uuid
-from base.parsing import get_markov_chain_settings, parse_options, read_config, get_value
+from base.parsing import get_markov_chain_settings, parse_options, read_config
 from base.logging import set_up_logging, print_and_log
 from version import version
 import integrator.leapfrog_integrator
