@@ -2,7 +2,7 @@
 *.dat
 *.csv
 !/src/input_data_files/*.csv
-!/src/output/convergence_tests/gaussian_potential/gaussian_reference_sample.csv
+!/src/output/convergence_tests/gaussian_reference_sample.csv
 
 ## Core latex/pdflatex auxiliary files:
 *.aux

@@ -20,8 +20,7 @@ run_module = importlib.import_module("run")
 
 def main(argv):
     matplotlib.rcParams['text.latex.preamble'] = [r"\usepackage{amsmath}"]
-    reference_sample = np.loadtxt('output/convergence_tests/gaussian_potential/gaussian_reference_sample.csv',
-                                  dtype=float, delimiter=',')
+    reference_sample = np.loadtxt('output/convergence_tests/gaussian_reference_sample.csv', dtype=float, delimiter=',')
     reference_cdf = get_cumulative_distribution(reference_sample)
     config = parsing.read_config(parsing.parse_options(argv).config_file)
     sampler = factory.build_from_config(config, strings.to_camel_case(config.get("Algorithm", "sampler")), "sampler")
