@@ -34,6 +34,8 @@ def main(argv):
     sampler = factory.build_from_config(config, strings.to_camel_case(config.get("Algorithm", "sampler")), "sampler")
     number_of_equilibrium_iterations = parsing.get_markov_chain_settings(config)[0]
     sample = sampler.get_sample()
+    if type(sample[0]) != np.float64:
+        sample = sample[:, 0]
     sample_cdf = get_cumulative_distribution(sample[number_of_equilibrium_iterations + 1:])
 
     plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
