@@ -31,14 +31,13 @@ def main(argv):
     plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
     plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-rel-mc data')
 
-    """plt.xlabel(r"Normalized potential ($x$)", fontsize=15, labelpad=10)
-    plt.ylabel(r"$\pi \left( \beta \mathbb{E} \left[ U \right] / L^2 < x \right)$", fontsize=15, labelpad=10)
+    plt.xlabel(r"$x$", fontsize=15, labelpad=10)
+    plt.ylabel(r"$ \mathbb{P} \left( X < x \right)$", fontsize=15, labelpad=10)
     plt.tick_params(axis='both', which='major', labelsize=14, pad=10)
     legend = plt.legend(loc='lower right', fontsize=10)
     legend.get_frame().set_edgecolor('k')
     legend.get_frame().set_lw(1.5)
-    plt.savefig(model_and_sampler_params.open_pdf_file('cumulative_distribution', sample_directory),
-                bbox_inches='tight')"""
+    plt.tight_layout()
     plt.show()
 
 
