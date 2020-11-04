@@ -28,6 +28,7 @@ def main(argv):
     number_of_equilibrium_iterations = parsing.get_markov_chain_settings(config)[0]
     sample = sampler.get_sample()
     sample_cdf = get_cumulative_distribution(sample[number_of_equilibrium_iterations + 1:])
+
     plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
     plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-rel-mc data')
 
