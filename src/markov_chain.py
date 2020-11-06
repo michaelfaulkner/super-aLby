@@ -136,7 +136,7 @@ class MarkovChain:
                     self._step_size *= 0.9
                 number_of_accepted_trajectories = 0
 
-        self.print_markov_chain_summary(number_of_accepted_trajectories / self._number_of_observations)
+        self._print_markov_chain_summary(number_of_accepted_trajectories / self._number_of_observations)
 
         return sample
 
@@ -161,7 +161,7 @@ class MarkovChain:
                 return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]
                                  for _ in range(number_of_particles)])
 
-    def print_markov_chain_summary(self, acceptance_rate):
+    def _print_markov_chain_summary(self, acceptance_rate):
         print("Metropolis-Hastings acceptance rate = %f" % acceptance_rate)
         if self._step_size_adaptor_is_on:
             print("Initial numerical step size = %f" % self._initial_step_size)
