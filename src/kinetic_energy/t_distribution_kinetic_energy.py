@@ -1,6 +1,7 @@
 """Module for the TDistributionKineticEnergy class."""
-from base.logging import log_init_arguments
 from .kinetic_energy import KineticEnergy
+from base.logging import log_init_arguments
+from model_settings import dimensionality_of_momenta_array
 import logging
 import numpy as np
 
@@ -33,8 +34,8 @@ class TDistributionKineticEnergy(KineticEnergy):
         self._degrees_of_freedom_plus_one_over_two = 0.5 * self._degrees_of_freedom_plus_one
         self._one_over_degrees_of_freedom = 1.0 / self._degrees_of_freedom
         super().__init__()
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           degrees_of_freedom=degrees_of_freedom)
+        log_init_arguments(
+            logging.getLogger(__name__).debug, self.__class__.__name__, degrees_of_freedom=degrees_of_freedom)
 
     def get_value(self, momentum):
         """
@@ -69,18 +70,13 @@ class TDistributionKineticEnergy(KineticEnergy):
         """
         return self._degrees_of_freedom_plus_one * momentum / (self._degrees_of_freedom + momentum ** 2)
 
-    def get_momentum_observation(self, momentum):
+    def get_momentum_observation(self):
         """
         Return an observation of the momentum from the kinetic-energy distribution.
-
-        Parameters
-        ----------
-        momentum : numpy.ndarray
-            The current momentum associated with each position.
 
         Returns
         -------
         numpy.ndarray
             A new momentum associated with each position.
         """
-        return np.random.standard_t(df=self._degrees_of_freedom, size=len(momentum))
+        return np.random.standard_t(df=self._degrees_of_freedom, size=dimensionality_of_momenta_array)

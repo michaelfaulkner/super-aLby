@@ -1,6 +1,7 @@
 """Module for the GaussianKineticEnergy class."""
-from base.logging import log_init_arguments
 from .kinetic_energy import KineticEnergy
+from base.logging import log_init_arguments
+from model_settings import dimensionality_of_momenta_array
 import logging
 import numpy as np
 
@@ -49,18 +50,13 @@ class GaussianKineticEnergy(KineticEnergy):
         """
         return momentum
 
-    def get_momentum_observation(self, momentum):
+    def get_momentum_observation(self):
         """
         Return an observation of the momentum from the kinetic-energy distribution.
-
-        Parameters
-        ----------
-        momentum : numpy.ndarray
-            The current momentum associated with each position.
 
         Returns
         -------
         numpy.ndarray
             A new momentum associated with each position.
         """
-        return np.random.normal(size=len(momentum))
+        return np.random.normal(size=dimensionality_of_momenta_array)

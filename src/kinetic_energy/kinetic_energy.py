@@ -59,14 +59,9 @@ class KineticEnergy(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def get_momentum_observation(self, momentum):
+    def get_momentum_observation(self):
         """
         Return an observation of the momentum from the kinetic-energy distribution.
-
-        Parameters
-        ----------
-        momentum : numpy.ndarray
-            The current momentum associated with each position.
 
         Returns
         -------

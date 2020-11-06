@@ -1,7 +1,8 @@
 """Module for the abstract KineticEnergyWithAdaptiveRejectionSampling class."""
-from base.logging import log_init_arguments
 from .kinetic_energy import KineticEnergy
 from adaptive_rejection_sampling import AdaptiveRejectionSampling
+from base.logging import log_init_arguments
+from model_settings import dimensionality_of_particle_space, number_of_particles
 from abc import ABCMeta, abstractmethod
 import logging
 import numpy as np
@@ -81,21 +82,20 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def get_momentum_observation(self, momentum):
+    def get_momentum_observation(self):
         """
         Returns an observation of the momentum from the kinetic-energy distribution using adaptive rejection sampling.
-
-        Parameters
-        ----------
-        momentum : numpy.ndarray
-            The current momentum associated with each position.
 
         Returns
         -------
         numpy.ndarray
             A new momentum associated with each position.
         """
-        return np.array(self._adaptive_rejection_sampling_instance.draw(len(momentum)))
+        if dimensionality_of_particle_space == 1:
+            return np.array(self._adaptive_rejection_sampling_instance.draw(number_of_particles))
+        else:
+            return np.array([self._adaptive_rejection_sampling_instance.draw(dimensionality_of_particle_space)
+                             for _ in range(number_of_particles)])
 
     def _negative_current_value(self, momentum):
         """

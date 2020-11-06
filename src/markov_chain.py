@@ -73,11 +73,7 @@ class MarkovChain:
         self._randomise_number_of_integration_steps = randomise_number_of_integration_steps
         self._step_size_adaptor_is_on = step_size_adaptor_is_on
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
-        if dimensionality_of_particle_space == 1:
-            dimensionality_of_momenta_array = number_of_particles
-        else:
-            dimensionality_of_momenta_array = (number_of_particles, dimensionality_of_particle_space)
-        self._momenta = self._kinetic_energy.get_momentum_observation(np.zeros(dimensionality_of_momenta_array))
+        self._momenta = self._kinetic_energy.get_momentum_observation()
         self._positions = self._initialise_position_array()
         self._current_potential = self._potential.get_value(self._positions)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
@@ -126,7 +122,7 @@ class MarkovChain:
                 self._update_system_state(candidate_momenta, candidate_positions, candidate_potential)
 
             sample[i + 1, :] = self._sampler.get_observation(self._momenta, self._positions)
-            self._momenta = self._kinetic_energy.get_momentum_observation(self._momenta)
+            self._momenta = self._kinetic_energy.get_momentum_observation()
 
             if self._step_size_adaptor_is_on and i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
                 acceptance_rate = number_of_accepted_trajectories / 100.0
@@ -147,7 +143,6 @@ class MarkovChain:
 
     @staticmethod
     def _initialise_position_array():
-        # todo maybe move to model_settings
         if dimensionality_of_particle_space == 1:
             if type(range_of_initial_particle_positions) == float:
                 return range_of_initial_particle_positions * np.ones(number_of_particles)

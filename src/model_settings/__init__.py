@@ -9,11 +9,18 @@ beta = get_value(config, "ModelSettings", "beta")
 number_of_particles = get_value(config, "ModelSettings", "number_of_particles")
 size_of_particle_space = get_value(config, "ModelSettings", "size_of_particle_space")
 range_of_initial_particle_positions = get_value(config, "ModelSettings", "range_of_initial_particle_positions")
+
 # todo log the above values?
 if size_of_particle_space is None or type(size_of_particle_space) == float:
     dimensionality_of_particle_space = 1
 else:
     dimensionality_of_particle_space = len(size_of_particle_space)
+
+if dimensionality_of_particle_space == 1:
+    dimensionality_of_momenta_array = number_of_particles
+else:
+    dimensionality_of_momenta_array = (number_of_particles, dimensionality_of_particle_space)
+
 conditions_1 = (dimensionality_of_particle_space == 1 and
                 (type(range_of_initial_particle_positions) == float or
                  (type(range_of_initial_particle_positions) == list and

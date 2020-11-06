@@ -1,6 +1,7 @@
 """Module for the ExponentialPowerKineticEnergy class."""
-from base.logging import log_init_arguments
 from .kinetic_energy import KineticEnergy
+from base.logging import log_init_arguments
+from model_settings import dimensionality_of_particle_space, number_of_particles
 import logging
 import numpy as np
 import rpy2.robjects.packages as r_packages
@@ -72,18 +73,17 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         """
         return momentum * np.absolute(momentum) ** self._power_minus_two
 
-    def get_momentum_observation(self, momentum):
+    def get_momentum_observation(self):
         """
         Return an observation of the momentum from the kinetic-energy distribution.
-
-        Parameters
-        ----------
-        momentum : numpy.ndarray
-            The current momentum associated with each position.
 
         Returns
         -------
         numpy.ndarray
             A new momentum associated with each position.
         """
-        return np.array(generalised_power_distribution.rnormp(len(momentum), p=self._power))
+        if dimensionality_of_particle_space == 1:
+            return np.array(generalised_power_distribution.rnormp(number_of_particles, p=self._power))
+        else:
+            return np.array([generalised_power_distribution.rnormp(dimensionality_of_particle_space, p=self._power)
+                             for _ in range(number_of_particles)])
