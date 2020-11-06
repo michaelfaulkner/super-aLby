@@ -1,7 +1,7 @@
 """Module for the ExponentialPowerKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
 from base.logging import log_init_arguments
-from model_settings import dimensionality_of_particle_space, number_of_particles
+from model_settings import beta, dimensionality_of_particle_space, number_of_particles
 import logging
 import numpy as np
 import rpy2.robjects.packages as r_packages
@@ -35,7 +35,8 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
             raise ValueError(
                 "Give a value not equal to 0.0 as the power associated with the kinetic energy {0}.".format(
                     self.__class__.__name__))
-        self._one_over_power = 1.0 / power
+        self._beta_over_power = beta / power
+        self._one_over_beta_to_powerth_root = beta ** (- 1.0 / power)
         self._power = power
         self._power_minus_two = power - 2.0
         super().__init__()
@@ -55,7 +56,7 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         float
             The kinetic energy.
         """
-        return self._one_over_power * np.sum(np.absolute(momentum) ** self._power)
+        return self._beta_over_power * np.sum(np.absolute(momentum) ** self._power)
 
     def get_gradient(self, momentum):
         """
@@ -71,7 +72,7 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         numpy.ndarray
             The gradient of the kinetic energy.
         """
-        return momentum * np.absolute(momentum) ** self._power_minus_two
+        return beta * momentum * np.absolute(momentum) ** self._power_minus_two
 
     def get_momentum_observation(self):
         """
@@ -83,7 +84,10 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
             A new momentum associated with each position.
         """
         if dimensionality_of_particle_space == 1:
-            return np.array(generalised_power_distribution.rnormp(number_of_particles, p=self._power))
+            return np.array(generalised_power_distribution.rnormp(
+                number_of_particles, sigmap=self._one_over_beta_to_powerth_root, p=self._power))
         else:
-            return np.array([generalised_power_distribution.rnormp(dimensionality_of_particle_space, p=self._power)
-                             for _ in range(number_of_particles)])
+            return np.array(
+                [generalised_power_distribution.rnormp(dimensionality_of_particle_space,
+                                                       sigmap=self._one_over_beta_to_powerth_root, p=self._power)
+                 for _ in range(number_of_particles)])

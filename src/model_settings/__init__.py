@@ -9,8 +9,11 @@ beta = get_value(config, "ModelSettings", "beta")  # todo integrate beta into co
 number_of_particles = get_value(config, "ModelSettings", "number_of_particles")
 size_of_particle_space = get_value(config, "ModelSettings", "size_of_particle_space")
 range_of_initial_particle_positions = get_value(config, "ModelSettings", "range_of_initial_particle_positions")
-
 # todo log the above values?
+
+one_over_beta = 1.0 / beta
+one_over_root_beta = beta ** (-0.5)
+
 if size_of_particle_space is None or type(size_of_particle_space) == float:
     dimensionality_of_particle_space = 1
 else:

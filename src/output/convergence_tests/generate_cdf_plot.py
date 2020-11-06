@@ -28,7 +28,7 @@ def main(argv):
             'output/convergence_tests/fourth_exponential_power_reference_sample.csv', dtype=float, delimiter=',')
     else:
         reference_sample = np.loadtxt(
-            'output/convergence_tests/gaussian_reference_sample.csv', dtype=float, delimiter=',')
+            'output/convergence_tests/gaussian_reference_sample_beta_4.csv', dtype=float, delimiter=',')
     reference_cdf = get_cumulative_distribution(reference_sample)
 
     sampler = factory.build_from_config(config, strings.to_camel_case(config.get("Algorithm", "sampler")), "sampler")

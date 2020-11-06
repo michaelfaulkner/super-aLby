@@ -1,7 +1,7 @@
 """Module for the LaplacianKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
 from base.logging import log_init_arguments
-from model_settings import dimensionality_of_momenta_array
+from model_settings import beta, dimensionality_of_momenta_array, one_over_beta
 import logging
 import numpy as np
 
@@ -32,7 +32,7 @@ class LaplacianKineticEnergy(KineticEnergy):
         float
             The kinetic energy.
         """
-        return np.sum(np.absolute(momentum))
+        return beta * np.sum(np.absolute(momentum))
 
     def get_gradient(self, momentum):
         """
@@ -48,7 +48,7 @@ class LaplacianKineticEnergy(KineticEnergy):
         numpy.ndarray
             The gradient of the kinetic energy.
         """
-        return np.sign(momentum)
+        return beta * np.sign(momentum)
 
     def get_momentum_observation(self):
         """
@@ -59,4 +59,4 @@ class LaplacianKineticEnergy(KineticEnergy):
         numpy.ndarray
             A new momentum associated with each position.
         """
-        return np.random.laplace(size=dimensionality_of_momenta_array)
+        return np.random.laplace(scale=one_over_beta, size=dimensionality_of_momenta_array)
