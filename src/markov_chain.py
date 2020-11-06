@@ -154,7 +154,6 @@ class MarkovChain:
             else:
                 return np.random.uniform(*range_of_initial_particle_positions, size=number_of_particles)
         else:
-            # todo ValueError for soft-matter models w/all particles at same initial position
             if type(range_of_initial_particle_positions[0]) == float:
                 return np.array([range_of_initial_particle_positions for _ in range(number_of_particles)])
             else:
