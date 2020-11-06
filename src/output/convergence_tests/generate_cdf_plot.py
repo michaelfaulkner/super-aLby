@@ -22,10 +22,10 @@ def main(argv):
     matplotlib.rcParams['text.latex.preamble'] = [r"\usepackage{amsmath}"]
     config = parsing.read_config(parsing.parse_options(argv).config_file)
 
-    if config.get("Algorithm", "potential") == 'exponential_power_potential':
-        if config.get("ExponentialPowerPotential", "power") != 2.0:
-            reference_sample = np.loadtxt(
-                'output/convergence_tests/fourth_exponential_power_reference_sample.csv', dtype=float, delimiter=',')
+    if config.get("Algorithm", "potential") == 'exponential_power_potential' and config.get("ExponentialPowerPotential",
+                                                                                            "power") != 2.0:
+        reference_sample = np.loadtxt(
+            'output/convergence_tests/fourth_exponential_power_reference_sample.csv', dtype=float, delimiter=',')
     else:
         reference_sample = np.loadtxt(
             'output/convergence_tests/gaussian_reference_sample.csv', dtype=float, delimiter=',')
