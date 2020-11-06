@@ -10,34 +10,18 @@ class Integrator(metaclass=ABCMeta):
     A general integrator class provides the get_flow() function.
     """
 
-    def __init__(self, kinetic_energy_instance, potential_instance, **kwargs):
+    def __init__(self, **kwargs):
         """
         The constructor of the Integrator class.
 
         This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
         init to the next class in the MRO via super.
-
-        Parameters
-        ----------
-        kinetic_energy_instance : instance of Python class
-            instance of KineticEnergy class.
-        potential_instance : instance of Python class
-            instance of Potential class.
-        kwargs : Any
-            Additional kwargs which are passed to the __init__ method of the next class in the MRO.
-
-        Raises
-        ------
-        base.exceptions.ValueError
-            If the step_size equals 0.
-            If the number_of_integration_steps equals 0.
         """
-        self._kinetic_energy_instance = kinetic_energy_instance
-        self._potential_instance = potential_instance
         super().__init__(**kwargs)
 
     @abstractmethod
-    def get_candidate_configuration(self, momentum, position, number_of_integration_steps, step_size):
+    def get_candidate_configuration(self, momentum, position, kinetic_energy_instance, potential_instance,
+                                    number_of_integration_steps, step_size):
         """
         Return the Hamiltonian / (super-)relativistic flow between times
             t_0 and t_0 + step_size * number_of_integration_steps.
@@ -49,6 +33,10 @@ class Integrator(metaclass=ABCMeta):
         position : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
             parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
+        kinetic_energy_instance : instantiated Python class
+            Instance of an inherited KineticEnergy class; contains all methods associated with the kinetic energy.
+        potential_instance : instantiated Python class
+            Instance of an inherited Potential class; contains all methods associated with the potential.
         number_of_integration_steps : int, optional
             number of  numerical integration steps between initial and candidate configurations.
         step_size : int, optional

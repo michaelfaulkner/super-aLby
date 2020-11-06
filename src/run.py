@@ -10,7 +10,6 @@ from base.uuid import get_uuid
 from base.parsing import get_markov_chain_settings, parse_options, read_config
 from base.logging import set_up_logging, print_and_log
 from version import version
-import integrator.leapfrog_integrator
 import markov_chain
 
 
@@ -35,12 +34,13 @@ def main(argv: Sequence[str]) -> None:
 
     print_and_log(logger, "Setting up the run based on the configuration file {0}.".format(args.config_file))
     config = read_config(args.config_file)
+    integrator = factory.build_from_config(config, to_camel_case(config.get("Algorithm", "integrator")), "integrator")
     kinetic_energy = factory.build_from_config(config, to_camel_case(config.get("Algorithm", "kinetic_energy")),
                                                "kinetic_energy")
     potential = factory.build_from_config(config, to_camel_case(config.get("Algorithm", "potential")), "potential")
     sampler = factory.build_from_config(config, to_camel_case(config.get("Algorithm", "sampler")), "sampler")
-    algorithm = markov_chain.MarkovChain(integrator.leapfrog_integrator.LeapfrogIntegrator(kinetic_energy, potential),
-                                         kinetic_energy, potential, sampler, *get_markov_chain_settings(config))
+    algorithm = markov_chain.MarkovChain(integrator, kinetic_energy, potential, sampler,
+                                         *get_markov_chain_settings(config))
 
     used_sections = factory.used_sections
     for section in config.sections():

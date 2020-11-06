@@ -107,8 +107,9 @@ class MarkovChain:
             if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
             candidate_momenta, candidate_positions = (
-                self._integrator.get_candidate_configuration(self._momenta, self._positions,
-                                                             number_of_integration_steps, self._initial_step_size))
+                self._integrator.get_candidate_configuration(self._momenta, self._positions, self._kinetic_energy,
+                                                             self._potential, number_of_integration_steps,
+                                                             self._initial_step_size))
             candidate_potential = self._potential.get_value(candidate_positions)
 
             if self._use_metropolis_accept_reject:
