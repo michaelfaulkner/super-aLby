@@ -1,7 +1,7 @@
 """Module for the LaplacianKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
 from base.logging import log_init_arguments
-from model_settings import beta, dimensionality_of_momenta_array, one_over_beta
+from model_settings import dimensionality_of_momenta_array, one_over_beta
 import logging
 import numpy as np
 
@@ -32,7 +32,7 @@ class LaplacianKineticEnergy(KineticEnergy):
         float
             The kinetic energy.
         """
-        return beta * np.sum(np.absolute(momentum))
+        return np.sum(np.absolute(momentum))
 
     def get_gradient(self, momentum):
         """
@@ -48,7 +48,7 @@ class LaplacianKineticEnergy(KineticEnergy):
         numpy.ndarray
             The gradient of the kinetic energy.
         """
-        return beta * np.sign(momentum)
+        return np.sign(momentum)
 
     def get_momentum_observation(self):
         """

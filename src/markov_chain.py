@@ -1,6 +1,7 @@
 """Module for the MarkovChain class."""
 from base.logging import log_init_arguments
-from model_settings import dimensionality_of_particle_space, number_of_particles, range_of_initial_particle_positions
+from model_settings import beta, dimensionality_of_particle_space, number_of_particles, \
+    range_of_initial_particle_positions
 import logging
 import numpy as np
 
@@ -68,7 +69,7 @@ class MarkovChain:
         self._number_of_observations = number_of_observations
         self._total_number_of_iterations = number_of_equilibration_iterations + number_of_observations
         self._initial_step_size = initial_step_size
-        self._step_size = initial_step_size
+        self._step_size = beta * initial_step_size
         self._max_number_of_integration_steps = max_number_of_integration_steps
         self._randomise_number_of_integration_steps = randomise_number_of_integration_steps
         self._step_size_adaptor_is_on = step_size_adaptor_is_on
@@ -116,7 +117,7 @@ class MarkovChain:
                 energy_change = (candidate_potential - self._current_potential +
                                  self._kinetic_energy.get_value(candidate_momenta) -
                                  self._kinetic_energy.get_value(self._momenta))
-                if np.random.uniform(0, 1) < np.exp(- energy_change):
+                if np.random.uniform(0, 1) < np.exp(- beta * energy_change):
                     self._update_system_state(candidate_momenta, candidate_positions, candidate_potential)
                     number_of_accepted_trajectories += 1
             else:
@@ -158,6 +159,7 @@ class MarkovChain:
 
     def _print_markov_chain_summary(self, acceptance_rate):
         print("Metropolis-Hastings acceptance rate = %f" % acceptance_rate)
+        self._step_size /= beta
         if self._step_size_adaptor_is_on:
             print("Initial numerical step size = %f" % self._initial_step_size)
             print("Final numerical step size = %f" % self._step_size)

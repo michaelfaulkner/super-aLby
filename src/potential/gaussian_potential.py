@@ -1,7 +1,6 @@
 """Module for the GaussianPotential class."""
-from base.logging import log_init_arguments
-from model_settings import beta
 from .potential import Potential
+from base.logging import log_init_arguments
 import logging
 import numpy as np
 
@@ -38,7 +37,7 @@ class GaussianPotential(Potential):
         float
             The potential.
         """
-        return 0.5 * beta * np.sum(position ** 2)
+        return 0.5 * np.sum(position ** 2)
 
     def get_gradient(self, position):
         """
@@ -55,4 +54,4 @@ class GaussianPotential(Potential):
         numpy.ndarray
             The gradient.
         """
-        return beta * position
+        return position
