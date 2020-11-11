@@ -1,4 +1,4 @@
-"""Module for the MarkovChain class."""
+"""Module for the Mediator class."""
 from base.logging import log_init_arguments
 from model_settings import beta, dimensionality_of_particle_space, number_of_particles, \
     range_of_initial_particle_positions
@@ -6,9 +6,9 @@ import logging
 import numpy as np
 
 
-class MarkovChain:
+class Mediator:
     """
-    MarkovChain class.
+    Mediator class.
 
     The class provides the Markov-chain function (as get_sample()).
     """
@@ -18,7 +18,7 @@ class MarkovChain:
                  max_number_of_integration_steps=10, randomise_number_of_integration_steps=False,
                  step_size_adaptor_is_on=True, use_metropolis_accept_reject=True):
         """
-        The constructor of the MarkovChain class.
+        The constructor of the Mediator class.
 
         Parameters
         ----------

@@ -7,10 +7,10 @@ from typing import Sequence
 from base import factory
 from base.strings import to_camel_case
 from base.uuid import get_uuid
-from base.parsing import get_markov_chain_settings, parse_options, read_config
+from base.parsing import get_algorithm_settings, parse_options, read_config
 from base.logging import set_up_logging, print_and_log
 from version import version
-import markov_chain
+import mediator
 
 
 def main(argv: Sequence[str]) -> None:
@@ -34,17 +34,16 @@ def main(argv: Sequence[str]) -> None:
 
     print_and_log(logger, "Setting up the run based on the configuration file {0}.".format(args.config_file))
     config = read_config(args.config_file)
-    integrator = factory.build_from_config(config, to_camel_case(config.get("Algorithm", "integrator")), "integrator")
-    kinetic_energy = factory.build_from_config(config, to_camel_case(config.get("Algorithm", "kinetic_energy")),
+    integrator = factory.build_from_config(config, to_camel_case(config.get("Mediator", "integrator")), "integrator")
+    kinetic_energy = factory.build_from_config(config, to_camel_case(config.get("Mediator", "kinetic_energy")),
                                                "kinetic_energy")
-    potential = factory.build_from_config(config, to_camel_case(config.get("Algorithm", "potential")), "potential")
-    sampler = factory.build_from_config(config, to_camel_case(config.get("Algorithm", "sampler")), "sampler")
-    algorithm = markov_chain.MarkovChain(integrator, kinetic_energy, potential, sampler,
-                                         *get_markov_chain_settings(config))
+    potential = factory.build_from_config(config, to_camel_case(config.get("Mediator", "potential")), "potential")
+    sampler = factory.build_from_config(config, to_camel_case(config.get("Mediator", "sampler")), "sampler")
+    algorithm = mediator.Mediator(integrator, kinetic_energy, potential, sampler, *get_algorithm_settings(config))
 
     used_sections = factory.used_sections
     for section in config.sections():
-        if section not in used_sections and section not in ["Algorithm", "ModelSettings",  "MarkovChainSettings"]:
+        if section not in used_sections and section not in ["Mediator", "ModelSettings",  "AlgorithmSettings"]:
             logger.warning("The section {0} in the .ini file has not been used!".format(section))
 
     print_and_log(logger, "Running the super-relativistic Monte Carlo simulation.")

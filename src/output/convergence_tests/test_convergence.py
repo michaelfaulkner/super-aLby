@@ -22,8 +22,8 @@ def main(argv):
     matplotlib.rcParams['text.latex.preamble'] = [r"\usepackage{amsmath}"]
     config = parsing.read_config(parsing.parse_options(argv).config_file)
 
-    if config.get("Algorithm", "potential") == 'exponential_power_potential' and config.get("ExponentialPowerPotential",
-                                                                                            "power") != 2.0:
+    if config.get("Mediator", "potential") == 'exponential_power_potential' and config.get("ExponentialPowerPotential",
+                                                                                           "power") != 2.0:
         reference_sample = np.loadtxt(
             'output/convergence_tests/fourth_exponential_power_reference_sample.csv', dtype=float, delimiter=',')
     else:
@@ -31,8 +31,8 @@ def main(argv):
             'output/convergence_tests/gaussian_reference_sample_beta_4.csv', dtype=float, delimiter=',')
     reference_cdf = get_cumulative_distribution(reference_sample)
 
-    sampler = factory.build_from_config(config, strings.to_camel_case(config.get("Algorithm", "sampler")), "sampler")
-    number_of_equilibrium_iterations = parsing.get_markov_chain_settings(config)[0]
+    sampler = factory.build_from_config(config, strings.to_camel_case(config.get("Mediator", "sampler")), "sampler")
+    number_of_equilibrium_iterations = parsing.get_algorithm_settings(config)[0]
     sample = sampler.get_sample()
     if type(sample[0]) != np.float64:
         sample = sample[:, 0]
