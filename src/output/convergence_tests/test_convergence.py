@@ -23,9 +23,10 @@ def main(argv):
     config = parsing.read_config(parsing.parse_options(argv).config_file)
 
     if config.get("Mediator", "potential") == 'exponential_power_potential' and config.get("ExponentialPowerPotential",
-                                                                                           "power") != 2.0:
-        reference_sample = np.loadtxt('output/convergence_tests/fourth_exponential_power_reference_sample.csv',
-                                      dtype=float, delimiter=',')
+                                                                                           "power") == 4.0:
+        reference_sample = np.loadtxt(
+            'output/convergence_tests/fourth_exponential_power_reference_sample_variance_4.csv', dtype=float,
+            delimiter=',')
     elif config.get("Mediator", "kinetic_energy") == 't_distribution_kinetic_energy':
         reference_sample = np.loadtxt('output/convergence_tests/gaussian_reference_sample_variance_1.csv', dtype=float,
                                       delimiter=',')
