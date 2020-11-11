@@ -117,7 +117,7 @@ class Mediator:
                 energy_change = (candidate_potential - self._current_potential +
                                  self._kinetic_energy.get_value(candidate_momenta) -
                                  self._kinetic_energy.get_value(self._momenta))
-                if np.random.uniform(0, 1) < np.exp(- beta * energy_change):
+                if energy_change < 0.0 or np.random.uniform(0, 1) < np.exp(- beta * energy_change):
                     self._update_system_state(candidate_momenta, candidate_positions, candidate_potential)
                     number_of_accepted_trajectories += 1
             else:
