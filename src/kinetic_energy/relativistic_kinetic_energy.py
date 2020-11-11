@@ -2,7 +2,7 @@
 from .kinetic_energy import KineticEnergy
 from adaptive_rejection_sampling import AdaptiveRejectionSampling
 from base.logging import log_init_arguments
-from model_settings import dimensionality_of_particle_space, number_of_particles
+from model_settings import beta, dimensionality_of_particle_space, number_of_particles
 from abc import ABCMeta, abstractmethod
 import logging
 import numpy as np
@@ -43,8 +43,8 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
                 "Give a value not equal to 0.0 as the tuning parameter for the relativistic kinetic energy {0}.".format(
                     self.__class__.__name__))
         self._one_over_gamma = 1.0 / gamma
-        self._adaptive_rejection_sampling_instance = AdaptiveRejectionSampling(self._negative_current_value,
-                                                                               self._negative_gradient)
+        self._adaptive_rejection_sampling_instance = AdaptiveRejectionSampling(self._negative_beta_dot_current_value,
+                                                                               self._negative_beta_dot_gradient)
         super().__init__(**kwargs)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, gamma=gamma)
 
@@ -97,7 +97,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
             return np.array([self._adaptive_rejection_sampling_instance.draw(dimensionality_of_particle_space)
                              for _ in range(number_of_particles)])
 
-    def _negative_current_value(self, momentum):
+    def _negative_beta_dot_current_value(self, momentum):
         """
         Returns the product of minus 1 and the kinetic-energy function.
 
@@ -111,9 +111,9 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         float
             The product of minus 1 and the kinetic-energy function.
         """
-        return - self.get_value(momentum)
+        return - beta * self.get_value(momentum)
 
-    def _negative_gradient(self, momentum):
+    def _negative_beta_dot_gradient(self, momentum):
         """
         Returns the product of minus 1 and the gradient of the kinetic energy.
 
@@ -127,4 +127,4 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         float
             The product of minus 1 and the derivative.
         """
-        return - self.get_gradient(momentum)
+        return - beta * self.get_gradient(momentum)
