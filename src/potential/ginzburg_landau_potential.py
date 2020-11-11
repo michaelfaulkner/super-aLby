@@ -1,6 +1,7 @@
 """Module for the GinzburgLandauPotential class."""
-from base.logging import log_init_arguments
 from .potential import Potential
+from base.logging import log_init_arguments
+from model_settings import dimensionality_of_particle_space
 import logging
 import numpy as np
 
@@ -28,7 +29,15 @@ class GinzburgLandauPotential(Potential):
             Number of lattice sites in each Cartesian direction (cubic lattice)
         prefactor : float
             The prefactor k of the potential.
+
+        Raises
+        ------
+        base.exceptions.ValueError
+            If dimensionality_of_particle_space does not equal 1.
         """
+        if dimensionality_of_particle_space != 1:
+            raise ValueError("Give either None, a float or a list of two float values for "
+                             "range_of_initial_particle_positions {0}.".format(self.__class__.__name__))
         self._alpha = alpha
         self._lambda_hyperparameter = lambda_hyperparameter
         self._tau = tau

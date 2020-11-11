@@ -1,6 +1,6 @@
 """Module for the ExponentialPowerPotential class."""
-from base.logging import log_init_arguments
 from .potential import Potential
+from base.logging import log_init_arguments
 import logging
 import numpy as np
 

@@ -1,6 +1,7 @@
 """Module for the SmoothPinballLossPotential class."""
-from base.logging import log_init_arguments
 from .potential import Potential
+from base.logging import log_init_arguments
+from model_settings import dimensionality_of_particle_space
 import logging
 import math
 import numpy as np
@@ -37,7 +38,15 @@ class SmoothPinballLossPotential(Potential):
             Power used in prior.
         prefactor : float
             The prefactor k of the potential.
+
+        Raises
+        ------
+        base.exceptions.ValueError
+            If dimensionality_of_particle_space does not equal 1.
         """
+        if dimensionality_of_particle_space != 1:
+            raise ValueError("Give either None, a float or a list of two float values for "
+                             "range_of_initial_particle_positions {0}.".format(self.__class__.__name__))
         self._tau = tau
         self._sigma = sigma
         self._xi = xi
