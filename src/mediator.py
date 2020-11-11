@@ -14,7 +14,7 @@ class Mediator:
     """
 
     def __init__(self, integrator_instance, kinetic_energy_instance, potential_instance, sampler_instance,
-                 number_of_equilibration_iterations=5000, number_of_observations=1000, initial_step_size=0.1,
+                 number_of_equilibration_iterations=10000, number_of_observations=100000, initial_step_size=0.1,
                  max_number_of_integration_steps=10, randomise_number_of_integration_steps=False,
                  step_size_adaptor_is_on=True, use_metropolis_accept_reject=True):
         """
