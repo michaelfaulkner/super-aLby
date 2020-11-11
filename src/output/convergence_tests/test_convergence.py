@@ -24,11 +24,14 @@ def main(argv):
 
     if config.get("Mediator", "potential") == 'exponential_power_potential' and config.get("ExponentialPowerPotential",
                                                                                            "power") != 2.0:
-        reference_sample = np.loadtxt(
-            'output/convergence_tests/fourth_exponential_power_reference_sample.csv', dtype=float, delimiter=',')
+        reference_sample = np.loadtxt('output/convergence_tests/fourth_exponential_power_reference_sample.csv',
+                                      dtype=float, delimiter=',')
+    elif config.get("Mediator", "kinetic_energy") == 't_distribution_kinetic_energy':
+        reference_sample = np.loadtxt('output/convergence_tests/gaussian_reference_sample_variance_1.csv', dtype=float,
+                                      delimiter=',')
     else:
-        reference_sample = np.loadtxt(
-            'output/convergence_tests/gaussian_reference_sample_beta_4.csv', dtype=float, delimiter=',')
+        reference_sample = np.loadtxt('output/convergence_tests/gaussian_reference_sample_variance_4.csv', dtype=float,
+                                      delimiter=',')
     reference_cdf = get_cumulative_distribution(reference_sample)
 
     sampler = factory.build_from_config(config, strings.to_camel_case(config.get("Mediator", "sampler")), "sampler")
