@@ -126,6 +126,9 @@ class Mediator:
             sample[i + 1, :] = self._sampler.get_observation(self._momenta, self._positions)
             self._momenta = self._kinetic_energy.get_momentum_observation()
 
+            if (i + 1) % 1000 == 0:
+                print('%d observations taken (including equilibration observations).' % i + 1)
+
             if self._step_size_adaptor_is_on and i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
                 acceptance_rate = number_of_accepted_trajectories / 100.0
                 if acceptance_rate > 0.8:
