@@ -24,6 +24,7 @@ import math
 from operator import itemgetter
 import random
 from typing import List, Sequence
+from model_settings import size_of_particle_space, size_of_particle_space_over_two
 
 
 def norm(vector: Sequence[float]) -> float:
@@ -260,3 +261,36 @@ def random_vector_on_unit_sphere(dimension: int) -> List[float]:
             break
     vector = normalize(vector)
     return vector
+
+
+def get_corrected_separation(separation):
+    """
+    Correct the given separation vector in place for periodic boundaries.
+
+    Parameters
+    ----------
+    separation : numpy.ndarray
+        The separation vector; a numpy array of floats.
+    """
+    for index, entry in enumerate(separation):
+        separation[index] = get_corrected_separation_entry(entry, index)
+
+
+def get_corrected_separation_entry(separation_entry, index):
+    """
+    Return the separation entry at the given component corrected for periodic boundaries.
+
+    Parameters
+    ----------
+    separation_entry : float
+        The separation entry.
+    index : int
+        The index of the position entry within the position vector.
+
+    Returns
+    -------
+    float
+        The separation entry corrected for periodic boundaries.
+    """
+    return ((separation_entry + size_of_particle_space_over_two[index]) % size_of_particle_space[index] -
+            size_of_particle_space_over_two[index])
