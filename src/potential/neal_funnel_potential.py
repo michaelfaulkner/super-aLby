@@ -31,7 +31,7 @@ class NealFunnelPotential(Potential):
         """
         if dimensionality_of_particle_space != 1:
             raise ValueError("In the .ini file, give either None or a list of two float values for "
-                             "size_of_particle_space with this type of potential {0}.".format(self.__class__.__name__))
+                             "size_of_particle_space with the potential {0}.".format(self.__class__.__name__))
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
