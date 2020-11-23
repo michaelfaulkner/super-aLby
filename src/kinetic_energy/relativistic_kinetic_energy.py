@@ -93,9 +93,8 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         """
         if dimensionality_of_particle_space == 1:
             return np.array(self._adaptive_rejection_sampling_instance.draw(number_of_particles))
-        else:
-            return np.array([self._adaptive_rejection_sampling_instance.draw(dimensionality_of_particle_space)
-                             for _ in range(number_of_particles)])
+        return np.array([self._adaptive_rejection_sampling_instance.draw(dimensionality_of_particle_space)
+                         for _ in range(number_of_particles)])
 
     def _negative_beta_dot_current_value(self, momentum):
         """
