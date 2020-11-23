@@ -60,7 +60,7 @@ def print_start_message():
     """Print the start message which includes the copyright."""
     print(
         "super-relativistic-mc (version {0}) - a Python application for super-relativistic Monte Carlo".format(version))
-    print("Copyright (C) 2020 The Super-relativistic Monte Carlo organisation")
+    print("Copyright (C) 2020 The albie-++ organisation")
 
 
 if __name__ == '__main__':
