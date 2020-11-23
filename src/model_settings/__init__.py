@@ -7,9 +7,8 @@ args = parse_options(sys.argv[1:])
 config = read_config(args.config_file)
 beta = get_value(config, "ModelSettings", "beta")  # todo integrate beta into code
 number_of_particles = get_value(config, "ModelSettings", "number_of_particles")
-size_of_particle_space = np.array(get_value(config, "ModelSettings", "size_of_particle_space"))
-range_of_initial_particle_positions = np.array(
-    get_value(config, "ModelSettings", "range_of_initial_particle_positions"))
+size_of_particle_space = get_value(config, "ModelSettings", "size_of_particle_space")
+range_of_initial_particle_positions = get_value(config, "ModelSettings", "range_of_initial_particle_positions")
 # todo log the above values?
 
 one_over_beta = 1.0 / beta
@@ -59,3 +58,5 @@ if size_of_particle_space is not None:
         if not condition_3:
             raise ValueError("The absolute value of all floats given within range_of_initial_particle_positions must be"
                              " less than half the size_of_particle_space.")
+
+size_of_particle_space = np.array(size_of_particle_space)
