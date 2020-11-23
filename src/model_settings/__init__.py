@@ -60,3 +60,4 @@ if size_of_particle_space is not None:
                              " less than half the size_of_particle_space.")
 
 size_of_particle_space = np.array(size_of_particle_space)
+size_of_particle_space_over_two = 0.5 * size_of_particle_space
