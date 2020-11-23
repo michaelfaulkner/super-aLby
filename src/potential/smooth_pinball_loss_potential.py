@@ -63,13 +63,13 @@ class SmoothPinballLossPotential(Potential):
                            lambda_hyperparameter=lambda_hyperparameter, x=x, y=y, xi=xi, power=power,
                            prefactor=prefactor)
 
-    def get_value(self, position):
+    def get_value(self, positions):
         """
-        Returns the potential for the given position.
+        Returns the potential for the given positions.
 
         Parameters
         ----------
-        position : numpy.ndarray
+        positions : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
 
@@ -78,20 +78,20 @@ class SmoothPinballLossPotential(Potential):
         float
             The potential.
         """
-        x_dot_beta = np.inner(self._x, position)
+        x_dot_beta = np.inner(self._x, positions)
         pinball_loss = ((self._tau - 1) * (self._y - x_dot_beta) / self._sigma + self._xi *
                         np.logaddexp(0.0, (self._y - x_dot_beta) / self._xi_dot_sigma) +
                         np.log(self._xi * self._sigma * self._beta_function_value))
-        prior_vec = np.absolute(position) ** self._power
+        prior_vec = np.absolute(positions) ** self._power
         return np.sum(pinball_loss) + self._lambda_hyperparameter * np.sum(prior_vec)
 
-    def get_gradient(self, position):
+    def get_gradient(self, positions):
         """
-        Returns the gradient of the potential for the given position.
+        Returns the gradient of the potential for the given positions.
 
         Parameters
         ----------
-        position : numpy.ndarray
+        positions : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
 
@@ -101,9 +101,9 @@ class SmoothPinballLossPotential(Potential):
             The gradient.
         """
         prior_gradient = np.array([self._power * self._lambda_hyperparameter * np.sign(component) * np.absolute(
-            component) ** self._power_minus_one for component in position])
-        logistic_term = self._logistic_function((self._y - np.inner(self._x, position)) / self._xi_dot_sigma)
-        mid_term = np.array([np.inner(logistic_term, self._x[:, i]) for i in range(len(position))])
+            component) ** self._power_minus_one for component in positions])
+        logistic_term = self._logistic_function((self._y - np.inner(self._x, positions)) / self._xi_dot_sigma)
+        mid_term = np.array([np.inner(logistic_term, self._x[:, i]) for i in range(len(positions))])
         return (1 - self._tau) / self._sigma * self._x_sum + 1 / self._sigma * mid_term + prior_gradient
 
     @staticmethod

@@ -23,7 +23,7 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         Parameters
         ----------
         power : float
-            The power to which each momentum component is raised. For potentials with leading order term |x|^a, the
+            The power to which each momenta component is raised. For potentials with leading order term |x|^a, the
             optimal choice that ensures robust dynamics is given by power = 1 + 1 / (a - 1) for a >= 2 and
             power = 1 + 1 / (a + 1) for a <= -1.
 
@@ -43,46 +43,46 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         super().__init__()
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power)
 
-    def get_value(self, momentum):
+    def get_value(self, momenta):
         """
         Returns the kinetic energy.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
         float
             The kinetic energy.
         """
-        return self._one_over_power * np.sum(np.absolute(momentum) ** self._power)
+        return self._one_over_power * np.sum(np.absolute(momenta) ** self._power)
 
-    def get_gradient(self, momentum):
+    def get_gradient(self, momenta):
         """
         Returns the gradient of the kinetic energy.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
         numpy.ndarray
             The gradient of the kinetic energy.
         """
-        return momentum * np.absolute(momentum) ** self._power_minus_two
+        return momenta * np.absolute(momenta) ** self._power_minus_two
 
     def get_momentum_observation(self):
         """
-        Return an observation of the momentum from the kinetic-energy distribution.
+        Return an observation of the momenta from the kinetic-energy distribution.
 
         Returns
         -------
         numpy.ndarray
-            A new momentum associated with each position.
+            A new momenta associated with each positions.
         """
         if dimensionality_of_particle_space == 1:
             return np.array(generalised_power_distribution.rnormp(

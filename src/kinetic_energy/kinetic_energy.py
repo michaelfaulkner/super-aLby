@@ -7,7 +7,7 @@ class KineticEnergy(metaclass=ABCMeta):
     Abstract class for kinetic energies used in the algorithm code.
 
     A general kinetic-energy class provides the function itself, its gradient, and the method for drawing a new
-        observation of the momentum.
+        observation of the momenta.
     """
 
     def __init__(self, **kwargs):
@@ -25,14 +25,14 @@ class KineticEnergy(metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @abstractmethod
-    def get_value(self, momentum):
+    def get_value(self, momenta):
         """
         Return the kinetic-energy function.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
@@ -42,14 +42,14 @@ class KineticEnergy(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def get_gradient(self, momentum):
+    def get_gradient(self, momenta):
         """
         Return the gradient of the kinetic energy.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
@@ -61,11 +61,11 @@ class KineticEnergy(metaclass=ABCMeta):
     @abstractmethod
     def get_momentum_observation(self):
         """
-        Return an observation of the momentum from the kinetic-energy distribution.
+        Return an observation of the momenta from the kinetic-energy distribution.
 
         Returns
         -------
         numpy.ndarray
-            A new momentum associated with each position.
+            A new momenta associated with each positions.
         """
         raise NotImplementedError

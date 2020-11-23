@@ -18,10 +18,10 @@ class SuperRelativisticKineticEnergy(RelativisticKineticEnergy):
         Parameters
         ----------
         gamma : float
-            The tuning parameter that controls the momentum values near which the kinetic energy transforms from
+            The tuning parameter that controls the momenta values near which the kinetic energy transforms from
             Gaussian to generalised-power behaviour.
         power : float
-            The power to which each momentum-dependent part of the standard relativistic kinetic energy is raised (in
+            The power to which each momenta-dependent part of the standard relativistic kinetic energy is raised (in
             order to form the super-relativistic kinetic energy). For potentials with leading order term |x|^a, the
             optimal choice that ensures robust dynamics is given by power = 1 + 1 / (a - 1) for a >= 2 and
             power = 1 + 1 / (a + 1) for a <= -1.
@@ -41,35 +41,35 @@ class SuperRelativisticKineticEnergy(RelativisticKineticEnergy):
         super().__init__(gamma=gamma)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, gamma=gamma, power=power)
 
-    def get_value(self, momentum):
+    def get_value(self, momenta):
         """
         Returns the kinetic energy.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
         float
             The kinetic energy.
         """
-        return self._one_over_power * np.sum((1 + self._one_over_gamma * momentum ** 2) ** self._power_over_two)
+        return self._one_over_power * np.sum((1 + self._one_over_gamma * momenta ** 2) ** self._power_over_two)
 
-    def get_gradient(self, momentum):
+    def get_gradient(self, momenta):
         """
         Returns the gradient of the kinetic energy.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
         numpy.ndarray
             The gradient of the kinetic energy.
         """
-        return self._one_over_gamma * momentum * (
-                1 + self._one_over_gamma * momentum ** 2) ** self._power_over_two_minus_one
+        return self._one_over_gamma * momenta * (
+                1 + self._one_over_gamma * momenta ** 2) ** self._power_over_two_minus_one

@@ -22,13 +22,13 @@ class GaussianPotential(Potential):
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
-    def get_value(self, position):
+    def get_value(self, positions):
         """
-        Returns the potential for the given position.
+        Returns the potential for the given positions.
 
         Parameters
         ----------
-        position : numpy.ndarray
+        positions : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
 
@@ -37,15 +37,15 @@ class GaussianPotential(Potential):
         float
             The potential.
         """
-        return 0.5 * np.sum(position ** 2)
+        return 0.5 * np.sum(positions ** 2)
 
-    def get_gradient(self, position):
+    def get_gradient(self, positions):
         """
-        Returns the gradient of the potential for the given position.
+        Returns the gradient of the potential for the given positions.
 
         Parameters
         ----------
-        position : numpy.ndarray
+        positions : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
 
@@ -54,4 +54,4 @@ class GaussianPotential(Potential):
         numpy.ndarray
             The gradient.
         """
-        return position
+        return positions

@@ -18,45 +18,45 @@ class GaussianKineticEnergy(KineticEnergy):
         super().__init__()
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__)
 
-    def get_value(self, momentum):
+    def get_value(self, momenta):
         """
         Returns the kinetic energy.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
         float
             The kinetic energy.
         """
-        return 0.5 * np.sum(momentum ** 2)
+        return 0.5 * np.sum(momenta ** 2)
 
-    def get_gradient(self, momentum):
+    def get_gradient(self, momenta):
         """
         Returns the gradient of the kinetic energy.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
         numpy.ndarray
             The gradient of the kinetic energy.
         """
-        return momentum
+        return momenta
 
     def get_momentum_observation(self):
         """
-        Return an observation of the momentum from the kinetic-energy distribution.
+        Return an observation of the momenta from the kinetic-energy distribution.
 
         Returns
         -------
         numpy.ndarray
-            A new momentum associated with each position.
+            A new momenta associated with each positions.
         """
         return np.random.normal(scale=one_over_root_beta, size=dimensionality_of_momenta_array)

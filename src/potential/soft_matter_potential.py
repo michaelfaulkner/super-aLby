@@ -33,7 +33,7 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
         ------
         base.exceptions.ValueError
             If the model_settings.range_of_initial_particle_positions does not give an real-valued interval for each
-                component of the initial position of each particle.
+                component of the initial positions of each particle.
         """
         conditions = [type(component) == list and len(component) == 2 and type(bound) == float
                       for component in range_of_initial_particle_positions for bound in component]
@@ -45,13 +45,13 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
         super().__init__(prefactor, **kwargs)
 
     @abstractmethod
-    def get_value(self, position):
+    def get_value(self, positions):
         """
         Return the potential function for certain separations and charges.
 
         Parameters
         ----------
-        position : numpy.ndarray
+        positions : numpy.ndarray
             One or many particle-particle separation vectors {r_ij}.
 
         Returns
@@ -62,13 +62,13 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def get_gradient(self, position):
+    def get_gradient(self, positions):
         """
         Return the gradient of the potential for certain separation and charges.
 
         Parameters
         ----------
-        position : numpy.ndarray
+        positions : numpy.ndarray
             One or many particle-particle separation vectors {r_ij}.
 
         Returns

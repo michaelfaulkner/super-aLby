@@ -19,7 +19,7 @@ class ExponentialPowerPotential(Potential):
         Parameters
         ----------
         power : int
-            The power to which each component of the position is raised.
+            The power to which each component of the positions is raised.
         prefactor : float
             The prefactor k of the potential.
         """
@@ -29,13 +29,13 @@ class ExponentialPowerPotential(Potential):
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power, prefactor=prefactor)
 
-    def get_value(self, position):
+    def get_value(self, positions):
         """
-        Returns the potential for the given position.
+        Returns the potential for the given positions.
 
         Parameters
         ----------
-        position : numpy.ndarray
+        positions : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
 
@@ -44,15 +44,15 @@ class ExponentialPowerPotential(Potential):
         float
             The potential.
         """
-        return self._one_over_power * np.sum(np.absolute(position) ** self._power)
+        return self._one_over_power * np.sum(np.absolute(positions) ** self._power)
 
-    def get_gradient(self, position):
+    def get_gradient(self, positions):
         """
-        Returns the gradient of the potential for the given position.
+        Returns the gradient of the potential for the given positions.
 
         Parameters
         ----------
-        position : numpy.ndarray
+        positions : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
 
@@ -61,4 +61,4 @@ class ExponentialPowerPotential(Potential):
         numpy.ndarray
             The gradient.
         """
-        return position * np.absolute(position) ** self._power_minus_two
+        return positions * np.absolute(positions) ** self._power_minus_two

@@ -17,40 +17,40 @@ class StandardRelativisticKineticEnergy(RelativisticKineticEnergy):
         Parameters
         ----------
         gamma : float
-            The tuning parameter that controls the momentum values near which the kinetic energy transforms from
+            The tuning parameter that controls the momenta values near which the kinetic energy transforms from
             Gaussian to generalised-power behaviour.
         """
         super().__init__(gamma=gamma)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, gamma=gamma)
 
-    def get_value(self, momentum):
+    def get_value(self, momenta):
         """
         Returns the kinetic energy.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
         float
             The kinetic energy.
         """
-        return np.sum((1 + self._one_over_gamma * momentum ** 2) ** 0.5)
+        return np.sum((1 + self._one_over_gamma * momenta ** 2) ** 0.5)
 
-    def get_gradient(self, momentum):
+    def get_gradient(self, momenta):
         """
         Returns the gradient of the kinetic energy.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
         numpy.ndarray
             The gradient of the kinetic energy.
         """
-        return self._one_over_gamma * momentum * (1 + self._one_over_gamma * momentum ** 2) ** (- 0.5)
+        return self._one_over_gamma * momenta * (1 + self._one_over_gamma * momenta ** 2) ** (- 0.5)

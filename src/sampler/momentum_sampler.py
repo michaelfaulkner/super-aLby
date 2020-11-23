@@ -8,7 +8,7 @@ import numpy as np
 
 class MomentumSampler(Sampler):
     """
-    Class for taking observations of the momentum of the system.
+    Class for taking observations of the momenta of the system.
     """
 
     def __init__(self, output_directory: str):
@@ -53,7 +53,7 @@ class MomentumSampler(Sampler):
         Parameters
         ----------
         momentum : numpy.ndarray
-            The momentum associated with each position.
+            The momenta associated with each positions.
         position : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
             parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
@@ -61,7 +61,7 @@ class MomentumSampler(Sampler):
         Returns
         -------
         numpy.ndarray
-            The observation of the momentum.
+            The observation of the momenta.
         """
         return momentum
 

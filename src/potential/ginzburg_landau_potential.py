@@ -51,13 +51,13 @@ class GinzburgLandauPotential(Potential):
                            lambda_hyperparameter=lambda_hyperparameter, tau=tau, lattice_length=lattice_length,
                            prefactor=prefactor)
 
-    def get_value(self, position):
+    def get_value(self, positions):
         """
-        Returns the potential for the given position.
+        Returns the potential for the given positions.
 
         Parameters
         ----------
-        position : numpy.ndarray
+        positions : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
             array of superconducting phase.
 
@@ -67,19 +67,19 @@ class GinzburgLandauPotential(Potential):
             The potential.
         """
         return np.sum(
-            0.5 * self._one_minus_tau * position ** 2 + 0.5 * self._tau_dot_alpha * (
-                    (self._pos_x_translation(position) - position) ** 2 +
-                    (self._pos_y_translation(position) - position) ** 2 +
-                    (self._pos_z_translation(position) - position) ** 2) +
-            0.25 * self._tau_dot_lambda * position ** 4)
+            0.5 * self._one_minus_tau * positions ** 2 + 0.5 * self._tau_dot_alpha * (
+                    (self._pos_x_translation(positions) - positions) ** 2 +
+                    (self._pos_y_translation(positions) - positions) ** 2 +
+                    (self._pos_z_translation(positions) - positions) ** 2) +
+            0.25 * self._tau_dot_lambda * positions ** 4)
 
-    def get_gradient(self, position):
+    def get_gradient(self, positions):
         """
-        Returns the gradient of the potential for the given position.
+        Returns the gradient of the potential for the given positions.
 
         Parameters
         ----------
-        position : numpy.ndarray
+        positions : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the entire
             array of superconducting phase.
 
@@ -88,11 +88,11 @@ class GinzburgLandauPotential(Potential):
         numpy.ndarray
             The gradient.
         """
-        return (self._one_minus_tau * position - self._tau_dot_alpha * (
-                self._pos_x_translation(position) + self._neg_x_translation(position) +
-                self._pos_y_translation(position) + self._neg_y_translation(position) +
-                self._pos_z_translation(position) + self._neg_z_translation(position) -
-                6 * position) + self._tau_dot_lambda * position ** 3)
+        return (self._one_minus_tau * positions - self._tau_dot_alpha * (
+                self._pos_x_translation(positions) + self._neg_x_translation(positions) +
+                self._pos_y_translation(positions) + self._neg_y_translation(positions) +
+                self._pos_z_translation(positions) + self._neg_z_translation(positions) -
+                6 * positions) + self._tau_dot_lambda * positions ** 3)
 
     def _pos_x_translation(self, position):
         # reshape to a self._lattice_length x self._lattice_length x self._lattice_length matrix

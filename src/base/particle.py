@@ -25,14 +25,14 @@ from typing import Mapping, Sequence
 
 class Particle(object):
     """
-    Class to store physical state information, meaning the position and charges of a particle.
+    Class to store physical state information, meaning the positions and charges of a particle.
 
     A particle can be a point mass or a composite point object.
 
     Attributes
     ----------
     position : Sequence[float]
-        The position of the particle.
+        The positions of the particle.
     charge : Mapping[str, float] or None
         A map from the name onto the value of the charge of the particle.
     """
@@ -44,7 +44,7 @@ class Particle(object):
         Parameters
         ----------
         position : Sequence[float]
-            The initial position of the particle.
+            The initial positions of the particle.
         charge : Mapping[str, float] or None, optional
             A map from the name onto the value of the charge of the particle.
         """

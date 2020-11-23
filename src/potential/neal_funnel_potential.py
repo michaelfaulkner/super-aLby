@@ -35,13 +35,13 @@ class NealFunnelPotential(Potential):
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
-    def get_value(self, position):
+    def get_value(self, positions):
         """
-        Returns the potential for the given position.
+        Returns the potential for the given positions.
 
         Parameters
         ----------
-        position : numpy.ndarray
+        positions : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
 
@@ -50,16 +50,16 @@ class NealFunnelPotential(Potential):
         float
             The potential.
         """
-        return position[0] ** 2 / 18.0 + 9 * position[0] / 2.0 + (
-                math.exp(-position[0]) * np.sum(position[1:len(position)] ** 2) / 2.0)
+        return positions[0] ** 2 / 18.0 + 9 * positions[0] / 2.0 + (
+                math.exp(-positions[0]) * np.sum(positions[1:len(positions)] ** 2) / 2.0)
 
-    def get_gradient(self, position):
+    def get_gradient(self, positions):
         """
-        Returns the gradient of the potential for the given position.
+        Returns the gradient of the potential for the given positions.
 
         Parameters
         ----------
-        position : numpy.ndarray
+        positions : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
             parameter value.
 
@@ -68,9 +68,9 @@ class NealFunnelPotential(Potential):
         numpy.ndarray
             The gradient.
         """
-        gradient = np.zeroes(len(position))
-        gradient[0] = position[0] / 9.0 + 9 / 2.0 - (
-                math.exp(-position[0]) * np.sum(position[1:len(position)] ** 2) / 2.0)
-        gradient[1:len(position)] = 2.0 * position[1:len(position)] * math.exp(
-            -position[0])
+        gradient = np.zeroes(len(positions))
+        gradient[0] = positions[0] / 9.0 + 9 / 2.0 - (
+                math.exp(-positions[0]) * np.sum(positions[1:len(positions)] ** 2) / 2.0)
+        gradient[1:len(positions)] = 2.0 * positions[1:len(positions)] * math.exp(
+            -positions[0])
         return gradient

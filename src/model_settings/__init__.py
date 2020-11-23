@@ -39,7 +39,7 @@ for condition_1 in np.atleast_1d(conditions_1):
         if not (condition_1 or condition_2):
             raise ValueError("For each component of range_of_initial_particle_positions, give a list of two float "
                              "values (the lower and upper bounds of the range) for any model or a float when fixing "
-                             "each initial particle position in Bayesian models.")
+                             "each initial particle positions in Bayesian models.")
 if size_of_particle_space is not None:
     if dimensionality_of_particle_space == 1:
         if type(range_of_initial_particle_positions) == float:

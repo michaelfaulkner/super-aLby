@@ -12,10 +12,10 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
     """
     Abstract class for relativistic kinetic energies (both StandardRelativisticKineticEnergy and
         SuperRelativisticKineticEnergy), which we require because both inherited classes use the adaptive rejection
-        sampling defined in RelativisticKineticEnergy.momentum_observation() to draw the momentum observations.
+        sampling defined in RelativisticKineticEnergy.momentum_observation() to draw the momenta observations.
 
     A general kinetic-energy class provides the function itself, its gradient, and the method for drawing a new
-        observation of the momentum.
+        observation of the momenta.
     """
 
     def __init__(self, gamma: float = 1.0, **kwargs):
@@ -28,7 +28,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         Parameters
         ----------
         gamma : float
-            The tuning parameter that controls the momentum values near which the (super- and standard) relativistic
+            The tuning parameter that controls the momenta values near which the (super- and standard) relativistic
             kinetic energies transform from Gaussian to generalised-power behaviour.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
@@ -49,14 +49,14 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, gamma=gamma)
 
     @abstractmethod
-    def get_value(self, momentum):
+    def get_value(self, momenta):
         """
         Returns the kinetic-energy function.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
@@ -66,14 +66,14 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def get_gradient(self, momentum):
+    def get_gradient(self, momenta):
         """
         Returns the gradient of the kinetic energy.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
@@ -84,12 +84,12 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
 
     def get_momentum_observation(self):
         """
-        Returns an observation of the momentum from the kinetic-energy distribution using adaptive rejection sampling.
+        Returns an observation of the momenta from the kinetic-energy distribution using adaptive rejection sampling.
 
         Returns
         -------
         numpy.ndarray
-            A new momentum associated with each position.
+            A new momenta associated with each positions.
         """
         if dimensionality_of_particle_space == 1:
             return np.array(self._adaptive_rejection_sampling_instance.draw(number_of_particles))
@@ -104,7 +104,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         Parameters
         ----------
         momentum : numpy.ndarray
-            The momentum associated with each position.
+            The momenta associated with each positions.
 
         Returns
         -------
@@ -120,7 +120,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         Parameters
         ----------
         momentum : numpy.ndarray
-            The momentum associated with each position.
+            The momenta associated with each positions.
 
         Returns
         -------

@@ -25,7 +25,7 @@ from typing import Any, Mapping, Sequence
 
 class Unit(object):
     """
-    Class to store physical and lifting state information, meaning the identifier, the position, the charges,
+    Class to store physical and lifting state information, meaning the identifier, the positions, the charges,
     the velocity, and the time stamp of a particle.
 
     A particle can be a point mass or a composite point object. This class is used as a messaging format across the
@@ -36,7 +36,7 @@ class Unit(object):
     identifier : Any
         The identifier of the particle this unit corresponds to.
     position : Sequence[float]
-        The position of the particle in the global physical state.
+        The positions of the particle in the global physical state.
     charge : Mapping[str, float] or None
         A map from the name onto the value of the charge of the particle.
     velocity : Sequence[float] or None
@@ -55,7 +55,7 @@ class Unit(object):
         identifier : Any
             The identifier of the particle this unit corresponds to.
         position : Sequence[float]
-            The initial position of the particle.
+            The initial positions of the particle.
         charge : Mapping[str, float] or None, optional
              A map from the name onto the value of the charge of the particle.
         velocity : Sequence[float] or None, optional

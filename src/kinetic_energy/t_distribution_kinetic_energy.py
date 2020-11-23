@@ -40,14 +40,14 @@ class TDistributionKineticEnergy(KineticEnergy):
         log_init_arguments(
             logging.getLogger(__name__).debug, self.__class__.__name__, degrees_of_freedom=degrees_of_freedom)
 
-    def get_value(self, momentum):
+    def get_value(self, momenta):
         """
         Returns the kinetic energy.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
@@ -55,31 +55,31 @@ class TDistributionKineticEnergy(KineticEnergy):
             The kinetic energy.
         """
         return np.sum(self._degrees_of_freedom_plus_one_over_two * np.log(self._one_over_degrees_of_freedom *
-                                                                          (1.0 + momentum ** 2)))
+                                                                          (1.0 + momenta ** 2)))
 
-    def get_gradient(self, momentum):
+    def get_gradient(self, momenta):
         """
         Returns the gradient of the kinetic energy.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
-            The momentum associated with each position.
+        momenta : numpy.ndarray
+            The momenta associated with each positions.
 
         Returns
         -------
         numpy.ndarray
             The gradient of the kinetic energy.
         """
-        return self._degrees_of_freedom_plus_one * momentum / (self._degrees_of_freedom + momentum ** 2)
+        return self._degrees_of_freedom_plus_one * momenta / (self._degrees_of_freedom + momenta ** 2)
 
     def get_momentum_observation(self):
         """
-        Return an observation of the momentum from the kinetic-energy distribution.
+        Return an observation of the momenta from the kinetic-energy distribution.
 
         Returns
         -------
         numpy.ndarray
-            A new momentum associated with each position.
+            A new momenta associated with each positions.
         """
         return np.random.standard_t(df=self._degrees_of_freedom, size=dimensionality_of_momenta_array)
