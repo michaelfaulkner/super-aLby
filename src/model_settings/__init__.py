@@ -61,3 +61,5 @@ if size_of_particle_space is not None:
 
 size_of_particle_space = np.array(size_of_particle_space)
 size_of_particle_space_over_two = 0.5 * size_of_particle_space
+size_of_particle_space.flags.writeable = False
+size_of_particle_space_over_two.flags.writeable = False
