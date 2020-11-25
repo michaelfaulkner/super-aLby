@@ -36,12 +36,14 @@ conditions_2 = (1 < dimensionality_of_particle_space == len(range_of_initial_par
                 ([type(component) == float for component in range_of_initial_particle_positions] or
                 [type(component) == list and len(component) == 2 and type(bound) == float
                  for component in range_of_initial_particle_positions for bound in component]))
-for condition_1 in np.atleast_1d(conditions_1):
+# todo fix the bug in the following commented-out code: it currently throws a ValueError when
+#  coulomb_soft_matter_potential is correctly configured
+"""for condition_1 in np.atleast_1d(conditions_1):
     for condition_2 in np.atleast_1d(conditions_2):
         if not (condition_1 or condition_2):
             raise ValueError("For each component of range_of_initial_particle_positions, give a list of two float "
                              "values (the lower and upper bounds of the range) for any model or a float when fixing "
-                             "each initial particle positions in Bayesian models.")
+                             "each initial particle positions in Bayesian models.")"""
 if size_of_particle_space is not None:
     if dimensionality_of_particle_space == 1:
         if type(range_of_initial_particle_positions) == float:
