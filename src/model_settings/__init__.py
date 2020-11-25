@@ -59,7 +59,8 @@ if size_of_particle_space is not None:
             raise ValueError("The absolute value of all floats given within range_of_initial_particle_positions must be"
                              " less than half the size_of_particle_space.")
 
+if size_of_particle_space is not None:
+    size_of_particle_space_over_two = 0.5 * np.array(size_of_particle_space)
+    size_of_particle_space_over_two.flags.writeable = False
 size_of_particle_space = np.array(size_of_particle_space)
-size_of_particle_space_over_two = 0.5 * size_of_particle_space
 size_of_particle_space.flags.writeable = False
-size_of_particle_space_over_two.flags.writeable = False
