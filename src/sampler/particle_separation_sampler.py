@@ -1,6 +1,6 @@
 """Module for the ParticleSeparationSampler class."""
 from base.logging import log_init_arguments
-from base.vectors import correct_separation_for_periodic_boundaries
+from base.vectors import get_corrected_separation_vector
 from model_settings import number_of_particle_pairs, number_of_particles, dimensionality_of_particle_space
 from .sampler import Sampler
 import logging
@@ -64,9 +64,7 @@ class ParticleSeparationSampler(Sampler):
         separations = []
         for i in range(number_of_particles):
             for j in range(i + 1, number_of_particles):
-                separation_vector = positions[i] - positions[j]
-                correct_separation_for_periodic_boundaries(separation_vector)
-                separations.append(np.linalg.norm(separation_vector))
+                separations.append(np.linalg.norm(get_corrected_separation_vector(positions[i] - positions[j])))
         return np.array(separations)
 
     def output_sample(self, sample):

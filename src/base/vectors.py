@@ -263,7 +263,7 @@ def random_vector_on_unit_sphere(dimension: int) -> List[float]:
     return vector
 
 
-def correct_separation_for_periodic_boundaries(separation):
+def get_corrected_separation_vector(separation):
     """
     Correct the given separation vector in place for periodic boundaries.
 
@@ -274,6 +274,7 @@ def correct_separation_for_periodic_boundaries(separation):
     """
     for index, entry in enumerate(separation):
         separation[index] = get_corrected_separation_entry(entry, index)
+    return separation
 
 
 def get_corrected_separation_entry(separation_entry, index):

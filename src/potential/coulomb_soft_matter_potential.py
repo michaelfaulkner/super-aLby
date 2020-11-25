@@ -2,7 +2,7 @@
 from .soft_matter_potential import SoftMatterPotential
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
-from base.vectors import correct_separation_for_periodic_boundaries, permutation_3d
+from base.vectors import get_corrected_separation_vector, permutation_3d
 from model_settings import dimensionality_of_particle_space, number_of_particles, size_of_particle_space
 import logging
 from scipy import special
@@ -138,8 +138,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
         potential = 0.0
         for i in range(number_of_particles):
             for j in range(i + 1, number_of_particles):
-                separation = positions[i] - positions[j]
-                correct_separation_for_periodic_boundaries(separation)
+                separation = get_corrected_separation_vector(positions[i] - positions[j])
                 for direction in range(3):
                     permuted_separation = permutation_3d(separation, direction)
                     potential += (self._get_two_particle_position_space_potential(*permuted_separation) +
@@ -163,8 +162,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
         gradient = np.array([np.zeros(3) for _ in range(number_of_particles)])
         for i in range(number_of_particles):
             for j in range(i + 1, number_of_particles):
-                separation = positions[i] - positions[j]
-                correct_separation_for_periodic_boundaries(separation)
+                separation = get_corrected_separation_vector(positions[i] - positions[j])
                 for direction in range(3):
                     permuted_separation = permutation_3d(separation, direction)
                     two_particle_gradient = (self._get_two_particle_position_space_gradient(*permuted_separation) +
