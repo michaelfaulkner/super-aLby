@@ -11,15 +11,22 @@ import numpy as np
 class CoulombSoftMatterPotential(SoftMatterPotential):
     r"""
     This class implements the machine-precise Coulomb potential
-    U_ij = k * c_i * c_j * \sum_{\vec{n}\in\np.b{Z}^3} 1/ (|\vec{r_ij}+\vec{n}\vec{L}|).
+    U = k * \sum_{i > j} [
+        \sum_{\vec{n}\in\np.b{Z}^3} \erfc(\alpha |\vec{r}_{ij} + \vec{n}L|) / |\vec{r_ij} + \vec{n}\vec{L}| +
+        \frac{1}{\pi} \sum_{\vec{m} \ne 0} \frac{\exp( -\pi^2 |\vec{m}|^2 / \alpha^2 L^2)}{|\vec{m}^2|}
+            \cos(\frac{2\pi}{L}\vec{m} \cdot \vec{r}){ij})]
 
-    k is a prefactor, c_i and c_j are the charges of the involved units and r_ij = r_j - r_i is the separation between
-    the units. \vec{L} are the sides of the three-dimensional simulation box with periodic boundary conditions.
-    This class is (currently) only implemented for a three-dimensional cube, and for like charges.
-    The conditionally convergent sum can be consistently defined in terms of tin-foil boundary conditions. Then,
-    the sum is absolutely convergent. Ewald summation splits the sum up partly in position space and partly in Fourier
-    space. The summation has three parameters: the cutoff in Fourier space, the cutoff in position space, and a
-    convergence factor alpha, which balances the converging speeds of the two sums.
+    k is a prefactor and r_ij = r_i - r_j is the separation vector between particles i and j (which we correct for
+    periodic boundaries conditions). \vec{L} are the sides of the three-dimensional simulation box with periodic
+    boundary conditions. As our code is only based on potential differences, we have not subtracted the self-energy term
+        U_{\rm self}(\alpha, \{ c_i \}) = (\alpha / \pi)^{1 / 2} \sum_i c_i^2
+    from the potential, where \{ c_i \} \equiv \{ c_i : i = 1, \dots , N \} is the set of charge values of the
+    particles, all of which are currently set to unity. This class is (currently) only implemented for a
+    three-dimensional cube, and for charges of value unity, both of which will be generalised in the future.
+    We have chosen tin-foil boundary conditions, which is a bit of a misnomer as this refers to medium in which the
+    infinite number of copies of the system are embedded. Ewald summation splits the sum into position-space and
+    Fourier-space parts. The summation has three parameters: the cutoff in Fourier space, the cutoff in position space,
+    and a convergence factor alpha, which balances the converging speeds of the two sums.
     """
 
     def __init__(self, alpha: float = 3.45, fourier_cutoff: int = 6, position_cutoff: int = 2,
