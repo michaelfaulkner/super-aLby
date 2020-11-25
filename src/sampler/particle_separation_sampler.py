@@ -61,11 +61,9 @@ class ParticleSeparationSampler(Sampler):
         numpy.ndarray
             The observation of the positions.
         """
-        separations = []
-        for i in range(number_of_particles):
-            for j in range(i + 1, number_of_particles):
-                separations.append(np.linalg.norm(get_corrected_separation_vector(positions[i] - positions[j])))
-        return np.array(separations)
+        return np.array(
+            [np.linalg.norm(get_corrected_separation_vector(positions[i] - positions[j]))
+             for i in range(number_of_particles) for j in range(i + 1, number_of_particles)])
 
     def output_sample(self, sample):
         """
