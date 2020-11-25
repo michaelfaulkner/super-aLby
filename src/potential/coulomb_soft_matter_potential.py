@@ -5,6 +5,7 @@ from base.logging import log_init_arguments
 from base.vectors import correct_separation_for_periodic_boundaries, permutation_3d
 from model_settings import dimensionality_of_particle_space, number_of_particles, size_of_particle_space
 import logging
+from scipy import special
 import numpy as np
 
 
@@ -186,7 +187,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
                     vector_x = separation_x + i * self._system_length
                     vector_sq = vector_x * vector_x + vector_y_sq + vector_z_sq
                     vector_norm = vector_sq ** 0.5
-                    two_particle_position_space_potential += np.erfc(self._alpha * vector_norm) / vector_norm
+                    two_particle_position_space_potential += special.erfc(self._alpha * vector_norm) / vector_norm
 
         return two_particle_position_space_potential
 
@@ -252,7 +253,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
                     vector_sq = vector_x * vector_x + vector_y_sq + vector_z_sq
                     vector_norm = vector_sq ** 0.5
                     two_particle_position_space_gradient += (vector_x * (
-                            self._two_alpha_over_root_pi * np.exp(- self._alpha_sq * vector_sq) + np.erfc(
+                            self._two_alpha_over_root_pi * np.exp(- self._alpha_sq * vector_sq) + special.erfc(
                                 self._alpha * vector_norm) / vector_norm) / vector_sq)
 
         return two_particle_position_space_gradient
