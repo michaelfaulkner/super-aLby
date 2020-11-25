@@ -46,15 +46,15 @@ class PositionSampler(Sampler):
         else:
             return np.zeros((total_number_of_iterations + 1, number_of_particles, dimensionality_of_particle_space))
 
-    def get_observation(self, momentum, position):
+    def get_observation(self, momenta, positions):
         """
         Return the observation after each iteration of the Markov chain.
 
         Parameters
         ----------
-        momentum : numpy.ndarray
+        momenta : numpy.ndarray
             The momenta associated with each positions.
-        position : numpy.ndarray
+        positions : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
             parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
 
@@ -63,7 +63,7 @@ class PositionSampler(Sampler):
         numpy.ndarray
             The observation of the positions.
         """
-        return position
+        return positions
 
     def output_sample(self, sample):
         """
