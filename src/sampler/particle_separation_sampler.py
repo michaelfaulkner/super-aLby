@@ -42,11 +42,7 @@ class ParticleSeparationSampler(Sampler):
         numpy.ndarray
             Numpy array of zeros of the required structure.
         """
-        if dimensionality_of_particle_space == 1:
-            return np.zeros((total_number_of_iterations + 1, number_of_particle_pairs))
-        else:
-            return np.zeros(
-                (total_number_of_iterations + 1, number_of_particle_pairs, dimensionality_of_particle_space))
+        return np.zeros((total_number_of_iterations + 1, number_of_particle_pairs))
 
     def get_observation(self, momenta, positions):
         """
@@ -68,9 +64,9 @@ class ParticleSeparationSampler(Sampler):
         separations = []
         for i in range(number_of_particles):
             for j in range(i + 1, number_of_particles):
-                separation = positions[i] - positions[j]
-                correct_separation_for_periodic_boundaries(separation)
-                separations.append(separation)
+                separation_vector = positions[i] - positions[j]
+                correct_separation_for_periodic_boundaries(separation_vector)
+                separations.append(np.linalg.norm(separation_vector))
         return np.array(separations)
 
     def output_sample(self, sample):
