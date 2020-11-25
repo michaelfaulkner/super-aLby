@@ -24,7 +24,7 @@ def main(argv):
 
     if config.get("Mediator", "potential") == 'coulomb_soft_matter_potential':
         reference_sample = np.loadtxt(
-            'output/convergence_tests/two_coulomb_particles_unit_cube_reference_sample.csv', dtype=float, delimiter=',')
+            'output/convergence_tests/two_unit_charge_coulomb_particles_unit_cube_beta_2_reference_sample.csv', dtype=float, delimiter=',')
     elif config.get("Mediator", "potential") == 'exponential_power_potential' and config.get(
             "ExponentialPowerPotential", "power") == 4.0:
         reference_sample = np.loadtxt(
