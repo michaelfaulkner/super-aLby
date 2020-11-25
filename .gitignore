@@ -1,8 +1,8 @@
 ## Sample files
 *.dat
 *.csv
-!/input_data_files/*.csv
-!/output/*reference_sample.csv
+!/src/input_data_files/*.csv
+!/src/output/*reference_sample.csv
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
