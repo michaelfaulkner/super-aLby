@@ -162,7 +162,8 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
         gradient = np.array([np.zeros(3) for _ in range(number_of_particles)])
         for i in range(number_of_particles):
             for j in range(i + 1, number_of_particles):
-                separation = correct_separation_for_periodic_boundaries(positions[i] - positions[j])
+                separation = positions[i] - positions[j]
+                correct_separation_for_periodic_boundaries(separation)
                 for direction in range(3):
                     permuted_separation = permutation_3d(separation, direction)
                     two_particle_gradient = (self._get_two_particle_position_space_gradient(*permuted_separation) +
