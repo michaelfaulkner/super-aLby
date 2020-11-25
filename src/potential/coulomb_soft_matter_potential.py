@@ -129,7 +129,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
         # todo add functionality for non-like charges
         potential = 0.0
         for i in range(number_of_particles):
-            for j in range(i, number_of_particles):
+            for j in range(i + 1, number_of_particles):
                 separation = get_corrected_separation(positions[i] - positions[j])
                 for direction in range(3):
                     permuted_separation = permutation_3d(separation, direction)
@@ -153,7 +153,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
         """
         gradient = np.array([np.zeros(3) for _ in range(number_of_particles)])
         for i in range(number_of_particles):
-            for j in range(i, number_of_particles):
+            for j in range(i + 1, number_of_particles):
                 separation = get_corrected_separation(positions[i] - positions[j])
                 for direction in range(3):
                     permuted_separation = permutation_3d(separation, direction)
