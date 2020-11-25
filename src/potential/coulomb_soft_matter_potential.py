@@ -139,10 +139,8 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
         for i in range(number_of_particles):
             for j in range(i + 1, number_of_particles):
                 separation = get_separation_vector_on_torus(positions[i] - positions[j])
-                for direction in range(3):
-                    permuted_separation = permutation_3d(separation, direction)
-                    potential += (self._get_two_particle_position_space_potential(*permuted_separation) +
-                                  self._get_two_particle_fourier_space_potential(*permuted_separation))
+                potential += (self._get_two_particle_position_space_potential(*separation) +
+                              self._get_two_particle_fourier_space_potential(*separation))
         return potential
 
     def get_gradient(self, positions):
