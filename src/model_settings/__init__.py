@@ -14,6 +14,8 @@ range_of_initial_particle_positions = get_value(config, "ModelSettings", "range_
 one_over_beta = 1.0 / beta
 one_over_root_beta = beta ** (-0.5)
 
+number_of_particle_pairs = int(number_of_particles * (number_of_particles - 1) / 2)
+
 if size_of_particle_space is None or type(size_of_particle_space) == float:
     dimensionality_of_particle_space = 1
 else:
