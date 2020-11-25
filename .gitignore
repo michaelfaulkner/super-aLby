@@ -5,6 +5,7 @@
 !/src/output/convergence_tests/gaussian_reference_sample_variance_1.csv
 !/src/output/convergence_tests/gaussian_reference_sample_variance_4.csv
 !/src/output/convergence_tests/fourth_exponential_power_reference_sample_variance_4.csv
+!/src/output/convergence_tests/two_coulomb_particles_unit_cube_reference_sample.csv
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
