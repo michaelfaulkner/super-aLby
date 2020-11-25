@@ -67,6 +67,7 @@ class Mediator:
         self._sampler = sampler_instance
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
+        self._number_of_observations_between_screen_prints_for_clock = int(number_of_observations / 10)
         self._total_number_of_iterations = number_of_equilibration_iterations + number_of_observations
         self._initial_step_size = initial_step_size
         self._step_size = beta * initial_step_size
@@ -126,7 +127,7 @@ class Mediator:
             sample[i + 1, :] = self._sampler.get_observation(self._momenta, self._positions)
             self._momenta = self._kinetic_energy.get_momentum_observation()
 
-            if (i + 1) % 10000 == 0:
+            if (i + 1) % self._number_of_observations_between_screen_prints_for_clock == 0:
                 current_sample_size = i + 1
                 print('%d observations drawn out of a total of %d (including equilibration observations).' %
                       (current_sample_size, self._total_number_of_iterations))
