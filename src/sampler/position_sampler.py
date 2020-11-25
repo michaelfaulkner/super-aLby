@@ -13,7 +13,7 @@ class PositionSampler(Sampler):
 
     def __init__(self, output_directory: str):
         """
-        The constructor of the PotentialObserver class.
+        The constructor of the PositionSampler class.
 
         This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
         init to the next class in the MRO via super.
