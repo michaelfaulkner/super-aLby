@@ -127,7 +127,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
         Parameters
         ----------
         positions : numpy.ndarray
-            The particle-particle separation vectors {r_ij}.
+            The particle position vectors {r_i}.
 
         Returns
         -------
@@ -150,7 +150,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
         Parameters
         ----------
         positions : numpy.ndarray
-            The particle-particle separation vectors {r_ij}.
+            The particle position vectors {r_i}.
 
         Returns
         -------
