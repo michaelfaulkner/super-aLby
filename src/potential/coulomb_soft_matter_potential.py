@@ -165,8 +165,8 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
                     permuted_separation = permutation_3d(separation, direction)
                     two_particle_gradient = (self._get_two_particle_position_space_gradient(*permuted_separation) +
                                              self._get_two_particle_fourier_space_gradient(*permuted_separation))
-                    gradient[i][direction] += two_particle_gradient
-                    gradient[j][direction] -= two_particle_gradient
+                    gradient[i][direction] = two_particle_gradient
+                    gradient[j][direction] = - two_particle_gradient
         return gradient
 
     def _get_two_particle_position_space_potential(self, separation_x, separation_y, separation_z):
