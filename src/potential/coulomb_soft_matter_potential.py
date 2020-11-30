@@ -102,10 +102,10 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
                     norm_sq = i * i + j * j + k * k
                     base_fourier_list_component = 2 * coefficient * (
                             np.exp(- pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / self._system_length)
-                    fourier_list_for_potential[i][j][k] = base_fourier_list_component / np.pi
                     # todo change the following to 2 * base_fourier_list_component / self._system_length
                     fourier_list[i][j][k] = 4 * i * coefficient * (np.exp(
                         - pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / length_sq)
+                    fourier_list_for_potential[i][j][k] = self._system_length * fourier_list[i][j][k] / 2.0 / i / np.pi
 
         self._fourier_array = tuple(
             [tuple([tuple(fourier_list[i][j]) for j in range(self._fourier_cutoff + 1)]) for i in
@@ -248,6 +248,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
                     vector_x = separation_x + i * self._system_length
                     vector_sq = vector_x * vector_x + vector_y_sq + vector_z_sq
                     vector_norm = vector_sq ** 0.5
+                    # todo change to -= below; change return; change to two_particle_position_space_gradient
                     negative_two_particle_position_space_gradient += (vector_x * (
                             self._two_alpha_over_root_pi * np.exp(- self._alpha_sq * vector_sq) + special.erfc(
                                 self._alpha * vector_norm) / vector_norm) / vector_sq)
@@ -277,6 +278,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
             for j in range(0, cutoff_y + 1):
                 cutoff_z = int((self._fourier_cutoff_sq - i * i - j * j) ** 0.5)
                 for k in range(0, cutoff_z + 1):
+                    # todo change to -= below; change return; change to two_particle_fourier_space_gradient
                     negative_two_particle_fourier_space_gradient += self._fourier_array[i][j][k] * sin_x * cos_y * cos_z
 
                     if k != cutoff_z:
