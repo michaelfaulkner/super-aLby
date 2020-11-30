@@ -73,7 +73,7 @@ class TDistributionKineticEnergy(KineticEnergy):
         """
         return self._degrees_of_freedom_plus_one * momenta / (self._degrees_of_freedom + momenta ** 2)
 
-    def get_momentum_observation(self):
+    def get_momentum_observations(self):
         """
         Return an observation of the momenta from the kinetic-energy distribution.
 

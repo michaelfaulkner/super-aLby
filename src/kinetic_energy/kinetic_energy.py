@@ -59,7 +59,7 @@ class KineticEnergy(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def get_momentum_observation(self):
+    def get_momentum_observations(self):
         """
         Return an observation of the momenta from the kinetic-energy distribution.
 

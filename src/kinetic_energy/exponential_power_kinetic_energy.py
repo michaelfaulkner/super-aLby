@@ -75,7 +75,7 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         """
         return momenta * np.absolute(momenta) ** self._power_minus_two
 
-    def get_momentum_observation(self):
+    def get_momentum_observations(self):
         """
         Return an observation of the momenta from the kinetic-energy distribution.
 

@@ -82,7 +82,7 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def get_momentum_observation(self):
+    def get_momentum_observations(self):
         """
         Returns an observation of the momenta from the kinetic-energy distribution using adaptive rejection sampling.
 

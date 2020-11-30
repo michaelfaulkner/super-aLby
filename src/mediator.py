@@ -75,7 +75,7 @@ class Mediator:
         self._randomise_number_of_integration_steps = randomise_number_of_integration_steps
         self._step_size_adaptor_is_on = step_size_adaptor_is_on
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
-        self._momenta = self._kinetic_energy.get_momentum_observation()
+        self._momenta = self._kinetic_energy.get_momentum_observations()
         self._positions = self._initialise_position_array()
         self._current_potential = self._potential.get_value(self._positions)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
@@ -125,7 +125,7 @@ class Mediator:
                 self._update_system_state(candidate_momenta, candidate_positions, candidate_potential)
 
             sample[i + 1, :] = self._sampler.get_observation(self._momenta, self._positions)
-            self._momenta = self._kinetic_energy.get_momentum_observation()
+            self._momenta = self._kinetic_energy.get_momentum_observations()
 
             if (i + 1) % self._number_of_observations_between_screen_prints_for_clock == 0:
                 current_sample_size = i + 1
