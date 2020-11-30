@@ -252,7 +252,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
                             self._two_alpha_over_root_pi * np.exp(- self._alpha_sq * vector_sq) + special.erfc(
                                 self._alpha * vector_norm) / vector_norm) / vector_sq)
 
-        return two_particle_position_space_gradient
+        return - two_particle_position_space_gradient
 
     def _get_two_particle_fourier_space_gradient(self, separation_x, separation_y, separation_z):
         """Returns the Fourier-space part of the Ewald sum of the two-particle gradient."""
@@ -298,4 +298,4 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
                         cos_z = 1.0
                         sin_z = 0.0
 
-        return two_particle_fourier_space_gradient
+        return - two_particle_fourier_space_gradient
