@@ -20,7 +20,7 @@ class Integrator(metaclass=ABCMeta):
         super().__init__(**kwargs)
 
     @abstractmethod
-    def get_candidate_configuration(self, momentum, position, kinetic_energy_instance, potential_instance,
+    def get_candidate_configuration(self, momenta, positions, kinetic_energy_instance, potential_instance,
                                     number_of_integration_steps, step_size):
         """
         Return the Hamiltonian / (super-)relativistic flow between times
@@ -28,9 +28,9 @@ class Integrator(metaclass=ABCMeta):
 
         Parameters
         ----------
-        momentum : numpy.ndarray
+        momenta : numpy.ndarray
             The momenta associated with each positions.
-        position : numpy.ndarray
+        positions : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
             parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
         kinetic_energy_instance : instantiated Python class

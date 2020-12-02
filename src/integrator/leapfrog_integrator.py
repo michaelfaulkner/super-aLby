@@ -16,7 +16,7 @@ class LeapfrogIntegrator(Integrator):
         super().__init__()
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__)
 
-    def get_candidate_configuration(self, momentum, position, kinetic_energy_instance, potential_instance,
+    def get_candidate_configuration(self, momenta, positions, kinetic_energy_instance, potential_instance,
                                     number_of_integration_steps, step_size):
         """
         Return the Hamiltonian / (super-)relativistic flow between times
@@ -24,9 +24,9 @@ class LeapfrogIntegrator(Integrator):
 
         Parameters
         ----------
-        momentum : numpy.ndarray
+        momenta : numpy.ndarray
             The momenta associated with each positions.
-        position : numpy.ndarray
+        positions : numpy.ndarray
             For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
             parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
         kinetic_energy_instance : instantiated Python class
@@ -44,10 +44,10 @@ class LeapfrogIntegrator(Integrator):
             The flow.
         """
         half_step_size = 0.5 * step_size
-        momentum = momentum - half_step_size * potential_instance.get_gradient(position)
+        momenta = momenta - half_step_size * potential_instance.get_gradient(positions)
         for _ in range(number_of_integration_steps - 1):
-            position = position + step_size * kinetic_energy_instance.get_gradient(momentum)
-            momentum = momentum - step_size * potential_instance.get_gradient(position)
-        position = position + step_size * kinetic_energy_instance.get_gradient(momentum)
-        momentum = momentum - half_step_size * potential_instance.get_gradient(position)
-        return momentum, position
+            positions = positions + step_size * kinetic_energy_instance.get_gradient(momenta)
+            momenta = momenta - step_size * potential_instance.get_gradient(positions)
+        positions = positions + step_size * kinetic_energy_instance.get_gradient(momenta)
+        momenta = momenta - half_step_size * potential_instance.get_gradient(positions)
+        return momenta, positions
