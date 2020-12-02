@@ -139,8 +139,8 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
         for i in range(number_of_particles):
             for j in range(i + 1, number_of_particles):
                 separation = get_separation_vector_on_torus(positions[i] - positions[j])
-                potential += (self._get_two_particle_position_space_potential(*separation) +
-                              self._get_two_particle_fourier_space_potential(*separation))
+                potential += (self._get_two_particle_position_space_potential(separation) +
+                              self._get_two_particle_fourier_space_potential(separation))
         return potential
 
     def get_gradient(self, positions):
@@ -169,8 +169,9 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
                     gradient[j][direction] = - two_particle_gradient
         return gradient
 
-    def _get_two_particle_position_space_potential(self, separation_x, separation_y, separation_z):
+    def _get_two_particle_position_space_potential(self, separation):
         """Returns the position-space part of the Ewald sum of the two-particle potential."""
+        separation_x, separation_y, separation_z = separation
         two_particle_position_space_potential = 0.0
 
         for k in range(- self._position_cutoff, self._position_cutoff + 1):
@@ -187,8 +188,9 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
 
         return two_particle_position_space_potential
 
-    def _get_two_particle_fourier_space_potential(self, separation_x, separation_y, separation_z):
+    def _get_two_particle_fourier_space_potential(self, separation):
         """Returns the Fourier-space part of the Ewald sum of the two-particle potential."""
+        separation_x, separation_y, separation_z = separation
         two_particle_fourier_space_potential = 0.0
 
         delta_cos_x = np.cos(self.two_pi_over_length * separation_x)
