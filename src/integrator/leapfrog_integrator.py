@@ -1,6 +1,6 @@
 """Module for the LeapfrogIntegrator class."""
-from base.logging import log_init_arguments
 from .integrator import Integrator
+from base.logging import log_init_arguments
 import logging
 
 
