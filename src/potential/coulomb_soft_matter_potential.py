@@ -135,13 +135,16 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
             The potential.
         """
         # todo add functionality for non-like charges
-        potential = 0.0
+        """potential = 0.0
         for i in range(number_of_particles):
             for j in range(i + 1, number_of_particles):
                 separation = get_separation_vector_on_torus(positions[i] - positions[j])
                 potential += (self._get_two_particle_position_space_potential(separation) +
                               self._get_two_particle_fourier_space_potential(separation))
-        return potential
+        return potential"""
+        separation = get_separation_vector_on_torus(positions[0] - positions[1])
+        return (self._get_two_particle_position_space_potential(separation) +
+                self._get_two_particle_fourier_space_potential(separation))
 
     def get_gradient(self, positions):
         """
@@ -158,7 +161,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
             The gradient.
         """
         gradient = np.array([np.zeros(3) for _ in range(number_of_particles)])
-        for i in range(number_of_particles):
+        """for i in range(number_of_particles):
             for j in range(i + 1, number_of_particles):
                 separation = get_separation_vector_on_torus(positions[i] - positions[j])
                 for direction in range(3):
@@ -166,7 +169,14 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
                     two_particle_gradient = (self._get_two_particle_position_space_gradient(*permuted_separation) +
                                              self._get_two_particle_fourier_space_gradient(*permuted_separation))
                     gradient[i][direction] = two_particle_gradient
-                    gradient[j][direction] = - two_particle_gradient
+                    gradient[j][direction] = - two_particle_gradient"""
+        separation = get_separation_vector_on_torus(positions[0] - positions[1])
+        for direction in range(3):
+            permuted_separation = permutation_3d(separation, direction)
+            two_particle_gradient = (self._get_two_particle_position_space_gradient(*permuted_separation) +
+                                     self._get_two_particle_fourier_space_gradient(*permuted_separation))
+            gradient[0][direction] = two_particle_gradient
+            gradient[1][direction] = - two_particle_gradient
         return gradient
 
     def _get_two_particle_position_space_potential(self, separation):
