@@ -1,7 +1,7 @@
 """Module for the ParticleSeparationSampler class."""
 from base.logging import log_init_arguments
 from base.vectors import get_separation_vector_on_torus
-from model_settings import number_of_particle_pairs, number_of_particles, dimensionality_of_particle_space
+from model_settings import number_of_particle_pairs
 from .sampler import Sampler
 import logging
 import numpy as np
