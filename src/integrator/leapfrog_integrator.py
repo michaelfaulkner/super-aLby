@@ -43,6 +43,7 @@ class LeapfrogIntegrator(Integrator):
         numpy.ndarray
             The flow.
         """
+        # todo change to += and -= everywhere below
         half_step_size = 0.5 * step_size
         momenta = momenta - half_step_size * potential_instance.get_gradient(positions)
         for _ in range(number_of_integration_steps - 1):
