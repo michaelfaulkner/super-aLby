@@ -20,7 +20,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
     k is a prefactor and r_ij = r_i - r_j is the separation vector between particles i and j (which we correct for
     periodic boundaries conditions). \vec{L} are the sides of the three-dimensional simulation box with periodic
     boundary conditions. As our code is only based on potential differences, we have not subtracted the self-energy term
-        U_{\rm self}(\alpha, \{ c_i \}) = (\alpha / \pi)^{1 / 2} \sum_i c_i^2
+        U_{\rm self}(\alpha, \{ c_i \}) = \alpha \sum_i c_i^2 / \pi^{1 / 2} +  \pi (\sum_i c_i)^2 / 2 L^3 \alpha^2
     from the potential, where \{ c_i \} \equiv \{ c_i : i = 1, \dots , N \} is the set of charge values of the
     particles, all of which are currently set to unity. This class is (currently) only implemented for a
     three-dimensional cube, and for charges of value unity, both of which will be generalised in the future.
