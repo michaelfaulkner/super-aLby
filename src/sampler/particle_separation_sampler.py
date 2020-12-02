@@ -61,9 +61,10 @@ class ParticleSeparationSampler(Sampler):
         numpy.ndarray
             The observation of the positions.
         """
-        return np.array(
+        """return np.array(
             [np.linalg.norm(get_separation_vector_on_torus(positions[i] - positions[j]))
-             for i in range(number_of_particles) for j in range(i + 1, number_of_particles)])
+             for i in range(number_of_particles) for j in range(i + 1, number_of_particles)])"""
+        return np.linalg.norm(get_separation_vector_on_torus(positions[0] - positions[1]))
 
     def output_sample(self, sample):
         """
