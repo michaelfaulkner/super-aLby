@@ -8,7 +8,7 @@ import sys
 
 # Add the directory which contains the module plotting_functions to sys.path
 this_directory = os.path.dirname(os.path.abspath(__file__))
-src_directory = os.path.abspath(this_directory + "/../../")
+src_directory = os.path.abspath(this_directory + "/../")
 sys.path.insert(0, src_directory)
 
 
@@ -24,18 +24,18 @@ def main(argv):
 
     if config.get("Mediator", "potential") == 'coulomb_soft_matter_potential':
         reference_sample = np.loadtxt(
-            'output/convergence_tests/two_unit_charge_coulomb_particles_unit_cube_beta_2_reference_sample.csv',
+            'output/other_convergence_tests/two_unit_charge_coulomb_particles_unit_cube_beta_2_reference_sample.csv',
             dtype=float, delimiter=',')
     elif config.get("Mediator", "potential") == 'exponential_power_potential' and config.get(
             "ExponentialPowerPotential", "power") == 4.0:
         reference_sample = np.loadtxt(
-            'output/convergence_tests/fourth_exponential_power_variance_4_reference_sample.csv', dtype=float,
+            'output/other_convergence_tests/fourth_exponential_power_variance_4_reference_sample.csv', dtype=float,
             delimiter=',')
     elif config.get("Mediator", "kinetic_energy") == 't_distribution_kinetic_energy':
-        reference_sample = np.loadtxt('output/convergence_tests/gaussian_variance_1_reference_sample.csv', dtype=float,
+        reference_sample = np.loadtxt('output/other_convergence_tests/gaussian_variance_1_reference_sample.csv', dtype=float,
                                       delimiter=',')
     else:
-        reference_sample = np.loadtxt('output/convergence_tests/gaussian_variance_4_reference_sample.csv', dtype=float,
+        reference_sample = np.loadtxt('output/other_convergence_tests/gaussian_variance_4_reference_sample.csv', dtype=float,
                                       delimiter=',')
     reference_cdf = get_cumulative_distribution(reference_sample)
 
