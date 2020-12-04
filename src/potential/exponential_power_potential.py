@@ -12,7 +12,7 @@ class ExponentialPowerPotential(Potential):
     x is an n-dimensional vector of floats.
     """
 
-    def __init__(self, power: float = 2, prefactor: float = 1.0):
+    def __init__(self, power: float = 2.0, prefactor: float = 1.0):
         """
         The constructor of the ExponentialPowerPotential class.
 
