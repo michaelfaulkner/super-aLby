@@ -64,7 +64,7 @@ if size_of_particle_space is not None:
                              " less than half the size_of_particle_space.")
 
 if size_of_particle_space is not None:
-    size_of_particle_space_over_two = 0.5 * np.array(size_of_particle_space)
+    size_of_particle_space_over_two = 0.5 * np.atleast_1d(size_of_particle_space)
     size_of_particle_space_over_two.flags.writeable = False
-size_of_particle_space = np.array(size_of_particle_space)
+size_of_particle_space = np.atleast_1d(size_of_particle_space)
 size_of_particle_space.flags.writeable = False

@@ -263,35 +263,41 @@ def random_vector_on_unit_sphere(dimension: int) -> List[float]:
     return vector
 
 
-def get_separation_vector_on_torus(separation):
+def get_shortest_vector_on_torus(vector):
     """
-    Correct the given separation vector in place for periodic boundaries.
+    Corrects the given vector for periodic boundaries.
 
     Parameters
     ----------
-    separation : numpy.ndarray
-        The separation vector; a numpy array of floats.
+    vector : numpy.ndarray
+        The vector; a numpy array of floats.
+
+    Returns
+    -------
+    numpy.ndarray
+        The vector corrected for periodic boundaries; a numpy array of floats.
     """
-    for index, entry in enumerate(separation):
-        separation[index] = get_corrected_separation_entry(entry, index)
-    return separation
+    for index, component in enumerate(vector):
+        vector[index] = get_shortest_vector_on_ring(component, index)
+    return vector
 
 
-def get_corrected_separation_entry(separation_entry, index):
+def get_shortest_vector_on_ring(one_dimensional_vector, index):
     """
-    Return the separation entry at the given component corrected for periodic boundaries.
+    Corrects the given one-dimensional vector for periodic boundaries.
 
     Parameters
     ----------
-    separation_entry : float
-        The separation entry.
+    one_dimensional_vector : float
+        The one-dimensional vector.
     index : int
-        The index of the position entry within the position vector.
+        If one_dimensional_vector is a component of a higher dimensional vector, one_dimensional_vector is the index
+        component of the higher dimensional vector; otherwise, index is 0.
 
     Returns
     -------
     float
-        The separation entry corrected for periodic boundaries.
+        The one-dimensional vector corrected for periodic boundaries.
     """
-    return ((separation_entry + size_of_particle_space_over_two[index]) % size_of_particle_space[index] -
+    return ((one_dimensional_vector + size_of_particle_space_over_two[index]) % size_of_particle_space[index] -
             size_of_particle_space_over_two[index])
