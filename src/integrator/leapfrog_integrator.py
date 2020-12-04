@@ -19,8 +19,8 @@ class LeapfrogIntegrator(Integrator):
     def get_candidate_configuration(self, momenta, positions, kinetic_energy_instance, potential_instance,
                                     number_of_integration_steps, step_size):
         """
-        Return the Hamiltonian / (super-)relativistic flow between times
-            t_0 and t_0 + step_size * number_of_integration_steps.
+        Returns proposal momenta and positions by applying the Hamiltonian / (super-)relativistic dynamics to the
+            current momenta and positions.
 
         Parameters
         ----------
@@ -41,14 +41,13 @@ class LeapfrogIntegrator(Integrator):
         Returns
         -------
         numpy.ndarray
-            The flow.
+            The proposal momenta and positions.
         """
-        # todo change to += and -= everywhere below
         half_step_size = 0.5 * step_size
-        momenta = momenta - half_step_size * potential_instance.get_gradient(positions)
+        momenta -= half_step_size * potential_instance.get_gradient(positions)
         for _ in range(number_of_integration_steps - 1):
-            positions = positions + step_size * kinetic_energy_instance.get_gradient(momenta)
-            momenta = momenta - step_size * potential_instance.get_gradient(positions)
-        positions = positions + step_size * kinetic_energy_instance.get_gradient(momenta)
-        momenta = momenta - half_step_size * potential_instance.get_gradient(positions)
+            positions += step_size * kinetic_energy_instance.get_gradient(momenta)
+            momenta -= step_size * potential_instance.get_gradient(positions)
+        positions += step_size * kinetic_energy_instance.get_gradient(momenta)
+        momenta -= half_step_size * potential_instance.get_gradient(positions)
         return momenta, positions
