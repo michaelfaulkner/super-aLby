@@ -1,13 +1,13 @@
 """Module for the ParticleSeparationSampler class."""
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vector_on_torus
-from model_settings import number_of_particle_pairs
+from model_settings import number_of_particle_pairs, number_of_particles
 from .sampler import Sampler
 import logging
 import numpy as np
 
 
-class ParticleSeparationSampler(Sampler):
+class MeanParticleSeparationSampler(Sampler):
     """
     Class for taking observations of the positions of the system.
     """
@@ -58,13 +58,12 @@ class ParticleSeparationSampler(Sampler):
 
         Returns
         -------
-        numpy.ndarray
-            The observation of the positions.
+        float
+            The observation of the mean of all shortest (on the torus) particle-separation vectors.
         """
-        """return np.array(
+        return sum(
             [np.linalg.norm(get_shortest_vector_on_torus(positions[i] - positions[j]))
-             for i in range(number_of_particles) for j in range(i + 1, number_of_particles)])"""
-        return np.linalg.norm(get_shortest_vector_on_torus(positions[0] - positions[1]))
+             for i in range(number_of_particles) for j in range(i + 1, number_of_particles)]) / number_of_particle_pairs
 
     def output_sample(self, sample):
         """
