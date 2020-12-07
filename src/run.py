@@ -59,7 +59,7 @@ def main(argv: Sequence[str]) -> None:
 def print_start_message():
     """Print the start message which includes the copyright."""
     print("super-aLby (version {0}) - a Python application for super-relativistic Monte Carlo".format(version))
-    print("Copyright (C) 2020 The super-aLby organisation")
+    print("Copyright (C) 2021 The super-aLby organisation")
 
 
 if __name__ == '__main__':
