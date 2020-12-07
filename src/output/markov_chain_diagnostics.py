@@ -2,7 +2,7 @@ import numpy as np
 import rpy2.robjects.numpy2ri as n2ri
 import rpy2.robjects.packages as r_packages
 n2ri.activate()
-laplaces_demon_r_package = r_packages.importr('LaplacesDemon') # import Laplaces Demon package
+laplaces_demon_r_package = r_packages.importr('LaplacesDemon')
 
 
 def effective_sample_size(sample):
