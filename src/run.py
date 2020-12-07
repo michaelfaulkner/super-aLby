@@ -1,5 +1,5 @@
-"""Executable script which runs the aLby application based on an input configuration file. This script and most of
-    the base package are taken from the JeLLyFysh application, on which two of the aLby authors worked."""
+"""Executable script which runs the super-aLby application based on an input configuration file. This script and most of
+    the base package are taken from the JeLLyFysh application, on which two of the super-aLby authors worked."""
 import platform
 import sys
 import time
@@ -15,7 +15,7 @@ import mediator
 
 def main(argv: Sequence[str]) -> None:
     """
-    Use the argument strings to run the aLby application.
+    Use the argument strings to run the super-aLby application.
 
     First the argument strings are parsed. The configuration file specified in the argument strings is parsed. Based on
     the configuration file, the algorithm is built from the relevant instantiated classes.
@@ -58,8 +58,8 @@ def main(argv: Sequence[str]) -> None:
 
 def print_start_message():
     """Print the start message which includes the copyright."""
-    print("aLby (version {0}) - a Python application for super-relativistic Monte Carlo".format(version))
-    print("Copyright (C) 2020 The aLby organisation")
+    print("super-aLby (version {0}) - a Python application for super-relativistic Monte Carlo".format(version))
+    print("Copyright (C) 2020 The super-aLby organisation")
 
 
 if __name__ == '__main__':

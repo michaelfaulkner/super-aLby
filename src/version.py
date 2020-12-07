@@ -1,2 +1,2 @@
-"""Module which stores the version of the aLby application."""
+"""Module which stores the version of the super-aLby application."""
 version = "0.0.0"

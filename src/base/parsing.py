@@ -79,7 +79,7 @@ def add_general_parser_arguments(parser: ArgumentParser) -> None:
         The argument parser.
     """
     parser.add_argument(
-        "-V", "--version", action="version", version="aLby application version " + version)
+        "-V", "--version", action="version", version="super-aLby application version " + version)
     parser.add_argument("-v", "--verbose", action="count",
                         help="increase verbosity of logging messages "
                              "(multiple -v options increase the verbosity, the maximum is 2)")
