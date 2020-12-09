@@ -1,7 +1,9 @@
 """Module for the ParticleSeparationSampler class."""
+from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vector_on_torus
-from model_settings import number_of_particle_pairs, number_of_particles
+from model_settings import dimensionality_of_particle_space, number_of_particle_pairs, number_of_particles, \
+    size_of_particle_space
 from .sampler import Sampler
 import logging
 import numpy as np
@@ -24,6 +26,14 @@ class MeanParticleSeparationSampler(Sampler):
         output_directory : str
             The filename onto which the sample is written at the end of the run.
         """
+        if dimensionality_of_particle_space == 1:
+            raise ConfigurationError("Cannot use {0} when size_of_particle_space is one dimensional (i.e., when it is "
+                                     "equal to None or a float).".format(self.__class__.__name__))
+        for component in np.atleast_1d(size_of_particle_space):
+            if component is None:
+                raise ConfigurationError(
+                    "All components of size_of_particle_space must be floats when using {0}.".format(
+                        self.__class__.__name__))
         super().__init__(output_directory)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            output_directory=output_directory)
