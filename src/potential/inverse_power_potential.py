@@ -74,4 +74,4 @@ class InversePowerPotential(Potential):
         return gradient
 
     def _one_particle_gradient(self, shortest_position_vector):
-        return shortest_position_vector * np.linalg.norm(shortest_position_vector) ** self._negative_power_minus_two
+        return - shortest_position_vector * np.linalg.norm(shortest_position_vector) ** self._negative_power_minus_two
