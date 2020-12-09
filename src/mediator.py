@@ -98,6 +98,7 @@ class Mediator:
         """
         number_of_accepted_trajectories = 0
         number_of_integration_steps = self._max_number_of_integration_steps
+        number_of_numerical_divergences = 0
         sample = self._sampler.initialise_sample_array(self._total_number_of_iterations)
         sample[0, :] = self._sampler.get_observation(self._momenta, self._positions)
 
@@ -106,16 +107,18 @@ class Mediator:
                 number_of_accepted_trajectories = 0
             if self._randomise_number_of_integration_steps:
                 number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
+
             candidate_momenta, candidate_positions = (
                 self._integrator.get_candidate_configuration(self._momenta, self._positions, self._kinetic_energy,
                                                              self._potential, number_of_integration_steps,
                                                              self._step_size))
             candidate_potential = self._potential.get_value(candidate_positions)
+            current_energy = self._kinetic_energy.get_value(self._momenta) + self._current_potential
+            energy_change = self._kinetic_energy.get_value(candidate_momenta) + candidate_potential - current_energy
 
+            if energy_change / current_energy > 100.0:
+                number_of_numerical_divergences += 1
             if self._use_metropolis_accept_reject:
-                energy_change = (candidate_potential - self._current_potential +
-                                 self._kinetic_energy.get_value(candidate_momenta) -
-                                 self._kinetic_energy.get_value(self._momenta))
                 if energy_change < 0.0 or np.random.uniform(0, 1) < np.exp(- beta * energy_change):
                     self._update_system_state(candidate_momenta, candidate_positions, candidate_potential)
                     number_of_accepted_trajectories += 1
@@ -138,7 +141,8 @@ class Mediator:
                     self._step_size *= 0.9
                 number_of_accepted_trajectories = 0
 
-        self._print_markov_chain_summary(number_of_accepted_trajectories / self._number_of_observations)
+        self._print_markov_chain_summary(number_of_accepted_trajectories / self._number_of_observations,
+                                         number_of_numerical_divergences)
 
         return sample
 
@@ -161,8 +165,10 @@ class Mediator:
                 return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]
                                  for _ in range(number_of_particles)])
 
-    def _print_markov_chain_summary(self, acceptance_rate):
+    def _print_markov_chain_summary(self, acceptance_rate, number_of_numerical_divergences):
         print("Metropolis-Hastings acceptance rate = %f" % acceptance_rate)
+        print("Number of numerical instabilities (relative energy increases by two orders of magnitude) = %d" %
+              number_of_numerical_divergences)
         self._step_size /= beta
         if self._step_size_adaptor_is_on:
             print("Initial numerical step size = %f" % self._initial_step_size)
