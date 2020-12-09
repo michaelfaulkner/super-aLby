@@ -1,14 +1,13 @@
 """Module for the PositionSampler class."""
-from base.logging import log_init_arguments
-from model_settings import number_of_particles, dimensionality_of_particle_space
 from .sampler import Sampler
-import logging
+from model_settings import number_of_particles, dimensionality_of_particle_space
+from abc import ABCMeta, abstractmethod
 import numpy as np
 
 
-class PositionSampler(Sampler):
+class PositionSampler(Sampler, metaclass=ABCMeta):
     """
-    Class for taking observations of the positions of the system.
+    Abstract class for taking observations of the particle positions.
     """
 
     def __init__(self, output_directory: str):
@@ -24,8 +23,6 @@ class PositionSampler(Sampler):
             The filename onto which the sample is written at the end of the run.
         """
         super().__init__(output_directory)
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           output_directory=output_directory)
 
     def initialise_sample_array(self, total_number_of_iterations):
         """
@@ -46,6 +43,7 @@ class PositionSampler(Sampler):
         else:
             return np.zeros((total_number_of_iterations + 1, number_of_particles, dimensionality_of_particle_space))
 
+    @abstractmethod
     def get_observation(self, momenta, positions):
         """
         Return the observation after each iteration of the Markov chain.
@@ -63,7 +61,7 @@ class PositionSampler(Sampler):
         numpy.ndarray
             The observation of the positions.
         """
-        return positions
+        raise NotImplementedError
 
     def output_sample(self, sample):
         """
