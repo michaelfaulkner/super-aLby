@@ -39,6 +39,7 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
                     self.__class__.__name__))
         self._one_over_power = 1.0 / power
         self._one_over_beta_to_powerth_root = beta ** (- 1.0 / power)
+        # self._power_over_beta_to_powerth_root = (power / beta) ** (1.0 / power)
         self._power = power
         self._power_minus_two = power - 2.0
         super().__init__()
@@ -85,6 +86,11 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         numpy.ndarray
             A new momenta associated with each positions.
         """
+        """if dimensionality_of_particle_space == 1:
+            return stats.gennorm.rvs(self._power, scale=self._power_over_beta_to_powerth_root, size=number_of_particles)
+        return np.array([stats.gennorm.rvs(self._power, scale=self._power_over_beta_to_powerth_root,
+                                           size=dimensionality_of_particle_space) for _ in range(number_of_particles)])
+                                           """
         if dimensionality_of_particle_space == 1:
             return np.array(generalised_power_distribution.rnormp(
                 number_of_particles, sigmap=self._one_over_beta_to_powerth_root, p=self._power))
