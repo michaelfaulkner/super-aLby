@@ -1,5 +1,6 @@
 """Module for the SmoothPinballLossPotential class."""
 from .potential import Potential
+from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from model_settings import dimensionality_of_particle_space
 import logging
@@ -41,12 +42,12 @@ class SmoothPinballLossPotential(Potential):
 
         Raises
         ------
-        base.exceptions.ValueError
+        base.exceptions.ConfigurationError
             If dimensionality_of_particle_space does not equal 1.
         """
         if dimensionality_of_particle_space != 1:
-            raise ValueError("In the .ini file, give either None or a list of two float values for "
-                             "size_of_particle_space with the potential {0}.".format(self.__class__.__name__))
+            raise ConfigurationError("In the .ini file, give either None or a list of two float values for "
+                                     "size_of_particle_space with the potential {0}.".format(self.__class__.__name__))
         self._tau = tau
         self._sigma = sigma
         self._xi = xi

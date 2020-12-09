@@ -1,6 +1,7 @@
 """Module for the abstract SoftMatterPotential class."""
-from model_settings import range_of_initial_particle_positions
 from .potential import Potential
+from base.exceptions import ConfigurationError
+from model_settings import range_of_initial_particle_positions
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
@@ -31,7 +32,7 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
 
         Raises
         ------
-        base.exceptions.ValueError
+        base.exceptions.ConfigurationError
             If the model_settings.range_of_initial_particle_positions does not give an real-valued interval for each
                 component of the initial positions of each particle.
         """
@@ -39,7 +40,7 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
                       for component in range_of_initial_particle_positions for bound in component]
         for condition in np.atleast_1d(conditions):
             if not condition:
-                raise ValueError(
+                raise ConfigurationError(
                     "For each component of range_of_initial_particle_positions, give a list of two float values to "
                     "avoid divergences in soft-matter models {0}.".format(self.__class__.__name__))
         super().__init__(prefactor, **kwargs)

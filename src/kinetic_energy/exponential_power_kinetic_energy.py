@@ -1,5 +1,6 @@
 """Module for the ExponentialPowerKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
+from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from model_settings import beta, dimensionality_of_particle_space, number_of_particles
 import logging
@@ -29,11 +30,11 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
 
         Raises
         ------
-        base.exceptions.ValueError
+        base.exceptions.ConfigurationError
             If the power equals 0.
         """
         if power == 0.0:
-            raise ValueError(
+            raise ConfigurationError(
                 "Give a value not equal to 0.0 as the power associated with the kinetic energy {0}.".format(
                     self.__class__.__name__))
         self._one_over_power = 1.0 / power

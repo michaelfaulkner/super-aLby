@@ -1,4 +1,5 @@
 """Module for the abstract Potential class."""
+from base.exceptions import ConfigurationError
 from abc import ABCMeta, abstractmethod
 
 
@@ -25,12 +26,12 @@ class Potential(metaclass=ABCMeta):
 
         Raises
         ------
-        base.exceptions.ValueError
+        base.exceptions.ConfigurationError
             If the prefactor equals 0.
         """
         if prefactor == 0.0:
-            raise ValueError("Give a value not equal to 0.0 as the prefactor for the potential {0}.".format(
-                self.__class__.__name__))
+            raise ConfigurationError(
+                "Give a value not equal to 0.0 as the prefactor for the potential {0}.".format(self.__class__.__name__))
         self._prefactor = prefactor
         super().__init__(**kwargs)
 

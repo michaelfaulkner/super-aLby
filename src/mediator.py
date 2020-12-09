@@ -1,4 +1,5 @@
 """Module for the Mediator class."""
+from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from model_settings import beta, dimensionality_of_particle_space, number_of_particles, \
     range_of_initial_particle_positions
@@ -46,21 +47,18 @@ class Mediator:
 
         Raises
         ------
-        base.exceptions.ValueError
+        base.exceptions.ConfigurationError
             If the prefactor equals 0.
         """
         if initial_step_size == 0.0:
-            raise ValueError(
-                "Give a value not equal to 0 as the initial step size of the numerical integrator {0}.".format(
-                    self.__class__.__name__))
+            raise ConfigurationError("Give a value not equal to 0 as the initial step size of the numerical integrator "
+                                     "{0}.".format(self.__class__.__name__))
         if max_number_of_integration_steps == 0:
-            raise ValueError(
-                "Give a value not equal to 0 as the maximum number of numerical integration steps {0}.".format(
-                    self.__class__.__name__))
+            raise ConfigurationError("Give a value not equal to 0 as the maximum number of numerical integration steps "
+                                     "{0}.".format(self.__class__.__name__))
         if number_of_observations == 0:
-            raise ValueError(
-                "Give a value not equal to 0 as the number of observations of target distribution {0}.".format(
-                    self.__class__.__name__))
+            raise ConfigurationError("Give a value not equal to 0 as the number of observations of target distribution "
+                                     "{0}.".format(self.__class__.__name__))
         self._integrator = integrator_instance
         self._kinetic_energy = kinetic_energy_instance
         self._potential = potential_instance

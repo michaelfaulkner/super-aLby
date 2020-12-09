@@ -1,5 +1,6 @@
 """Module for the TDistributionKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
+from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from model_settings import beta, dimensionality_of_momenta_array
 import logging
@@ -22,14 +23,14 @@ class TDistributionKineticEnergy(KineticEnergy):
 
         Raises
         ------
-        base.exceptions.ValueError
+        base.exceptions.ConfigurationError
             If degrees_of_freedom is less than 1.
         """
         if degrees_of_freedom < 1:
-            raise ValueError("Give a value not less than 1 as the number of degrees of freedom of the t-distribution "
-                             "kinetic energy {0}.".format(self.__class__.__name__))
+            raise ConfigurationError("Give a value not less than 1 as the number of degrees of freedom of the "
+                                     "t-distribution kinetic energy {0}.".format(self.__class__.__name__))
         if beta != 1.0:
-            raise ValueError("Set beta equal to 1.0 when using the t-distribution kinetic energy {0}.".format(
+            raise ConfigurationError("Set beta equal to 1.0 when using the t-distribution kinetic energy {0}.".format(
                 self.__class__.__name__))
         self._degrees_of_freedom = float(degrees_of_freedom)
         self._degrees_of_freedom_minus_one = self._degrees_of_freedom - 1.0

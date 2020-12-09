@@ -1,6 +1,7 @@
 """Module for the abstract KineticEnergyWithAdaptiveRejectionSampling class."""
 from .kinetic_energy import KineticEnergy
 from adaptive_rejection_sampling import AdaptiveRejectionSampling
+from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from model_settings import beta, dimensionality_of_particle_space, number_of_particles
 from abc import ABCMeta, abstractmethod
@@ -35,13 +36,12 @@ class RelativisticKineticEnergy(KineticEnergy, metaclass=ABCMeta):
 
         Raises
         ------
-        base.exceptions.ValueError
+        base.exceptions.ConfigurationError
             If the gamma equals 0.0.
         """
         if gamma == 0.0:
-            raise ValueError(
-                "Give a value not equal to 0.0 as the tuning parameter for the relativistic kinetic energy {0}.".format(
-                    self.__class__.__name__))
+            raise ConfigurationError("Give a value not equal to 0.0 as the tuning parameter for the relativistic "
+                                     "kinetic energy {0}.".format(self.__class__.__name__))
         self._one_over_gamma = 1.0 / gamma
         self._adaptive_rejection_sampling_instance = AdaptiveRejectionSampling(self._negative_beta_dot_current_value,
                                                                                self._negative_beta_dot_gradient)

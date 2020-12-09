@@ -1,6 +1,7 @@
 """Module for the SuperRelativisticKineticEnergy class."""
-from base.logging import log_init_arguments
 from .relativistic_kinetic_energy import RelativisticKineticEnergy
+from base.exceptions import ConfigurationError
+from base.logging import log_init_arguments
 import logging
 import numpy as np
 
@@ -28,11 +29,11 @@ class SuperRelativisticKineticEnergy(RelativisticKineticEnergy):
 
         Raises
         ------
-        base.exceptions.ValueError
+        base.exceptions.ConfigurationError
             If the power equals 0.
         """
         if power == 0.0:
-            raise ValueError(
+            raise ConfigurationError(
                 "Give a value not equal to 0.0 as the power associated with the kinetic energy {0}.".format(
                     self.__class__.__name__))
         self._power_over_two = 0.5 * power
