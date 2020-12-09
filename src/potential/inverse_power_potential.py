@@ -64,14 +64,10 @@ class InversePowerPotential(Potential):
         numpy.ndarray
             The gradient.
         """
-        gradient = np.zeros(dimensionality_of_momenta_array)
         if dimensionality_of_particle_space == 1:
-            for particle_index, position in enumerate(positions):
-                gradient[particle_index] = self._one_particle_gradient(get_shortest_vector_on_ring(position, 0))
-        else:
-            for particle_index, position in enumerate(positions):
-                gradient[particle_index] = self._one_particle_gradient(get_shortest_vector_on_torus(position))
-        return gradient
+            return np.array([self._one_particle_gradient(get_shortest_vector_on_ring(position, 0))
+                             for position in positions])
+        return np.array([self._one_particle_gradient(get_shortest_vector_on_torus(position)) for position in positions])
 
     def _one_particle_gradient(self, shortest_position_vector):
         return - shortest_position_vector * np.linalg.norm(shortest_position_vector) ** self._negative_power_minus_two
