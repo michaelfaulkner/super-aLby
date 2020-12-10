@@ -63,3 +63,6 @@
 *.ppt
 *.docx
 *.doc
+
+## venv directory
+/venv/
