@@ -19,7 +19,7 @@ run_module = importlib.import_module("run")
 
 
 def main(argv):
-    matplotlib.rcParams['text.latex.preamble'] = [r"\usepackage{amsmath}"]
+    matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     config = parsing.read_config(parsing.parse_options(argv).config_file)
 
     if config.get("Mediator", "potential") == 'coulomb_soft_matter_potential':
