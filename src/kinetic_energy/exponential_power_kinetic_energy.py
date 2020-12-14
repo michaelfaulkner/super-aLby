@@ -91,6 +91,10 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         return np.array([stats.gennorm.rvs(self._power, scale=self._power_over_beta_to_powerth_root,
                                            size=dimensionality_of_particle_space) for _ in range(number_of_particles)])
                                            """
+        # todo why doesn't the following commented-out code work?
+        """return self._powerth_root_of_power_over_beta * np.random.choice((- 1.0, 1.0),
+                                                                        size=dimensionality_of_momenta_array) * (
+                   - np.log(1.0 - np.random.random(size=dimensionality_of_momenta_array))) * self._one_over_power"""
         if dimensionality_of_particle_space == 1:
             return np.array(generalised_power_distribution.rnormp(
                 number_of_particles, sigmap=self._one_over_beta_to_powerth_root, p=self._power))
