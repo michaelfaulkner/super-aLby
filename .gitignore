@@ -64,5 +64,5 @@
 *.docx
 *.doc
 
-## venv directory
+## venv directory for pip-environment management
 /venv/
