@@ -97,6 +97,11 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         """return self._powerth_root_of_power_over_beta * np.random.choice((- 1.0, 1.0),
                                                                         size=dimensionality_of_momenta_array) * (
                    - np.log(1.0 - np.random.random(size=dimensionality_of_momenta_array))) ** self._one_over_power"""
+        # todo the following is the real ZZ sampler (nb, we must parse momenta to get_momentum_observations() for this
+        #  to work)...
+        """return - self._powerth_root_of_power_over_beta * np.sign(momenta) * (
+            - np.log(1.0 - np.random.random(size=dimensionality_of_momenta_array))) ** self._one_over_power"""
+        # todo ...but maybe we need to introduce the sampling parameter gamma ~ Exp(gamma) for convergence?
         if dimensionality_of_particle_space == 1:
             return np.array(generalised_power_distribution.rnormp(
                 number_of_particles, sigmap=self._powerth_root_of_one_over_beta, p=self._power))
