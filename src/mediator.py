@@ -135,9 +135,9 @@ class Mediator:
 
             if self._step_size_adaptor_is_on and i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
                 acceptance_rate = number_of_accepted_trajectories / 100.0
-                if acceptance_rate > 0.8:
+                if acceptance_rate > 0.9:
                     self._step_size *= 1.1
-                elif acceptance_rate < 0.6:
+                elif acceptance_rate < 0.8:
                     self._step_size *= 0.9
                 number_of_accepted_trajectories = 0
 
