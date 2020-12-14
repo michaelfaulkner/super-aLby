@@ -2,7 +2,7 @@
 from .kinetic_energy import KineticEnergy
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
-from model_settings import beta, dimensionality_of_particle_space, number_of_particles
+from model_settings import beta, dimensionality_of_particle_space, number_of_particles, dimensionality_of_momenta_array
 import logging
 import numpy as np
 import rpy2.robjects.packages as r_packages
@@ -91,10 +91,12 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         return np.array([stats.gennorm.rvs(self._power, scale=self._power_over_beta_to_powerth_root,
                                            size=dimensionality_of_particle_space) for _ in range(number_of_particles)])
                                            """
-        # todo why doesn't the following commented-out code work?
+        # todo why does the following commented-out code work with  ** self._one_over_power -->  * self._one_over_power
+        #  at the end, but not when left as is? (it's based on the ZZ sampler, but with np.random.choice(- 1.0, 1.0)) in
+        #  place of - np.sign(momenta)
         """return self._powerth_root_of_power_over_beta * np.random.choice((- 1.0, 1.0),
                                                                         size=dimensionality_of_momenta_array) * (
-                   - np.log(1.0 - np.random.random(size=dimensionality_of_momenta_array))) * self._one_over_power"""
+                   - np.log(1.0 - np.random.random(size=dimensionality_of_momenta_array))) ** self._one_over_power"""
         if dimensionality_of_particle_space == 1:
             return np.array(generalised_power_distribution.rnormp(
                 number_of_particles, sigmap=self._powerth_root_of_one_over_beta, p=self._power))
