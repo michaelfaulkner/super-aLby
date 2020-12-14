@@ -38,8 +38,8 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
                 "Give a value not equal to 0.0 as the power associated with the kinetic energy {0}.".format(
                     self.__class__.__name__))
         self._one_over_power = 1.0 / power
-        self._one_over_beta_to_powerth_root = beta ** (- 1.0 / power)
-        # self._power_over_beta_to_powerth_root = (power / beta) ** (1.0 / power)
+        self._powerth_root_of_one_over_beta = beta ** (- 1.0 / power)
+        self._powerth_root_of_power_over_beta = (power / beta) ** (1.0 / power)
         self._power = power
         self._power_minus_two = power - 2.0
         super().__init__()
@@ -97,7 +97,7 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
                    - np.log(1.0 - np.random.random(size=dimensionality_of_momenta_array))) * self._one_over_power"""
         if dimensionality_of_particle_space == 1:
             return np.array(generalised_power_distribution.rnormp(
-                number_of_particles, sigmap=self._one_over_beta_to_powerth_root, p=self._power))
+                number_of_particles, sigmap=self._powerth_root_of_one_over_beta, p=self._power))
         return np.array([generalised_power_distribution.rnormp(dimensionality_of_particle_space,
-                                                               sigmap=self._one_over_beta_to_powerth_root,
+                                                               sigmap=self._powerth_root_of_one_over_beta,
                                                                p=self._power) for _ in range(number_of_particles)])
