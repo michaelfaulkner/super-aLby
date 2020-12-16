@@ -106,14 +106,13 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         was stored in self._stored_momenta) or initialising the motion away from the centre of the space with
         probability 1/2.
         """
-        distance_to_travel_before_observation = self._zig_zag_observation_parameter
+        distance_left_before_observation = self._zig_zag_observation_parameter
         while True:
-            direction_of_motion = - np.sign(momentum)
             displacement_magnitude = self._get_uphill_displacement_magnitude() + abs(momentum)
-            if distance_to_travel_before_observation < displacement_magnitude:
-                return momentum + distance_to_travel_before_observation * direction_of_motion
-            distance_to_travel_before_observation -= displacement_magnitude
-            momentum += displacement_magnitude * direction_of_motion
+            if distance_left_before_observation < displacement_magnitude:
+                return momentum - distance_left_before_observation * np.sign(momentum)
+            distance_left_before_observation -= displacement_magnitude
+            momentum -= displacement_magnitude * np.sign(momentum)
 
     def _get_uphill_displacement_magnitude(self):
         return (self._minus_power_over_beta * np.log(1.0 - np.random.random())) ** self._one_over_power
