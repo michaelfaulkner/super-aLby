@@ -2,7 +2,7 @@
 from .kinetic_energy import KineticEnergy
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
-from model_settings import beta, dimensionality_of_particle_space, number_of_particles
+from model_settings import beta, dimensionality_of_momenta_array, dimensionality_of_particle_space
 import logging
 import numpy as np
 
@@ -12,7 +12,7 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
     This class implements the exponential-power kinetic energy K = sum(p[i] ** power / power)
     """
 
-    def __init__(self, power: float = 2.0, zig_zag_observation_parameter: float = 20.0):
+    def __init__(self, power: float = 2.0, zig_zag_observation_parameter: float = 10.0):
         """
         The constructor of the ExponentialPowerKineticEnergy class.
 
@@ -44,13 +44,7 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         self._power_minus_two = power - 2.0
         self._minus_power_over_beta = - power / beta
         self._one_over_power = 1.0 / power
-        if dimensionality_of_particle_space == 1:
-            self._stored_momenta = np.array([[1.0e-3 * np.random.choice((-1.0, 1.0)), np.random.choice((-1.0, 1.0))]
-                                             for _ in range(number_of_particles)])
-        else:
-            self._stored_momenta = np.array([[[1.0e-3 * np.random.choice((-1.0, 1.0)), np.random.choice((-1.0, 1.0))]
-                                              for _ in range(dimensionality_of_particle_space)]
-                                             for _ in range(number_of_particles)])
+        self._stored_momenta = 1.0e-3 * np.random.choice((-1.0, 1.0), dimensionality_of_momenta_array)
         self._zig_zag_observation_parameter = zig_zag_observation_parameter
         super().__init__()
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power)
@@ -99,26 +93,27 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         if dimensionality_of_particle_space == 1:
             self._stored_momenta = np.array([self._get_single_momentum_observation(momentum)
                                              for momentum in self._stored_momenta])
-            return self._stored_momenta[:, 0]
+            return self._stored_momenta
         self._stored_momenta = np.array([[self._get_single_momentum_observation(component) for component in momentum]
                                          for momentum in self._stored_momenta])
-        return self._stored_momenta[:, :, 0]
+        return self._stored_momenta
 
     def _get_single_momentum_observation(self, momentum):
         distance_to_travel_before_observation = self._zig_zag_observation_parameter
-        if np.sign(momentum[0]) == momentum[1]:
+        if np.random.random() < 0.5:
+            direction_of_motion = np.sign(momentum)
             displacement_magnitude = self._get_uphill_displacement_magnitude()
             if distance_to_travel_before_observation < displacement_magnitude:
-                return [momentum[0] + distance_to_travel_before_observation * momentum[1], momentum[1]]
+                return momentum + distance_to_travel_before_observation * direction_of_motion
             distance_to_travel_before_observation -= displacement_magnitude
-            momentum[0] += displacement_magnitude * momentum[1]
+            momentum += displacement_magnitude * direction_of_motion
         while True:
-            direction_of_motion = - np.sign(momentum[0])
-            displacement_magnitude = self._get_uphill_displacement_magnitude() + abs(momentum[0])
+            direction_of_motion = - np.sign(momentum)
+            displacement_magnitude = self._get_uphill_displacement_magnitude() + abs(momentum)
             if distance_to_travel_before_observation < displacement_magnitude:
-                return [momentum[0] + distance_to_travel_before_observation * direction_of_motion, direction_of_motion]
+                return momentum + distance_to_travel_before_observation * direction_of_motion
             distance_to_travel_before_observation -= displacement_magnitude
-            momentum[0] += displacement_magnitude * direction_of_motion
+            momentum += displacement_magnitude * direction_of_motion
 
     def _get_uphill_displacement_magnitude(self):
         return (self._minus_power_over_beta * np.log(1.0 - np.random.random())) ** self._one_over_power
