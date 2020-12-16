@@ -39,7 +39,7 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
                     self.__class__.__name__))
         if zig_zag_observation_parameter < 0.0:
             raise ConfigurationError(
-                "Give a value not less than 0.0 for zig_zag_observation_rate {0}.".format(self.__class__.__name__))
+                "Give a value not less than 0.0 for zig_zag_observation_parameter {0}.".format(self.__class__.__name__))
         self._power = power
         self._power_minus_two = power - 2.0
         self._minus_power_over_beta = - power / beta
@@ -99,14 +99,14 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         return self._stored_momenta
 
     def _get_single_momentum_observation(self, momentum):
+        """
+        This one-dimensional zig-zag algorithm obtains an observation of a single Cartesian component of the momentum
+        of a single particle. Motion is always initialised towards the centre of the space as we found this to converge
+        more quickly than either continuing in the direction of motion at the time of the previous observation (which
+        was stored in self._stored_momenta) or initialising the motion away from the centre of the space with
+        probability 1/2.
+        """
         distance_to_travel_before_observation = self._zig_zag_observation_parameter
-        if np.random.random() < 0.5:
-            direction_of_motion = np.sign(momentum)
-            displacement_magnitude = self._get_uphill_displacement_magnitude()
-            if distance_to_travel_before_observation < displacement_magnitude:
-                return momentum + distance_to_travel_before_observation * direction_of_motion
-            distance_to_travel_before_observation -= displacement_magnitude
-            momentum += displacement_magnitude * direction_of_motion
         while True:
             direction_of_motion = - np.sign(momentum)
             displacement_magnitude = self._get_uphill_displacement_magnitude() + abs(momentum)
