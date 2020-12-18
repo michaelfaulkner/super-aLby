@@ -38,19 +38,18 @@ class SuperRelativisticZigZagKineticEnergy(ZigZagKineticEnergy):
         Raises
         ------
         base.exceptions.ConfigurationError
-            If the gamma equals 0.0.
+            If gamma is not greater than 0.0.
         base.exceptions.ConfigurationError
-            If the power equals 0.
+            If power is less than 1.0.
         base.exceptions.ConfigurationError
             If zig_zag_observation_rate is less than 0.0.
         """
-        if gamma == 0.0:
-            raise ConfigurationError("Give a value not equal to 0.0 as the tuning parameter for the relativistic "
-                                     "kinetic energy {0}.".format(self.__class__.__name__))
-        if power == 0.0:
-            raise ConfigurationError(
-                "Give a value not equal to 0.0 as the power associated with the kinetic energy {0}.".format(
-                    self.__class__.__name__))
+        if gamma <= 0.0:
+            raise ConfigurationError(f"Give a greater than 0.0 as the tuning parameter gamma for "
+                                     f"{self.__class__.__name__}.")
+        if power < 1.0:
+            raise ConfigurationError(f"Give a value not less than 1.0 as the power associated with "
+                                     f"{self.__class__.__name__}.")
         self._one_over_gamma = 1.0 / gamma
         self._root_gamma = gamma ** 0.5
         self._power_over_two = 0.5 * power

@@ -34,14 +34,13 @@ class ExponentialPowerZigZagKineticEnergy(ZigZagKineticEnergy):
         Raises
         ------
         base.exceptions.ConfigurationError
-            If the power equals 0.0.
+            If power is less than 1.0.
         base.exceptions.ConfigurationError
             If zig_zag_observation_rate is less than 0.0.
         """
-        if power == 0.0:
-            raise ConfigurationError(
-                "Give a value not equal to 0.0 as the power associated with the kinetic energy {0}.".format(
-                    self.__class__.__name__))
+        if power < 1.0:
+            raise ConfigurationError(f"Give a value not less than 1.0 as the power associated with "
+                                     f"{self.__class__.__name__}.")
         self._power = power
         self._power_minus_two = power - 2.0
         self._minus_power_over_beta = - power / beta

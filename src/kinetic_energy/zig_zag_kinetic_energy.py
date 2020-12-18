@@ -34,11 +34,11 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         Raises
         ------
         base.exceptions.ConfigurationError
-            If zig_zag_observation_rate is less than 0.0.
+            If zig_zag_observation_rate is less than 5.0.
         """
-        if zig_zag_observation_parameter < 0.0:
-            raise ConfigurationError(
-                "Give a value not less than 0.0 for zig_zag_observation_parameter {0}.".format(self.__class__.__name__))
+        if zig_zag_observation_parameter < 5.0:
+            raise ConfigurationError(f"Give a not less than 5.0 as zig_zag_observation_parameter for "
+                                     f"{self.__class__.__name__}.")
         self._stored_momenta = 1.0e-3 * np.random.choice((-1.0, 1.0), dimensionality_of_momenta_array)
         self._distance_between_zig_zag_observations = zig_zag_observation_parameter / beta
         super().__init__(**kwargs)
