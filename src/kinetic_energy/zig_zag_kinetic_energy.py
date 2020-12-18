@@ -125,9 +125,12 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
 
     @abstractmethod
     def _get_distance_through_uphill_region(self):
-        """
-        Returns the distance travelled (before the next zig-zag event) through the uphill part of one-dimensional
-        momentum space.
+        r"""
+        Returns the distance $|\eta|$ travelled (before the next zig-zag event) through the uphill part of
+        one-dimensional momentum space. This is calculated by inverting
+
+            $ \rand(0.0, 1.0) =
+                \exp \left[- \beta * \int_0^{\eta} \left(\frac{\partial K}{\partial p}\right)^+ dp \right] $
 
         Returns
         -------
