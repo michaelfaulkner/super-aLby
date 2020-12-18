@@ -85,7 +85,6 @@ class Mediator:
             raise ConfigurationError(f"Give a value of type bool as randomise_number_of_integration_steps in "
                                      f"{self.__class__.__name__}.")
 
-
         self._integrator = integrator_instance
         self._kinetic_energy = kinetic_energy_instance
         self._potential = potential_instance
@@ -157,8 +156,8 @@ class Mediator:
 
             if (i + 1) % self._number_of_observations_between_screen_prints_for_clock == 0:
                 current_sample_size = i + 1
-                print('%d observations drawn out of a total of %d (including equilibration observations).' %
-                      (current_sample_size, self._total_number_of_iterations))
+                print(f"{current_sample_size} observations drawn out of a total of {self._total_number_of_iterations} "
+                      f"(including equilibration observations).")
 
             if self._step_size_adaptor_is_on and i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
                 acceptance_rate = number_of_accepted_trajectories / 100.0
@@ -193,17 +192,17 @@ class Mediator:
                                  for _ in range(number_of_particles)])
 
     def _print_markov_chain_summary(self, acceptance_rate, number_of_numerical_divergences):
-        print("Metropolis-Hastings acceptance rate = %f" % acceptance_rate)
-        print("Number of numerical instabilities (relative energy increases by two orders of magnitude) = %d" %
-              number_of_numerical_divergences)
+        print(f"Metropolis-Hastings acceptance rate = {acceptance_rate}")
+        print(f"Number of numerical instabilities (relative energy increases by two orders of magnitude) = "
+              f"{number_of_numerical_divergences}")
         self._step_size /= beta
         if self._step_size_adaptor_is_on:
-            print("Initial numerical step size = %f" % self._initial_step_size)
-            print("Final numerical step size = %f" % self._step_size)
+            print(f"Initial numerical step size = {self._initial_step_size}")
+            print(f"Final numerical step size = {self._step_size}")
         else:
-            print("Numerical step size = %f" % self._step_size)
+            print(f"Numerical step size = {self._step_size}")
         if self._randomise_number_of_integration_steps:
-            print("Max number of integration steps = %d; number of integration steps was randomised." %
-                  self._max_number_of_integration_steps)
+            print(f"Max number of integration steps = {self._max_number_of_integration_steps}; number of integration "
+                  f"steps was randomised.")
         else:
-            print("Number of integration steps = %d" % self._max_number_of_integration_steps)
+            print(f"Number of integration steps = {self._max_number_of_integration_steps}")

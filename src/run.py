@@ -28,11 +28,11 @@ def main(argv: Sequence[str]) -> None:
     args = parse_options(argv)
     logger = set_up_logging(args)
 
-    logger.info("Run identification hash: {0}".format(get_uuid()))
-    logger.info("Underlying platform (determined via platform.platform(aliased=True): {0}"
-                .format(platform.platform(aliased=True)))
+    logger.info(f"Run identification hash: {get_uuid()}")
+    logger.info(f"Underlying platform (determined via platform.platform(aliased=True): "
+                f"{platform.platform(aliased=True)}")
 
-    print_and_log(logger, "Setting up the run based on the configuration file {0}.".format(args.config_file))
+    print_and_log(logger, f"Setting up the run based on the configuration file {args.config_file}.")
     config = read_config(args.config_file)
     integrator = factory.build_from_config(config, to_camel_case(config.get("Mediator", "integrator")), "integrator")
     kinetic_energy = factory.build_from_config(config, to_camel_case(config.get("Mediator", "kinetic_energy")),
@@ -53,12 +53,12 @@ def main(argv: Sequence[str]) -> None:
 
     print_and_log(logger, "Running the post-run methods.")
     sampler.output_sample(sample)
-    print_and_log(logger, "Runtime of the simulation: --- %s seconds ---" % (end_time - start_time))
+    print_and_log(logger, f"Runtime of the simulation: --- {end_time - start_time} seconds ---")
 
 
 def print_start_message():
     """Print the start message which includes the copyright."""
-    print("super-aLby (version {0}) - a Python application for super-relativistic Monte Carlo".format(version))
+    print(f"super-aLby (version {version}) - a Python application for super-relativistic Monte Carlo")
     print("Copyright (C) 2021 The super-aLby organisation")
 
 
