@@ -37,9 +37,8 @@ class GinzburgLandauPotential(Potential):
             If dimensionality_of_particle_space does not equal 1.
         """
         if dimensionality_of_particle_space != 1:
-            raise ConfigurationError(
-                "In the .ini file, give either None or a list of two float values for size_of_particle_space with with "
-                "the potential {0}.".format(self.__class__.__name__))
+            raise ConfigurationError(f"Give either None or a list of two float values for size_of_particle_space when "
+                                     f"using {self.__class__.__name__}.")
         self._alpha = alpha
         self._lambda_hyperparameter = lambda_hyperparameter
         self._tau = tau

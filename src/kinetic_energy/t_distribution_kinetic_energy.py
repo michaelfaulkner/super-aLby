@@ -25,13 +25,14 @@ class TDistributionKineticEnergy(KineticEnergy):
         ------
         base.exceptions.ConfigurationError
             If degrees_of_freedom is less than 1.
+        base.exceptions.ConfigurationError
+            If beta does not equal 1.0.
         """
         if degrees_of_freedom < 1:
-            raise ConfigurationError("Give a value not less than 1 as the number of degrees of freedom of the "
-                                     "t-distribution kinetic energy {0}.".format(self.__class__.__name__))
+            raise ConfigurationError(f"Give a value not less than 1 as degrees_of_freedom for "
+                                     f"{self.__class__.__name__}.")
         if beta != 1.0:
-            raise ConfigurationError("Set beta equal to 1.0 when using the t-distribution kinetic energy {0}.".format(
-                self.__class__.__name__))
+            raise ConfigurationError(f"Set beta equal to 1.0 when using {self.__class__.__name__}.")
         self._degrees_of_freedom = float(degrees_of_freedom)
         self._degrees_of_freedom_minus_one = self._degrees_of_freedom - 1.0
         self._degrees_of_freedom_plus_one = self._degrees_of_freedom + 1.0

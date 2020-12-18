@@ -18,7 +18,7 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
         The constructor of the SoftMatterPotential class.
 
         This abstract class verifies that the initial particle positions do not all coincide, as this would generate
-            divergences. No other additional functionality is provided.
+        divergences. No other additional functionality is provided.
 
         This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
         init to the next class in the MRO via super.
@@ -34,15 +34,15 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
         ------
         base.exceptions.ConfigurationError
             If the model_settings.range_of_initial_particle_positions does not give an real-valued interval for each
-                component of the initial positions of each particle.
+            component of the initial positions of each particle.
         """
         conditions = [type(component) == list and len(component) == 2 and type(bound) == float
                       for component in range_of_initial_particle_positions for bound in component]
         for condition in np.atleast_1d(conditions):
             if not condition:
-                raise ConfigurationError(
-                    "For each component of range_of_initial_particle_positions, give a list of two float values to "
-                    "avoid divergences in soft-matter models {0}.".format(self.__class__.__name__))
+                raise ConfigurationError(f"For each component of range_of_initial_particle_positions, give a list of "
+                                         f"two float values to avoid numerical divergences (due to initial "
+                                         f"configuration) in {self.__class__.__name__}.")
         super().__init__(prefactor, **kwargs)
 
     @abstractmethod

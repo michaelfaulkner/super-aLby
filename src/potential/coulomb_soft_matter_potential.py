@@ -12,16 +12,19 @@ import numpy as np
 class CoulombSoftMatterPotential(SoftMatterPotential):
     r"""
     This class implements the machine-precise Coulomb potential
-    U = k * \sum_{i > j} [
-        \sum_{\vec{n}\in\np.b{Z}^3} \erfc(\alpha |\vec{r}_{ij} + \vec{n}L|) / |\vec{r_ij} + \vec{n}\vec{L}| +
-        \frac{1}{\pi} \sum_{\vec{m} \ne 0} \frac{\exp( -\pi^2 |\vec{m}|^2 / \alpha^2 L^2)}{|\vec{m}^2|}
-            \cos(\frac{2\pi}{L}\vec{m} \cdot \vec{r}){ij})]
+
+        $ U = k * \sum_{i > j} [
+            \sum_{\vec{n}\in\np.b{Z}^3} \erfc(\alpha |\vec{r}_{ij} + \vec{n}L|) / |\vec{r_ij} + \vec{n}\vec{L}| +
+            \frac{1}{\pi} \sum_{\vec{m} \ne 0} \frac{\exp( -\pi^2 |\vec{m}|^2 / \alpha^2 L^2)}{|\vec{m}^2|}
+                \cos(\frac{2\pi}{L}\vec{m} \cdot \vec{r}){ij})] $
 
     k is a prefactor and r_ij = r_i - r_j is the separation vector between particles i and j (which we correct for
     periodic boundaries conditions). \vec{L} are the sides of the three-dimensional simulation box with periodic
     boundary conditions. As our code is only based on potential differences, we have not subtracted the self-energy term
-        U_{\rm self}(\alpha, \{ c_i \}) = \alpha \sum_i c_i^2 / \pi^{1 / 2} +  \pi (\sum_i c_i)^2 / 2 L^3 \alpha^2
-    from the potential, where \{ c_i \} \equiv \{ c_i : i = 1, \dots , N \} is the set of charge values of the
+
+        $ U_{\rm self}(\alpha, \{ c_i \}) = \alpha \sum_i c_i^2 / \pi^{1 / 2} +  \pi (\sum_i c_i)^2 / 2 L^3 \alpha^2 $
+
+    from the potential, where $ \{ c_i \} \equiv \{ c_i : i = 1, \dots , N \} $ is the set of charge values of the
     particles, all of which are currently set to unity. This class is (currently) only implemented for a
     three-dimensional cube, and for charges of value unity, both of which will be generalised in the future.
     We have chosen tin-foil boundary conditions, which is a bit of a misnomer as this refers to medium in which the
@@ -51,24 +54,24 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
         Raises
         ------
         base.exceptions.ConfigurationError
-            If the dimension does not equal three.
+            If dimensionality_of_particle_space does not equal three.
         base.exceptions.ConfigurationError
-            If the cutoff in Fourier space is negative.
+            If the convergence parameter alpha is not greater than 0.0.
         base.exceptions.ConfigurationError
-            If the cutoff in position space is negative.
+            If the cutoff in Fourier space is less than 0.
+        base.exceptions.ConfigurationError
+            If the cutoff in position space is less than 0.
         """
-        if not dimensionality_of_particle_space == 3:
-            raise ConfigurationError("The potential {0} can only be used in three-dimensional particle space."
-                                     .format(self.__class__.__name__))
+        if dimensionality_of_particle_space != 3:
+            raise ConfigurationError(f"For size_of_particle_space, give a list of length 3, where each component is a "
+                                     f"list of two float values, when using {self.__class__.__name__}.")
         if alpha <= 0.0:
-            raise ConfigurationError("The convergence factor alpha must be > 0.0 in the class {0}."
-                                     .format(self.__class__.__name__))
+            raise ConfigurationError(f"Give a value greater than 0.0 for the convergence factor alpha of "
+                                     f"{self.__class__.__name__}.")
         if fourier_cutoff < 0:
-            raise ConfigurationError("The argument fourier_cutoff must be >= 0 in the class {0}."
-                                     .format(self.__class__.__name__))
+            raise ConfigurationError(f"Give a value not less than 0 for fourier_cutoff in {self.__class__.__name__}.")
         if position_cutoff < 0:
-            raise ConfigurationError("The argument position_cutoff must be >= 0 in the class {0}."
-                                     .format(self.__class__.__name__))
+            raise ConfigurationError(f"Give a value not less than 0 for position_cutoff in {self.__class__.__name__}.")
 
         self._system_length = size_of_particle_space[0]  # todo convert to non-cubic particle spaces
         pi_sq = np.pi * np.pi

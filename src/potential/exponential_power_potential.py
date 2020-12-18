@@ -1,5 +1,6 @@
 """Module for the ExponentialPowerPotential class."""
 from .potential import Potential
+from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 import logging
 import numpy as np
@@ -22,7 +23,15 @@ class ExponentialPowerPotential(Potential):
             The power to which each component of the positions is raised.
         prefactor : float
             The prefactor k of the potential.
+
+        Raises
+        ------
+        base.exceptions.ConfigurationError
+            If power is less than 1.0.
         """
+        if power < 1.0:
+            raise ConfigurationError(f"Give a value not less than 1.0 as the power associated with "
+                                     f"{self.__class__.__name__}.")
         self._one_over_power = 1.0 / power
         self._power = power
         self._power_minus_two = power - 2
