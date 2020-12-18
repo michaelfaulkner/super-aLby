@@ -16,7 +16,7 @@ class ExponentialPowerZigZagKineticEnergy(ZigZagKineticEnergy):
     using multiple one-dimensional zig-zag algorithms to draw observations from its probability distribution.
     """
 
-    def __init__(self, power: float = 2.0, zig_zag_observation_parameter: float = 10.0):
+    def __init__(self, power: float = 2.0, zig_zag_observation_parameter: float = 5.0):
         """
         The constructor of the ExponentialPowerZigZagKineticEnergy class.
 
@@ -27,8 +27,9 @@ class ExponentialPowerZigZagKineticEnergy(ZigZagKineticEnergy):
             optimal choice that ensures robust dynamics is given by power = 1 + 1 / (a - 1) for a >= 2 and
             power = 1 + 1 / (a + 1) for a <= -1.
         zig_zag_observation_parameter : float
-            The distance travelled through one-component momentum space (during the zig-zag algorithm) between
-            observations of the one-component momentum distribution.
+            The normalised distance travelled through one-component momentum space (during the zig-zag algorithm)
+            between observations of the one-component momentum distribution. zig_zag_observation_parameter / beta is the
+            (non-normalised) distance travelled between observations.
 
         Raises
         ------

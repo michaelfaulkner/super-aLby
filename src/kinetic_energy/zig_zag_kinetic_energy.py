@@ -1,7 +1,7 @@
 """Module for the abstract ZigZagKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
 from base.exceptions import ConfigurationError
-from model_settings import dimensionality_of_momenta_array, dimensionality_of_particle_space
+from model_settings import beta, dimensionality_of_momenta_array, dimensionality_of_particle_space
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
@@ -15,7 +15,7 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
     observation of the momenta.
     """
 
-    def __init__(self, zig_zag_observation_parameter: float = 10.0, **kwargs):
+    def __init__(self, zig_zag_observation_parameter: float = 5.0, **kwargs):
         """
         The constructor of the ZigZagKineticEnergy class.
 
@@ -25,8 +25,9 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         Parameters
         ----------
         zig_zag_observation_parameter : float
-            The distance travelled through one-component momentum space (during the zig-zag algorithm) between
-            observations of the one-component momentum distribution.
+            The normalised distance travelled through one-component momentum space (during the zig-zag algorithm)
+            between observations of the one-component momentum distribution. zig_zag_observation_parameter / beta is the
+            (non-normalised) distance travelled between observations.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
 
@@ -39,7 +40,7 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
             raise ConfigurationError(
                 "Give a value not less than 0.0 for zig_zag_observation_parameter {0}.".format(self.__class__.__name__))
         self._stored_momenta = 1.0e-3 * np.random.choice((-1.0, 1.0), dimensionality_of_momenta_array)
-        self._zig_zag_observation_parameter = zig_zag_observation_parameter
+        self._distance_between_zig_zag_observations = zig_zag_observation_parameter / beta
         super().__init__(**kwargs)
 
     @abstractmethod
@@ -115,7 +116,7 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         float
             The observation of a single momentum component.
         """
-        distance_left_before_observation = self._zig_zag_observation_parameter
+        distance_left_before_observation = self._distance_between_zig_zag_observations
         while True:
             distance_to_next_event = self._get_distance_through_uphill_region() + abs(stored_momentum)
             if distance_left_before_observation < distance_to_next_event:
