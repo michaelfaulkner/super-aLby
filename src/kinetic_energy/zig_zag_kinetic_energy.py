@@ -87,8 +87,8 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
             A new momenta associated with each positions.
         """
         if dimensionality_of_particle_space == 1:
-            self._stored_momenta = np.array([self._get_single_momentum_observation(momentum)
-                                             for momentum in self._stored_momenta])
+            self._stored_momenta = np.array(
+                [self._get_single_momentum_observation(momentum) for momentum in self._stored_momenta])
             return self._stored_momenta
         self._stored_momenta = np.array([[self._get_single_momentum_observation(component) for component in momentum]
                                          for momentum in self._stored_momenta])
