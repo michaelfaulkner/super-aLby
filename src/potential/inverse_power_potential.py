@@ -1,8 +1,9 @@
 """Module for the InversePowerPotential class."""
 from .potential import Potential
+from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vector_on_ring, get_shortest_vector_on_torus
-from model_settings import dimensionality_of_momenta_array, dimensionality_of_particle_space
+from model_settings import dimensionality_of_particle_space
 import logging
 import numpy as np
 
@@ -21,7 +22,14 @@ class InversePowerPotential(Potential):
             norm of each particle position vector).
         prefactor : float
             The prefactor k of the potential.
+
+        Raises
+        ------
+        base.exceptions.ConfigurationError
+            If power is less than 1.0.
         """
+        if power < 1.0:
+            raise ConfigurationError(f"Give a value not less than 1.0 as power in {self.__class__.__name__}.")
         self._one_over_power = 1.0 / power
         self._negative_power = - power
         self._negative_power_minus_two = - power - 2.0
