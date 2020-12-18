@@ -1,4 +1,5 @@
 """Module for the abstract Sampler class."""
+from base.exceptions import ConfigurationError
 from abc import ABCMeta, abstractmethod
 import numpy as np
 import os
@@ -22,7 +23,14 @@ class Sampler(metaclass=ABCMeta):
             The name of the directory into which the sample file is written at the end of the run.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
+
+        Raises
+        ------
+        base.exceptions.ConfigurationError
+            If type(output_directory) is not str.
         """
+        if type(output_directory) is not str:
+            raise ConfigurationError(f"Give a value of type str as output_directory in {self.__class__.__name__}.")
         self._output_directory = output_directory
         os.makedirs(self._output_directory, exist_ok=True)
         super().__init__(**kwargs)

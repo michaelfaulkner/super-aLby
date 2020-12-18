@@ -48,17 +48,44 @@ class Mediator:
         Raises
         ------
         base.exceptions.ConfigurationError
-            If the prefactor equals 0.
+            If number_of_equilibration_iterations is not greater than 0.
+        base.exceptions.ConfigurationError
+            If number_of_observations is not greater than 0.
+        base.exceptions.ConfigurationError
+            If initial_step_size is not greater than 0.0.
+        base.exceptions.ConfigurationError
+            If max_number_of_integration_steps is not greater than 0.
+        base.exceptions.ConfigurationError
+            If type(randomise_number_of_integration_steps) is not bool.
+        base.exceptions.ConfigurationError
+            If type(step_size_adaptor_is_on) is not bool.
+        base.exceptions.ConfigurationError
+            If type(use_metropolis_accept_reject) is not bool.
+
         """
-        if initial_step_size == 0.0:
-            raise ConfigurationError("Give a value not equal to 0 as the initial step size of the numerical integrator "
-                                     "{0}.".format(self.__class__.__name__))
-        if max_number_of_integration_steps == 0:
-            raise ConfigurationError("Give a value not equal to 0 as the maximum number of numerical integration steps "
-                                     "{0}.".format(self.__class__.__name__))
-        if number_of_observations == 0:
-            raise ConfigurationError("Give a value not equal to 0 as the number of observations of target distribution "
-                                     "{0}.".format(self.__class__.__name__))
+        if number_of_equilibration_iterations <= 0:
+            raise ConfigurationError(f"Give a value greater than 0 as number_of_equilibration_iterations in "
+                                     f"{self.__class__.__name__}.")
+        if number_of_observations <= 0:
+            raise ConfigurationError(f"Give a value greater than 0 as number_of_observations in "
+                                     f"{self.__class__.__name__}.")
+        if initial_step_size <= 0.0:
+            raise ConfigurationError(f"Give a value greater than 0.0 as initial_step_size in "
+                                     f"{self.__class__.__name__}.")
+        if max_number_of_integration_steps <= 0:
+            raise ConfigurationError(f"Give a value greater than 0 as max_number_of_integration_steps in "
+                                     f"{self.__class__.__name__}.")
+        if type(randomise_number_of_integration_steps) is not bool:
+            raise ConfigurationError(f"Give a value of type bool as randomise_number_of_integration_steps in "
+                                     f"{self.__class__.__name__}.")
+        if type(step_size_adaptor_is_on) is not bool:
+            raise ConfigurationError(f"Give a value of type bool as randomise_number_of_integration_steps in "
+                                     f"{self.__class__.__name__}.")
+        if type(use_metropolis_accept_reject) is not bool:
+            raise ConfigurationError(f"Give a value of type bool as randomise_number_of_integration_steps in "
+                                     f"{self.__class__.__name__}.")
+
+
         self._integrator = integrator_instance
         self._kinetic_energy = kinetic_energy_instance
         self._potential = potential_instance

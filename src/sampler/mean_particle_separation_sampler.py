@@ -25,15 +25,21 @@ class MeanParticleSeparationSampler(Sampler):
         ----------
         output_directory : str
             The filename onto which the sample is written at the end of the run.
+
+        Raises
+        ------
+        base.exceptions.ConfigurationError
+            If dimensionality_of_particle_space is not greater than 1.
+        base.exceptions.ConfigurationError
+            If dimensionality_of_particle_space does not equal 1.
         """
-        if dimensionality_of_particle_space == 1:
-            raise ConfigurationError("Cannot use {0} when size_of_particle_space is one dimensional (i.e., when it is "
-                                     "equal to None or a float).".format(self.__class__.__name__))
+        if dimensionality_of_particle_space <= 1:
+            raise ConfigurationError(f"For size_of_particle_space, give a list of length greater than 1, where each "
+                                     f"component is a list of two float values, when using {self.__class__.__name__}.")
         for component in np.atleast_1d(size_of_particle_space):
             if component is None:
-                raise ConfigurationError(
-                    "All components of size_of_particle_space must be floats when using {0}.".format(
-                        self.__class__.__name__))
+                raise ConfigurationError(f"Give a float for each component of size_of_particle_space in "
+                                         f"{self.__class__.__name__}.")
         super().__init__(output_directory)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            output_directory=output_directory)
