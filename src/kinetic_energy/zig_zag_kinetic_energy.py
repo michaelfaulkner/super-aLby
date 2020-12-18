@@ -1,57 +1,51 @@
-"""Module for the ExponentialPowerKineticEnergy class."""
+"""Module for the abstract ZigZagKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
 from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
-from model_settings import beta, dimensionality_of_momenta_array, dimensionality_of_particle_space
-import logging
+from model_settings import dimensionality_of_momenta_array, dimensionality_of_particle_space
+from abc import ABCMeta, abstractmethod
 import numpy as np
 
 
-class ExponentialPowerKineticEnergy(KineticEnergy):
+class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
     """
-    This class implements the exponential-power kinetic energy K = sum(p[i] ** power / power)
+    Abstract class for kinetic energies that use multiple one-dimensional zig-zag algorithms to draw observations from
+    its probability distribution.
+
+    A general kinetic-energy class provides the function itself, its gradient, and the method for drawing a new
+    observation of the momenta.
     """
 
-    def __init__(self, power: float = 2.0, zig_zag_observation_parameter: float = 10.0):
+    def __init__(self, zig_zag_observation_parameter: float = 10.0, **kwargs):
         """
-        The constructor of the ExponentialPowerKineticEnergy class.
+        The constructor of the ZigZagKineticEnergy class.
+
+        This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
+        init to the next class in the MRO via super.
 
         Parameters
         ----------
-        power : float
-            The power to which each momenta component is raised. For potentials with leading order term |x|^a, the
-            optimal choice that ensures robust dynamics is given by power = 1 + 1 / (a - 1) for a >= 2 and
-            power = 1 + 1 / (a + 1) for a <= -1.
         zig_zag_observation_parameter : float
             The distance travelled through one-component momentum space (during the zig-zag algorithm) between
             observations of the one-component momentum distribution.
+        kwargs : Any
+            Additional kwargs which are passed to the __init__ method of the next class in the MRO.
 
         Raises
         ------
         base.exceptions.ConfigurationError
-            If the power equals 0.0.
-        base.exceptions.ConfigurationError
             If zig_zag_observation_rate is less than 0.0.
         """
-        if power == 0.0:
-            raise ConfigurationError(
-                "Give a value not equal to 0.0 as the power associated with the kinetic energy {0}.".format(
-                    self.__class__.__name__))
         if zig_zag_observation_parameter < 0.0:
             raise ConfigurationError(
                 "Give a value not less than 0.0 for zig_zag_observation_parameter {0}.".format(self.__class__.__name__))
-        self._power = power
-        self._power_minus_two = power - 2.0
-        self._minus_power_over_beta = - power / beta
-        self._one_over_power = 1.0 / power
         self._stored_momenta = 1.0e-3 * np.random.choice((-1.0, 1.0), dimensionality_of_momenta_array)
         self._zig_zag_observation_parameter = zig_zag_observation_parameter
-        super().__init__()
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power)
+        super().__init__(**kwargs)
 
+    @abstractmethod
     def get_value(self, momenta):
         """
-        Returns the kinetic energy.
+        Returns the kinetic-energy function.
 
         Parameters
         ----------
@@ -61,10 +55,11 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         Returns
         -------
         float
-            The kinetic energy.
+            The kinetic-energy function.
         """
-        return self._one_over_power * np.sum(np.absolute(momenta) ** self._power)
+        raise NotImplementedError
 
+    @abstractmethod
     def get_gradient(self, momenta):
         """
         Returns the gradient of the kinetic energy.
@@ -76,14 +71,15 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
 
         Returns
         -------
-        numpy.ndarray
-            The gradient of the kinetic energy.
+        float
+            The derivative.
         """
-        return momenta * np.absolute(momenta) ** self._power_minus_two
+        raise NotImplementedError
 
     def get_momentum_observations(self):
         """
-        Return an observation of the momenta from the kinetic-energy distribution.
+        Returns an observation of the momenta from the kinetic-energy distribution using multiple one-dimensional
+        zig-zag algorithms.
 
         Returns
         -------
@@ -98,21 +94,44 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
                                          for momentum in self._stored_momenta])
         return self._stored_momenta
 
-    def _get_single_momentum_observation(self, momentum):
+    def _get_single_momentum_observation(self, stored_momentum):
         """
+        Returns an observation of a single momentum component from the kinetic-energy distribution using a
+        one-dimensional zig-zag algorithm.
+
         This one-dimensional zig-zag algorithm obtains an observation of a single Cartesian component of the momentum
         of a single particle. Motion is always initialised towards the centre of the space as we found this to converge
         more quickly than either continuing in the direction of motion at the time of the previous observation (which
         was stored in self._stored_momenta) or initialising the motion away from the centre of the space with
         probability 1/2.
+
+        Parameters
+        ----------
+        stored_momentum : float
+            A single component of the stored momentum.
+
+        Returns
+        -------
+        float
+            The observation of a single momentum component.
         """
         distance_left_before_observation = self._zig_zag_observation_parameter
         while True:
-            distance_to_next_event = self._get_distance_through_uphill_region() + abs(momentum)
+            distance_to_next_event = self._get_distance_through_uphill_region() + abs(stored_momentum)
             if distance_left_before_observation < distance_to_next_event:
-                return momentum - distance_left_before_observation * np.sign(momentum)
+                return stored_momentum - distance_left_before_observation * np.sign(stored_momentum)
             distance_left_before_observation -= distance_to_next_event
-            momentum -= distance_to_next_event * np.sign(momentum)
+            stored_momentum -= distance_to_next_event * np.sign(stored_momentum)
 
+    @abstractmethod
     def _get_distance_through_uphill_region(self):
-        return (self._minus_power_over_beta * np.log(1.0 - np.random.random())) ** self._one_over_power
+        """
+        Returns the distance travelled (before the next zig-zag event) through the uphill part of one-dimensional
+        momentum space.
+
+        Returns
+        -------
+        float
+            The distance travelled through the uphill part of one-dimensional momentum space.
+        """
+        raise NotImplementedError
