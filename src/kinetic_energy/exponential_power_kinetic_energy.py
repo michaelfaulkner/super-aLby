@@ -108,11 +108,11 @@ class ExponentialPowerKineticEnergy(KineticEnergy):
         """
         distance_left_before_observation = self._zig_zag_observation_parameter
         while True:
-            displacement_magnitude = self._get_uphill_displacement_magnitude() + abs(momentum)
-            if distance_left_before_observation < displacement_magnitude:
+            distance_to_next_event = self._get_distance_through_uphill_region() + abs(momentum)
+            if distance_left_before_observation < distance_to_next_event:
                 return momentum - distance_left_before_observation * np.sign(momentum)
-            distance_left_before_observation -= displacement_magnitude
-            momentum -= displacement_magnitude * np.sign(momentum)
+            distance_left_before_observation -= distance_to_next_event
+            momentum -= distance_to_next_event * np.sign(momentum)
 
-    def _get_uphill_displacement_magnitude(self):
+    def _get_distance_through_uphill_region(self):
         return (self._minus_power_over_beta * np.log(1.0 - np.random.random())) ** self._one_over_power
