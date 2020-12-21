@@ -48,7 +48,7 @@ class Mediator:
         Raises
         ------
         base.exceptions.ConfigurationError
-            If number_of_equilibration_iterations is not greater than 0.
+            If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
             If number_of_observations is not greater than 0.
         base.exceptions.ConfigurationError
@@ -63,8 +63,8 @@ class Mediator:
             If type(use_metropolis_accept_reject) is not bool.
 
         """
-        if number_of_equilibration_iterations <= 0:
-            raise ConfigurationError(f"Give a value greater than 0 as number_of_equilibration_iterations in "
+        if number_of_equilibration_iterations < 0:
+            raise ConfigurationError(f"Give a value not less than 0 as number_of_equilibration_iterations in "
                                      f"{self.__class__.__name__}.")
         if number_of_observations <= 0:
             raise ConfigurationError(f"Give a value greater than 0 as number_of_observations in "
