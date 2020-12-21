@@ -1,7 +1,7 @@
 """Module for the abstract ZigZagKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
 from base.exceptions import ConfigurationError
-from model_settings import beta, dimensionality_of_momenta_array, dimensionality_of_particle_space
+from model_settings import beta, dimensionality_of_momenta_array
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
@@ -113,7 +113,7 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
             return
         momentum_sign *= - 1.0
         while True:
-            distance_to_next_event = self._get_distance_through_uphill_region()
+            distance_to_next_event = self._get_distance_from_origin_to_event()
             if distance_left_before_observation < distance_to_next_event:
                 self._stored_momenta[index] = momentum_sign * distance_left_before_observation
                 break
@@ -125,10 +125,10 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
             momentum_sign *= - 1.0
 
     @abstractmethod
-    def _get_distance_through_uphill_region(self):
+    def _get_distance_from_origin_to_event(self):
         r"""
         Returns the distance $|\eta|$ travelled (before the next zig-zag event) through the uphill part of
-        one-dimensional momentum space. This is calculated by inverting
+        one-dimensional momentum space, i.e., from the origin to $\eta$. This is calculated by inverting
 
             $ \rand(0.0, 1.0) =
                 \exp \left[- \beta * \int_0^{\eta} \left(\frac{\partial K}{\partial p}\right)^+ dp \right] $
