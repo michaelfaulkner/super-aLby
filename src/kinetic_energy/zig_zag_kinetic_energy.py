@@ -107,13 +107,22 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
             Index of a single component of the stored momentum.
         """
         distance_left_before_observation = self._distance_between_zig_zag_observations
+        momentum_sign = np.sign(self._stored_momenta[index])
+        if distance_left_before_observation < abs(self._stored_momenta[index]):
+            self._stored_momenta[index] -= momentum_sign * distance_left_before_observation
+            return
+        momentum_sign *= - 1.0
         while True:
-            distance_to_next_event = self._get_distance_through_uphill_region() + abs(self._stored_momenta[index])
+            distance_to_next_event = self._get_distance_through_uphill_region()
             if distance_left_before_observation < distance_to_next_event:
-                self._stored_momenta[index] -= distance_left_before_observation * np.sign(self._stored_momenta[index])
+                self._stored_momenta[index] = momentum_sign * distance_left_before_observation
                 break
-            distance_left_before_observation -= distance_to_next_event
-            self._stored_momenta[index] -= distance_to_next_event * np.sign(self._stored_momenta[index])
+            elif distance_left_before_observation < 2.0 * distance_to_next_event:
+                self._stored_momenta[index] = momentum_sign * (distance_to_next_event -
+                                                               distance_left_before_observation)
+                break
+            distance_left_before_observation -= 2.0 * distance_to_next_event
+            momentum_sign *= - 1.0
 
     @abstractmethod
     def _get_distance_through_uphill_region(self):
