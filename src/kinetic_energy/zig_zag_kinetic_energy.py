@@ -39,8 +39,8 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         if zig_zag_observation_parameter < 5.0:
             raise ConfigurationError(f"Give a not less than 5.0 as zig_zag_observation_parameter for "
                                      f"{self.__class__.__name__}.")
-        self._stored_momenta = 1.0e-3 * np.random.choice((-1.0, 1.0), dimensionality_of_momenta_array)
         self._distance_between_zig_zag_observations = zig_zag_observation_parameter / beta
+        self._stored_momenta = 1.0e-3 * np.random.choice((-1.0, 1.0), dimensionality_of_momenta_array)
         super().__init__(**kwargs)
 
     @abstractmethod
@@ -87,15 +87,10 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         numpy.ndarray
             A new momenta associated with each positions.
         """
-        if dimensionality_of_particle_space == 1:
-            self._stored_momenta = np.array(
-                [self._get_single_momentum_observation(momentum) for momentum in self._stored_momenta])
-            return self._stored_momenta
-        self._stored_momenta = np.array([[self._get_single_momentum_observation(component) for component in momentum]
-                                         for momentum in self._stored_momenta])
+        [self._get_single_momentum_observation(index) for index, _ in np.ndenumerate(self._stored_momenta)]
         return self._stored_momenta
 
-    def _get_single_momentum_observation(self, stored_momentum):
+    def _get_single_momentum_observation(self, index):
         """
         Returns an observation of a single momentum component from the kinetic-energy distribution using a
         one-dimensional zig-zag algorithm.
@@ -108,21 +103,17 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
 
         Parameters
         ----------
-        stored_momentum : float
-            A single component of the stored momentum.
-
-        Returns
-        -------
-        float
-            The observation of a single momentum component.
+        index : float
+            Index of a single component of the stored momentum.
         """
         distance_left_before_observation = self._distance_between_zig_zag_observations
         while True:
-            distance_to_next_event = self._get_distance_through_uphill_region() + abs(stored_momentum)
+            distance_to_next_event = self._get_distance_through_uphill_region() + abs(self._stored_momenta[index])
             if distance_left_before_observation < distance_to_next_event:
-                return stored_momentum - distance_left_before_observation * np.sign(stored_momentum)
+                self._stored_momenta[index] -= distance_left_before_observation * np.sign(self._stored_momenta[index])
+                break
             distance_left_before_observation -= distance_to_next_event
-            stored_momentum -= distance_to_next_event * np.sign(stored_momentum)
+            self._stored_momenta[index] -= distance_to_next_event * np.sign(self._stored_momenta[index])
 
     @abstractmethod
     def _get_distance_through_uphill_region(self):
