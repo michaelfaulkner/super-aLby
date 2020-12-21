@@ -30,7 +30,7 @@ class InversePowerPotential(Potential):
         base.exceptions.ConfigurationError
             If power is less than 1.0.
         base.exceptions.ConfigurationError
-            If power is less than float(dimensionality_of_particle_space + 1).
+            If power is less than float(dimensionality_of_particle_space + 2).
         """
         if type(size_of_particle_space) is None:
             raise ConfigurationError(f"When using {self.__class__.__name__}, give a value either of type float or of "
@@ -38,11 +38,14 @@ class InversePowerPotential(Potential):
                                      f"size_of_particle_space in the INI section [ModelSettings].")
         if power < 1.0:
             raise ConfigurationError(f"Give a value not less than 1.0 as power in {self.__class__.__name__}.")
-        if power < float(dimensionality_of_particle_space + 1):
-            raise ConfigurationError(f"Give a value not less than the dimensionality of particle space plus one as "
-                                     f"power in {self.__class__.__name__}: if type(size_of_particle_space) is list, "
-                                     f"give a value not less than len(size_of_particle_space) + 1 as power; if "
-                                     f"type(size_of_particle_space) if float, give a value not less than 2 as power.")
+        if power < float(dimensionality_of_particle_space + 2):
+            raise ConfigurationError(f"Give a value not less than the dimensionality of particle space plus 2 as power "
+                                     f"in {self.__class__.__name__}: if type(size_of_particle_space) is list, give a "
+                                     f"value not less than len(size_of_particle_space) + 2 as power; if "
+                                     f"type(size_of_particle_space) if float, give a value not less than 3 as power. "
+                                     f"This ensures that potential at the boundaries is negligible relative to the "
+                                     f"rest of the space; otherwise, we would have to account for image potentials (as "
+                                     f"we do with the Coulomb potential.")
         self._one_over_power = 1.0 / power
         self._negative_power = - power
         self._negative_power_minus_two = - power - 2.0
