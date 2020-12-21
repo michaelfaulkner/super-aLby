@@ -3,7 +3,7 @@ from .potential import Potential
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vector_on_ring, get_shortest_vector_on_torus
-from model_settings import dimensionality_of_particle_space
+from model_settings import dimensionality_of_particle_space, size_of_particle_space
 import logging
 import numpy as np
 
@@ -26,10 +26,23 @@ class InversePowerPotential(Potential):
         Raises
         ------
         base.exceptions.ConfigurationError
+            If type(size_of_particle_space) is None.
+        base.exceptions.ConfigurationError
             If power is less than 1.0.
+        base.exceptions.ConfigurationError
+            If power is less than float(dimensionality_of_particle_space + 1).
         """
+        if type(size_of_particle_space) is None:
+            raise ConfigurationError(f"When using {self.__class__.__name__}, give a value either of type float or of "
+                                     f"type list (where the type of each of its elements is a float) as "
+                                     f"size_of_particle_space in the INI section [ModelSettings].")
         if power < 1.0:
             raise ConfigurationError(f"Give a value not less than 1.0 as power in {self.__class__.__name__}.")
+        if power < float(dimensionality_of_particle_space + 1):
+            raise ConfigurationError(f"Give a value not less than the dimensionality of particle space plus one as "
+                                     f"power in {self.__class__.__name__}: if type(size_of_particle_space) is list, "
+                                     f"give a value not less than len(size_of_particle_space) + 1 as power; if "
+                                     f"type(size_of_particle_space) if float, give a value not less than 2 as power.")
         self._one_over_power = 1.0 / power
         self._negative_power = - power
         self._negative_power_minus_two = - power - 2.0
@@ -73,9 +86,12 @@ class InversePowerPotential(Potential):
             The gradient.
         """
         if dimensionality_of_particle_space == 1:
-            return np.array([self._one_particle_gradient(get_shortest_vector_on_ring(position, 0))
-                             for position in positions])
-        return np.array([self._one_particle_gradient(get_shortest_vector_on_torus(position)) for position in positions])
+            for index, position in enumerate(positions):
+                positions[index] = self._one_particle_gradient(get_shortest_vector_on_ring(position, 0))
+            return positions
+        for index, position in enumerate(positions):
+            positions[index] = self._one_particle_gradient(get_shortest_vector_on_torus(position))
+        return positions
 
     def _one_particle_gradient(self, shortest_position_vector):
         return - shortest_position_vector * np.linalg.norm(shortest_position_vector) ** self._negative_power_minus_two
