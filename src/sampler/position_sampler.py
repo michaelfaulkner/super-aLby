@@ -38,10 +38,7 @@ class PositionSampler(Sampler, metaclass=ABCMeta):
         numpy.ndarray
             Numpy array of zeros of the required structure.
         """
-        if dimensionality_of_particle_space == 1:
-            return np.zeros((total_number_of_iterations + 1, number_of_particles))
-        else:
-            return np.zeros((total_number_of_iterations + 1, number_of_particles, dimensionality_of_particle_space))
+        return np.zeros((total_number_of_iterations + 1, number_of_particles, dimensionality_of_particle_space))
 
     @abstractmethod
     def get_observation(self, momenta, positions):

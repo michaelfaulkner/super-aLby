@@ -181,9 +181,11 @@ class Mediator:
     def _initialise_position_array():
         if dimensionality_of_particle_space == 1:
             if type(range_of_initial_particle_positions) == float:
-                return range_of_initial_particle_positions * np.ones(number_of_particles)
+                return np.array(
+                    [np.atleast_1d(range_of_initial_particle_positions) for _ in range(number_of_particles)])
             else:
-                return np.random.uniform(*range_of_initial_particle_positions, size=number_of_particles)
+                return np.array([np.atleast_1d(np.random.uniform(*range_of_initial_particle_positions))
+                                 for _ in range(number_of_particles)])
         else:
             if type(range_of_initial_particle_positions[0]) == float:
                 return np.array([range_of_initial_particle_positions for _ in range(number_of_particles)])
