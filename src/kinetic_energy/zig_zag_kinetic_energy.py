@@ -1,7 +1,7 @@
 """Module for the abstract ZigZagKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
 from base.exceptions import ConfigurationError
-from model_settings import beta, dimensionality_of_momenta_array
+from model_settings import beta, dimensionality_of_momenta_array, number_of_momenta_components
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
@@ -40,7 +40,7 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
             raise ConfigurationError(f"Give a not less than 5.0 as zig_zag_observation_parameter for "
                                      f"{self.__class__.__name__}.")
         self._distance_between_zig_zag_observations = zig_zag_observation_parameter / beta
-        self._stored_momenta = 1.0e-3 * np.random.choice((-1.0, 1.0), dimensionality_of_momenta_array)
+        self._stored_momentum_value = 1.0e-3 * np.random.choice((-1.0, 1.0))
         super().__init__(**kwargs)
 
     @abstractmethod
@@ -79,50 +79,35 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
 
     def get_momentum_observations(self):
         """
-        Returns an observation of the momenta from the kinetic-energy distribution using multiple one-dimensional
-        zig-zag algorithms.
+        Returns an observation of the momenta from the kinetic-energy distribution using number_of_momenta_components
+        one-dimensional zig-zag algorithms. In future, a parallelized C version will be preferable.
+
+        Each one-dimensional zig-zag algorithm obtains an observation of a single Cartesian component of the momentum
+        of a single particle. For simplicity, motion is always initialised from the centre of the space. Previously, we
+        found motion initialised from a its value at the previous observation converges more quickly if the motion is
+        initialised towards the centre of the space than either continuing in the direction of motion at the time of
+        the previous observation or initialising the motion away from the centre of the space with probability 1/2.
 
         Returns
         -------
         numpy.ndarray
-            A new momenta associated with each positions.
+            An array containing all new particle momenta.
         """
-        [self._get_single_momentum_observation(index) for index, _ in np.ndenumerate(self._stored_momenta)]
-        return self._stored_momenta
-
-    def _get_single_momentum_observation(self, index):
-        """
-        Returns an observation of a single momentum component from the kinetic-energy distribution using a
-        one-dimensional zig-zag algorithm.
-
-        This one-dimensional zig-zag algorithm obtains an observation of a single Cartesian component of the momentum
-        of a single particle. Motion is always initialised towards the centre of the space as we found this to converge
-        more quickly than either continuing in the direction of motion at the time of the previous observation (which
-        was stored in self._stored_momenta) or initialising the motion away from the centre of the space with
-        probability 1/2.
-
-        Parameters
-        ----------
-        index : float
-            Index of a single component of the stored momentum.
-        """
-        distance_left_before_observation = self._distance_between_zig_zag_observations
-        momentum_sign = np.sign(self._stored_momenta[index])
-        if distance_left_before_observation < abs(self._stored_momenta[index]):
-            self._stored_momenta[index] -= momentum_sign * distance_left_before_observation
-            return
-        momentum_sign *= - 1.0
-        while True:
-            distance_to_next_event = self._get_distance_from_origin_to_event()
-            if distance_left_before_observation < distance_to_next_event:
-                self._stored_momenta[index] = momentum_sign * distance_left_before_observation
-                break
-            elif distance_left_before_observation < 2.0 * distance_to_next_event:
-                self._stored_momenta[index] = momentum_sign * (distance_to_next_event -
-                                                               distance_left_before_observation)
-                break
-            distance_left_before_observation -= 2.0 * distance_to_next_event
-            momentum_sign *= - 1.0
+        momenta = np.empty(number_of_momenta_components)
+        for i in range(number_of_momenta_components):
+            distance_left_before_observation = self._distance_between_zig_zag_observations
+            momentum_sign = np.random.choice((- 1.0, 1.0))
+            while True:
+                distance_to_next_event = self._get_distance_from_origin_to_event()
+                if distance_left_before_observation < distance_to_next_event:
+                    momenta[i] = momentum_sign * distance_left_before_observation
+                    break
+                elif distance_left_before_observation < 2.0 * distance_to_next_event:
+                    momenta[i] = momentum_sign * (distance_to_next_event - distance_left_before_observation)
+                    break
+                distance_left_before_observation -= 2.0 * distance_to_next_event
+                momentum_sign *= - 1.0
+        return np.reshape(momenta, dimensionality_of_momenta_array)
 
     @abstractmethod
     def _get_distance_from_origin_to_event(self):

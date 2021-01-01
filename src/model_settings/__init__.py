@@ -24,8 +24,10 @@ else:
 
 if dimensionality_of_particle_space == 1:
     dimensionality_of_momenta_array = number_of_particles
+    number_of_momenta_components = number_of_particles
 else:
     dimensionality_of_momenta_array = (number_of_particles, dimensionality_of_particle_space)
+    number_of_momenta_components = number_of_particles * dimensionality_of_particle_space
 
 conditions_1 = (dimensionality_of_particle_space == 1 and
                 (type(range_of_initial_particle_positions) == float or
