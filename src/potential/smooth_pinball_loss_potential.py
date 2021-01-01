@@ -79,6 +79,7 @@ class SmoothPinballLossPotential(Potential):
         float
             The potential.
         """
+        positions = np.reshape(positions, tuple([positions.shape[i] for i in range(len(positions.shape) - 1)]))
         x_dot_beta = np.inner(self._x, positions)
         pinball_loss = ((self._tau - 1) * (self._y - x_dot_beta) / self._sigma + self._xi *
                         np.logaddexp(0.0, (self._y - x_dot_beta) / self._xi_dot_sigma) +
@@ -101,11 +102,13 @@ class SmoothPinballLossPotential(Potential):
         numpy.ndarray
             The gradient.
         """
+        positions = np.reshape(positions, tuple([positions.shape[i] for i in range(len(positions.shape) - 1)]))
         prior_gradient = np.array([self._power * self._lambda_hyperparameter * np.sign(component) * np.absolute(
             component) ** self._power_minus_one for component in positions])
         logistic_term = self._logistic_function((self._y - np.inner(self._x, positions)) / self._xi_dot_sigma)
         mid_term = np.array([np.inner(logistic_term, self._x[:, i]) for i in range(len(positions))])
-        return (1 - self._tau) / self._sigma * self._x_sum + 1 / self._sigma * mid_term + prior_gradient
+        return self._get_higher_dimension_array(
+            ((1 - self._tau) / self._sigma * self._x_sum + 1 / self._sigma * mid_term + prior_gradient))
 
     @staticmethod
     def _beta_function(a, b):
@@ -114,3 +117,9 @@ class SmoothPinballLossPotential(Potential):
     @staticmethod
     def _logistic_function(a):
         return np.exp(-np.logaddexp(0, -a))
+
+    @staticmethod
+    def _get_higher_dimension_array(array):
+        new_dimensionality_of_array = [component for component in array.shape]
+        new_dimensionality_of_array.append(-1)
+        return np.reshape(array, tuple(new_dimensionality_of_array))
