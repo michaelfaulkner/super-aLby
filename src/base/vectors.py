@@ -263,41 +263,19 @@ def random_vector_on_unit_sphere(dimension: int) -> List[float]:
     return vector
 
 
-def get_shortest_vector_on_torus(vector):
+def get_shortest_vectors_on_torus(vectors):
     """
-    Corrects the given vector for periodic boundaries.
+    Corrects the given vector or vectors for periodic boundaries.
 
     Parameters
     ----------
-    vector : numpy.ndarray
-        The vector; a numpy array of floats.
+    vectors : numpy.ndarray
+        The vector (if a one-dimensional numpy array composed of floats) or vectors (if a numpy array composed of numpy
+        arrays, each of which is of length dimensionality_of_particle_space and composed of floats).
 
     Returns
     -------
     numpy.ndarray
-        The vector corrected for periodic boundaries; a numpy array of floats.
+        The vector or vectors corrected for periodic boundaries; a numpy array of floats.
     """
-    for index, component in enumerate(vector):
-        vector[index] = get_shortest_vector_on_ring(component, index)
-    return vector
-
-
-def get_shortest_vector_on_ring(one_dimensional_vector, index):
-    """
-    Corrects the given one-dimensional vector for periodic boundaries.
-
-    Parameters
-    ----------
-    one_dimensional_vector : float
-        The one-dimensional vector.
-    index : int
-        If one_dimensional_vector is a component of a higher dimensional vector, one_dimensional_vector is the index
-        component of the higher dimensional vector; otherwise, index is 0.
-
-    Returns
-    -------
-    float
-        The one-dimensional vector corrected for periodic boundaries.
-    """
-    return ((one_dimensional_vector + size_of_particle_space_over_two[index]) % size_of_particle_space[index] -
-            size_of_particle_space_over_two[index])
+    return (vectors + size_of_particle_space_over_two) % size_of_particle_space - size_of_particle_space_over_two

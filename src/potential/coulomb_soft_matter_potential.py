@@ -2,7 +2,7 @@
 from .soft_matter_potential import SoftMatterPotential
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
-from base.vectors import get_shortest_vector_on_torus, permutation_3d
+from base.vectors import get_shortest_vectors_on_torus, permutation_3d
 from model_settings import dimensionality_of_particle_space, number_of_particles, size_of_particle_space
 import logging
 import math
@@ -145,7 +145,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
                 potential += (self._get_two_particle_position_space_potential(separation) +
                               self._get_two_particle_fourier_space_potential(separation))
         return potential"""
-        separation = get_shortest_vector_on_torus(positions[0] - positions[1])
+        separation = get_shortest_vectors_on_torus(positions[0] - positions[1])
         return (self._get_two_particle_position_space_potential(separation) +
                 self._get_two_particle_fourier_space_potential(separation))
 
@@ -173,7 +173,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
                                              self._get_two_particle_fourier_space_gradient(*permuted_separation))
                     gradient[i][direction] = two_particle_gradient
                     gradient[j][direction] = - two_particle_gradient"""
-        separation = get_shortest_vector_on_torus(positions[0] - positions[1])
+        separation = get_shortest_vectors_on_torus(positions[0] - positions[1])
         for direction in range(3):
             permuted_separation = permutation_3d(separation, direction)
             two_particle_gradient = (self._get_two_particle_position_space_gradient(*permuted_separation) +

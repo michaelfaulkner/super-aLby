@@ -1,10 +1,8 @@
 """Module for the ToroidalPositionSampler class."""
 from .position_sampler import PositionSampler
 from base.logging import log_init_arguments
-from base.vectors import get_shortest_vector_on_ring, get_shortest_vector_on_torus
-from model_settings import dimensionality_of_particle_space
+from base.vectors import get_shortest_vectors_on_torus
 import logging
-import numpy as np
 
 
 class ToroidalPositionSampler(PositionSampler):
@@ -45,6 +43,4 @@ class ToroidalPositionSampler(PositionSampler):
         numpy.ndarray
             The observation of the positions.
         """
-        if dimensionality_of_particle_space == 1:
-            return np.array([get_shortest_vector_on_ring(position, 0) for position in positions])
-        return np.array([get_shortest_vector_on_torus(position) for position in positions])
+        return get_shortest_vectors_on_torus(positions)

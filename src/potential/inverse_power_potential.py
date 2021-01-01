@@ -2,8 +2,7 @@
 from .potential import Potential
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
-from base.vectors import get_shortest_vector_on_ring, get_shortest_vector_on_torus
-from model_settings import dimensionality_of_particle_space
+from base.vectors import get_shortest_vectors_on_torus
 import logging
 import numpy as np
 
@@ -51,11 +50,8 @@ class InversePowerPotential(Potential):
         float
             The potential.
         """
-        if dimensionality_of_particle_space == 1:
-            return self._one_over_power * sum(
-                [abs(get_shortest_vector_on_ring(position, 0)) ** self._negative_power for position in positions])
-        return self._one_over_power * sum(
-            [np.linalg.norm(get_shortest_vector_on_torus(position)) ** self._negative_power for position in positions])
+        return self._one_over_power * np.sum(
+            np.linalg.norm(get_shortest_vectors_on_torus(positions), axis=1) ** self._negative_power)
 
     def get_gradient(self, positions):
         """
@@ -72,10 +68,5 @@ class InversePowerPotential(Potential):
         numpy.ndarray
             The gradient.
         """
-        if dimensionality_of_particle_space == 1:
-            return np.array([self._one_particle_gradient(get_shortest_vector_on_ring(position, 0))
-                             for position in positions])
-        return np.array([self._one_particle_gradient(get_shortest_vector_on_torus(position)) for position in positions])
-
-    def _one_particle_gradient(self, shortest_position_vector):
-        return - shortest_position_vector * np.linalg.norm(shortest_position_vector) ** self._negative_power_minus_two
+        toroidal_positions = get_shortest_vectors_on_torus(positions)
+        return - toroidal_positions * np.linalg.norm(toroidal_positions, axis=1) ** self._negative_power_minus_two
