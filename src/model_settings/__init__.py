@@ -1,3 +1,4 @@
+from base.exceptions import ConfigurationError
 from base.parsing import parse_options, read_config, get_value
 import numpy as np
 import sys
@@ -60,8 +61,8 @@ if size_of_particle_space is not None:
                         for i in range(len(size_of_particle_space))]
     for condition_3 in np.atleast_1d(conditions_3):
         if not condition_3:
-            raise ConfigurationError("The absolute value of all floats given within range_of_initial_particle_positions must be"
-                             " less than half the size_of_particle_space.")
+            raise ConfigurationError("The absolute value of all floats given within range_of_initial_particle_positions"
+                                     " must be less than half the size_of_particle_space.")
 
 if size_of_particle_space is not None:
     size_of_particle_space_over_two = 0.5 * np.atleast_1d(size_of_particle_space)
