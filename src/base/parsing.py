@@ -56,8 +56,15 @@ def get_value(config_file, section_name, option_name):
     except ValueError:
         pass
     value = config_file.get(section_name, option_name)
+    # todo fix the following workaround
     if value == "None":
         return None
+    if value == "[None, None]":
+        return [None, None]
+    if value == "[None, None, None]":
+        return [None, None, None]
+    if value == "[None, None, None, None]":
+        return [None, None, None, None]
     return value
 
 

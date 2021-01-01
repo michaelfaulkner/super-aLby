@@ -16,18 +16,12 @@ one_over_beta = 1.0 / beta
 one_over_root_beta = beta ** (-0.5)
 
 number_of_particle_pairs = int(number_of_particles * (number_of_particles - 1) / 2)
-
 if size_of_particle_space is None or type(size_of_particle_space) == float:
     dimensionality_of_particle_space = 1
 else:
     dimensionality_of_particle_space = len(size_of_particle_space)
-
-if dimensionality_of_particle_space == 1:
-    dimensionality_of_momenta_array = number_of_particles
-    number_of_momenta_components = number_of_particles
-else:
-    dimensionality_of_momenta_array = (number_of_particles, dimensionality_of_particle_space)
-    number_of_momenta_components = number_of_particles * dimensionality_of_particle_space
+dimensionality_of_momenta_array = (number_of_particles, dimensionality_of_particle_space)
+number_of_momenta_components = number_of_particles * dimensionality_of_particle_space
 
 conditions_1 = (dimensionality_of_particle_space == 1 and
                 (type(range_of_initial_particle_positions) == float or
@@ -47,14 +41,14 @@ conditions_2 = (1 < dimensionality_of_particle_space == len(range_of_initial_par
             raise ConfigurationError("For each component of range_of_initial_particle_positions, give a list of two float "
                              "values (the lower and upper bounds of the range) for any model or a float when fixing "
                              "each initial particle positions in Bayesian models.")"""
-if size_of_particle_space is not None:
-    if dimensionality_of_particle_space == 1:
-        if type(range_of_initial_particle_positions) == float:
-            conditions_3 = abs(range_of_initial_particle_positions) <= size_of_particle_space / 2
-        else:
-            conditions_3 = (range_of_initial_particle_positions[0] >= - size_of_particle_space / 2 and
-                            range_of_initial_particle_positions[1] <= size_of_particle_space / 2)
-    elif type(range_of_initial_particle_positions[0]) == float:
+if dimensionality_of_particle_space == 1 and size_of_particle_space is not None:
+    if type(range_of_initial_particle_positions) == float:
+        conditions_3 = abs(range_of_initial_particle_positions) <= size_of_particle_space / 2
+    else:
+        conditions_3 = (range_of_initial_particle_positions[0] >= - size_of_particle_space / 2 and
+                        range_of_initial_particle_positions[1] <= size_of_particle_space / 2)
+elif dimensionality_of_particle_space > 1 and size_of_particle_space[0] is not None:
+    if type(range_of_initial_particle_positions[0]) == float:
         conditions_3 = [abs(range_of_initial_particle_positions[i]) <= size_of_particle_space[i] / 2
                         for i in range(len(size_of_particle_space))]
     else:
@@ -66,7 +60,8 @@ if size_of_particle_space is not None:
             raise ConfigurationError("The absolute value of all floats given within range_of_initial_particle_positions"
                                      " must be less than half the size_of_particle_space.")
 
-if size_of_particle_space is not None:
+if (dimensionality_of_particle_space == 1 and size_of_particle_space is not None) or (
+        dimensionality_of_particle_space > 1 and size_of_particle_space[0] is not None):
     size_of_particle_space_over_two = 0.5 * np.atleast_1d(size_of_particle_space)
     size_of_particle_space_over_two.flags.writeable = False
 size_of_particle_space = np.atleast_1d(size_of_particle_space)
