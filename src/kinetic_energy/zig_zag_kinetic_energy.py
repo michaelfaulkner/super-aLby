@@ -40,7 +40,6 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
             raise ConfigurationError(f"Give a not less than 5.0 as zig_zag_observation_parameter for "
                                      f"{self.__class__.__name__}.")
         self._distance_between_zig_zag_observations = zig_zag_observation_parameter / beta
-        self._stored_momentum_value = 1.0e-3 * np.random.choice((-1.0, 1.0))
         super().__init__(**kwargs)
 
     @abstractmethod
@@ -83,10 +82,7 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         one-dimensional zig-zag algorithms. In future, a parallelized C version will be preferable.
 
         Each one-dimensional zig-zag algorithm obtains an observation of a single Cartesian component of the momentum
-        of a single particle. For simplicity, motion is always initialised from the centre of the space. Previously, we
-        found motion initialised from a its value at the previous observation converges more quickly if the motion is
-        initialised towards the centre of the space than either continuing in the direction of motion at the time of
-        the previous observation or initialising the motion away from the centre of the space with probability 1/2.
+        of a single particle. For simplicity, motion is always initialised from the centre of the space.
 
         Returns
         -------
