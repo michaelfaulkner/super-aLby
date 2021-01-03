@@ -11,9 +11,7 @@ import numpy as np
 class NealFunnelPotential(Potential):
     """
     This class implements the Neal's funnel potential
-        U = x[0] ** 2 / 18.0 + 9 * x[0] / 2.0 + exp(-x[0]) * np.sum(x[1:len(x)] ** 2) / 2.0
-
-    x is an n-dimensional vector of floats.
+        U = x[0] ** 2 / 18.0 + 9 * x[0] / 2.0 + exp(-x[0]) * np.sum(x[1:len(x)] ** 2) / 2.0 .
     """
 
     def __init__(self, prefactor: float = 1.0):
@@ -51,6 +49,7 @@ class NealFunnelPotential(Potential):
         float
             The potential.
         """
+        positions = np.reshape(positions, tuple([positions.shape[i] for i in range(len(positions.shape) - 1)]))
         return positions[0] ** 2 / 18.0 + 9 * positions[0] / 2.0 + (
                 math.exp(-positions[0]) * np.sum(positions[1:len(positions)] ** 2) / 2.0)
 
@@ -69,9 +68,9 @@ class NealFunnelPotential(Potential):
         numpy.ndarray
             The gradient.
         """
-        gradient = np.zeroes(len(positions))
+        positions = np.reshape(positions, tuple([positions.shape[i] for i in range(len(positions.shape) - 1)]))
+        gradient = np.zeros(len(positions))
         gradient[0] = positions[0] / 9.0 + 9 / 2.0 - (
                 math.exp(-positions[0]) * np.sum(positions[1:len(positions)] ** 2) / 2.0)
-        gradient[1:len(positions)] = 2.0 * positions[1:len(positions)] * math.exp(
-            -positions[0])
-        return gradient
+        gradient[1:len(positions)] = 2.0 * positions[1:len(positions)] * math.exp(-positions[0])
+        return self._get_higher_dimension_array(gradient)
