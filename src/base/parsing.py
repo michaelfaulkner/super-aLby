@@ -31,16 +31,6 @@ def read_config(config_file: str) -> ConfigParser:
     return config
 
 
-def get_algorithm_settings(config):
-    return (get_value(config, "AlgorithmSettings", "number_of_equilibration_iterations"),
-            get_value(config, "AlgorithmSettings", "number_of_observations"),
-            get_value(config, "AlgorithmSettings", "initial_step_size"),
-            get_value(config, "AlgorithmSettings", "max_number_of_integration_steps"),
-            get_value(config, "AlgorithmSettings", "randomise_number_of_integration_steps"),
-            get_value(config, "AlgorithmSettings", "step_size_adaptor_is_on"),
-            get_value(config, "AlgorithmSettings", "use_metropolis_accept_reject"))
-
-
 def get_value(config_file, section_name, option_name):
     try:
         return json.loads(config_file.get(section_name, option_name))  # Get lists of integers and floats
