@@ -117,9 +117,3 @@ class SmoothPinballLossPotential(Potential):
     @staticmethod
     def _logistic_function(a):
         return np.exp(-np.logaddexp(0, -a))
-
-    @staticmethod
-    def _get_higher_dimension_array(array):
-        new_dimensionality_of_array = [component for component in array.shape]
-        new_dimensionality_of_array.append(-1)
-        return np.reshape(array, tuple(new_dimensionality_of_array))
