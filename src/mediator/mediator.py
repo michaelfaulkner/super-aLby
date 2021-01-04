@@ -149,6 +149,10 @@ class Mediator(metaclass=ABCMeta):
                     self._step_size *= 0.9
                 self._number_of_accepted_trajectories = 0
 
+    def post_run_methods(self):
+        self._print_markov_chain_summary()
+        self._sampler.output_sample(self._sample)
+
     @abstractmethod
     def _get_candidate_configuration(self):
         """
@@ -165,10 +169,6 @@ class Mediator(metaclass=ABCMeta):
         self._momenta = new_momenta
         self._positions = new_positions
         self._current_potential = new_potential
-
-    def post_run_methods(self):
-        self._print_markov_chain_summary()
-        self._sampler.output_sample(self._sample)
 
     @staticmethod
     def _initialise_position_array():
