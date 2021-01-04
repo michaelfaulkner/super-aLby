@@ -112,7 +112,7 @@ class Mediator(metaclass=ABCMeta):
         self._sample[0, :] = self._sampler.get_observation(self._momenta, self._positions)
         self._current_potential = self._potential.get_value(self._positions)
         self._number_of_accepted_trajectories = 0
-        self._number_of_numerical_divergences = 0
+        self._number_of_unstable_trajectories = 0
         super().__init__(**kwargs)
 
     def generate_sample(self):
@@ -123,13 +123,12 @@ class Mediator(metaclass=ABCMeta):
             if self._randomise_number_of_integration_steps:
                 self._number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
 
-            candidate_momenta, candidate_positions = self._get_candidate_configuration()
-            candidate_potential = self._potential.get_value(candidate_positions)
+            candidate_momenta, candidate_positions, candidate_potential = self._get_candidate_configuration()
             current_energy = self._kinetic_energy.get_value(self._momenta) + self._current_potential
             energy_change = self._kinetic_energy.get_value(candidate_momenta) + candidate_potential - current_energy
 
             if energy_change / current_energy > 100.0:
-                self._number_of_numerical_divergences += 1
+                self._number_of_unstable_trajectories += 1
             if self._use_metropolis_accept_reject:
                 if energy_change < 0.0 or np.random.uniform(0, 1) < np.exp(- beta * energy_change):
                     self._update_system_state(candidate_momenta, candidate_positions, candidate_potential)
@@ -165,12 +164,14 @@ class Mediator(metaclass=ABCMeta):
 
         Returns
         -------
-        momenta : numpy.ndarray
+        candidate_momenta : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the candidate momentum of a single particle.
-        positions : numpy.ndarray
+        candidate_positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the candidate position of a single particle.
+        candidate_potential : float
+            The potential of the candidate configuration.
         """
         raise NotImplementedError
 
@@ -225,8 +226,8 @@ class Mediator(metaclass=ABCMeta):
         """Prints a summary of the completed Markov process to the screen."""
         acceptance_rate = self._number_of_accepted_trajectories / self._number_of_observations
         print(f"Metropolis-Hastings acceptance rate = {acceptance_rate}")
-        print(f"Number of numerical instabilities (relative energy increases by two orders of magnitude) = "
-              f"{self._number_of_numerical_divergences}")
+        print(f"Number of unstable numerical trajectories (defined as a relative energy increases by two orders of "
+              f"magnitude) = {self._number_of_unstable_trajectories}")
         self._step_size /= beta
         if self._step_size_adaptor_is_on:
             print(f"Initial numerical step size = {self._initial_step_size}")
