@@ -1,7 +1,9 @@
 """Module for the CoulombSoftMatterPotential class."""
 from .soft_matter_potential import SoftMatterPotential
+from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
+from model_settings import number_of_particles
 import logging
 import numpy as np
 
@@ -23,7 +25,15 @@ class LennardJonesSoftMatterPotential(SoftMatterPotential):
             The characteristic length scale of the two-particle Lennard-Jones potential.
         prefactor : float, optional
             The prefactor k of the potential.
+
+        Raises
+        ------
+        base.exceptions.ConfigurationError
+            If number_of_particles does not equal two.
         """
+        if number_of_particles != 2:
+            raise ConfigurationError(f"Give a value of 2 as the number_of_particles in [ModelSettings] when using "
+                                     f"{self.__class__.__name__} as it is currently a two-particle potential.")
         self._characteristic_length = characteristic_length
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
