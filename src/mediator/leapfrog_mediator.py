@@ -64,9 +64,8 @@ class LeapfrogMediator(Mediator):
         base.exceptions.ConfigurationError
             If type(use_metropolis_accept_reject) is not bool.
         """
-        super().__init__(kinetic_energy, potential, sampler,
-                         number_of_equilibration_iterations, number_of_observations, initial_step_size,
-                         max_number_of_integration_steps, randomise_number_of_integration_steps,
+        super().__init__(kinetic_energy, potential, sampler, number_of_equilibration_iterations, number_of_observations,
+                         initial_step_size, max_number_of_integration_steps, randomise_number_of_integration_steps,
                          step_size_adaptor_is_on, use_metropolis_accept_reject)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            kinetic_energy_instance=kinetic_energy, potential_instance=potential,
@@ -96,7 +95,7 @@ class LeapfrogMediator(Mediator):
         """
         candidate_momenta, candidate_positions = self._momenta, self._positions
         half_step_size = 0.5 * self._step_size
-        candidate_momenta -= half_step_size * self._potential.get_gradient(self._positions)
+        candidate_momenta -= half_step_size * self._potential.get_gradient(candidate_positions)
         for _ in range(self._number_of_integration_steps - 1):
             candidate_positions += self._step_size * self._kinetic_energy.get_gradient(candidate_momenta)
             candidate_momenta -= self._step_size * self._potential.get_gradient(candidate_positions)
