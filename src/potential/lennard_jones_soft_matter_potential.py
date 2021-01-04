@@ -1,4 +1,4 @@
-"""Module for the CoulombSoftMatterPotential class."""
+"""Module for the LennardJonesSoftMatterPotential class."""
 from .soft_matter_potential import SoftMatterPotential
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
@@ -15,7 +15,7 @@ class LennardJonesSoftMatterPotential(SoftMatterPotential):
 
     def __init__(self, characteristic_length: float = 0.1, prefactor: float = 1.0) -> None:
         """
-        The constructor of the CoulombSoftMatterPotential class.
+        The constructor of the LennardJonesSoftMatterPotential class.
 
         The default values are optimized so that the result has machine precision.
 
