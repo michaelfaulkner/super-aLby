@@ -20,31 +20,41 @@ def main(argv):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     config = parsing.read_config(parsing.parse_options(argv).config_file)
 
-    if config.get("LeapfrogMediator", "potential") == 'coulomb_soft_matter_potential':
-        reference_sample = np.loadtxt(
-            'output/other_convergence_tests/two_unit_charge_coulomb_particles_unit_cube_beta_2_reference_sample.csv',
-            dtype=float, delimiter=',')
-    elif config.get("LeapfrogMediator", "potential") == 'exponential_power_potential' and config.get(
-            "ExponentialPowerPotential", "power") == "4.0":
-        reference_sample = np.loadtxt(
-            'output/other_convergence_tests/fourth_exponential_power_variance_4_reference_sample.csv', dtype=float,
-            delimiter=',')
-    elif config.get("LeapfrogMediator", "kinetic_energy") == 't_distribution_kinetic_energy':
-        reference_sample = np.loadtxt('output/other_convergence_tests/gaussian_variance_1_reference_sample.csv',
-                                      dtype=float, delimiter=',')
-    else:
-        reference_sample = np.loadtxt('output/other_convergence_tests/gaussian_variance_4_reference_sample.csv',
-                                      dtype=float, delimiter=',')
+    """try:
+        if config.get("LeapfrogMediator", "potential") == 'coulomb_soft_matter_potential':
+            reference_sample = np.loadtxt(
+                'output/other_convergence_tests/two_unit_charge_coulomb_particles_unit_cube_beta_2_reference_sample.csv',
+                dtype=float, delimiter=',')
+        elif config.get("LeapfrogMediator", "potential") == 'exponential_power_potential' and config.get(
+                "ExponentialPowerPotential", "power") == "4.0":
+            reference_sample = np.loadtxt(
+                'output/other_convergence_tests/fourth_exponential_power_variance_4_reference_sample.csv', dtype=float,
+                delimiter=',')
+        elif config.get("LeapfrogMediator", "kinetic_energy") == 't_distribution_kinetic_energy':
+            reference_sample = np.loadtxt('output/other_convergence_tests/gaussian_variance_1_reference_sample.csv',
+                                          dtype=float, delimiter=',')
+        else:
+            reference_sample = np.loadtxt('output/other_convergence_tests/gaussian_variance_4_reference_sample.csv',
+                                          dtype=float, delimiter=',')
+        reference_cdf = get_cumulative_distribution(reference_sample)
+    except ValueError:
+        pass"""
+
+    reference_sample = np.loadtxt(
+        'output/srmc_in_soft_matter/lennard_jones_potential/two_lennard_jones_particles_unit_cube_beta_2_reference_sample.csv',
+        dtype=float, delimiter=',')
     reference_cdf = get_cumulative_distribution(reference_sample)
 
-    sampler = factory.build_from_config(config, strings.to_camel_case(config.get("LeapfrogMediator", "sampler")),
+    """sampler = factory.build_from_config(config, strings.to_camel_case(config.get("LeapfrogMediator", "sampler")),
                                         "sampler")
     number_of_equilibrium_iterations = parsing.get_value(config, "LeapfrogMediator",
-                                                         "number_of_equilibration_iterations")
-    sample = sampler.get_sample()
+                                                         "number_of_equilibration_iterations")"""
+
+    mediator = factory.build_from_config(config, strings.to_camel_case(config.get("Run", "mediator")), "mediator")
+    sample = mediator._sampler.get_sample()
     if type(sample[0]) != np.float64:
         sample = sample[:, 0]
-    sample_cdf = get_cumulative_distribution(sample[number_of_equilibrium_iterations + 1:])
+    sample_cdf = get_cumulative_distribution(sample[mediator._number_of_equilibration_iterations + 1:])
 
     plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
     plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-rel-mc data')
