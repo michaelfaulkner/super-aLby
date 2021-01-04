@@ -152,7 +152,7 @@ class Mediator(metaclass=ABCMeta):
                     self._step_size *= 0.9
                 self._number_of_accepted_trajectories = 0
 
-    def post_run_methods(self):
+    def post_simulation_methods(self):
         """Runs all methods that follow the Markov process."""
         self._sampler.output_sample(self._sample)
         self._print_markov_chain_summary()

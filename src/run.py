@@ -45,8 +45,8 @@ def main(argv: Sequence[str]) -> None:
     mediator.generate_sample()
     end_time = time.time()
 
-    print_and_log(logger, "Running the post-run methods.")
-    mediator.post_run_methods()
+    print_and_log(logger, "Running the post-simulation methods.")
+    mediator.post_simulation_methods()
     print_and_log(logger, f"Runtime of the simulation: --- {end_time - start_time} seconds ---")
 
 
