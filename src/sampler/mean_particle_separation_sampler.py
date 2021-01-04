@@ -29,17 +29,13 @@ class MeanParticleSeparationSampler(Sampler):
         Raises
         ------
         base.exceptions.ConfigurationError
-            If dimensionality_of_particle_space is not greater than 1.
-        base.exceptions.ConfigurationError
             If dimensionality_of_particle_space does not equal 1.
         """
-        if dimensionality_of_particle_space <= 1:
-            raise ConfigurationError(f"For size_of_particle_space, give a list of length greater than 1, where each "
-                                     f"component is a list of two float values, when using {self.__class__.__name__}.")
         for component in np.atleast_1d(size_of_particle_space):
             if component is None:
-                raise ConfigurationError(f"Give a float for each component of size_of_particle_space in "
-                                         f"{self.__class__.__name__}.")
+                raise ConfigurationError(f"Give a float for each component of size_of_particle_space in [ModelSettings]"
+                                         f" when using {self.__class__.__name__} as {self.__class__.__name__} is "
+                                         f"designed for toroidal systems.")
         super().__init__(output_directory)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            output_directory=output_directory)
