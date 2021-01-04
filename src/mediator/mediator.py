@@ -17,7 +17,7 @@ class Mediator(metaclass=ABCMeta):
                  initial_step_size: float = 0.1, max_number_of_integration_steps: int = 10,
                  randomise_number_of_integration_steps: bool = False, step_size_adaptor_is_on: bool = True,
                  use_metropolis_accept_reject: bool = True, **kwargs):
-        """
+        r"""
         The constructor of the Mediator class.
 
         This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
@@ -26,25 +26,29 @@ class Mediator(metaclass=ABCMeta):
         Parameters
         ----------
         kinetic_energy : kinetic_energy.kinetic_energy.KineticEnergy
-
+            Instance of the chosen child class of kinetic_energy.kinetic_energy.KineticEnergy.
         potential : potential.potential.Potential
-
-        sampler : from sampler.sampler.Sampler
-
+            Instance of the chosen child class of potential.potential.Potential.
+        sampler : sampler.sampler.Sampler
+            Instance of the chosen child class of sampler.sampler.Sampler.
         number_of_equilibration_iterations : int, optional
-
+            Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
-
+            Number of sample observations, i.e., the sample size. This is equal to the number of post-equilibration
+            iterations of the Markov process.
         initial_step_size : float, optional
-
+            The initial step size of the integrator.
         max_number_of_integration_steps : int, optional
-
+            The maximum number of numerical integration steps at each iteration of the Markov process.
         randomise_number_of_integration_steps : bool, optional
-
+            When True, Mediator sets the number of numerical integration steps (at each iteration of the Markov
+            process) by drawing uniformly from the set $\{ 1, 2, \dots , max_number_of_integration_steps \}$; when
+            False, the number of numerical integration steps is always max_number_of_integration_steps.
         step_size_adaptor_is_on : bool, optional
-
+            When True, the step size of the integrator is tuned during the equilibration process.
         use_metropolis_accept_reject : bool, optional
-
+            When True, the Metropolis step is used following the generation of each candidate configuration; when
+            False, all candidate configurations are accepted.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
 
@@ -150,8 +154,9 @@ class Mediator(metaclass=ABCMeta):
                 self._number_of_accepted_trajectories = 0
 
     def post_run_methods(self):
-        self._print_markov_chain_summary()
+        """Runs all methods that follow the Markov process."""
         self._sampler.output_sample(self._sample)
+        self._print_markov_chain_summary()
 
     @abstractmethod
     def _get_candidate_configuration(self):
@@ -160,18 +165,48 @@ class Mediator(metaclass=ABCMeta):
 
         Returns
         -------
-        numpy.ndarray
-            The candidate momenta and positions.
+        momenta : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the candidate momentum of a single particle.
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the candidate position of a single particle.
         """
         raise NotImplementedError
 
     def _update_system_state(self, new_momenta, new_positions, new_potential):
+        """
+        Resets the stored system state following an accepted proposal.
+
+        Parameters
+        ----------
+        new_momenta : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the momentum of a single particle.
+        new_positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle.
+        new_potential : float
+            The potential of the accepted configuration.
+        """
         self._momenta = new_momenta
         self._positions = new_positions
         self._current_potential = new_potential
 
     @staticmethod
     def _initialise_position_array():
+        """
+        Returns the initial positions array.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle, e.g., two particles
+            (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
+            particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
+            represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
+        """
         if dimensionality_of_particle_space == 1:
             if type(range_of_initial_particle_positions) == float:
                 return np.array(
@@ -187,6 +222,7 @@ class Mediator(metaclass=ABCMeta):
                                  for _ in range(number_of_particles)])
 
     def _print_markov_chain_summary(self):
+        """Prints a summary of the completed Markov process to the screen."""
         acceptance_rate = self._number_of_accepted_trajectories / self._number_of_observations
         print(f"Metropolis-Hastings acceptance rate = {acceptance_rate}")
         print(f"Number of numerical instabilities (relative energy increases by two orders of magnitude) = "

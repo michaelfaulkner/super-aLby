@@ -17,30 +17,35 @@ class LeapfrogMediator(Mediator):
                  initial_step_size: float = 0.1, max_number_of_integration_steps: int = 10,
                  randomise_number_of_integration_steps: bool = False, step_size_adaptor_is_on: bool = True,
                  use_metropolis_accept_reject: bool = True):
-        """
+        r"""
         The constructor of the LeapfrogMediator class.
 
         Parameters
         ----------
         kinetic_energy : kinetic_energy.kinetic_energy.KineticEnergy
-
+            Instance of the chosen child class of kinetic_energy.kinetic_energy.KineticEnergy.
         potential : potential.potential.Potential
-
-        sampler : from sampler.sampler.Sampler
-
+            Instance of the chosen child class of potential.potential.Potential.
+        sampler : sampler.sampler.Sampler
+            Instance of the chosen child class of sampler.sampler.Sampler.
         number_of_equilibration_iterations : int, optional
-
+            Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
-
+            Number of sample observations, i.e., the sample size. This is equal to the number of post-equilibration
+            iterations of the Markov process.
         initial_step_size : float, optional
-
+            The initial step size of the integrator.
         max_number_of_integration_steps : int, optional
-
+            The maximum number of numerical integration steps at each iteration of the Markov process.
         randomise_number_of_integration_steps : bool, optional
-
+            When True, Mediator sets the number of numerical integration steps (at each iteration of the Markov
+            process) by drawing uniformly from the set $\{ 1, 2, \dots , max_number_of_integration_steps \}$; when
+            False, the number of numerical integration steps is always max_number_of_integration_steps.
         step_size_adaptor_is_on : bool, optional
-
+            When True, the step size of the integrator is tuned during the equilibration process.
         use_metropolis_accept_reject : bool, optional
+            When True, the Metropolis step is used following the generation of each candidate configuration; when
+            False, all candidate configurations are accepted.
 
         Raises
         ------
@@ -80,8 +85,12 @@ class LeapfrogMediator(Mediator):
 
         Returns
         -------
-        numpy.ndarray
-            The candidate momenta and positions.
+        momenta: numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the candidate momentum of a single particle.
+        positions: numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the candidate position of a single particle.
         """
         candidate_momenta, candidate_positions = self._momenta, self._positions
         half_step_size = 0.5 * self._step_size
