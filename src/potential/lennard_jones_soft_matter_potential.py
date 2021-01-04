@@ -13,7 +13,7 @@ class LennardJonesSoftMatterPotential(SoftMatterPotential):
     This class implements the two-particle Lennard-Jones potential+.
     """
 
-    def __init__(self, characteristic_length: float = 0.1, prefactor: float = 1.0) -> None:
+    def __init__(self, characteristic_length: float = 1.0, prefactor: float = 1.0) -> None:
         """
         The constructor of the LennardJonesSoftMatterPotential class.
 
