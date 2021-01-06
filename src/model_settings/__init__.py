@@ -34,7 +34,7 @@ conditions_2 = (1 < dimensionality_of_particle_space == len(range_of_initial_par
                 [type(component) == list and len(component) == 2 and type(bound) == float
                  for component in range_of_initial_particle_positions for bound in component]))
 # todo fix the bug in the following commented-out code: it currently throws a ConfigurationError when
-#  coulomb_soft_matter_potential is correctly configured
+#  coulomb_potential is correctly configured
 """for condition_1 in np.atleast_1d(conditions_1):
     for condition_2 in np.atleast_1d(conditions_2):
         if not (condition_1 or condition_2):
