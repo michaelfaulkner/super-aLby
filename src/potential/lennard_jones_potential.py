@@ -9,6 +9,7 @@ import numpy as np
 
 
 class LennardJonesPotential(SoftMatterPotential):
+    # todo add functionality for many particles
     r"""
     This class implements the two-particle Lennard-Jones potential+.
     """
