@@ -25,7 +25,7 @@ conda environment.
 
 ## Using super-aLby
 
-To use super-aLby, go to the [`src`](src) directory and type `run.py <configuration file>`. The generated sample data 
+To use super-aLby, go to the [`src`](src) directory and type `python run.py <configuration file>`. The generated sample data 
 will appear in the [`output`](src/output) directory (at a location given in the configuration file). Sample analysis 
 can then be performed via scripts within the [`output`](src/output) directory.
 
