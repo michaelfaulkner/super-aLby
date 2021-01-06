@@ -1,14 +1,12 @@
 """Module for the SmoothPinballLossPotential class."""
-from .potential import Potential
-from base.exceptions import ConfigurationError
+from .one_dimensional_particle_space_potential import OneDimensionalParticleSpacePotential
 from base.logging import log_init_arguments
-from model_settings import dimensionality_of_particle_space
 import logging
 import math
 import numpy as np
 
 
-class SmoothPinballLossPotential(Potential):
+class SmoothPinballLossPotential(OneDimensionalParticleSpacePotential):
     """
     This class implements the Neal's funnel potential
         U = x[0] ** 2 / 18.0 + 9 * x[0] / 2.0 + exp(-x[0]) * np.sum(x[1:len(x)] ** 2) / 2.0
@@ -39,15 +37,7 @@ class SmoothPinballLossPotential(Potential):
             Power used in prior.
         prefactor : float
             The prefactor k of the potential.
-
-        Raises
-        ------
-        base.exceptions.ConfigurationError
-            If dimensionality_of_particle_space does not equal 1.
         """
-        if dimensionality_of_particle_space != 1:
-            raise ConfigurationError(f"Give either None or a list of two float values for size_of_particle_space when "
-                                     f"using {self.__class__.__name__}.")
         self._tau = tau
         self._sigma = sigma
         self._xi = xi

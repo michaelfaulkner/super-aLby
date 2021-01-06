@@ -1,14 +1,12 @@
 """Module for the NealFunnelPotential class."""
-from .potential import Potential
-from base.exceptions import ConfigurationError
+from .one_dimensional_particle_space_potential import OneDimensionalParticleSpacePotential
 from base.logging import log_init_arguments
-from model_settings import dimensionality_of_particle_space
 import logging
 import math
 import numpy as np
 
 
-class NealFunnelPotential(Potential):
+class NealFunnelPotential(OneDimensionalParticleSpacePotential):
     """
     This class implements the Neal's funnel potential
         U = x[0] ** 2 / 18.0 + 9 * x[0] / 2.0 + exp(-x[0]) * np.sum(x[1:len(x)] ** 2) / 2.0 .
@@ -22,15 +20,7 @@ class NealFunnelPotential(Potential):
         ----------
         prefactor : float
             The prefactor k of the potential.
-
-        Raises
-        ------
-        base.exceptions.ConfigurationError
-            If dimensionality_of_particle_space does not equal 1.
         """
-        if dimensionality_of_particle_space != 1:
-            raise ConfigurationError(f"Give either None or a list of two float values for size_of_particle_space when "
-                                     f"using {self.__class__.__name__}.")
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
