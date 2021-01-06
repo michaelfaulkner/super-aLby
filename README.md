@@ -10,15 +10,18 @@ super-relativistic Monte Carlo (though we did not name it).
 To install super-aLby, clone this repository.
 
 The super-aLby Python application was written using cPython 3.8 but is likely to support any Python version >= 3.6 
-(though we need to check this). super-aLby depends on `numpy`. Some of the sample-analysis code (i.e., scripts 
-contained in the [`output`](src/output) directory) also depends on `matplotlib` and `rpy2`. 
-[`markov_chain_diagnostics.py`](src/output/markov_chain_diagnostics.py) depends on the R package `LaplacesDemon`, which 
-must be installed in R: download [the relevant binary](https://cran.r-project.org/web/packages/LaplacesDemon/) at CRAN 
-and then enter `R CMD INSTALL <binary location>` in your terminal.
+(though we need to check this). super-aLby depends on [`numpy`](https://numpy.org). Some of the sample-analysis code 
+(i.e., scripts contained in the [`output`](src/output) directory) also depends on[`matplotlib`](
+https://matplotlib.org) and [`rpy2`](https://rpy2.github.io). [`markov_chain_diagnostics.py`](
+src/output/markov_chain_diagnostics.py) depends on the R package [`LaplacesDemon`](
+https://cran.r-project.org/web/packages/LaplacesDemon/), which must be installed in R: download [the relevant binary](
+https://cran.r-project.org/web/packages/LaplacesDemon/) at CRAN and then run `R CMD INSTALL <binary location>` in your 
+terminal.
 
-To manage external Python packages, we use conda environments via the 
-[miniconda distribution](https://docs.conda.io/en/latest/miniconda.html). However, we found `rpy2` to be buggy when 
-installed via conda. Instead, we `pip install rpy2` from within the project's conda environment.
+To manage external Python packages, we use [conda](https://docs.conda.io/projects/conda/en/latest/) environments via 
+the [miniconda distribution](https://docs.conda.io/en/latest/miniconda.html). However, we found [`rpy2`](
+https://rpy2.github.io) to be buggy when installed via conda. Instead, we `pip install rpy2` from within the project's 
+conda environment.
 
 ## Using super-aLby
 
@@ -41,8 +44,8 @@ script also takes optional arguments. These are:
 
 A configuration file is composed of sections that correspond to either the [`run.py`](src/run.py) file, the model 
 settings (contained in [`model_settings/__init__.py`](src/model_settings/__init__.py)), or a class of the super-aLby 
-application. The only required sections for the run script are those corresponding to the [`run.py`](src/run.py) file 
-and the model settings:
+application. Each configuration file must contain `[Run]` and `[ModelSettings]` sections, which correspond to the 
+[`run.py`](src/run.py) file and the [model settings](src/model_settings/__init__.py):
 
 ```INI
 [Run]
@@ -69,14 +72,16 @@ We use [`leapfrog_mediator`](src/mediator/leapfrog_mediator.py) for models on Eu
 [`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py) for models on compact subspaces of Euclidean 
 space (with toroidal geometry).
 
-The ```[ModelSettings]``` section specifies the *NVT* physical parameters of the simulation and the range of the 
+The ```[ModelSettings]``` section specifies both the *NVT* physical parameters of the simulation and the range of the 
 initial particle positions. `beta` is a `float` that represents the inverse temperature. `number_of_particles` is an 
-`int` that represents number of particles. `size_of_particle_space` is either `None`, a `float` or a Python `list` of 
-`None` or `float` values, each of which would represent the size and dimensions of the spaces on which each particle 
-exits (`None` corresponds to the whole real line). `range_of_initial_particle_positions` is either a `float`, a Python 
-`list` of `float` values  or a Python `list` of `float` values, each of which would represent the range of the initial 
-positions of each particle. The above example represents a two-particle system at `beta = 1.0`, where each particle 
-exists on the entire real line and has initial position *1.0*, while
+`int` that represents number of particles. `size_of_particle_space` represents the size and dimensions of the spaces on 
+which each particle exits and is either `None`, a `float` or a Python `list` of `None` or `float` values (`None` 
+corresponds to the whole real line). `range_of_initial_particle_positions` represents the range of the initial position 
+of each particle and is either a `float`, a one-dimensional Python `list` of length 
+`len(range_of_initial_particle_positions)` and composed of `float` values, or a two-dimensional Python `list` of size 
+`(len(range_of_initial_particle_positions), 2)` and composed of `float` values. The above example represents a 
+two-particle system at `beta = 1.0`, where each particle exists on the entire real line and has initial position *1.0*, 
+while
 
 ```INI
 [ModelSettings]
@@ -89,10 +94,26 @@ range_of_initial_particle_positions = [[-0.5, 0.5], [-0.5, 0.5]]
 represents a four-particle system at `beta = 2.0`, where each particle exists on the toroidal compact subspace (of 
 volume *1.0 x 1.0*) of two-dimensional Euclidean space and takes an initial position anywhere on that subspace.
 
-The following sections of the configuration file choose the parameters in the `__init__` methods of the mediator. Each 
+The remaining sections of the configuration file correspond to the different classes chosen for the simulation. Each 
 section contains pairs of properties and values. The property corresponds to the name of the argument in the `__init__` 
-method of the given class, and its value provides the arguments. Properties and values should be given in snake_case; 
-sections should be given in CamelCase. If a value corresponds to the instance of another class, e.g. `potential = 
-exponential_power_potential`, then a corresponding section is required, e.g., `[ExponentialPowerPotential]`.
+method of the corresponding class, and its value provides the argument. Properties and values should be given in 
+snake_case; sections should be given in CamelCase. If a value corresponds to the instance of another class, then a 
+corresponding section is required. In our example, the first of the remaining sections is therefore of the form
 
-Some example configuration files are located in the [`src/config_files`](src/config_files) directory.
+```INI
+[SomeMediator]
+potential = some_potential
+kinetic_energy = some_kinetic_energy
+sampler = some_sampler
+...
+```
+
+where the ellipsis accounts for further pairs of properties and values that do not correspond to other classes. This 
+configuration file therefore also requires the sections `[SomePotential]`, `[SomeKineticEnergy]` and `[SomeSampler]`. 
+
+Some example configuration files are located in the [`src/config_files`](src/config_files) directory. To get a feel for 
+the application, run `python run.py 
+config_files/other_convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini`, 
+before running `python output/test_convergence 
+config_files/other_convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini` 
+once the simulation has finished. 
