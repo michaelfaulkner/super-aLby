@@ -10,7 +10,7 @@ import numpy as np
 
 
 class CoulombPotential(SoftMatterPotential):
-    # todo add functionality for non-like charges and many particles
+    # todo debug then add functionality for non-like charges and many particles
     r"""
     This class implements the machine-precise Coulomb potential
 
