@@ -114,6 +114,6 @@ configuration file therefore also requires the sections `[SomePotential]`, `[Som
 Some example configuration files are located in the [`src/config_files`](src/config_files) directory. To get a feel for 
 the application, run `python run.py 
 config_files/other_convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini`, 
-before running `python output/test_convergence 
+before running `python output/test_convergence.py 
 config_files/other_convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini` 
 once the simulation has finished. 
