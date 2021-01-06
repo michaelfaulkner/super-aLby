@@ -10,6 +10,7 @@ import numpy as np
 
 
 class CoulombPotential(SoftMatterPotential):
+    # todo add functionality for non-like charges and many particles
     r"""
     This class implements the machine-precise Coulomb potential
 
@@ -137,7 +138,6 @@ class CoulombPotential(SoftMatterPotential):
         float
             The potential.
         """
-        # todo add functionality for non-like charges and many particles
         separation = get_shortest_vectors_on_torus(positions[0] - positions[1])
         return (self._get_two_particle_position_space_potential(separation) +
                 self._get_two_particle_fourier_space_potential(separation))
@@ -160,8 +160,8 @@ class CoulombPotential(SoftMatterPotential):
         separation = get_shortest_vectors_on_torus(positions[0] - positions[1])
         for direction in range(3):
             permuted_separation = permutation_3d(separation, direction)
-            two_particle_gradient = (self._get_two_particle_position_space_gradient(*permuted_separation) +
-                                     self._get_two_particle_fourier_space_gradient(*permuted_separation))
+            two_particle_gradient = (self._get_two_particle_position_space_gradient(permuted_separation) +
+                                     self._get_two_particle_fourier_space_gradient(permuted_separation))
             gradient[0][direction] = two_particle_gradient
             gradient[1][direction] = - two_particle_gradient
         return gradient
@@ -233,8 +233,9 @@ class CoulombPotential(SoftMatterPotential):
 
         return two_particle_fourier_space_potential
 
-    def _get_two_particle_position_space_gradient(self, separation_x, separation_y, separation_z):
+    def _get_two_particle_position_space_gradient(self, separation):
         """Returns the position-space part of the Ewald sum of the two-particle gradient."""
+        separation_x, separation_y, separation_z = separation
         negative_two_particle_position_space_gradient = 0.0
 
         for k in range(- self._position_cutoff, self._position_cutoff + 1):
@@ -253,8 +254,9 @@ class CoulombPotential(SoftMatterPotential):
 
         return negative_two_particle_position_space_gradient
 
-    def _get_two_particle_fourier_space_gradient(self, separation_x, separation_y, separation_z):
+    def _get_two_particle_fourier_space_gradient(self, separation):
         """Returns the Fourier-space part of the Ewald sum of the two-particle gradient."""
+        separation_x, separation_y, separation_z = separation
         negative_two_particle_fourier_space_gradient = 0.0
 
         delta_cos_x = np.cos(self.two_pi_over_length * separation_x)
