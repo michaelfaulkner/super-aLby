@@ -1,4 +1,4 @@
-"""Module for the CoulombSoftMatterPotential class."""
+"""Module for the CoulombPotential class."""
 from .soft_matter_potential import SoftMatterPotential
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
@@ -9,7 +9,7 @@ import math
 import numpy as np
 
 
-class CoulombSoftMatterPotential(SoftMatterPotential):
+class CoulombPotential(SoftMatterPotential):
     r"""
     This class implements the machine-precise Coulomb potential
 
@@ -36,7 +36,7 @@ class CoulombSoftMatterPotential(SoftMatterPotential):
     def __init__(self, alpha: float = 3.45, fourier_cutoff: int = 6, position_cutoff: int = 2,
                  prefactor: float = 1.0) -> None:
         """
-        The constructor of the CoulombSoftMatterPotential class.
+        The constructor of the CoulombPotential class.
 
         The default values are optimized so that the result has machine precision.
 
