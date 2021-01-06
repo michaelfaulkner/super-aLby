@@ -8,7 +8,7 @@ import numpy as np
 
 class SoftMatterPotential(Potential, metaclass=ABCMeta):
     """
-    Abstract class for soft-matter potentials used in the algorithm code.
+    Abstract class for soft-matter potentials, which are potentials that are functions of particle-separation vectors.
 
     A general potential class provides the function itself and its gradient.
     """
