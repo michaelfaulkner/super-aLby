@@ -11,7 +11,7 @@ To install super-aLby, clone this repository.
 
 The super-aLby Python application was written using cPython 3.8 but is likely to support any Python version >= 3.6 
 (though we need to check this). super-aLby depends on [`numpy`](https://numpy.org). Some of the sample-analysis code 
-(i.e., scripts contained in the [`output`](src/output) directory) also depends on[`matplotlib`](
+(i.e., scripts contained in the [`output`](src/output) directory) also depends on [`matplotlib`](
 https://matplotlib.org) and [`rpy2`](https://rpy2.github.io). [`markov_chain_diagnostics.py`](
 src/output/markov_chain_diagnostics.py) depends on the R package [`LaplacesDemon`](
 https://cran.r-project.org/web/packages/LaplacesDemon/), which must be installed in R: download [the relevant binary](
@@ -25,12 +25,13 @@ conda environment.
 
 ## Using super-aLby
 
+To use super-aLby, go to the [`src`](src) directory and type `run.py <configuration file>`. The generated sample data 
+will appear in the [`output`](src/output) directory (at an address given in the configuration file). Sample analysis 
+can then be performed via scripts within the [`output`](src/output) directory.
+
 The user interface for each run of the super-aLby application consists of a configuration file that is an argument of 
 the [`run.py`](src/run.py) script, which is located in the [`src`](src) directory. Configuration files should follow the 
-[INI-file format](https://en.wikipedia.org/wiki/INI_file). To use super-aLby, go to the [`src`](src) directory and type 
-`run.py <address of configuration file>`. The generated sample data will appear in the [`output`](src/output) directory 
-(at an address given in the configuration file). Sample analysis can then be performed via scripts within the
-[`output`](src/output) directory.
+[INI-file format](https://en.wikipedia.org/wiki/INI_file).
 
 The [`run.py`](src/run.py) script expects the path to the configuration file as the first positional argument. The 
 script also takes optional arguments. These are:
