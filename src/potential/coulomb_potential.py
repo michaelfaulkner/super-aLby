@@ -247,12 +247,11 @@ class CoulombPotential(SoftMatterPotential):
                     vector_x = separation_x + i * self._system_length
                     vector_sq = vector_x * vector_x + vector_y_sq + vector_z_sq
                     vector_norm = vector_sq ** 0.5
-                    # todo change to -= below; change return; change to two_particle_position_space_gradient
-                    negative_two_particle_position_space_gradient += (vector_x * (
+                    negative_two_particle_position_space_gradient -= (vector_x * (
                             self._two_alpha_over_root_pi * np.exp(- self._alpha_sq * vector_sq) + math.erfc(
                                 self._alpha * vector_norm) / vector_norm) / vector_sq)
 
-        return - negative_two_particle_position_space_gradient
+        return negative_two_particle_position_space_gradient
 
     def _get_two_particle_fourier_space_gradient(self, separation_x, separation_y, separation_z):
         """Returns the Fourier-space part of the Ewald sum of the two-particle gradient."""
@@ -277,8 +276,7 @@ class CoulombPotential(SoftMatterPotential):
             for j in range(0, cutoff_y + 1):
                 cutoff_z = int((self._fourier_cutoff_sq - i * i - j * j) ** 0.5)
                 for k in range(0, cutoff_z + 1):
-                    # todo change to -= below; change return; change to two_particle_fourier_space_gradient
-                    negative_two_particle_fourier_space_gradient += self._fourier_array[i][j][k] * sin_x * cos_y * cos_z
+                    negative_two_particle_fourier_space_gradient -= self._fourier_array[i][j][k] * sin_x * cos_y * cos_z
 
                     if k != cutoff_z:
                         store_cos_z = cos_z
@@ -299,4 +297,4 @@ class CoulombPotential(SoftMatterPotential):
                         cos_z = 1.0
                         sin_z = 0.0
 
-        return - negative_two_particle_fourier_space_gradient
+        return negative_two_particle_fourier_space_gradient
