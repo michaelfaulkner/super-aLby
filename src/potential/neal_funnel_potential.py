@@ -20,6 +20,11 @@ class NealFunnelPotential(OneDimensionalParticleSpacePotential):
         ----------
         prefactor : float
             The prefactor k of the potential.
+
+        Raises
+        ------
+        base.exceptions.ConfigurationError
+            If dimensionality_of_particle_space does not equal 1.
         """
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)

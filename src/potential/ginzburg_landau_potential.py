@@ -28,6 +28,11 @@ class GinzburgLandauPotential(OneDimensionalParticleSpacePotential):
             Number of lattice sites in each Cartesian direction (cubic lattice)
         prefactor : float
             The prefactor k of the potential.
+
+        Raises
+        ------
+        base.exceptions.ConfigurationError
+            If dimensionality_of_particle_space does not equal 1.
         """
         self._alpha = alpha
         self._lambda_hyperparameter = lambda_hyperparameter

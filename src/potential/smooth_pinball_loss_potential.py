@@ -37,6 +37,11 @@ class SmoothPinballLossPotential(OneDimensionalParticleSpacePotential):
             Power used in prior.
         prefactor : float
             The prefactor k of the potential.
+
+        Raises
+        ------
+        base.exceptions.ConfigurationError
+            If dimensionality_of_particle_space does not equal 1.
         """
         self._tau = tau
         self._sigma = sigma
