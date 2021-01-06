@@ -30,6 +30,9 @@ class LennardJonesPotential(SoftMatterPotential):
         Raises
         ------
         base.exceptions.ConfigurationError
+            If model_settings.range_of_initial_particle_positions does not give an real-valued interval for each
+            component of the initial positions of each particle.
+        base.exceptions.ConfigurationError
             If number_of_particles does not equal two.
         """
         if number_of_particles != 2:

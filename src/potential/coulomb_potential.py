@@ -55,6 +55,9 @@ class CoulombPotential(SoftMatterPotential):
         Raises
         ------
         base.exceptions.ConfigurationError
+            If model_settings.range_of_initial_particle_positions does not give an real-valued interval for each
+            component of the initial positions of each particle.
+        base.exceptions.ConfigurationError
             If dimensionality_of_particle_space does not equal three.
         base.exceptions.ConfigurationError
             If the convergence parameter alpha is not greater than 0.0.

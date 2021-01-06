@@ -33,7 +33,7 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
         Raises
         ------
         base.exceptions.ConfigurationError
-            If the model_settings.range_of_initial_particle_positions does not give an real-valued interval for each
+            If model_settings.range_of_initial_particle_positions does not give an real-valued interval for each
             component of the initial positions of each particle.
         """
         conditions = [type(component) == list and len(component) == 2 and type(bound) == float
