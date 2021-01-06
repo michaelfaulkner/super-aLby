@@ -1,13 +1,11 @@
 """Module for the GinzburgLandauPotential class."""
-from .potential import Potential
-from base.exceptions import ConfigurationError
+from .one_dimensional_particle_space_potential import OneDimensionalParticleSpacePotential
 from base.logging import log_init_arguments
-from model_settings import dimensionality_of_particle_space
 import logging
 import numpy as np
 
 
-class GinzburgLandauPotential(Potential):
+class GinzburgLandauPotential(OneDimensionalParticleSpacePotential):
     """
     This class implements the Ginzburg-Landau potential with one-dimensional order parameter on a three-dimensional
         periodic cubic lattice.
@@ -30,15 +28,7 @@ class GinzburgLandauPotential(Potential):
             Number of lattice sites in each Cartesian direction (cubic lattice)
         prefactor : float
             The prefactor k of the potential.
-
-        Raises
-        ------
-        base.exceptions.ConfigurationError
-            If dimensionality_of_particle_space does not equal 1.
         """
-        if dimensionality_of_particle_space != 1:
-            raise ConfigurationError(f"Give either None or a list of two float values for size_of_particle_space when "
-                                     f"using {self.__class__.__name__}.")
         self._alpha = alpha
         self._lambda_hyperparameter = lambda_hyperparameter
         self._tau = tau
