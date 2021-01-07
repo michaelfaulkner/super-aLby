@@ -97,9 +97,11 @@ volume *1.0 x 1.0*) of two-dimensional Euclidean space and takes an initial posi
 
 The remaining sections of the configuration file correspond to the different classes chosen for the simulation. Each 
 section contains pairs of properties and values. The property corresponds to the name of the argument in the `__init__` 
-method of the corresponding class, and its value provides the argument. Properties and values should be given in 
-snake_case; sections should be given in CamelCase. If a value corresponds to the instance of another class, then a 
-corresponding section is required. In our example, the first of the remaining sections is therefore of the form
+method of the corresponding class, and its value provides the argument. Property-value pairs must be provided for all 
+properties for which the class does not provide a default value; for each property that does not have a default value, 
+a property-value pair may be given. Properties and values should be given in snake_case; sections should be given in 
+CamelCase. If a value corresponds to the instance of another class, then a corresponding section is required. In our 
+example, the first of the remaining sections is therefore of the form
 
 ```INI
 [SomeMediator]
