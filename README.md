@@ -26,16 +26,18 @@ https://matplotlib.org)).
 
 ## Using super-aLby
 
-To use super-aLby, go to the [`src`](src) directory and type `python run.py <configuration file>`. The generated sample 
-data will appear in the [`output`](src/output) directory (at a location given in the configuration file). Sample 
-analysis can then be performed via scripts within the [`output`](src/output) directory.
+The user interface of the super-aLby application consists of the [`run.py`](src/run.py) script and a configuration 
+file. The [`run.py`](src/run.py) script expects the path to the configuration file as the first positional argument. 
+Configuration files should be located in the [`config_files`](src/config_files) directory and follow the [INI-file 
+format](https://en.wikipedia.org/wiki/INI_file). The [`run.py`](src/run.py) script is located in the [`src`](src) 
+directory. 
 
-The user interface for each run of the super-aLby application consists of a configuration file that is an argument of 
-the [`run.py`](src/run.py) script, which is located in the [`src`](src) directory. Configuration files should follow 
-the [INI-file format](https://en.wikipedia.org/wiki/INI_file).
+To run the super-aLby application, open your terminal, navigate to the [`src`](src) directory and enter `python run.py 
+<configuration file>`. The generated sample data will appear in the [`output`](src/output) directory (at a location 
+given in the configuration file). Sample analysis can then be performed via scripts within the [`output`](src/output) 
+directory.
 
-The [`run.py`](src/run.py) script expects the path to the configuration file as the first positional argument. The 
-script also takes optional arguments. These are:
+The [`run.py`](src/run.py) script also takes optional arguments. These are:
 - `-h`, `--help`: Show the help message and exit.
 - `-V`, `--version`: Show program's version number and exit.
 - `-v`, `--verbose`: Increase verbosity of logging messages (multiple -v options increase the verbosity, the maximum is 
@@ -46,8 +48,8 @@ script also takes optional arguments. These are:
 
 A configuration file is composed of sections that correspond to either the [`run.py`](src/run.py) file, the model 
 settings (contained in [`model_settings/__init__.py`](src/model_settings/__init__.py)), or a class of the super-aLby 
-application. Each configuration file must contain `[Run]` and `[ModelSettings]` sections, which correspond to the 
-[`run.py`](src/run.py) file and the [model settings](src/model_settings/__init__.py):
+application. Each configuration file must contain `[Run]` and `[ModelSettings]` sections, which (respectively) 
+correspond to the [`run.py`](src/run.py) file and the [model settings](src/model_settings/__init__.py):
 
 ```INI
 [Run]
@@ -65,14 +67,17 @@ range_of_initial_particle_positions = 1.0
 ```
 
 `some_mediator` corresponds the mediator used (for this particular simulation) in the `run.py` file. The mediator 
-serves as the central hub in the application and also hosts the Markov process. The two possible mediators are 
+serves as the central hub in the application and also hosts the Markov process. The three possible mediators are 
 [`leapfrog_mediator`](src/mediator/leapfrog_mediator.py), which implements the simulation using the leapfrog numerical 
-integrator, and [`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py), which differs from 
-[`leapfrog_mediator`](src/mediator/leapfrog_mediator.py) in that it corrects particle positions to account for 
-periodic boundary conditions (i.e., for particles existing on a toroidal space) after each numerical integration step.
-We use [`leapfrog_mediator`](src/mediator/leapfrog_mediator.py) for models on Euclidean space and 
-[`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py) for models on compact subspaces of Euclidean 
-space (with toroidal geometry).
+integrator, [`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py), which differs from 
+[`leapfrog_mediator`](src/mediator/leapfrog_mediator.py) in that it corrects particle positions to account for periodic 
+boundary conditions (i.e., for particles existing on a toroidal space) after each numerical integration step, and 
+[`lazy_toroidal_leapfrog_mediator`](src/mediator/lazy_toroidal_leapfrog_mediator.py), which differs from 
+[`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py) in that it corrects particle positions only 
+at the end of each leapfrog trajectory. We use [`leapfrog_mediator`](src/mediator/leapfrog_mediator.py) for models on 
+Euclidean space and [`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py) or 
+[`lazy_toroidal_leapfrog_mediator`](src/mediator/lazy_toroidal_leapfrog_mediator.py) for models on compact subspaces of 
+Euclidean space (with toroidal geometry).
 
 The ```[ModelSettings]``` section specifies both the *NVT* physical parameters of the simulation and the range of the 
 initial particle positions. `beta` is a `float` that represents the inverse temperature. `number_of_particles` is an 
