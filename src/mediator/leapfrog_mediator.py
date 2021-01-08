@@ -68,8 +68,7 @@ class LeapfrogMediator(Mediator):
                          initial_step_size, max_number_of_integration_steps, randomise_number_of_integration_steps,
                          step_size_adaptor_is_on, use_metropolis_accept_reject)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           kinetic_energy_instance=kinetic_energy, potential_instance=potential,
-                           sampler_instance=sampler,
+                           kinetic_energy=kinetic_energy, potential_instance=potential, sampler=sampler,
                            number_of_equilibration_iterations=number_of_equilibration_iterations,
                            number_of_observations=number_of_observations,
                            initial_step_size=initial_step_size,
