@@ -80,25 +80,26 @@ class LeapfrogMediator(Mediator):
 
     def _get_candidate_configuration(self):
         """
-        Returns the candidate momenta and positions after self._number_of_integration_steps integration steps.
+        Returns the candidate momenta, positions and potential after self._number_of_integration_steps integration
+        steps.
 
         Returns
         -------
-        candidate_momenta : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the candidate momentum of a single particle.
-        candidate_positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the candidate position of a single particle.
-        candidate_potential : float
+        numpy.ndarray
+            The candidate momenta. A two-dimensional numpy array of size (number_of_particles,
+            dimensionality_of_particle_space); each element is a float and represents one Cartesian component of the
+            candidate momentum of a single particle.
+        numpy.ndarray
+            The candidate positions. A two-dimensional numpy array of size (number_of_particles,
+            dimensionality_of_particle_space); each element is a float and represents one Cartesian component of the
+            candidate position of a single particle.
+        float
             The potential of the candidate configuration.
         """
-        candidate_momenta, candidate_positions = self._momenta, self._positions
-        half_step_size = 0.5 * self._step_size
-        candidate_momenta -= half_step_size * self._potential.get_gradient(candidate_positions)
+        candidate_momenta = self._momenta - 0.5 * self._step_size * self._potential.get_gradient(self._positions)
+        candidate_positions = self._positions + self._step_size * self._kinetic_energy.get_gradient(candidate_momenta)
         for _ in range(self._number_of_integration_steps - 1):
-            candidate_positions += self._step_size * self._kinetic_energy.get_gradient(candidate_momenta)
             candidate_momenta -= self._step_size * self._potential.get_gradient(candidate_positions)
-        candidate_positions += self._step_size * self._kinetic_energy.get_gradient(candidate_momenta)
-        candidate_momenta -= half_step_size * self._potential.get_gradient(candidate_positions)
-        return candidate_momenta, candidate_positions, self._potential.get_value(candidate_positions)
+            candidate_positions += self._step_size * self._kinetic_energy.get_gradient(candidate_momenta)
+        return (candidate_momenta - 0.5 * self._step_size * self._potential.get_gradient(candidate_positions),
+                candidate_positions, self._potential.get_value(candidate_positions))

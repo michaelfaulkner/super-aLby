@@ -160,17 +160,20 @@ class Mediator(metaclass=ABCMeta):
     @abstractmethod
     def _get_candidate_configuration(self):
         """
-        Returns the candidate momenta and positions after self._number_of_integration_steps integration steps.
+        Returns the candidate momenta, positions and potential after self._number_of_integration_steps integration
+        steps.
 
         Returns
         -------
-        candidate_momenta : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the candidate momentum of a single particle.
-        candidate_positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the candidate position of a single particle.
-        candidate_potential : float
+        numpy.ndarray
+            The candidate momenta. A two-dimensional numpy array of size (number_of_particles,
+            dimensionality_of_particle_space); each element is a float and represents one Cartesian component of the
+            candidate momentum of a single particle.
+        numpy.ndarray
+            The candidate positions. A two-dimensional numpy array of size (number_of_particles,
+            dimensionality_of_particle_space); each element is a float and represents one Cartesian component of the
+            candidate position of a single particle.
+        float
             The potential of the candidate configuration.
         """
         raise NotImplementedError
