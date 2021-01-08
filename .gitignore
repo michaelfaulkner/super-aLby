@@ -1,8 +1,8 @@
 ## Sample files
 *.dat
 *.csv
-!/src/input_data_files/*.csv
-!/src/output/*reference_sample.csv
+!*reference_sample.csv
+!src/input_data_files/*.csv
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
@@ -65,4 +65,4 @@
 *.doc
 
 ## venv directory for pip-environment management
-/venv/
+venv/
