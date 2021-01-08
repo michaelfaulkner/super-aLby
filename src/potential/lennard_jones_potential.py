@@ -11,7 +11,7 @@ import numpy as np
 class LennardJonesPotential(SoftMatterPotential):
     # todo debug then add functionality for many particles
     r"""
-    This class implements the two-particle Lennard-Jones potential+.
+    This class implements the two-particle Lennard-Jones potential.
     """
 
     def __init__(self, characteristic_length: float = 1.0, prefactor: float = 1.0) -> None:
