@@ -2,8 +2,7 @@
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
-from model_settings import dimensionality_of_particle_space, number_of_particle_pairs, number_of_particles, \
-    size_of_particle_space
+from model_settings import number_of_particle_pairs, number_of_particles, size_of_particle_space
 from .sampler import Sampler
 import logging
 import numpy as np
