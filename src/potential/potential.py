@@ -38,13 +38,15 @@ class Potential(metaclass=ABCMeta):
     @abstractmethod
     def get_value(self, positions):
         """
-        Return the potential function for certain separations and charges.
+        Returns the potential function for the given particle positions.
 
         Parameters
         ----------
         positions : numpy.ndarray
-            For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
-            parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
+            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
+            lattice, the entire positions array corresponds to the entire array of superconducting phase.
 
         Returns
         -------
@@ -56,18 +58,21 @@ class Potential(metaclass=ABCMeta):
     @abstractmethod
     def get_gradient(self, positions):
         """
-        Return the gradient of the potential for certain separation and charges.
+        Returns the gradient of the potential function for the given particle positions.
 
         Parameters
         ----------
         positions : numpy.ndarray
-            For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
-            parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
+            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
+            lattice, the entire positions array corresponds to the entire array of superconducting phase.
 
         Returns
         -------
-        float
-            The derivative.
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
         raise NotImplementedError
 

@@ -45,34 +45,38 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
     @abstractmethod
     def get_value(self, momenta):
         """
-        Returns the kinetic-energy function.
+        Returns the kinetic energy for the given particle momenta.
 
         Parameters
         ----------
         momenta : numpy.ndarray
-            The momenta associated with each positions.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the momentum of a single particle.
 
         Returns
         -------
         float
-            The kinetic-energy function.
+            The kinetic energy.
         """
         raise NotImplementedError
 
     @abstractmethod
     def get_gradient(self, momenta):
         """
-        Returns the gradient of the kinetic energy.
+        Returns the gradient of the kinetic energy for the given particle momenta.
 
         Parameters
         ----------
         momenta : numpy.ndarray
-            The momenta associated with each positions.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the momentum of a single particle.
 
         Returns
         -------
-        float
-            The derivative.
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the gradient of the kinetic energy of a single
+            particle.
         """
         raise NotImplementedError
 
@@ -117,6 +121,7 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         Returns
         -------
         float
-            The distance travelled through the uphill part of one-dimensional momentum space.
+            The distance travelled (before the next zig-zag event) through the uphill part of one-dimensional momentum
+            space.
         """
         raise NotImplementedError

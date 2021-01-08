@@ -36,8 +36,9 @@ class NealFunnelPotential(OneDimensionalParticleSpacePotential):
         Parameters
         ----------
         positions : numpy.ndarray
-            For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
-            parameter value.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle. In this case, the
+            entire positions array corresponds to the Bayesian parameter.
 
         Returns
         -------
@@ -55,13 +56,15 @@ class NealFunnelPotential(OneDimensionalParticleSpacePotential):
         Parameters
         ----------
         positions : numpy.ndarray
-            For soft-matter models, one or many particle-particle separation vectors {r_ij}; in this case, the Bayesian
-            parameter value.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle. In this case, the
+            entire positions array corresponds to the Bayesian parameter.
 
         Returns
         -------
         numpy.ndarray
-            The gradient.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
         positions = np.reshape(positions, tuple([positions.shape[i] for i in range(len(positions.shape) - 1)]))
         gradient = np.zeros(len(positions))

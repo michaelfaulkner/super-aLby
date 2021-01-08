@@ -72,7 +72,8 @@ class LennardJonesPotential(SoftMatterPotential):
         Returns
         -------
         numpy.ndarray
-            The gradient.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
         separation_vector = get_shortest_vectors_on_torus(positions[0] - positions[1])
         separation_distance = np.linalg.norm(separation_vector)

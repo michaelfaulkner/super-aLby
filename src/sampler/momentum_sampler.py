@@ -45,15 +45,18 @@ class MomentumSampler(Sampler):
 
     def get_observation(self, momenta, positions):
         """
-        Return the observation after each iteration of the Markov chain.
+        Returns an observation of the system for the given particle momenta and positions.
 
         Parameters
         ----------
         momenta : numpy.ndarray
-            The momenta associated with each positions.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the momentum of a single particle.
         positions : numpy.ndarray
-            For soft-matter models, one or many particle-particle separation vectors {r_ij}; for Bayesian models, the
-            parameter value; for the Ginzburg-Landau potential on a lattice, the entire array of superconducting phase.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
+            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
+            lattice, the entire positions array corresponds to the entire array of superconducting phase.
 
         Returns
         -------

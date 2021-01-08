@@ -27,45 +27,50 @@ class KineticEnergy(metaclass=ABCMeta):
     @abstractmethod
     def get_value(self, momenta):
         """
-        Return the kinetic-energy function.
+        Returns the kinetic energy for the given particle momenta.
 
         Parameters
         ----------
         momenta : numpy.ndarray
-            The momenta associated with each positions.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the momentum of a single particle.
 
         Returns
         -------
         float
-            The kinetic-energy function.
+            The kinetic energy.
         """
         raise NotImplementedError
 
     @abstractmethod
     def get_gradient(self, momenta):
         """
-        Return the gradient of the kinetic energy.
+        Returns the gradient of the kinetic energy for the given particle momenta.
 
         Parameters
         ----------
         momenta : numpy.ndarray
-            The momenta associated with each positions.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the momentum of a single particle.
 
         Returns
         -------
-        float
-            The derivative.
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the gradient of the kinetic energy of a single
+            particle.
         """
         raise NotImplementedError
 
     @abstractmethod
     def get_momentum_observations(self):
         """
-        Return an observation of the momenta from the kinetic-energy distribution.
+        Returns an observation of the momenta from the kinetic-energy distribution.
 
         Returns
         -------
         numpy.ndarray
-            A new momenta associated with each positions.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the newly observed momentum of a single particle.
         """
         raise NotImplementedError

@@ -20,12 +20,13 @@ class LaplacianKineticEnergy(KineticEnergy):
 
     def get_value(self, momenta):
         """
-        Returns the kinetic energy.
+        Returns the kinetic energy for the given particle momenta.
 
         Parameters
         ----------
         momenta : numpy.ndarray
-            The momenta associated with each positions.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the momentum of a single particle.
 
         Returns
         -------
@@ -36,27 +37,31 @@ class LaplacianKineticEnergy(KineticEnergy):
 
     def get_gradient(self, momenta):
         """
-        Returns the gradient of the kinetic energy.
+        Returns the gradient of the kinetic energy for the given particle momenta.
 
         Parameters
         ----------
         momenta : numpy.ndarray
-            The momenta associated with each positions.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the momentum of a single particle.
 
         Returns
         -------
         numpy.ndarray
-            The gradient of the kinetic energy.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the gradient of the kinetic energy of a single
+            particle.
         """
         return np.sign(momenta)
 
     def get_momentum_observations(self):
         """
-        Return an observation of the momenta from the kinetic-energy distribution.
+        Returns an observation of the momenta from the kinetic-energy distribution.
 
         Returns
         -------
         numpy.ndarray
-            A new momenta associated with each positions.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the newly observed momentum of a single particle.
         """
         return np.random.laplace(scale=one_over_beta, size=dimensionality_of_momenta_array)

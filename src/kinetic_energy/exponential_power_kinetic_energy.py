@@ -51,12 +51,13 @@ class ExponentialPowerKineticEnergy(ZigZagKineticEnergy):
 
     def get_value(self, momenta):
         """
-        Returns the kinetic energy.
+        Returns the kinetic energy for the given particle momenta.
 
         Parameters
         ----------
         momenta : numpy.ndarray
-            The momenta associated with each positions.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the momentum of a single particle.
 
         Returns
         -------
@@ -67,17 +68,20 @@ class ExponentialPowerKineticEnergy(ZigZagKineticEnergy):
 
     def get_gradient(self, momenta):
         """
-        Returns the gradient of the kinetic energy.
+        Returns the gradient of the kinetic energy for the given particle momenta.
 
         Parameters
         ----------
         momenta : numpy.ndarray
-            The momenta associated with each positions.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the momentum of a single particle.
 
         Returns
         -------
         numpy.ndarray
-            The gradient of the kinetic energy.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the gradient of the kinetic energy of a single
+            particle.
         """
         return momenta * np.absolute(momenta) ** self._power_minus_two
 
@@ -92,6 +96,7 @@ class ExponentialPowerKineticEnergy(ZigZagKineticEnergy):
         Returns
         -------
         float
-            The distance travelled through the uphill part of one-dimensional momentum space.
+            The distance travelled (before the next zig-zag event) through the uphill part of one-dimensional momentum
+            space.
         """
         return (self._minus_power_over_beta * np.log(1.0 - np.random.random())) ** self._one_over_power
