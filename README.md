@@ -21,7 +21,8 @@ terminal.
 To manage external Python packages, we use [conda](https://docs.conda.io/projects/conda/en/latest/) environments via 
 the [miniconda distribution](https://docs.conda.io/en/latest/miniconda.html). However, we found [`rpy2`](
 https://rpy2.github.io) to be buggy when installed via conda. Instead, we `pip install rpy2` from within the project's 
-conda environment.
+conda environment (after having `conda install`ed [`numpy`](https://numpy.org) and [`matplotlib`](
+https://matplotlib.org)).
 
 ## Using super-aLby
 
