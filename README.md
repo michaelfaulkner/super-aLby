@@ -26,13 +26,13 @@ https://matplotlib.org)).
 
 ## Using super-aLby
 
-To use super-aLby, go to the [`src`](src) directory and type `python run.py <configuration file>`. The generated sample data 
-will appear in the [`output`](src/output) directory (at a location given in the configuration file). Sample analysis 
-can then be performed via scripts within the [`output`](src/output) directory.
+To use super-aLby, go to the [`src`](src) directory and type `python run.py <configuration file>`. The generated sample 
+data will appear in the [`output`](src/output) directory (at a location given in the configuration file). Sample 
+analysis can then be performed via scripts within the [`output`](src/output) directory.
 
 The user interface for each run of the super-aLby application consists of a configuration file that is an argument of 
-the [`run.py`](src/run.py) script, which is located in the [`src`](src) directory. Configuration files should follow the 
-[INI-file format](https://en.wikipedia.org/wiki/INI_file).
+the [`run.py`](src/run.py) script, which is located in the [`src`](src) directory. Configuration files should follow 
+the [INI-file format](https://en.wikipedia.org/wiki/INI_file).
 
 The [`run.py`](src/run.py) script expects the path to the configuration file as the first positional argument. The 
 script also takes optional arguments. These are:
