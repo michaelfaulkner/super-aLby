@@ -28,9 +28,8 @@ def main(argv):
                                                                "number_of_equilibration_iterations")
         if config.get("LeapfrogMediator", "potential") == 'exponential_power_potential' and config.get(
                 "ExponentialPowerPotential", "power") == "4.0":
-            reference_sample = np.loadtxt(
-                'output/other_convergence_tests/fourth_exponential_power_variance_4_reference_sample.csv', dtype=float,
-                delimiter=',')
+            reference_sample = np.loadtxt('output/other_convergence_tests/fourth_exponential_power_variance_4_reference'
+                                          '_sample.csv', dtype=float, delimiter=',')
         elif config.get("LeapfrogMediator", "kinetic_energy") == 't_distribution_kinetic_energy':
             reference_sample = np.loadtxt('output/other_convergence_tests/gaussian_variance_1_reference_sample.csv',
                                           dtype=float, delimiter=',')
@@ -38,18 +37,28 @@ def main(argv):
             reference_sample = np.loadtxt('output/other_convergence_tests/gaussian_variance_4_reference_sample.csv',
                                           dtype=float, delimiter=',')
     except NoSectionError:
-        sampler = factory.build_from_config(
-            config, strings.to_camel_case(config.get("ToroidalLeapfrogMediator", "sampler")), "sampler")
-        number_of_equilibration_iterations = parsing.get_value(config, "ToroidalLeapfrogMediator",
-                                                               "number_of_equilibration_iterations")
-        if config.get("ToroidalLeapfrogMediator", "potential") == 'coulomb_potential':
-            reference_sample = np.loadtxt(
-                'output/srmc_in_soft_matter/two_unit_charge_coulomb_particles_unit_cube_beta_2_reference_sample.csv',
-                dtype=float, delimiter=',')
-        else:
-            reference_sample = np.loadtxt(
-                'output/srmc_in_soft_matter/two_lennard_jones_particles_unit_cube_beta_2_reference_sample.csv',
-                dtype=float, delimiter=',')
+        try:
+            sampler = factory.build_from_config(
+                config, strings.to_camel_case(config.get("ToroidalLeapfrogMediator", "sampler")), "sampler")
+            number_of_equilibration_iterations = parsing.get_value(config, "ToroidalLeapfrogMediator",
+                                                                   "number_of_equilibration_iterations")
+            if config.get("ToroidalLeapfrogMediator", "potential") == 'coulomb_potential':
+                reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_unit_charge_coulomb_particles_unit_cube_'
+                                              'beta_2_reference_sample.csv', dtype=float, delimiter=',')
+            else:
+                reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_unit_cube_beta_2_'
+                                              'reference_sample.csv', dtype=float, delimiter=',')
+        except NoSectionError:
+            sampler = factory.build_from_config(
+                config, strings.to_camel_case(config.get("LazyToroidalLeapfrogMediator", "sampler")), "sampler")
+            number_of_equilibration_iterations = parsing.get_value(config, "LazyToroidalLeapfrogMediator",
+                                                                   "number_of_equilibration_iterations")
+            if config.get("LazyToroidalLeapfrogMediator", "potential") == 'coulomb_potential':
+                reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_unit_charge_coulomb_particles_unit_cube_'
+                                              'beta_2_reference_sample.csv', dtype=float, delimiter=',')
+            else:
+                reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_unit_cube_beta_2_'
+                                              'reference_sample.csv', dtype=float, delimiter=',')
 
     reference_cdf = get_cumulative_distribution(reference_sample)
     sample = sampler.get_sample()
