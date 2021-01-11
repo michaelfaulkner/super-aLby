@@ -5,10 +5,10 @@ n2ri.activate()
 laplaces_demon_r_package = r_packages.importr('LaplacesDemon')
 
 
-def effective_sample_size(sample):
-    return laplaces_demon_r_package.ESS(sample)
+def get_effective_sample_size(sample):
+    return np.array(laplaces_demon_r_package.ESS(sample))[0]
 
 
-def thin_sample(sample, thinning_level):
+def get_thinned_sample(sample, thinning_level):
     sample_indices_to_keep = np.array([i for i in range(len(sample)) if i % thinning_level == 0])
     return np.take(sample, sample_indices_to_keep)
