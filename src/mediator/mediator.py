@@ -146,9 +146,9 @@ class Mediator(metaclass=ABCMeta):
 
             if self._step_size_adaptor_is_on and i < self._number_of_equilibration_iterations and (i + 1) % 100 == 0:
                 acceptance_rate = self._number_of_accepted_trajectories / 100.0
-                if acceptance_rate > 0.9:
+                if acceptance_rate > 0.75:
                     self._step_size *= 1.1
-                elif acceptance_rate < 0.8:
+                elif acceptance_rate < 0.65:
                     self._step_size *= 0.9
                 self._number_of_accepted_trajectories = 0
 
@@ -253,8 +253,8 @@ class Mediator(metaclass=ABCMeta):
         """Prints a summary of the completed Markov process to the screen."""
         acceptance_rate = self._number_of_accepted_trajectories / self._number_of_observations
         print(f"Metropolis-Hastings acceptance rate = {acceptance_rate}")
-        print(f"Number of unstable numerical trajectories (defined as a relative energy increases by two orders of "
-              f"magnitude) = {self._number_of_unstable_trajectories}")
+        print(f"Number of unstable numerical trajectories (defined as a relative energy increase of at least two "
+              f"orders of magnitude) = {self._number_of_unstable_trajectories}")
         self._step_size /= beta
         if self._step_size_adaptor_is_on:
             print(f"Initial numerical step size = {self._initial_step_size}")
