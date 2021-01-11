@@ -2,7 +2,8 @@
 super-aLby is a Python application that implements the super-relativistic Monte Carlo algorithm for the simulation of 
 Bayesian probability models and classical *N*-body soft-matter models in statistical physics. For a closely connected 
 discussion of kinetic-energy choice in Hamiltonian/hybrid Monte Carlo, see [\[Livingstone2019\]](
-https://academic.oup.com/biomet/article-abstract/106/2/303/5476364).
+https://academic.oup.com/biomet/article-abstract/106/2/303/5476364), where we first introduced super-relativistic Monte 
+Carlo (though we did not name it).
 
 ## Installation
 
