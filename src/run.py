@@ -1,5 +1,5 @@
-"""Executable script which runs the super-aLby application based on an input configuration file. This script and most of
-    the base package are taken from the JeLLyFysh application, which one of the super-aLby authors co-wrote."""
+"""Executable script which runs the super-aLby application based on an input configuration file. This script and most
+    of the base package are taken from the JeLLyFysh application, which one of the super-aLby authors co-wrote."""
 from typing import Sequence
 from base import factory
 from base.strings import to_camel_case
