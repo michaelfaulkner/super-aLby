@@ -54,7 +54,7 @@ class SuperRelativisticKineticEnergy(ZigZagKineticEnergy):
         self._root_gamma = gamma ** 0.5
         self._power_over_two = 0.5 * power
         self._power_over_two_minus_one = self._power_over_two - 1.0
-        self._minus_power_over_beta = - power / beta
+        self._power_over_beta = power / beta
         self._one_over_power = 1.0 / power
         self._two_over_power = 2.0 / power
         super().__init__(zig_zag_observation_parameter=zig_zag_observation_parameter)
@@ -113,5 +113,4 @@ class SuperRelativisticKineticEnergy(ZigZagKineticEnergy):
             space.
         """
         return self._root_gamma * (
-                (1.0 + self._minus_power_over_beta * np.log(1.0 - np.random.random())) ** self._two_over_power -
-                1.0) ** 0.5
+                (1.0 - self._power_over_beta * np.log(1.0 - np.random.random())) ** self._two_over_power - 1.0) ** 0.5
