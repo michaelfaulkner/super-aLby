@@ -1,12 +1,12 @@
 """Executable script which runs the super-aLby application based on an input configuration file. This script and most
     of the base package are taken from the JeLLyFysh application, which one of the super-aLby authors co-wrote."""
-from typing import Sequence
 from base import factory
 from base.strings import to_camel_case
 from base.uuid import get_uuid
 from base.parsing import parse_options, read_config
 from base.logging import set_up_logging, print_and_log
 from version import version
+from typing import Sequence
 import platform
 import sys
 import time
