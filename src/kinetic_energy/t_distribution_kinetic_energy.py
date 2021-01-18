@@ -28,6 +28,7 @@ class TDistributionKineticEnergy(KineticEnergy):
         base.exceptions.ConfigurationError
             If beta does not equal 1.0.
         """
+        super().__init__()
         if degrees_of_freedom < 1:
             raise ConfigurationError(f"Give a value not less than 1 as degrees_of_freedom for "
                                      f"{self.__class__.__name__}.")
@@ -38,7 +39,6 @@ class TDistributionKineticEnergy(KineticEnergy):
         self._degrees_of_freedom_plus_one = self._degrees_of_freedom + 1.0
         self._degrees_of_freedom_plus_one_over_two = 0.5 * self._degrees_of_freedom_plus_one
         self._one_over_degrees_of_freedom = 1.0 / self._degrees_of_freedom
-        super().__init__()
         log_init_arguments(
             logging.getLogger(__name__).debug, self.__class__.__name__, degrees_of_freedom=degrees_of_freedom)
 

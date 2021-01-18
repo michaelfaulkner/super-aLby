@@ -36,11 +36,11 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If zig_zag_observation_rate is less than 5.0.
         """
+        super().__init__(**kwargs)
         if zig_zag_observation_parameter < 5.0:
             raise ConfigurationError(f"Give a not less than 5.0 as zig_zag_observation_parameter for "
                                      f"{self.__class__.__name__}.")
         self._distance_between_zig_zag_observations = zig_zag_observation_parameter / beta
-        super().__init__(**kwargs)
 
     @abstractmethod
     def get_value(self, momenta):

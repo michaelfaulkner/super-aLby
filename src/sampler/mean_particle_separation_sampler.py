@@ -32,6 +32,7 @@ class MeanParticleSeparationSampler(Sampler):
         base.exceptions.ConfigurationError
             If number_of_particles does not equal two.
         """
+        super().__init__(output_directory)
         for component in np.atleast_1d(size_of_particle_space):
             if component is None:
                 raise ConfigurationError(f"Give a float for each component of size_of_particle_space in [ModelSettings]"
@@ -40,7 +41,6 @@ class MeanParticleSeparationSampler(Sampler):
         if number_of_particles != 2:
             raise ConfigurationError(f"Give a value of 2 as the number_of_particles in [ModelSettings] when using "
                                      f"{self.__class__.__name__} as it is currently a two-particle sampler.")
-        super().__init__(output_directory)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            output_directory=output_directory)
 

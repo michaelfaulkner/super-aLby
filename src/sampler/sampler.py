@@ -29,11 +29,11 @@ class Sampler(metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If type(output_directory) is not str.
         """
+        super().__init__(**kwargs)
         if type(output_directory) is not str:
             raise ConfigurationError(f"Give a value of type str as output_directory in {self.__class__.__name__}.")
         self._output_directory = output_directory
         os.makedirs(self._output_directory, exist_ok=True)
-        super().__init__(**kwargs)
 
     @abstractmethod
     def initialise_sample_array(self, total_number_of_iterations):

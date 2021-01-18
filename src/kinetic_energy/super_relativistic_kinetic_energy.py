@@ -44,6 +44,7 @@ class SuperRelativisticKineticEnergy(ZigZagKineticEnergy):
         base.exceptions.ConfigurationError
             If zig_zag_observation_rate is less than 0.0.
         """
+        super().__init__(zig_zag_observation_parameter=zig_zag_observation_parameter)
         if gamma <= 0.0:
             raise ConfigurationError(f"Give a greater than 0.0 as the tuning parameter gamma for "
                                      f"{self.__class__.__name__}.")
@@ -57,7 +58,6 @@ class SuperRelativisticKineticEnergy(ZigZagKineticEnergy):
         self._power_over_beta = power / beta
         self._one_over_power = 1.0 / power
         self._two_over_power = 2.0 / power
-        super().__init__(zig_zag_observation_parameter=zig_zag_observation_parameter)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, gamma=gamma, power=power,
                            zig_zag_observation_parameter=zig_zag_observation_parameter)
 
