@@ -1,7 +1,6 @@
 """Module for the abstract Potential class."""
 from base.exceptions import ConfigurationError
 from abc import ABCMeta, abstractmethod
-import numpy as np
 
 
 class Potential(metaclass=ABCMeta):
@@ -75,9 +74,3 @@ class Potential(metaclass=ABCMeta):
             is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
         raise NotImplementedError
-
-    @staticmethod
-    def _get_higher_dimension_array(array):
-        new_dimensionality_of_array = [component for component in array.shape]
-        new_dimensionality_of_array.append(-1)
-        return np.reshape(array, tuple(new_dimensionality_of_array))
