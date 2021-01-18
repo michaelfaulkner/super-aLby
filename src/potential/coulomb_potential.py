@@ -103,22 +103,18 @@ class CoulombPotential(SoftMatterPotential):
         for k in range(0, self._fourier_cutoff + 1):
             for j in range(0, self._fourier_cutoff + 1):
                 for i in range(1, self._fourier_cutoff + 1):
-                    if j == 0 and k == 0:
+                    if (i == 0 and j == 0) or (j == 0 and k == 0) or (k == 0 and i == 0):
                         coefficient = 1.0
-                    elif k == 0:
-                        coefficient = 2.0
-                    elif j == 0:
+                    elif i == 0 or j == 0 or k == 0:
                         coefficient = 2.0
                     else:
                         coefficient = 4.0
-
-                    norm_sq = i * i + j * j + k * k
+                    norm_sq = i ** 2 + j ** 2 + k ** 2
                     base_fourier_list_component = 2 * coefficient * (
                             np.exp(- pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / self._system_length)
                     # todo change the following to 2 * base_fourier_list_component / self._system_length
-                    fourier_list[i][j][k] = 4 * i * coefficient * (np.exp(
-                        - pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / length_sq)
-                    fourier_list_for_potential[i][j][k] = self._system_length * fourier_list[i][j][k] / 2.0 / i / np.pi
+                    fourier_list[i][j][k] = 4.0 * i * coefficient * np.exp(- pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / length_sq
+                    fourier_list_for_potential[i][j][k] = 2.0 * coefficient * np.exp(- pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / self._system_length / np.pi
 
         self._fourier_array = tuple(
             [tuple([tuple(fourier_list[i][j]) for j in range(self._fourier_cutoff + 1)]) for i in
@@ -128,7 +124,6 @@ class CoulombPotential(SoftMatterPotential):
             [tuple([tuple(fourier_list_for_potential[i][j]) for j in range(self._fourier_cutoff + 1)])
              for i in range(self._fourier_cutoff + 1)])
 
-        super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            alpha=alpha, fourier_cutoff=fourier_cutoff, position_cutoff=position_cutoff,
                            prefactor=prefactor)
@@ -221,7 +216,6 @@ class CoulombPotential(SoftMatterPotential):
                 for k in range(0, cutoff_z + 1):
                     two_particle_fourier_space_potential += (self._fourier_array_for_potential[i][j][k] *
                                                              cos_x * cos_y * cos_z)
-
                     if k != cutoff_z:
                         store_cos_z = cos_z
                         cos_z = store_cos_z * delta_cos_z - sin_z * delta_sin_z
@@ -240,13 +234,12 @@ class CoulombPotential(SoftMatterPotential):
                         sin_y = 0.0
                         cos_z = 1.0
                         sin_z = 0.0
-
         return two_particle_fourier_space_potential
 
     def _get_two_particle_position_space_gradient(self, separation):
         """Returns the position-space part of the Ewald sum of the two-particle gradient."""
         separation_x, separation_y, separation_z = separation
-        negative_two_particle_position_space_gradient = 0.0
+        two_particle_position_space_gradient = 0.0
 
         for k in range(- self._position_cutoff, self._position_cutoff + 1):
             vector_z_sq = (separation_z + k * self._system_length) * (separation_z + k * self._system_length)
@@ -258,16 +251,15 @@ class CoulombPotential(SoftMatterPotential):
                     vector_x = separation_x + i * self._system_length
                     vector_sq = vector_x * vector_x + vector_y_sq + vector_z_sq
                     vector_norm = vector_sq ** 0.5
-                    negative_two_particle_position_space_gradient -= (vector_x * (
-                            self._two_alpha_over_root_pi * np.exp(- self._alpha_sq * vector_sq) + math.erfc(
-                                self._alpha * vector_norm) / vector_norm) / vector_sq)
-
-        return negative_two_particle_position_space_gradient
+                    two_particle_position_space_gradient -= (
+                            vector_x * (self._two_alpha_over_root_pi * np.exp(- self._alpha_sq * vector_sq) +
+                                        math.erfc(self._alpha * vector_norm) / vector_norm) / vector_sq)
+        return two_particle_position_space_gradient
 
     def _get_two_particle_fourier_space_gradient(self, separation):
         """Returns the Fourier-space part of the Ewald sum of the two-particle gradient."""
         separation_x, separation_y, separation_z = separation
-        negative_two_particle_fourier_space_gradient = 0.0
+        two_particle_fourier_space_gradient = 0.0
 
         delta_cos_x = np.cos(self.two_pi_over_length * separation_x)
         delta_sin_x = np.sin(self.two_pi_over_length * separation_x)
@@ -288,8 +280,7 @@ class CoulombPotential(SoftMatterPotential):
             for j in range(0, cutoff_y + 1):
                 cutoff_z = int((self._fourier_cutoff_sq - i * i - j * j) ** 0.5)
                 for k in range(0, cutoff_z + 1):
-                    negative_two_particle_fourier_space_gradient -= self._fourier_array[i][j][k] * sin_x * cos_y * cos_z
-
+                    two_particle_fourier_space_gradient -= self._fourier_array[i][j][k] * sin_x * cos_y * cos_z
                     if k != cutoff_z:
                         store_cos_z = cos_z
                         cos_z = store_cos_z * delta_cos_z - sin_z * delta_sin_z
@@ -308,5 +299,4 @@ class CoulombPotential(SoftMatterPotential):
                         sin_y = 0.0
                         cos_z = 1.0
                         sin_z = 0.0
-
-        return negative_two_particle_fourier_space_gradient
+        return two_particle_fourier_space_gradient
