@@ -12,9 +12,10 @@ src_directory = os.path.abspath(this_directory + "/../")
 sys.path.insert(0, src_directory)
 
 factory = importlib.import_module("base.factory")
-strings = importlib.import_module("base.strings")
 parsing = importlib.import_module("base.parsing")
+strings = importlib.import_module("base.strings")
 run_module = importlib.import_module("run")
+markov_chain_diagnostics = importlib.import_module("output.markov_chain_diagnostics")
 
 
 def main(argv):
@@ -64,6 +65,9 @@ def main(argv):
     sample = sampler.get_sample()
     if type(sample[0]) != np.float64:
         sample = sample[:, 0]
+    sample_size = len(sample) - number_of_equilibration_iterations - 1
+    effective_sample_size = markov_chain_diagnostics.get_effective_sample_size(sample)
+    print(f"Effective sample size = {effective_sample_size} (from a total sample size of {sample_size}).")
     sample_cdf = get_cumulative_distribution(sample[number_of_equilibration_iterations + 1:])
 
     plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
