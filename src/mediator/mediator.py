@@ -70,6 +70,7 @@ class Mediator(metaclass=ABCMeta):
             If type(use_metropolis_accept_reject) is not bool.
 
         """
+        super().__init__(**kwargs)
         if number_of_equilibration_iterations < 0:
             raise ConfigurationError(f"Give a value not less than 0 as number_of_equilibration_iterations in "
                                      f"{self.__class__.__name__}.")
@@ -113,7 +114,6 @@ class Mediator(metaclass=ABCMeta):
         self._current_potential = self._potential.get_value(self._positions)
         self._number_of_accepted_trajectories = 0
         self._number_of_unstable_trajectories = 0
-        super().__init__(**kwargs)
 
     def generate_sample(self):
         """Runs the Markov chain in order to generate the sample."""

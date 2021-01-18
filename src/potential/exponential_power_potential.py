@@ -32,6 +32,7 @@ class ExponentialPowerPotential(Potential):
         base.exceptions.ConfigurationError
             If power is less than 1.0.
         """
+        super().__init__(prefactor=prefactor)
         for element in size_of_particle_space:
             if element is not None:
                 raise ConfigurationError(f"For each component of size_of_particle_space, give None when using "
@@ -42,7 +43,6 @@ class ExponentialPowerPotential(Potential):
         self._one_over_power = 1.0 / power
         self._power = power
         self._power_minus_two = power - 2
-        super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power, prefactor=prefactor)
 
     def get_value(self, positions):

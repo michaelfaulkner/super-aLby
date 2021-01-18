@@ -68,6 +68,7 @@ class CoulombPotential(SoftMatterPotential):
         base.exceptions.ConfigurationError
             If number_of_particles does not equal two.
         """
+        super().__init__(prefactor)
         if dimensionality_of_particle_space != 3:
             raise ConfigurationError(f"For size_of_particle_space, give a list of length 3, where each component is a "
                                      f"list of two float values, when using {self.__class__.__name__}.")

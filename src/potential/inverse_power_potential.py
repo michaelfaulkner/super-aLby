@@ -30,6 +30,7 @@ class InversePowerPotential(Potential):
         base.exceptions.ConfigurationError
             If power is less than 1.0.
         """
+        super().__init__(prefactor=prefactor)
         for element in size_of_particle_space:
             if type(element) != np.float64:
                 raise ConfigurationError(f"For each component of size_of_particle_space, give a float value when using "
@@ -39,7 +40,6 @@ class InversePowerPotential(Potential):
         self._one_over_power = 1.0 / power
         self._negative_power = - power
         self._negative_power_minus_two = - power - 2.0
-        super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power, prefactor=prefactor)
 
     def get_value(self, positions):

@@ -34,6 +34,7 @@ class GinzburgLandauPotential(OneDimensionalParticleSpacePotential):
         base.exceptions.ConfigurationError
             If dimensionality_of_particle_space does not equal 1.
         """
+        super().__init__(prefactor=prefactor)
         self._alpha = alpha
         self._lambda_hyperparameter = lambda_hyperparameter
         self._tau = tau
@@ -42,7 +43,6 @@ class GinzburgLandauPotential(OneDimensionalParticleSpacePotential):
         self._one_minus_tau = (1 - tau)
         self._tau_dot_alpha = tau * alpha
         self._tau_dot_lambda = tau * lambda_hyperparameter
-        super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, alpha=alpha,
                            lambda_hyperparameter=lambda_hyperparameter, tau=tau, lattice_length=lattice_length,
                            prefactor=prefactor)

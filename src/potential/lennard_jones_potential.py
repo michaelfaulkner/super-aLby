@@ -35,11 +35,11 @@ class LennardJonesPotential(SoftMatterPotential):
         base.exceptions.ConfigurationError
             If number_of_particles does not equal two.
         """
+        super().__init__(prefactor)
         if number_of_particles != 2:
             raise ConfigurationError(f"Give a value of 2 as the number_of_particles in [ModelSettings] when using "
                                      f"{self.__class__.__name__} as it is currently a two-particle potential.")
         self._characteristic_length = characteristic_length
-        super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
     def get_value(self, positions):

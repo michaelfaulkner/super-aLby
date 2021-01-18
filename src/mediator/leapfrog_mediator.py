@@ -68,13 +68,13 @@ class LeapfrogMediator(Mediator):
         base.exceptions.ConfigurationError
             If element is not None for element in size_of_particle_space.
         """
+        super().__init__(kinetic_energy, potential, sampler, number_of_equilibration_iterations, number_of_observations,
+                         initial_step_size, max_number_of_integration_steps, randomise_number_of_integration_steps,
+                         step_size_adaptor_is_on, use_metropolis_accept_reject)
         for element in size_of_particle_space:
             if element is not None:
                 raise ConfigurationError(f"For each component of size_of_particle_space, give None when using "
                                          f"{self.__class__.__name__}.")
-        super().__init__(kinetic_energy, potential, sampler, number_of_equilibration_iterations, number_of_observations,
-                         initial_step_size, max_number_of_integration_steps, randomise_number_of_integration_steps,
-                         step_size_adaptor_is_on, use_metropolis_accept_reject)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            kinetic_energy=kinetic_energy, potential_instance=potential, sampler=sampler,
                            number_of_equilibration_iterations=number_of_equilibration_iterations,

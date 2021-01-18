@@ -39,6 +39,7 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
             If model_settings.range_of_initial_particle_positions does not give an real-valued interval for each
             component of the initial positions of each particle.
         """
+        super().__init__(prefactor, **kwargs)
         for element in size_of_particle_space:
             if type(element) != np.float64:
                 raise ConfigurationError(f"For each component of size_of_particle_space, give a float value when using "
@@ -50,7 +51,6 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
                 raise ConfigurationError(f"For each component of range_of_initial_particle_positions, give a list of "
                                          f"two float values to avoid numerical divergences (due to initial "
                                          f"configuration) in {self.__class__.__name__}.")
-        super().__init__(prefactor, **kwargs)
 
     @abstractmethod
     def get_value(self, positions):

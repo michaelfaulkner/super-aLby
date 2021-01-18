@@ -29,10 +29,10 @@ class Potential(metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If prefactor is not greater than 0.0.
         """
+        super().__init__(**kwargs)
         if prefactor == 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 as prefactor for {self.__class__.__name__}.")
         self._prefactor = prefactor
-        super().__init__(**kwargs)
 
     @abstractmethod
     def get_value(self, positions):

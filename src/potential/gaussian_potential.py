@@ -23,11 +23,11 @@ class GaussianPotential(Potential):
         base.exceptions.ConfigurationError
             If element is not None for element in size_of_particle_space.
         """
+        super().__init__(prefactor=prefactor)
         for element in size_of_particle_space:
             if element is not None:
                 raise ConfigurationError(f"For each component of size_of_particle_space, give None when using "
                                          f"{self.__class__.__name__}.")
-        super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
     def get_value(self, positions):

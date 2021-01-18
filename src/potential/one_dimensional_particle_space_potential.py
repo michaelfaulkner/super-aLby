@@ -40,6 +40,7 @@ class OneDimensionalParticleSpacePotential(Potential, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If dimensionality_of_particle_space does not equal 1.
         """
+        super().__init__(prefactor, **kwargs)
         for element in size_of_particle_space:
             if element is not None:
                 raise ConfigurationError(f"For each component of size_of_particle_space, give None when using "
@@ -48,7 +49,6 @@ class OneDimensionalParticleSpacePotential(Potential, metaclass=ABCMeta):
             raise ConfigurationError(f"Give either None or a list of two float values for size_of_particle_space when "
                                      f"using {self.__class__.__name__} as {self.__class__.__name__} is restricted to "
                                      f"one-dimensional particle space.")
-        super().__init__(prefactor, **kwargs)
 
     @abstractmethod
     def get_value(self, positions):
