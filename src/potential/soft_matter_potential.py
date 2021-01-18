@@ -1,7 +1,7 @@
 """Module for the abstract SoftMatterPotential class."""
 from .potential import Potential
 from base.exceptions import ConfigurationError
-from model_settings import range_of_initial_particle_positions
+from model_settings import range_of_initial_particle_positions, size_of_particle_space
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
@@ -17,8 +17,9 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
         """
         The constructor of the SoftMatterPotential class.
 
-        This abstract class verifies that the initial particle positions do not all coincide, as this would generate
-        divergences. No other additional functionality is provided.
+        This abstract class verifies that i) type(element) is np.float64 for each element of size_of_particle_space,
+        and ii) the initial particle positions do not all coincide, as this would generate divergences. No other
+        additional functionality is provided.
 
         This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
         init to the next class in the MRO via super.
@@ -33,9 +34,15 @@ class SoftMatterPotential(Potential, metaclass=ABCMeta):
         Raises
         ------
         base.exceptions.ConfigurationError
+            If type(element) is not np.float64 for element in size_of_particle_space.
+        base.exceptions.ConfigurationError
             If model_settings.range_of_initial_particle_positions does not give an real-valued interval for each
             component of the initial positions of each particle.
         """
+        for element in size_of_particle_space:
+            if type(element) != np.float64:
+                raise ConfigurationError(f"For each component of size_of_particle_space, give a float value when using "
+                                         f"{self.__class__.__name__}.")
         conditions = [type(component) == list and len(component) == 2 and type(bound) == float
                       for component in range_of_initial_particle_positions for bound in component]
         for condition in np.atleast_1d(conditions):

@@ -2,6 +2,7 @@
 from .potential import Potential
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
+from model_settings import size_of_particle_space
 import logging
 import numpy as np
 
@@ -27,8 +28,14 @@ class ExponentialPowerPotential(Potential):
         Raises
         ------
         base.exceptions.ConfigurationError
+            If element is not None for element in size_of_particle_space.
+        base.exceptions.ConfigurationError
             If power is less than 1.0.
         """
+        for element in size_of_particle_space:
+            if element is not None:
+                raise ConfigurationError(f"For each component of size_of_particle_space, give None when using "
+                                         f"{self.__class__.__name__}.")
         if power < 1.0:
             raise ConfigurationError(f"Give a value not less than 1.0 as the power associated with "
                                      f"{self.__class__.__name__}.")

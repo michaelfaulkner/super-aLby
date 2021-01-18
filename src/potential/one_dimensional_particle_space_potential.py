@@ -1,7 +1,7 @@
 """Module for the abstract OneDimensionalParticleSpacePotential class."""
 from .potential import Potential
 from base.exceptions import ConfigurationError
-from model_settings import dimensionality_of_particle_space
+from model_settings import dimensionality_of_particle_space, size_of_particle_space
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
@@ -17,8 +17,11 @@ class OneDimensionalParticleSpacePotential(Potential, metaclass=ABCMeta):
         """
         The constructor of the OneDimensionalParticleSpacePotential class.
 
-        This abstract class verifies that the initial particle positions do not all coincide, as this would generate
-        divergences. No other additional functionality is provided.
+        This abstract class verifies that i) element is None for each element of size_of_particle_space, and ii) the
+        dimensionality of particle space is one. The static method _get_higher_dimension_array() is also provided,
+        which is currently used as a workaround such that its child classes work with the new form of the positions
+        array: positions = [[a] [b] [c]] (as opposed to [a b c] used in the Biometrika project). No other additional
+        functionality is provided.
 
         This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
         init to the next class in the MRO via super.
@@ -33,8 +36,14 @@ class OneDimensionalParticleSpacePotential(Potential, metaclass=ABCMeta):
         Raises
         ------
         base.exceptions.ConfigurationError
+            If element is not None for element in size_of_particle_space.
+        base.exceptions.ConfigurationError
             If dimensionality_of_particle_space does not equal 1.
         """
+        for element in size_of_particle_space:
+            if element is not None:
+                raise ConfigurationError(f"For each component of size_of_particle_space, give None when using "
+                                         f"{self.__class__.__name__}.")
         if dimensionality_of_particle_space != 1:
             raise ConfigurationError(f"Give either None or a list of two float values for size_of_particle_space when "
                                      f"using {self.__class__.__name__} as {self.__class__.__name__} is restricted to "

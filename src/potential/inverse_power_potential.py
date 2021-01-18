@@ -3,6 +3,7 @@ from .potential import Potential
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
+from model_settings import size_of_particle_space
 import logging
 import numpy as np
 
@@ -25,8 +26,14 @@ class InversePowerPotential(Potential):
         Raises
         ------
         base.exceptions.ConfigurationError
+            If type(element) is not np.float64 for element in size_of_particle_space.
+        base.exceptions.ConfigurationError
             If power is less than 1.0.
         """
+        for element in size_of_particle_space:
+            if type(element) != np.float64:
+                raise ConfigurationError(f"For each component of size_of_particle_space, give a float value when using "
+                                         f"{self.__class__.__name__}.")
         if power < 1.0:
             raise ConfigurationError(f"Give a value not less than 1.0 as power in {self.__class__.__name__}.")
         self._one_over_power = 1.0 / power

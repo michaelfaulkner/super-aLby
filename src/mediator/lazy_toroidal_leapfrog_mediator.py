@@ -1,11 +1,14 @@
 """Module for the LazyToroidalLeapfrogIntegrator class."""
 from .mediator import Mediator
+from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
+from model_settings import size_of_particle_space
 from kinetic_energy.kinetic_energy import KineticEnergy
 from potential.potential import Potential
 from sampler.sampler import Sampler
 import logging
+import numpy as np
 
 
 class LazyToroidalLeapfrogMediator(Mediator):
@@ -67,7 +70,13 @@ class LazyToroidalLeapfrogMediator(Mediator):
             If type(step_size_adaptor_is_on) is not bool.
         base.exceptions.ConfigurationError
             If type(use_metropolis_accept_reject) is not bool.
+        base.exceptions.ConfigurationError
+            If type(element) is not np.float64 for element in size_of_particle_space.
         """
+        for element in size_of_particle_space:
+            if type(element) != np.float64:
+                raise ConfigurationError(f"For each component of size_of_particle_space, give a float value when using "
+                                         f"{self.__class__.__name__}.")
         super().__init__(kinetic_energy, potential, sampler, number_of_equilibration_iterations, number_of_observations,
                          initial_step_size, max_number_of_integration_steps, randomise_number_of_integration_steps,
                          step_size_adaptor_is_on, use_metropolis_accept_reject)

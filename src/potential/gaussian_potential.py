@@ -1,6 +1,8 @@
 """Module for the GaussianPotential class."""
 from .potential import Potential
+from base. exceptions import ConfigurationError
 from base.logging import log_init_arguments
+from model_settings import size_of_particle_space
 import logging
 import numpy as np
 
@@ -18,7 +20,13 @@ class GaussianPotential(Potential):
         ----------
         prefactor : float
             The prefactor k of the potential.
+        base.exceptions.ConfigurationError
+            If element is not None for element in size_of_particle_space.
         """
+        for element in size_of_particle_space:
+            if element is not None:
+                raise ConfigurationError(f"For each component of size_of_particle_space, give None when using "
+                                         f"{self.__class__.__name__}.")
         super().__init__(prefactor=prefactor)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
