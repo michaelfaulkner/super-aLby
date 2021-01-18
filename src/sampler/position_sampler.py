@@ -1,7 +1,9 @@
 """Module for the PositionSampler class."""
 from .sampler import Sampler
+from base.logging import log_init_arguments
 from model_settings import number_of_particles, dimensionality_of_particle_space
 from abc import ABCMeta, abstractmethod
+import logging
 import numpy as np
 
 
@@ -23,6 +25,8 @@ class PositionSampler(Sampler, metaclass=ABCMeta):
             The filename onto which the sample is written at the end of the run.
         """
         super().__init__(output_directory)
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
+                           output_directory=output_directory)
 
     def initialise_sample_array(self, total_number_of_iterations):
         """
