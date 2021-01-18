@@ -103,9 +103,9 @@ class CoulombPotential(SoftMatterPotential):
         for k in range(0, self._fourier_cutoff + 1):
             for j in range(0, self._fourier_cutoff + 1):
                 for i in range(1, self._fourier_cutoff + 1):
-                    if (i == 0 and j == 0) or (j == 0 and k == 0) or (k == 0 and i == 0):
+                    if j == 0 and k == 0:
                         coefficient = 1.0
-                    elif i == 0 or j == 0 or k == 0:
+                    elif j == 0 or k == 0:
                         coefficient = 2.0
                     else:
                         coefficient = 4.0
