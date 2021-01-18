@@ -106,11 +106,7 @@ class ToroidalLeapfrogMediator(Mediator):
         float
             The potential of the candidate configuration.
         """
-        # todo why does this converge well for two coulomb particles but
-        #  candidate_momenta = self._momenta - 0.5 * self._step_size * self._potential.get_gradient(self._positions)
-        #  in place of the first two lines does not? Same result using LazyToroidalLeapfrogMediator.
-        candidate_momenta = self._momenta
-        candidate_momenta -= 0.5 * self._step_size * self._potential.get_gradient(self._positions)
+        candidate_momenta = self._momenta - 0.5 * self._step_size * self._potential.get_gradient(self._positions)
         candidate_positions = get_shortest_vectors_on_torus(self._positions + self._step_size *
                                                             self._kinetic_energy.get_gradient(candidate_momenta))
         for _ in range(self._number_of_integration_steps - 1):
