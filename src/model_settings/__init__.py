@@ -64,5 +64,8 @@ if (dimensionality_of_particle_space == 1 and size_of_particle_space is not None
         dimensionality_of_particle_space > 1 and size_of_particle_space[0] is not None):
     size_of_particle_space_over_two = 0.5 * np.atleast_1d(size_of_particle_space)
     size_of_particle_space_over_two.flags.writeable = False
+else:
+    size_of_particle_space_over_two = np.atleast_1d(size_of_particle_space)
+    size_of_particle_space_over_two.flags.writeable = False
 size_of_particle_space = np.atleast_1d(size_of_particle_space)
 size_of_particle_space.flags.writeable = False
