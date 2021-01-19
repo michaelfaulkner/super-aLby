@@ -98,7 +98,7 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
             distance_left_before_observation = self._distance_between_zig_zag_observations
             momentum_sign = np.random.choice((- 1.0, 1.0))
             while True:
-                distance_to_next_event = self._get_distance_from_origin_to_event()
+                distance_to_next_event = self._get_distance_from_origin_to_next_event()
                 if distance_left_before_observation < distance_to_next_event:
                     momenta[i] = momentum_sign * distance_left_before_observation
                     break
@@ -110,7 +110,7 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         return np.reshape(momenta, dimensionality_of_momenta_array)
 
     @abstractmethod
-    def _get_distance_from_origin_to_event(self):
+    def _get_distance_from_origin_to_next_event(self):
         r"""
         Returns the distance $|\eta|$ travelled (before the next zig-zag event) through the uphill part of
         one-dimensional momentum space, i.e., from the origin to $\eta$. This is calculated by inverting
