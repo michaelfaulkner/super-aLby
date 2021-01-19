@@ -95,8 +95,8 @@ class SuperRelativisticKineticEnergy(ZigZagKineticEnergy):
             is a float and represents one Cartesian component of the gradient of the kinetic energy of a single
             particle.
         """
-        return self._one_over_gamma * momenta * (
-                1 + self._one_over_gamma * momenta ** 2) ** self._power_over_two_minus_one
+        return self._one_over_gamma * (momenta * (1.0 + self._one_over_gamma * momenta ** 2) **
+                                       self._power_over_two_minus_one)
 
     def _get_distance_from_origin_to_next_event(self):
         r"""
@@ -112,5 +112,5 @@ class SuperRelativisticKineticEnergy(ZigZagKineticEnergy):
             The distance travelled (before the next zig-zag event) through the uphill part of one-dimensional momentum
             space.
         """
-        return self._root_gamma * (
-                (1.0 - self._power_over_beta * np.log(1.0 - np.random.random())) ** self._two_over_power - 1.0) ** 0.5
+        return self._root_gamma * ((1.0 - self._power_over_beta * np.log(1.0 - np.random.random())) **
+                                   self._two_over_power - 1.0) ** 0.5
