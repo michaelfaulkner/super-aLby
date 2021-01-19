@@ -98,7 +98,7 @@ class SuperRelativisticKineticEnergy(ZigZagKineticEnergy):
         return self._one_over_gamma * momenta * (
                 1 + self._one_over_gamma * momenta ** 2) ** self._power_over_two_minus_one
 
-    def _get_distance_from_origin_to_event(self):
+    def _get_distance_from_origin_to_next_event(self):
         r"""
         Returns the distance $|\eta|$ travelled (before the next zig-zag event) through the uphill part of
         one-dimensional momentum space, i.e., from the origin to $\eta$. This is calculated by inverting
