@@ -106,12 +106,6 @@ class ToroidalLeapfrogMediator(Mediator):
         float
             The potential of the candidate configuration.
         """
-        print(self._potential.get_gradient(self._positions))
-        delta = 0.0001
-        positions_plus_delta = self._positions + delta * np.array([[0.0, 0.0, 1.0], [0.0, 0.0, 0.0]])
-        test = self._potential.get_value(positions_plus_delta) - self._potential.get_value(self._positions)
-        print(test / delta)
-        os.exit()
         candidate_momenta = self._momenta - 0.5 * self._step_size * self._potential.get_gradient(self._positions)
         candidate_positions = get_shortest_vectors_on_torus(self._positions + self._step_size *
                                                             self._kinetic_energy.get_gradient(candidate_momenta))
