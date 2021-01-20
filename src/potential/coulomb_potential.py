@@ -10,7 +10,7 @@ import numpy as np
 
 
 class CoulombPotential(SoftMatterPotential):
-    # todo debug then add functionality for non-like charges and many particles
+    # todo add functionality for non-like charges and many particles
     r"""
     This class implements the machine-precise Coulomb potential
 
@@ -82,24 +82,17 @@ class CoulombPotential(SoftMatterPotential):
         if number_of_particles != 2:
             raise ConfigurationError(f"Give a value of 2 as the number_of_particles in [ModelSettings] when using "
                                      f"{self.__class__.__name__} as it is currently a two-particle potential.")
-
-        self._system_length = size_of_particle_space[0]  # todo convert to non-cubic particle spaces
-        pi_sq = np.pi * np.pi
+        self._system_length = size_of_particle_space[0]  # todo convert to non-cubic particle space
         self._fourier_cutoff = fourier_cutoff
         self._position_cutoff = position_cutoff
-
         self._alpha = alpha / self._system_length
         self._alpha_sq = self._alpha * self._alpha
         self._fourier_cutoff_sq = self._fourier_cutoff * self._fourier_cutoff
         self._position_cutoff_sq = self._position_cutoff * self._position_cutoff
         self._two_alpha_over_root_pi = 2 * self._alpha / np.sqrt(np.pi)
-        self.two_pi_over_length = 2 * np.pi / self._system_length
-        length_sq = self._system_length * self._system_length
-
-        fourier_list = [[[0.0 for _ in range(self._fourier_cutoff + 1)] for _ in
-                         range(self._fourier_cutoff + 1)] for _ in range(self._fourier_cutoff + 1)]
-        fourier_list_for_potential = [[[0.0 for _ in range(self._fourier_cutoff + 1)] for _ in
-                                       range(self._fourier_cutoff + 1)] for _ in range(self._fourier_cutoff + 1)]
+        self._two_pi_over_length = 2 * np.pi / self._system_length
+        self._length_sq = self._system_length ** 2
+        self._fourier_array = np.zeros((self._fourier_cutoff + 1, self._fourier_cutoff + 1, self._fourier_cutoff + 1))
         for k in range(0, self._fourier_cutoff + 1):
             for j in range(0, self._fourier_cutoff + 1):
                 for i in range(0, self._fourier_cutoff + 1):
@@ -111,24 +104,14 @@ class CoulombPotential(SoftMatterPotential):
                         coefficient = 4.0
                     norm_sq = i ** 2 + j ** 2 + k ** 2
                     if not (i == 0 and j == 0 and k == 0):
-                        base_fourier_list_component = 2 * coefficient * (
-                                np.exp(- pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / self._system_length)
-                        # todo change the following to 2 * base_fourier_list_component / self._system_length
-                        fourier_list[i][j][k] = 4.0 * i * coefficient * np.exp(- pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / length_sq
-                        fourier_list_for_potential[i][j][k] = 2.0 * coefficient * np.exp(- pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / self._system_length / np.pi
-
-        self._fourier_array = tuple(
-            [tuple([tuple(fourier_list[i][j]) for j in range(self._fourier_cutoff + 1)]) for i in
-             range(self._fourier_cutoff + 1)])
-
-        self._fourier_array_for_potential = tuple(
-            [tuple([tuple(fourier_list_for_potential[i][j]) for j in range(self._fourier_cutoff + 1)])
-             for i in range(self._fourier_cutoff + 1)])
-
+                        self._fourier_array[i, j, k] = 2.0 * coefficient * np.exp(- np.pi ** 2 * norm_sq /
+                                                                                  self._alpha_sq /
+                                                                                  self._length_sq) / norm_sq
+        self._fourier_array.flags.writeable = False
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            alpha=alpha, fourier_cutoff=fourier_cutoff, position_cutoff=position_cutoff,
                            prefactor=prefactor)
-        
+
     def get_value(self, positions):
         """
         Returns the potential for the given positions.
@@ -174,130 +157,95 @@ class CoulombPotential(SoftMatterPotential):
 
     def _get_two_particle_position_space_potential(self, separation):
         """Returns the position-space part of the Ewald sum of the two-particle potential."""
-        separation_x, separation_y, separation_z = separation
         two_particle_position_space_potential = 0.0
-
         for k in range(- self._position_cutoff, self._position_cutoff + 1):
-            vector_z_sq = (separation_z + k * self._system_length) * (separation_z + k * self._system_length)
+            vector_z_sq = (separation[2] + k * self._system_length) * (separation[2] + k * self._system_length)
             cutoff_y = int((self._position_cutoff_sq - k * k) ** 0.5)
             for j in range(- cutoff_y, cutoff_y + 1):
-                vector_y_sq = (separation_y + j * self._system_length) * (separation_y + j * self._system_length)
+                vector_y_sq = (separation[1] + j * self._system_length) * (separation[1] + j * self._system_length)
                 cutoff_x = int((self._position_cutoff_sq - j * j - k * k) ** 0.5)
                 for i in range(- cutoff_x, cutoff_x + 1):
-                    vector_x = separation_x + i * self._system_length
+                    vector_x = separation[0] + i * self._system_length
                     vector_sq = vector_x * vector_x + vector_y_sq + vector_z_sq
                     vector_norm = vector_sq ** 0.5
                     two_particle_position_space_potential += math.erfc(self._alpha * vector_norm) / vector_norm
-
         return two_particle_position_space_potential
 
     def _get_two_particle_fourier_space_potential(self, separation):
         """Returns the Fourier-space part of the Ewald sum of the two-particle potential."""
-        separation_x, separation_y, separation_z = separation
+        cos, sin = [1.0, 1.0, 1.0], [0.0, 0.0, 0.0]
+        delta_cos, delta_sin = self._set_delta_cos_and_delta_sin(separation)
         two_particle_fourier_space_potential = 0.0
-
-        delta_cos_x = np.cos(self.two_pi_over_length * separation_x)
-        delta_sin_x = np.sin(self.two_pi_over_length * separation_x)
-        delta_cos_y = np.cos(self.two_pi_over_length * separation_y)
-        delta_sin_y = np.sin(self.two_pi_over_length * separation_y)
-        delta_cos_z = np.cos(self.two_pi_over_length * separation_z)
-        delta_sin_z = np.sin(self.two_pi_over_length * separation_z)
-
-        cos_x = 1.0
-        sin_x = 0.0
-        cos_y = 1.0
-        sin_y = 0.0
-        cos_z = 1.0
-        sin_z = 0.0
-
         for i in range(0, self._fourier_cutoff + 1):
             cutoff_y = int((self._fourier_cutoff_sq - i * i) ** 0.5)
             for j in range(0, cutoff_y + 1):
                 cutoff_z = int((self._fourier_cutoff_sq - i * i - j * j) ** 0.5)
                 for k in range(0, cutoff_z + 1):
-                    two_particle_fourier_space_potential += (self._fourier_array_for_potential[i][j][k] *
-                                                             cos_x * cos_y * cos_z)
-                    if k != cutoff_z:
-                        store_cos_z = cos_z
-                        cos_z = store_cos_z * delta_cos_z - sin_z * delta_sin_z
-                        sin_z = sin_z * delta_cos_z + store_cos_z * delta_sin_z
-                    elif j != cutoff_y:
-                        store_cos_y = cos_y
-                        cos_y = store_cos_y * delta_cos_y - sin_y * delta_sin_y
-                        sin_y = sin_y * delta_cos_y + store_cos_y * delta_sin_y
-                        cos_z = 1.0
-                        sin_z = 0.0
-                    elif i != self._fourier_cutoff:
-                        store_cos_x = cos_x
-                        cos_x = store_cos_x * delta_cos_x - sin_x * delta_sin_x
-                        sin_x = sin_x * delta_cos_x + store_cos_x * delta_sin_x
-                        cos_y = 1.0
-                        sin_y = 0.0
-                        cos_z = 1.0
-                        sin_z = 0.0
+                    two_particle_fourier_space_potential += (self._fourier_array[i, j, k] * cos[0] * cos[1] * cos[2] /
+                                                             self._system_length / np.pi)
+                    cos, sin = self._update_trig_functions(cos, sin, delta_cos, delta_sin, cutoff_y, cutoff_z, i, j, k)
         return two_particle_fourier_space_potential
 
     def _get_two_particle_position_space_gradient(self, separation):
         """Returns the position-space part of the Ewald sum of the two-particle gradient."""
-        separation_x, separation_y, separation_z = separation
         two_particle_position_space_gradient = 0.0
-
         for k in range(- self._position_cutoff, self._position_cutoff + 1):
-            vector_z_sq = (separation_z + k * self._system_length) * (separation_z + k * self._system_length)
+            vector_z_sq = (separation[2] + k * self._system_length) * (separation[2] + k * self._system_length)
             cutoff_y = int((self._position_cutoff_sq - k * k) ** 0.5)
             for j in range(- cutoff_y, cutoff_y + 1):
-                vector_y_sq = (separation_y + j * self._system_length) * (separation_y + j * self._system_length)
+                vector_y_sq = (separation[1] + j * self._system_length) * (separation[1] + j * self._system_length)
                 cutoff_x = int((self._position_cutoff_sq - j * j - k * k) ** 0.5)
                 for i in range(- cutoff_x, cutoff_x + 1):
-                    vector_x = separation_x + i * self._system_length
+                    vector_x = separation[0] + i * self._system_length
                     vector_sq = vector_x * vector_x + vector_y_sq + vector_z_sq
                     vector_norm = vector_sq ** 0.5
-                    two_particle_position_space_gradient -= (
-                            vector_x * (self._two_alpha_over_root_pi * np.exp(- self._alpha_sq * vector_sq) +
-                                        math.erfc(self._alpha * vector_norm) / vector_norm) / vector_sq)
+                    two_particle_position_space_gradient -= (vector_x * (self._two_alpha_over_root_pi *
+                                                                         np.exp(- self._alpha_sq * vector_sq) +
+                                                                         math.erfc(self._alpha * vector_norm) /
+                                                                         vector_norm) / vector_sq)
         return two_particle_position_space_gradient
 
     def _get_two_particle_fourier_space_gradient(self, separation):
         """Returns the Fourier-space part of the Ewald sum of the two-particle gradient."""
-        separation_x, separation_y, separation_z = separation
+        delta_cos, delta_sin = self._set_delta_cos_and_delta_sin(separation)
+        cos, sin = [delta_cos[0], 1.0, 1.0], [delta_sin[0], 0.0, 0.0]
         two_particle_fourier_space_gradient = 0.0
-
-        delta_cos_x = np.cos(self.two_pi_over_length * separation_x)
-        delta_sin_x = np.sin(self.two_pi_over_length * separation_x)
-        delta_cos_y = np.cos(self.two_pi_over_length * separation_y)
-        delta_sin_y = np.sin(self.two_pi_over_length * separation_y)
-        delta_cos_z = np.cos(self.two_pi_over_length * separation_z)
-        delta_sin_z = np.sin(self.two_pi_over_length * separation_z)
-
-        cos_x = delta_cos_x
-        sin_x = delta_sin_x
-        cos_y = 1.0
-        sin_y = 0.0
-        cos_z = 1.0
-        sin_z = 0.0
-
         for i in range(1, self._fourier_cutoff + 1):
             cutoff_y = int((self._fourier_cutoff_sq - i * i) ** 0.5)
             for j in range(0, cutoff_y + 1):
                 cutoff_z = int((self._fourier_cutoff_sq - i * i - j * j) ** 0.5)
                 for k in range(0, cutoff_z + 1):
-                    two_particle_fourier_space_gradient -= self._fourier_array[i][j][k] * sin_x * cos_y * cos_z
-                    if k != cutoff_z:
-                        store_cos_z = cos_z
-                        cos_z = store_cos_z * delta_cos_z - sin_z * delta_sin_z
-                        sin_z = sin_z * delta_cos_z + store_cos_z * delta_sin_z
-                    elif j != cutoff_y:
-                        store_cos_y = cos_y
-                        cos_y = store_cos_y * delta_cos_y - sin_y * delta_sin_y
-                        sin_y = sin_y * delta_cos_y + store_cos_y * delta_sin_y
-                        cos_z = 1.0
-                        sin_z = 0.0
-                    elif i != self._fourier_cutoff:
-                        store_cos_x = cos_x
-                        cos_x = store_cos_x * delta_cos_x - sin_x * delta_sin_x
-                        sin_x = sin_x * delta_cos_x + store_cos_x * delta_sin_x
-                        cos_y = 1.0
-                        sin_y = 0.0
-                        cos_z = 1.0
-                        sin_z = 0.0
+                    two_particle_fourier_space_gradient -= (2.0 * i * self._fourier_array[i, j, k] *
+                                                            sin[0] * cos[1] * cos[2] / self._length_sq)
+                    cos, sin = self._update_trig_functions(cos, sin, delta_cos, delta_sin, cutoff_y, cutoff_z, i, j, k)
         return two_particle_fourier_space_gradient
+
+    def _set_delta_cos_and_delta_sin(self, separation):
+        """Returns the delta_cos and delta_sin functions for the two-particle Fourier-space calculations."""
+        return ([np.cos(self._two_pi_over_length * separation[0]), np.cos(self._two_pi_over_length * separation[1]),
+                 np.cos(self._two_pi_over_length * separation[2])],
+                [np.sin(self._two_pi_over_length * separation[0]), np.sin(self._two_pi_over_length * separation[1]),
+                 np.sin(self._two_pi_over_length * separation[2])])
+
+    def _update_trig_functions(self, cos, sin, delta_cos, delta_sin, cutoff_y, cutoff_z, i, j, k):
+        """Recalculates the cos, sin, delta_cos and delta_sin functions (which we implement after each iteration
+            through Fourier space) for the two-particle Fourier-space calculations."""
+        if k != cutoff_z:
+            store_cos_z = cos[2]
+            cos[2] = store_cos_z * delta_cos[2] - sin[2] * delta_sin[2]
+            sin[2] = sin[2] * delta_cos[2] + store_cos_z * delta_sin[2]
+        elif j != cutoff_y:
+            store_cos_y = cos[1]
+            cos[1] = store_cos_y * delta_cos[1] - sin[1] * delta_sin[1]
+            sin[1] = sin[1] * delta_cos[1] + store_cos_y * delta_sin[1]
+            cos[2] = 1.0
+            sin[2] = 0.0
+        elif i != self._fourier_cutoff:
+            store_cos_x = cos[0]
+            cos[0] = store_cos_x * delta_cos[0] - sin[0] * delta_sin[0]
+            sin[0] = sin[0] * delta_cos[0] + store_cos_x * delta_sin[0]
+            cos[1] = 1.0
+            sin[1] = 0.0
+            cos[2] = 1.0
+            sin[2] = 0.0
+        return cos, sin
