@@ -9,14 +9,15 @@ Carlo (though we did not name it).
 
 To install super-aLby, clone this repository.
 
-The super-aLby Python application was written using cPython 3.8 but is likely to support any Python version >= 3.6 
-(though we need to check this). super-aLby depends on [`numpy`](https://numpy.org). Some of the sample-analysis code 
-(i.e., scripts contained in the [`output`](src/output) directory) also depends on [`matplotlib`](
-https://matplotlib.org) and [`rpy2`](https://rpy2.github.io). [`markov_chain_diagnostics.py`](
-src/output/markov_chain_diagnostics.py) depends on the R package [`LaplacesDemon`](
-https://cran.r-project.org/web/packages/LaplacesDemon/), which must be installed in R: download [the relevant binary](
-https://cran.r-project.org/web/packages/LaplacesDemon/) at CRAN and then run `R CMD INSTALL <binary location>` in your 
-terminal.
+The super-aLby Python application was written in Python 3.8 but is likely to support any Python version >= 3.6 (though 
+we need to check this). It has been tested with cPython.
+
+super-aLby depends on [`numpy`](https://numpy.org). Some of the sample-analysis code (i.e., scripts contained in the 
+[`output`](src/output) directory) also depends on [`matplotlib`](https://matplotlib.org) and [`rpy2`](
+https://rpy2.github.io). [`markov_chain_diagnostics.py`](src/output/markov_chain_diagnostics.py) depends on the R 
+package [`LaplacesDemon`](https://cran.r-project.org/web/packages/LaplacesDemon/), which must be installed in R: 
+download [the relevant binary](https://cran.r-project.org/web/packages/LaplacesDemon/) at CRAN and then run `R CMD 
+INSTALL <binary location>` in your terminal.
 
 To manage external Python packages, we use [conda](https://docs.conda.io/projects/conda/en/latest/) environments via 
 the [miniconda distribution](https://docs.conda.io/en/latest/miniconda.html). However, we found [`rpy2`](
@@ -67,7 +68,7 @@ range_of_initial_particle_positions = 1.0
 ```
 
 `some_mediator` corresponds the mediator used (for this particular simulation) in the `run.py` file. The mediator 
-serves as the central hub in the application and also hosts the Markov process. The three possible mediators are 
+serves as the central hub of the application and also hosts the Markov process. The three possible mediators are 
 [`leapfrog_mediator`](src/mediator/leapfrog_mediator.py), which implements the simulation using the leapfrog numerical 
 integrator, [`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py), which differs from 
 [`leapfrog_mediator`](src/mediator/leapfrog_mediator.py) in that it corrects particle positions to account for periodic 
