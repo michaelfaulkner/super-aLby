@@ -58,7 +58,7 @@ class LennardJonesPotential(SoftMatterPotential):
         """
         separation_distance = np.linalg.norm(
             get_shortest_vectors_on_torus(positions[0] - positions[1])) / self._characteristic_length
-        return separation_distance ** (- 12) - separation_distance ** (- 6)
+        return separation_distance ** (- 12.0) - separation_distance ** (- 6.0)
 
     def get_gradient(self, positions):
         """
@@ -77,7 +77,7 @@ class LennardJonesPotential(SoftMatterPotential):
         """
         separation_vector = get_shortest_vectors_on_torus(positions[0] - positions[1])
         separation_distance = np.linalg.norm(separation_vector)
-        zero_particle_gradient = separation_vector * (
-                - separation_distance ** (- 14) * 12.0 * self._characteristic_length ** 12
-                + separation_distance ** (- 8) * 6.0 * self._characteristic_length ** 6)
+        zero_particle_gradient = - separation_vector * (
+                separation_distance ** (- 14.0) * 12.0 * self._characteristic_length ** 12.0 -
+                separation_distance ** (- 8.0) * 6.0 * self._characteristic_length ** 6.0)
         return np.array([zero_particle_gradient, - zero_particle_gradient])
