@@ -127,7 +127,7 @@ class Mediator(metaclass=ABCMeta):
             current_energy = self._kinetic_energy.get_value(self._momenta) + self._current_potential
             energy_change = self._kinetic_energy.get_value(candidate_momenta) + candidate_potential - current_energy
 
-            if energy_change / current_energy > 100.0:
+            if energy_change / current_energy > 1000.0:
                 self._number_of_unstable_trajectories += 1
             if self._use_metropolis_accept_reject:
                 if energy_change < 0.0 or np.random.uniform(0, 1) < np.exp(- beta * energy_change):
@@ -253,7 +253,7 @@ class Mediator(metaclass=ABCMeta):
         """Prints a summary of the completed Markov process to the screen."""
         acceptance_rate = self._number_of_accepted_trajectories / self._number_of_observations
         print(f"Metropolis-Hastings acceptance rate = {acceptance_rate}")
-        print(f"Number of unstable numerical trajectories (defined as a relative energy increases by two orders of "
+        print(f"Number of unstable numerical trajectories (defined as a relative energy increases by three orders of "
               f"magnitude) = {self._number_of_unstable_trajectories}")
         self._step_size /= beta
         if self._step_size_adaptor_is_on:
