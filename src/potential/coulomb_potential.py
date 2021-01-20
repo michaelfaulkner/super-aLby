@@ -102,19 +102,20 @@ class CoulombPotential(SoftMatterPotential):
                                        range(self._fourier_cutoff + 1)] for _ in range(self._fourier_cutoff + 1)]
         for k in range(0, self._fourier_cutoff + 1):
             for j in range(0, self._fourier_cutoff + 1):
-                for i in range(1, self._fourier_cutoff + 1):
-                    if j == 0 and k == 0:
+                for i in range(0, self._fourier_cutoff + 1):
+                    if (i == 0 and j == 0) or (j == 0 and k == 0) or (k == 0 and i == 0):
                         coefficient = 1.0
-                    elif j == 0 or k == 0:
+                    elif i == 0 or j == 0 or k == 0:
                         coefficient = 2.0
                     else:
                         coefficient = 4.0
                     norm_sq = i ** 2 + j ** 2 + k ** 2
-                    base_fourier_list_component = 2 * coefficient * (
-                            np.exp(- pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / self._system_length)
-                    # todo change the following to 2 * base_fourier_list_component / self._system_length
-                    fourier_list[i][j][k] = 4.0 * i * coefficient * np.exp(- pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / length_sq
-                    fourier_list_for_potential[i][j][k] = 2.0 * coefficient * np.exp(- pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / self._system_length / np.pi
+                    if not (i == 0 and j == 0 and k == 0):
+                        base_fourier_list_component = 2 * coefficient * (
+                                np.exp(- pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / self._system_length)
+                        # todo change the following to 2 * base_fourier_list_component / self._system_length
+                        fourier_list[i][j][k] = 4.0 * i * coefficient * np.exp(- pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / length_sq
+                        fourier_list_for_potential[i][j][k] = 2.0 * coefficient * np.exp(- pi_sq * norm_sq / self._alpha_sq / length_sq) / norm_sq / self._system_length / np.pi
 
         self._fourier_array = tuple(
             [tuple([tuple(fourier_list[i][j]) for j in range(self._fourier_cutoff + 1)]) for i in
@@ -202,14 +203,14 @@ class CoulombPotential(SoftMatterPotential):
         delta_cos_z = np.cos(self.two_pi_over_length * separation_z)
         delta_sin_z = np.sin(self.two_pi_over_length * separation_z)
 
-        cos_x = delta_cos_x
-        sin_x = delta_sin_x
+        cos_x = 1.0
+        sin_x = 0.0
         cos_y = 1.0
         sin_y = 0.0
         cos_z = 1.0
         sin_z = 0.0
 
-        for i in range(1, self._fourier_cutoff + 1):
+        for i in range(0, self._fourier_cutoff + 1):
             cutoff_y = int((self._fourier_cutoff_sq - i * i) ** 0.5)
             for j in range(0, cutoff_y + 1):
                 cutoff_z = int((self._fourier_cutoff_sq - i * i - j * j) ** 0.5)
