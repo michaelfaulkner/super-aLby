@@ -71,8 +71,12 @@ class LennardJonesPotential(SoftMatterPotential):
         self._characteristic_length = characteristic_length
         if cutoff_length == float('inf'):
             self._cutoff_length = None
+            self._bare_potential_at_cut_off = 0.0
         else:
             self._cutoff_length = cutoff_length
+            self._bare_potential_at_cut_off = (self._potential_prefactor_12 * cutoff_length ** (- 12.0) -
+                                               self._potential_prefactor_6 * cutoff_length ** (- 6.0))
+
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
     def get_value(self, positions):
@@ -89,11 +93,8 @@ class LennardJonesPotential(SoftMatterPotential):
         float
             The potential.
         """
-        separation_distance = np.linalg.norm(get_shortest_vectors_on_torus(positions[0] - positions[1]))
-        if self._cutoff_length is None or separation_distance <= self._cutoff_length:
-            return (self._potential_prefactor_12 * separation_distance ** (- 12.0) -
-                    self._potential_prefactor_6 * separation_distance ** (- 6.0))
-        return 0.0
+        return sum([self._get_bare_two_particle_potential(positions[i], positions[j])
+                    for i in range(number_of_particles) for j in range(i + 1, number_of_particles)])
 
     def get_gradient(self, positions):
         """
@@ -110,12 +111,56 @@ class LennardJonesPotential(SoftMatterPotential):
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
-        separation_vector = get_shortest_vectors_on_torus(positions[0] - positions[1])
+        gradient = np.empty((number_of_particles, 3))
+        for i in range(number_of_particles):
+            for j in range(i + 1, number_of_particles):
+                two_particle_gradient = self._get_two_particle_gradient(positions[0], positions[1])
+                gradient[i] = two_particle_gradient
+                gradient[j] = - two_particle_gradient
+        return gradient
+
+    def _get_bare_two_particle_potential(self, position_one, position_two):
+        """
+        Returns the bare Lennard-Jones potential for two particles.
+
+        Parameters
+        ----------
+        position_one : numpy.ndarray
+            The particle position vector of particle one.
+        position_two
+            The particle position vector of particle two.
+
+        Returns
+        -------
+        float
+            The bare two_particle Lennard-Jones potential.
+        """
+        separation_distance = np.linalg.norm(get_shortest_vectors_on_torus(position_one - position_two))
+        if self._cutoff_length is None or separation_distance <= self._cutoff_length:
+            return (self._potential_prefactor_12 * separation_distance ** (- 12.0) -
+                    self._potential_prefactor_6 * separation_distance ** (- 6.0) - self._bare_potential_at_cut_off)
+        return 0.0
+
+    def _get_two_particle_gradient(self, position_one, position_two):
+        """
+        Returns the gradient of the Lennard-Jones potential for two particles.
+
+        Parameters
+        ----------
+        position_one : numpy.ndarray
+            The particle position vector of particle one.
+        position_two
+            The particle position vector of particle two.
+
+        Returns
+        -------
+        numpy.ndarray
+            A one-dimensional numpy array of size dimensionality_of_particle_space; each element is a float and
+            represents one Cartesian component of the gradient of the two-particle Lennard-Jones potential.
+        """
+        separation_vector = get_shortest_vectors_on_torus(position_one - position_two)
         separation_distance = np.linalg.norm(separation_vector)
         if self._cutoff_length is None or separation_distance <= self._cutoff_length:
-            particle_zero_gradient = - separation_vector * (
-                    self._gradient_prefactor_12 * separation_distance ** (- 14.0) -
-                    self._gradient_prefactor_6 * separation_distance ** (- 8.0))
-        else:
-            particle_zero_gradient = 0.0
-        return np.array([particle_zero_gradient, - particle_zero_gradient])
+            return - separation_vector * (self._gradient_prefactor_12 * separation_distance ** (- 14.0) -
+                                          self._gradient_prefactor_6 * separation_distance ** (- 8.0))
+        return 0.0
