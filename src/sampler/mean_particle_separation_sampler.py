@@ -10,7 +10,7 @@ import numpy as np
 
 class MeanParticleSeparationSampler(Sampler):
     """
-    Class for taking observations of the positions of the system.
+    Class for taking observations of the mean particle-particle separation distances.
     """
 
     def __init__(self, output_directory: str):
@@ -29,8 +29,6 @@ class MeanParticleSeparationSampler(Sampler):
         ------
         base.exceptions.ConfigurationError
             If dimensionality_of_particle_space does not equal 1.
-        base.exceptions.ConfigurationError
-            If number_of_particles does not equal two.
         """
         super().__init__(output_directory)
         for component in np.atleast_1d(size_of_particle_space):
@@ -38,9 +36,6 @@ class MeanParticleSeparationSampler(Sampler):
                 raise ConfigurationError(f"Give a float for each component of size_of_particle_space in [ModelSettings]"
                                          f" when using {self.__class__.__name__} as {self.__class__.__name__} is "
                                          f"designed for toroidal systems.")
-        if number_of_particles != 2:
-            raise ConfigurationError(f"Give a value of 2 as the number_of_particles in [ModelSettings] when using "
-                                     f"{self.__class__.__name__} as it is currently a two-particle sampler.")
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            output_directory=output_directory)
 
@@ -58,7 +53,7 @@ class MeanParticleSeparationSampler(Sampler):
         numpy.ndarray
             Numpy array of zeros of the required structure.
         """
-        return np.zeros((total_number_of_iterations + 1, number_of_particle_pairs))
+        return np.zeros((total_number_of_iterations + 1, 1))
 
     def get_observation(self, momenta, positions):
         """
@@ -80,7 +75,8 @@ class MeanParticleSeparationSampler(Sampler):
         float
             The observation of the mean of all shortest (on the torus) particle-separation vectors.
         """
-        return np.linalg.norm(get_shortest_vectors_on_torus(positions[0] - positions[1]))
+        return sum([np.linalg.norm(get_shortest_vectors_on_torus(positions[i] - positions[j])) for i in
+                    range(number_of_particles) for j in range(i + 1, number_of_particles)]) / number_of_particle_pairs
 
     def output_sample(self, sample):
         """
