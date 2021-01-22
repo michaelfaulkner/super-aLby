@@ -82,7 +82,7 @@ def main(argv):
     sample_cdf = get_cumulative_distribution(sample[number_of_equilibration_iterations + 1:])
 
     plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
-    plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-rel-mc data')
+    plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-aLby data')
 
     plt.xlabel(r"$x$", fontsize=15, labelpad=10)
     plt.ylabel(r"$ \mathbb{P} \left( X < x \right)$", fontsize=15, labelpad=10)
