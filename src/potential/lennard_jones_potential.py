@@ -86,7 +86,8 @@ class LennardJonesPotential(SoftMatterPotential):
         Parameters
         ----------
         positions : numpy.ndarray
-            The particle position vectors {r_i}.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle.
 
         Returns
         -------
@@ -103,7 +104,8 @@ class LennardJonesPotential(SoftMatterPotential):
         Parameters
         ----------
         positions : numpy.ndarray
-            The particle position vectors {r_i}.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle.
 
         Returns
         -------
@@ -126,9 +128,11 @@ class LennardJonesPotential(SoftMatterPotential):
         Parameters
         ----------
         position_one : numpy.ndarray
-            The particle position vector of particle one.
+            A one-dimensional numpy array of size dimensionality_of_particle_space; each element is a float and
+            represents one Cartesian component of the position of particle one.
         position_two
-            The particle position vector of particle two.
+            A one-dimensional numpy array of size dimensionality_of_particle_space; each element is a float and
+            represents one Cartesian component of the position of particle two.
 
         Returns
         -------
@@ -148,9 +152,11 @@ class LennardJonesPotential(SoftMatterPotential):
         Parameters
         ----------
         position_one : numpy.ndarray
-            The particle position vector of particle one.
+            A one-dimensional numpy array of size dimensionality_of_particle_space; each element is a float and
+            represents one Cartesian component of the position of particle one.
         position_two
-            The particle position vector of particle two.
+            A one-dimensional numpy array of size dimensionality_of_particle_space; each element is a float and
+            represents one Cartesian component of the position of particle two.
 
         Returns
         -------
