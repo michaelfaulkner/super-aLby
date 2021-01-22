@@ -47,8 +47,9 @@ def main(argv):
                 reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_unit_charge_coulomb_particles_unit_cube_'
                                               'beta_2_reference_sample.csv', dtype=float, delimiter=',')
             else:
-                reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_5x5x5_cube_beta_'
-                                              '2_reference_sample.csv', dtype=float, delimiter=',')
+                reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_5x5x5_cube_well_'
+                                              'depth_one_quarter_beta_2_reference_sample.csv', dtype=float,
+                                              delimiter=',')
         except NoSectionError:
             sampler = factory.build_from_config(
                 config, strings.to_camel_case(config.get("LazyToroidalLeapfrogMediator", "sampler")), "sampler")
@@ -58,8 +59,9 @@ def main(argv):
                 reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_unit_charge_coulomb_particles_unit_cube_'
                                               'beta_2_reference_sample.csv', dtype=float, delimiter=',')
             else:
-                reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_5x5x5_cube_beta_'
-                                              '2_reference_sample.csv', dtype=float, delimiter=',')
+                reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_5x5x5_cube_well_'
+                                              'depth_one_quarter_beta_2_reference_sample.csv', dtype=float,
+                                              delimiter=',')
 
     reference_cdf = get_cumulative_distribution(reference_sample)
     sample = sampler.get_sample()
