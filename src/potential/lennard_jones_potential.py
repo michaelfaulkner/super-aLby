@@ -106,12 +106,12 @@ class LennardJonesPotential(SoftMatterPotential):
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
-        gradient = np.empty((number_of_particles, 3))
+        gradient = np.zeros((number_of_particles, 3))
         for i in range(number_of_particles):
             for j in range(i + 1, number_of_particles):
-                two_particle_gradient = self._get_two_particle_gradient(positions[0], positions[1])
-                gradient[i] = two_particle_gradient
-                gradient[j] = - two_particle_gradient
+                two_particle_gradient = self._get_two_particle_gradient(positions[i], positions[j])
+                gradient[i] += two_particle_gradient
+                gradient[j] -= two_particle_gradient
         return gradient
 
     def _get_bare_two_particle_potential(self, position_one, position_two):
