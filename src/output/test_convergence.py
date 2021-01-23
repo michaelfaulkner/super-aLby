@@ -21,8 +21,6 @@ markov_chain_diagnostics = importlib.import_module("output.markov_chain_diagnost
 def main(argv):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     config = parsing.read_config(parsing.parse_options(argv).config_file)
-    number_of_particles = int(config.get("ModelSettings", "number_of_particles"))
-
     try:
         sampler = factory.build_from_config(config, strings.to_camel_case(config.get("LeapfrogMediator", "sampler")),
                                             "sampler")
@@ -46,15 +44,11 @@ def main(argv):
                                                                    "number_of_equilibration_iterations")
             if config.get("ToroidalLeapfrogMediator", "potential") == 'coulomb_potential':
                 reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_unit_charge_coulomb_particles_unit_cube_'
-                                              'beta_2_mean_separation_reference_sample.csv', dtype=float, delimiter=',')
-            elif number_of_particles == 2:
-                reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_5x5x5_cube_well_'
-                                              'depth_one_quarter_beta_2_mean_separation_reference_sample.csv',
-                                              dtype=float, delimiter=',')
+                                              'beta_2_separation_reference_sample.csv', dtype=float, delimiter=',')
             else:
-                reference_sample = np.loadtxt('output/srmc_in_soft_matter/four_lennard_jones_particles_5x5x5_cube_'
-                                              'well_depth_one_quarter_beta_2_mean_separation_reference_sample.csv',
-                                              dtype=float, delimiter=',')
+                reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_5x5x5_cube_well_'
+                                              'depth_one_quarter_beta_2_separation_reference_sample.csv', dtype=float,
+                                              delimiter=',')
         except NoSectionError:
             sampler = factory.build_from_config(
                 config, strings.to_camel_case(config.get("LazyToroidalLeapfrogMediator", "sampler")), "sampler")
@@ -62,24 +56,19 @@ def main(argv):
                                                                    "number_of_equilibration_iterations")
             if config.get("LazyToroidalLeapfrogMediator", "potential") == 'coulomb_potential':
                 reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_unit_charge_coulomb_particles_unit_cube_'
-                                              'beta_2_mean_separation_reference_sample.csv', dtype=float, delimiter=',')
-            elif number_of_particles == 2:
-                reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_5x5x5_cube_well_'
-                                              'depth_one_quarter_beta_2_mean_separation_reference_sample.csv',
-                                              dtype=float, delimiter=',')
+                                              'beta_2_separation_reference_sample.csv', dtype=float, delimiter=',')
             else:
-                reference_sample = np.loadtxt('output/srmc_in_soft_matter/four_lennard_jones_particles_5x5x5_cube_'
-                                              'well_depth_one_quarter_beta_2_mean_separation_reference_sample.csv',
-                                              dtype=float, delimiter=',')
+                reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_5x5x5_cube_well_'
+                                              'depth_one_quarter_beta_2_separation_reference_sample.csv', dtype=float,
+                                              delimiter=',')
 
     reference_cdf = get_cumulative_distribution(reference_sample)
-    sample = sampler.get_sample()
+    sample = sampler.get_sample()[number_of_equilibration_iterations + 1:]
     if type(sample[0]) != np.float64:
-        sample = sample[:, 0]
-    sample_size = len(sample) - number_of_equilibration_iterations - 1
+        sample = sample.flatten()
     effective_sample_size = markov_chain_diagnostics.get_effective_sample_size(sample)
-    print(f"Effective sample size = {effective_sample_size} (from a total sample size of {sample_size}).")
-    sample_cdf = get_cumulative_distribution(sample[number_of_equilibration_iterations + 1:])
+    print(f"Effective sample size = {effective_sample_size} (from a total sample size of {len(sample)}).")
+    sample_cdf = get_cumulative_distribution(sample)
 
     plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
     plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-aLby data')
