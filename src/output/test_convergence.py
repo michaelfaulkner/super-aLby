@@ -63,9 +63,7 @@ def main(argv):
                                               delimiter=',')
 
     reference_cdf = get_cumulative_distribution(reference_sample)
-    sample = sampler.get_sample()[number_of_equilibration_iterations + 1:]
-    if type(sample[0]) != np.float64:
-        sample = sample.flatten()
+    sample = sampler.get_sample()[number_of_equilibration_iterations + 1:].flatten()
     effective_sample_size = markov_chain_diagnostics.get_effective_sample_size(sample)
     print(f"Effective sample size = {effective_sample_size} (from a total sample size of {len(sample)}).")
     sample_cdf = get_cumulative_distribution(sample)
