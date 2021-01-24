@@ -1,5 +1,5 @@
 """Module for the LazyToroidalLeapfrogIntegrator class."""
-from .mediator import Mediator
+from .leapfrog_mediator import LeapfrogMediator
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
@@ -11,7 +11,7 @@ import logging
 import numpy as np
 
 
-class LazyToroidalLeapfrogMediator(Mediator):
+class LazyToroidalLeapfrogMediator(LeapfrogMediator):
     """
     This class implements the mediator using the leapfrog numerical integrator with corrections of the particle
     positions to account for the toroidal geometry (using base.vectors.get_shortest_vectors_on_torus()). In contrast
@@ -108,6 +108,6 @@ class LazyToroidalLeapfrogMediator(Mediator):
         float
             The potential of the candidate configuration.
         """
-        momenta, candidate_positions = self._get_candidate_configuration_without_final_leapfrog_step()
-        return (momenta - 0.5 * self._step_size * self._potential.get_gradient(candidate_positions),
-                get_shortest_vectors_on_torus(candidate_positions), self._potential.get_value(candidate_positions))
+        (candidate_momenta, candidate_positions,
+         candidate_potential) = self._get_candidate_configuration_without_toroidal_corrections()
+        return candidate_momenta, get_shortest_vectors_on_torus(candidate_positions), candidate_potential
