@@ -69,16 +69,17 @@ range_of_initial_particle_positions = 1.0
 
 `some_mediator` corresponds the mediator used (for this particular simulation) in the `run.py` file. The mediator 
 serves as the central hub of the application and also hosts the Markov process. The three possible mediators are 
-[`leapfrog_mediator`](src/mediator/leapfrog_mediator.py), which implements the simulation using the leapfrog numerical 
-integrator, [`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py), which differs from 
-[`leapfrog_mediator`](src/mediator/leapfrog_mediator.py) in that it corrects particle positions to account for periodic 
-boundary conditions (i.e., for particles existing on a toroidal space) after each numerical integration step, and 
-[`lazy_toroidal_leapfrog_mediator`](src/mediator/lazy_toroidal_leapfrog_mediator.py), which differs from 
-[`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py) in that it corrects particle positions only 
-at the end of each leapfrog trajectory. We use [`leapfrog_mediator`](src/mediator/leapfrog_mediator.py) for models on 
-Euclidean space and [`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py) or 
-[`lazy_toroidal_leapfrog_mediator`](src/mediator/lazy_toroidal_leapfrog_mediator.py) for models on compact subspaces of 
-Euclidean space (with toroidal geometry).
+[`euclidean_leapfrog_mediator`](src/mediator/euclidean_leapfrog_mediator.py), which implements the simulation using the 
+leapfrog numerical integrator, [`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py), which 
+differs from [`euclidean_leapfrog_mediator`](src/mediator/euclidean_leapfrog_mediator.py) in that it corrects particle 
+positions to account for periodic boundary conditions (i.e., for particles existing on a toroidal space) after each 
+numerical integration step, and [`lazy_toroidal_leapfrog_mediator`](src/mediator/lazy_toroidal_leapfrog_mediator.py), 
+which differs from [`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py) in that it corrects 
+particle positions only at the end of each leapfrog trajectory. We use [`euclidean_leapfrog_mediator`](
+src/mediator/euclidean_leapfrog_mediator.py) for models on Euclidean space and [`toroidal_leapfrog_mediator`](
+src/mediator/toroidal_leapfrog_mediator.py) or [`lazy_toroidal_leapfrog_mediator`](
+src/mediator/lazy_toroidal_leapfrog_mediator.py) for models on compact subspaces of Euclidean space (with toroidal 
+geometry).
 
 The ```[ModelSettings]``` section specifies both the *NVT* physical parameters of the simulation and the range of the 
 initial particle positions. `beta` is a `float` that represents the inverse temperature. `number_of_particles` is an 

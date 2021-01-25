@@ -22,15 +22,15 @@ def main(argv):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     config = parsing.read_config(parsing.parse_options(argv).config_file)
     try:
-        sampler = factory.build_from_config(config, strings.to_camel_case(config.get("LeapfrogMediator", "sampler")),
-                                            "sampler")
-        number_of_equilibration_iterations = parsing.get_value(config, "LeapfrogMediator",
+        sampler = factory.build_from_config(config, strings.to_camel_case(config.get("EuclideanLeapfrogMediator",
+                                                                                     "sampler")), "sampler")
+        number_of_equilibration_iterations = parsing.get_value(config, "EuclideanLeapfrogMediator",
                                                                "number_of_equilibration_iterations")
-        if config.get("LeapfrogMediator", "potential") == 'exponential_power_potential' and config.get(
+        if config.get("EuclideanLeapfrogMediator", "potential") == 'exponential_power_potential' and config.get(
                 "ExponentialPowerPotential", "power") == "4.0":
             reference_sample = np.loadtxt('output/other_convergence_tests/fourth_exponential_power_variance_4_reference'
                                           '_sample.csv', dtype=float, delimiter=',')
-        elif config.get("LeapfrogMediator", "kinetic_energy") == 't_distribution_kinetic_energy':
+        elif config.get("EuclideanLeapfrogMediator", "kinetic_energy") == 't_distribution_kinetic_energy':
             reference_sample = np.loadtxt('output/other_convergence_tests/gaussian_variance_1_reference_sample.csv',
                                           dtype=float, delimiter=',')
         else:

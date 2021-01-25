@@ -1,17 +1,15 @@
-"""Module for the LeapfrogIntegrator class."""
+"""Module for the EuclideanAndLazyToroidalLeapfrogMediators class."""
 from .mediator import Mediator
-from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
 from kinetic_energy.kinetic_energy import KineticEnergy
-from model_settings import size_of_particle_space
 from potential.potential import Potential
 from sampler.sampler import Sampler
-import logging
+from abc import ABCMeta, abstractmethod
 
 
-class LeapfrogMediator(Mediator):
+class EuclideanAndLazyToroidalLeapfrogMediators(Mediator, metaclass=ABCMeta):
     """
-    This class implements the mediator using the leapfrog numerical integrator.
+    Abstract EuclideanAndLazyToroidalLeapfrogMediators class. This class provides a method common to both
+    EuclideanMediator and LazyToroidalLeapfrogMediator.
     """
 
     def __init__(self, kinetic_energy: KineticEnergy, potential: Potential, sampler: Sampler,
@@ -20,7 +18,7 @@ class LeapfrogMediator(Mediator):
                  randomise_number_of_integration_steps: bool = False, step_size_adaptor_is_on: bool = True,
                  use_metropolis_accept_reject: bool = True):
         r"""
-        The constructor of the LeapfrogMediator class.
+        The constructor of the EuclideanLeapfrogMediator class.
 
         Parameters
         ----------
@@ -65,26 +63,12 @@ class LeapfrogMediator(Mediator):
             If type(step_size_adaptor_is_on) is not bool.
         base.exceptions.ConfigurationError
             If type(use_metropolis_accept_reject) is not bool.
-        base.exceptions.ConfigurationError
-            If element is not None for element in size_of_particle_space.
         """
         super().__init__(kinetic_energy, potential, sampler, number_of_equilibration_iterations, number_of_observations,
                          initial_step_size, max_number_of_integration_steps, randomise_number_of_integration_steps,
                          step_size_adaptor_is_on, use_metropolis_accept_reject)
-        for element in size_of_particle_space:
-            if element is not None:
-                raise ConfigurationError(f"For each component of size_of_particle_space, give None when using "
-                                         f"{self.__class__.__name__}.")
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           kinetic_energy=kinetic_energy, potential_instance=potential, sampler=sampler,
-                           number_of_equilibration_iterations=number_of_equilibration_iterations,
-                           number_of_observations=number_of_observations,
-                           initial_step_size=initial_step_size,
-                           max_number_of_integration_steps=max_number_of_integration_steps,
-                           randomise_number_of_integration_steps=randomise_number_of_integration_steps,
-                           step_size_adaptor_is_on=step_size_adaptor_is_on,
-                           use_metropolis_accept_reject=use_metropolis_accept_reject)
 
+    @abstractmethod
     def _get_candidate_configuration(self):
         """
         Returns the candidate momenta, positions and potential after self._number_of_integration_steps integration
@@ -103,12 +87,12 @@ class LeapfrogMediator(Mediator):
         float
             The potential of the candidate configuration.
         """
-        return self._get_candidate_configuration_without_toroidal_corrections()
+        raise NotImplementedError
 
     def _get_candidate_configuration_without_toroidal_corrections(self):
         """
         Returns the candidate momenta, positions and potential after self._number_of_integration_steps integration
-        steps. This method is used in LeapfrogMediator._get_candidate_configuration() and
+        steps. This method is used in EuclideanLeapfrogMediator._get_candidate_configuration() and
         LazyToroidalLeapfrogMediator._get_candidate_configuration(), where the candidate positions are corrected for
         periodic boundaries in the latter case.
 
