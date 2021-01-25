@@ -46,8 +46,8 @@ class NealFunnelPotential(OneDimensionalParticleSpacePotential):
             The potential.
         """
         positions = np.reshape(positions, tuple([positions.shape[i] for i in range(len(positions.shape) - 1)]))
-        return positions[0] ** 2 / 18.0 + 9 * positions[0] / 2.0 + (
-                math.exp(-positions[0]) * np.sum(positions[1:len(positions)] ** 2) / 2.0)
+        return self._prefactor * (positions[0] ** 2 / 18.0 + 9 * positions[0] / 2.0 + math.exp(-positions[0]) *
+                                  np.sum(positions[1:len(positions)] ** 2) / 2.0)
 
     def get_gradient(self, positions):
         """
@@ -71,4 +71,4 @@ class NealFunnelPotential(OneDimensionalParticleSpacePotential):
         gradient[0] = positions[0] / 9.0 + 9 / 2.0 - (
                 math.exp(-positions[0]) * np.sum(positions[1:len(positions)] ** 2) / 2.0)
         gradient[1:len(positions)] = 2.0 * positions[1:len(positions)] * math.exp(-positions[0])
-        return self._get_higher_dimension_array(gradient)
+        return self._prefactor * self._get_higher_dimension_array(gradient)

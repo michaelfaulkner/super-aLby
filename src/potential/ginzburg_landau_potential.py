@@ -64,12 +64,10 @@ class GinzburgLandauPotential(OneDimensionalParticleSpacePotential):
             The potential.
         """
         positions = np.reshape(positions, tuple([positions.shape[i] for i in range(len(positions.shape) - 1)]))
-        return np.sum(
-            0.5 * self._one_minus_tau * positions ** 2 + 0.5 * self._tau_dot_alpha * (
-                    (self._pos_x_translation(positions) - positions) ** 2 +
-                    (self._pos_y_translation(positions) - positions) ** 2 +
-                    (self._pos_z_translation(positions) - positions) ** 2) +
-            0.25 * self._tau_dot_lambda * positions ** 4)
+        return self._prefactor * np.sum(0.5 * self._one_minus_tau * positions ** 2 + 0.5 * self._tau_dot_alpha * (
+                (self._pos_x_translation(positions) - positions) ** 2 +
+                (self._pos_y_translation(positions) - positions) ** 2 +
+                (self._pos_z_translation(positions) - positions) ** 2) + 0.25 * self._tau_dot_lambda * positions ** 4)
 
     def get_gradient(self, positions):
         """
@@ -89,11 +87,12 @@ class GinzburgLandauPotential(OneDimensionalParticleSpacePotential):
             is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
         positions = np.reshape(positions, tuple([positions.shape[i] for i in range(len(positions.shape) - 1)]))
-        return self._get_higher_dimension_array(self._one_minus_tau * positions - self._tau_dot_alpha * (
-                self._pos_x_translation(positions) + self._neg_x_translation(positions) +
-                self._pos_y_translation(positions) + self._neg_y_translation(positions) +
-                self._pos_z_translation(positions) + self._neg_z_translation(positions) - 6 * positions) +
-                                                self._tau_dot_lambda * positions ** 3)
+        return self._prefactor * self._get_higher_dimension_array(
+            self._one_minus_tau * positions - self._tau_dot_alpha * (
+                    self._pos_x_translation(positions) + self._neg_x_translation(positions) +
+                    self._pos_y_translation(positions) + self._neg_y_translation(positions) +
+                    self._pos_z_translation(positions) + self._neg_z_translation(positions) - 6 * positions) +
+            self._tau_dot_lambda * positions ** 3)
 
     def _pos_x_translation(self, position):
         # reshape to a self._lattice_length x self._lattice_length x self._lattice_length matrix

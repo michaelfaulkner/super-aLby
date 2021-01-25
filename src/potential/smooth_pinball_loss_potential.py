@@ -81,7 +81,7 @@ class SmoothPinballLossPotential(OneDimensionalParticleSpacePotential):
                         np.logaddexp(0.0, (self._y - x_dot_beta) / self._xi_dot_sigma) +
                         np.log(self._xi * self._sigma * self._beta_function_value))
         prior_vec = np.absolute(positions) ** self._power
-        return np.sum(pinball_loss) + self._lambda_hyperparameter * np.sum(prior_vec)
+        return self._prefactor * (np.sum(pinball_loss) + self._lambda_hyperparameter * np.sum(prior_vec))
 
     def get_gradient(self, positions):
         """
@@ -105,7 +105,7 @@ class SmoothPinballLossPotential(OneDimensionalParticleSpacePotential):
             component) ** self._power_minus_one for component in positions])
         logistic_term = self._logistic_function((self._y - np.inner(self._x, positions)) / self._xi_dot_sigma)
         mid_term = np.array([np.inner(logistic_term, self._x[:, i]) for i in range(len(positions))])
-        return self._get_higher_dimension_array(
+        return self._prefactor * self._get_higher_dimension_array(
             ((1 - self._tau) / self._sigma * self._x_sum + 1 / self._sigma * mid_term + prior_gradient))
 
     @staticmethod
