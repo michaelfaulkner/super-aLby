@@ -37,7 +37,7 @@ class InversePowerPotential(Potential):
                                          f"{self.__class__.__name__}.")
         if power < 1.0:
             raise ConfigurationError(f"Give a value not less than 1.0 as power in {self.__class__.__name__}.")
-        self._one_over_power = 1.0 / power
+        self._potential_constant = prefactor / power
         self._negative_power = - power
         self._negative_power_minus_two = - power - 2.0
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power, prefactor=prefactor)
@@ -58,8 +58,8 @@ class InversePowerPotential(Potential):
         float
             The potential.
         """
-        return self._one_over_power * np.sum(
-            np.linalg.norm(get_shortest_vectors_on_torus(positions), axis=1) ** self._negative_power)
+        return self._potential_constant * np.sum(np.linalg.norm(get_shortest_vectors_on_torus(positions), axis=1) **
+                                                 self._negative_power)
 
     def get_gradient(self, positions):
         """
@@ -79,4 +79,5 @@ class InversePowerPotential(Potential):
             is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
         toroidal_positions = get_shortest_vectors_on_torus(positions)
-        return - toroidal_positions * np.linalg.norm(toroidal_positions, axis=1) ** self._negative_power_minus_two
+        return - self._prefactor * toroidal_positions * np.linalg.norm(toroidal_positions,
+                                                                       axis=1) ** self._negative_power_minus_two
