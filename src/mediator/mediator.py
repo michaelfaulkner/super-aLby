@@ -227,8 +227,9 @@ class Mediator(metaclass=ABCMeta):
 
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
-        acceptance_rate = self._number_of_accepted_trajectories / self._number_of_observations
-        print(f"Metropolis-Hastings acceptance rate = {acceptance_rate}")
+        if self._use_metropolis_accept_reject:
+            acceptance_rate = self._number_of_accepted_trajectories / self._number_of_observations
+            print(f"Metropolis-Hastings acceptance rate = {acceptance_rate}")
         print(f"Number of unstable numerical trajectories (defined as a relative energy increases by three orders of "
               f"magnitude) = {self._number_of_unstable_trajectories}")
         self._step_size /= beta
@@ -238,7 +239,7 @@ class Mediator(metaclass=ABCMeta):
         else:
             print(f"Numerical step size = {self._step_size}")
         if self._randomise_number_of_integration_steps:
-            print(f"Max number of integration steps = {self._max_number_of_integration_steps}; number of integration "
-                  f"steps was randomised.")
+            print(f"Maximum number of integration steps = {self._max_number_of_integration_steps} (the number of "
+                  f"integration steps was randomised).")
         else:
             print(f"Number of integration steps = {self._max_number_of_integration_steps}")
