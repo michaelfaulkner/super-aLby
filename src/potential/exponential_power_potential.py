@@ -40,7 +40,7 @@ class ExponentialPowerPotential(Potential):
         if power < 1.0:
             raise ConfigurationError(f"Give a value not less than 1.0 as the power associated with "
                                      f"{self.__class__.__name__}.")
-        self._one_over_power = 1.0 / power
+        self._potential_constant = prefactor / power
         self._power = power
         self._power_minus_two = power - 2
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power, prefactor=prefactor)
@@ -61,7 +61,7 @@ class ExponentialPowerPotential(Potential):
         float
             The potential.
         """
-        return self._one_over_power * np.sum(np.absolute(positions) ** self._power)
+        return self._potential_constant * np.sum(np.absolute(positions) ** self._power)
 
     def get_gradient(self, positions):
         """
@@ -80,4 +80,4 @@ class ExponentialPowerPotential(Potential):
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
-        return positions * np.absolute(positions) ** self._power_minus_two
+        return self._prefactor * positions * np.absolute(positions) ** self._power_minus_two

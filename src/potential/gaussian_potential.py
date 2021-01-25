@@ -24,6 +24,7 @@ class GaussianPotential(Potential):
             If element is not None for element in size_of_particle_space.
         """
         super().__init__(prefactor=prefactor)
+        self._potential_constant = 0.5 * prefactor
         for element in size_of_particle_space:
             if element is not None:
                 raise ConfigurationError(f"For each component of size_of_particle_space, give None when using "
@@ -46,7 +47,7 @@ class GaussianPotential(Potential):
         float
             The potential.
         """
-        return 0.5 * np.sum(positions ** 2)
+        return self._potential_constant * np.sum(positions ** 2)
 
     def get_gradient(self, positions):
         """
@@ -65,4 +66,4 @@ class GaussianPotential(Potential):
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
-        return positions
+        return self._prefactor * positions
