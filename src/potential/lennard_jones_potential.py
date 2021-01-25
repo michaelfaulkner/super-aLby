@@ -75,18 +75,18 @@ class LennardJonesPotential(SoftMatterPotential):
         if characteristic_length < 0.5:
             raise ConfigurationError(f"Give a value not less than 0.5 for characteristic_length in "
                                      f"{self.__class__.__name__}.")
-        self._potential_prefactor_12 = 4.0 * prefactor * well_depth * characteristic_length ** 12
-        self._potential_prefactor_6 = 4.0 * prefactor * well_depth * characteristic_length ** 6
-        self._gradient_prefactor_12 = 12.0 * self._potential_prefactor_12
-        self._gradient_prefactor_6 = 6.0 * self._potential_prefactor_6
+        self._potential_12_constant = 4.0 * prefactor * well_depth * characteristic_length ** 12
+        self._potential_6_constant = 4.0 * prefactor * well_depth * characteristic_length ** 6
+        self._gradient_12_constant = 12.0 * self._potential_12_constant
+        self._gradient_6_constant = 6.0 * self._potential_6_constant
         self._characteristic_length = characteristic_length
         if cutoff_length == float('inf'):
             self._cutoff_length = None
             self._bare_potential_at_cut_off = 0.0
         else:
             self._cutoff_length = cutoff_length
-            self._bare_potential_at_cut_off = (self._potential_prefactor_12 * cutoff_length ** (- 12.0) -
-                                               self._potential_prefactor_6 * cutoff_length ** (- 6.0))
+            self._bare_potential_at_cut_off = (self._potential_12_constant * cutoff_length ** (- 12.0) -
+                                               self._potential_6_constant * cutoff_length ** (- 6.0))
 
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
@@ -152,8 +152,8 @@ class LennardJonesPotential(SoftMatterPotential):
         """
         separation_distance = np.linalg.norm(get_shortest_vectors_on_torus(position_one - position_two))
         if self._cutoff_length is None or separation_distance <= self._cutoff_length:
-            return (self._potential_prefactor_12 * separation_distance ** (- 12.0) -
-                    self._potential_prefactor_6 * separation_distance ** (- 6.0) - self._bare_potential_at_cut_off)
+            return (self._potential_12_constant * separation_distance ** (- 12.0) -
+                    self._potential_6_constant * separation_distance ** (- 6.0) - self._bare_potential_at_cut_off)
         return 0.0
 
     def _get_two_particle_gradient(self, position_one, position_two):
@@ -178,6 +178,6 @@ class LennardJonesPotential(SoftMatterPotential):
         separation_vector = get_shortest_vectors_on_torus(position_one - position_two)
         separation_distance = np.linalg.norm(separation_vector)
         if self._cutoff_length is None or separation_distance <= self._cutoff_length:
-            return - separation_vector * (self._gradient_prefactor_12 * separation_distance ** (- 14.0) -
-                                          self._gradient_prefactor_6 * separation_distance ** (- 8.0))
+            return - separation_vector * (self._gradient_12_constant * separation_distance ** (- 14.0) -
+                                          self._gradient_6_constant * separation_distance ** (- 8.0))
         return 0.0
