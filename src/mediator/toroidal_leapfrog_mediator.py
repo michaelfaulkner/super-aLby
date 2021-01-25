@@ -79,7 +79,7 @@ class ToroidalLeapfrogMediator(Mediator):
                 raise ConfigurationError(f"For each component of size_of_particle_space, give a float value when using "
                                          f"{self.__class__.__name__}.")
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           kinetic_energy=kinetic_energy, potential_instance=potential, sampler=sampler,
+                           kinetic_energy=kinetic_energy, potential=potential, sampler=sampler,
                            number_of_equilibration_iterations=number_of_equilibration_iterations,
                            number_of_observations=number_of_observations,
                            initial_step_size=initial_step_size,
