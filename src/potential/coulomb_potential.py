@@ -104,9 +104,9 @@ class CoulombPotential(SoftMatterPotential):
                         coefficient = 4.0
                     norm_sq = i ** 2 + j ** 2 + k ** 2
                     if not (i == 0 and j == 0 and k == 0):
-                        self._fourier_array[i, j, k] = 2.0 * coefficient * np.exp(- np.pi ** 2 * norm_sq /
-                                                                                  self._alpha_sq /
-                                                                                  self._length_sq) / norm_sq
+                        self._fourier_array[i, j, k] = 2.0 * prefactor * coefficient * np.exp(- np.pi ** 2 * norm_sq /
+                                                                                              self._alpha_sq /
+                                                                                              self._length_sq) / norm_sq
         self._fourier_array.flags.writeable = False
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            alpha=alpha, fourier_cutoff=fourier_cutoff, position_cutoff=position_cutoff,
@@ -169,7 +169,7 @@ class CoulombPotential(SoftMatterPotential):
                     vector_sq = vector_x * vector_x + vector_y_sq + vector_z_sq
                     vector_norm = vector_sq ** 0.5
                     two_particle_position_space_potential += math.erfc(self._alpha * vector_norm) / vector_norm
-        return two_particle_position_space_potential
+        return self._prefactor * two_particle_position_space_potential
 
     def _get_two_particle_fourier_space_potential(self, separation):
         """Returns the Fourier-space part of the Ewald sum of the two-particle potential."""
@@ -203,7 +203,7 @@ class CoulombPotential(SoftMatterPotential):
                                                                          np.exp(- self._alpha_sq * vector_sq) +
                                                                          math.erfc(self._alpha * vector_norm) /
                                                                          vector_norm) / vector_sq)
-        return two_particle_position_space_gradient
+        return self._prefactor * two_particle_position_space_gradient
 
     def _get_two_particle_fourier_space_gradient(self, separation):
         """Returns the Fourier-space part of the Ewald sum of the two-particle gradient."""

@@ -1,8 +1,9 @@
 """Module for the LennardJonesPotential class."""
 from .soft_matter_potential import SoftMatterPotential
+from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
-from model_settings import number_of_particles
+from model_settings import number_of_particles, size_of_particle_space
 import logging
 import numpy as np
 
@@ -55,10 +56,27 @@ class LennardJonesPotential(SoftMatterPotential):
         base.exceptions.ConfigurationError
             If model_settings.range_of_initial_particle_positions does not give an real-valued interval for each
             component of the initial positions of each particle.
+        base.exceptions.ConfigurationError
+            If element is less than 2.0 * characteristic_length for element in size_of_particle_space.
+        base.exceptions.ConfigurationError
+            If cutoff_length is less than 2.5 * characteristic_length.
+        base.exceptions.ConfigurationError
+            If characteristic_length is less than 0.5.
         """
         super().__init__(prefactor)
-        self._potential_prefactor_12 = 4.0 * well_depth * characteristic_length ** 12
-        self._potential_prefactor_6 = 4.0 * well_depth * characteristic_length ** 6
+        for element in size_of_particle_space:
+            if element < 2.0 * characteristic_length:
+                raise ConfigurationError(f"Ensure that the value of each component of size_of_particle_space is not "
+                                         f"less than twice the value of characteristic_length in "
+                                         f"{self.__class__.__name__}.")
+        if cutoff_length < 2.5 * characteristic_length:
+            raise ConfigurationError(f"Ensure that the value of cutoff_length is not less than 2.5 times the value of "
+                                     f"characteristic_length in {self.__class__.__name__}.")
+        if characteristic_length < 0.5:
+            raise ConfigurationError(f"Give a value not less than 0.5 for characteristic_length in "
+                                     f"{self.__class__.__name__}.")
+        self._potential_prefactor_12 = 4.0 * prefactor * well_depth * characteristic_length ** 12
+        self._potential_prefactor_6 = 4.0 * prefactor * well_depth * characteristic_length ** 6
         self._gradient_prefactor_12 = 12.0 * self._potential_prefactor_12
         self._gradient_prefactor_6 = 6.0 * self._potential_prefactor_6
         self._characteristic_length = characteristic_length
