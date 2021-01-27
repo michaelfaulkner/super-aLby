@@ -130,10 +130,11 @@ class LennardJonesPotential(SoftMatterPotential):
                 for cell_two in itertools.product(range(cell_one[0] - 1, cell_one[0] + 1),
                                                   range(cell_one[1] - 1, cell_one[1] + 1),
                                                   range(cell_one[2] - 1, cell_one[2] + 1)):
-                    cell_two_index = self._get_cell_index([(element + self._number_of_cells_in_each_direction[index] /
-                                                            2) % self._number_of_cells_in_each_direction[index] -
-                                                           self._number_of_cells_in_each_direction[index] / 2
-                                                           for index, element in enumerate(cell_two)])
+                    cell_two = [int((element + self._number_of_cells_in_each_direction[index] / 2) %
+                                    self._number_of_cells_in_each_direction[index] -
+                                    self._number_of_cells_in_each_direction[index] / 2) for index, element in
+                                enumerate(cell_two)]
+                    cell_two_index = self._get_cell_index(cell_two)
                     particle_one_index = self._leading_particle_of_cell[cell_one_index]
                     while particle_one_index is not None:
                         particle_two_index = self._leading_particle_of_cell[cell_two_index]
@@ -260,7 +261,7 @@ class LennardJonesPotential(SoftMatterPotential):
         """
         self._leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
         for index, position in enumerate(positions):
-            cell = position // self._cell_size
+            cell = np.int_(position // self._cell_size)
             cell_index = self._get_cell_index(cell)
             self._particle_links[index] = self._leading_particle_of_cell[cell_index]
             self._leading_particle_of_cell[cell_index] = index
