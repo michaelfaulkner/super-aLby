@@ -111,7 +111,7 @@ class LennardJonesPotential(SoftMatterPotential):
             The potential.
         """
         if self._cutoff_length is None:
-            return sum([self._get_bare_two_particle_potential(
+            return sum([self._get_non_zero_two_particle_potential(
                 np.linalg.norm(get_shortest_vectors_on_torus(positions[i] - positions[j])))
                 for i in range(number_of_particles) for j in range(i + 1, number_of_particles)])
         potential = 0.0
@@ -138,7 +138,7 @@ class LennardJonesPotential(SoftMatterPotential):
                             separation_distance = np.linalg.norm(get_shortest_vectors_on_torus(
                                 positions[particle_one_index] - positions[particle_two_index]))
                             if separation_distance <= self._cutoff_length:
-                                potential += self._get_bare_two_particle_potential(separation_distance)
+                                potential += self._get_non_zero_two_particle_potential(separation_distance)
                         particle_two_index = self._particle_links[particle_two_index]
                     particle_one_index = self._particle_links[particle_one_index]
         return potential
@@ -167,9 +167,10 @@ class LennardJonesPotential(SoftMatterPotential):
                 gradient[j] -= two_particle_gradient
         return gradient
 
-    def _get_bare_two_particle_potential(self, separation_distance):
+    def _get_non_zero_two_particle_potential(self, separation_distance):
         """
-        Returns the bare Lennard-Jones potential for two particles.
+        Returns the Lennard-Jones potential for two particles whose shortest separation distance is not greater than
+        self._cutoff_length.
 
         Parameters
         ----------
@@ -179,7 +180,7 @@ class LennardJonesPotential(SoftMatterPotential):
         Returns
         -------
         float
-            The bare two_particle Lennard-Jones potential.
+            The two-particle Lennard-Jones potential (for all cases for which it is non-zero).
         """
         return (self._potential_12_constant * separation_distance ** (- 12.0) -
                 self._potential_6_constant * separation_distance ** (- 6.0) - self._bare_potential_at_cut_off)
