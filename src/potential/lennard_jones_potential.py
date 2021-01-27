@@ -25,7 +25,7 @@ class LennardJonesPotential(SoftMatterPotential):
 
     is the two-particle Lennard-Jones potential, and
 
-        $ U_{{\rm LJ}, ij}^{\rm bare}(r_{ij}) = 4 \epsilon \left[\left(\frac{\sigma}{r_{ij}}\right)^12 -
+        $ U_{{\rm LJ}, ij}^{\rm bare}(r_{ij}) = 4 \epsilon \left[\left(\frac{\sigma}{r_{ij}}\right)^{12} -
             \left(\frac{\sigma}{r_{ij}}\right)^6\right]$
 
     is the bare two-particle Lennard-Jones potential. In the above, $\epsilon$ is bare well depth, $\sigma$ is the
