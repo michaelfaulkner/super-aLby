@@ -80,7 +80,7 @@ class LennardJonesPotential(SoftMatterPotential):
         if characteristic_length < 0.5:
             raise ConfigurationError(f"Give a value not less than 0.5 for characteristic_length in "
                                      f"{self.__class__.__name__}.")
-        if use_linked_lists is True and dimensionality_of_particle_space == 3:
+        if use_linked_lists is True and dimensionality_of_particle_space != 3:
             raise ConfigurationError(f"For size_of_particle_space, give a one-dimensional list of length 3 (and "
                                      f"composed of floats) when use_linked_lists in {self.__class__.__name__} is True. "
                                      f"This is because the dimensionality of particle space must be 3 when using the "
@@ -99,7 +99,7 @@ class LennardJonesPotential(SoftMatterPotential):
                                                self._potential_6_constant * cutoff_length ** (- 6.0))
         self._use_linked_lists = use_linked_lists
         self._number_of_cells_in_each_direction = np.int_(size_of_particle_space / self._cutoff_length)
-        self._total_number_of_cells = np.multiply(self._number_of_cells_in_each_direction)
+        self._total_number_of_cells = np.prod(self._number_of_cells_in_each_direction)
         self._cell_size = size_of_particle_space / self._number_of_cells_in_each_direction
         self._leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
         self._particle_links = [None for _ in range(number_of_particles)]
@@ -147,8 +147,8 @@ class LennardJonesPotential(SoftMatterPotential):
                         particle_one_index = self._particle_links[particle_one_index]
             return potential
         elif self._cutoff_length is not None:
-            return sum([self._get_two_particle_potential(positions[i] - positions[j]) for i in
-                        range(number_of_particles) for j in range(i + 1, number_of_particles)])
+            return sum([self._get_two_particle_potential(positions[i], positions[j]) for i in range(number_of_particles)
+                        for j in range(i + 1, number_of_particles)])
         return sum([self._get_non_zero_two_particle_potential(
             np.linalg.norm(get_shortest_vectors_on_torus(positions[i] - positions[j]))) for i in
             range(number_of_particles) for j in range(i + 1, number_of_particles)])
