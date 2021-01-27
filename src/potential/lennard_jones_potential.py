@@ -259,8 +259,8 @@ class LennardJonesPotential(SoftMatterPotential):
         """
         self._leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
         for index, position in enumerate(positions):
-            cell_coordinates = position // self._cell_size
-            cell_index = self._get_cell_index(cell_coordinates)
+            cell = position // self._cell_size
+            cell_index = self._get_cell_index(cell)
             self._particle_links[index] = self._leading_particle_of_cell[cell_index]
             self._leading_particle_of_cell[cell_index] = index
 
