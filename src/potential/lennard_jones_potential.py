@@ -68,6 +68,8 @@ class LennardJonesPotential(SoftMatterPotential):
             If characteristic_length is less than 0.5.
         base.exceptions.ConfigurationError
             If use_linked_lists is True and dimensionality_of_particle_space does not equal 3.
+        base.exceptions.ConfigurationError
+            If use_linked_lists is True and cutoff_length is inf.
         """
         super().__init__(prefactor)
         for element in size_of_particle_space:
@@ -86,6 +88,9 @@ class LennardJonesPotential(SoftMatterPotential):
                                      f"composed of floats) when use_linked_lists in {self.__class__.__name__} is True. "
                                      f"This is because the dimensionality of particle space must be 3 when using the "
                                      f"linked-lists algorithm in {self.__class__.__name__}.")
+        if use_linked_lists is True and cutoff_length == float('inf'):
+            raise ConfigurationError(f"When the value of cutoff_length in {self.__class__.__name__} is inf, give a "
+                                     f"value of False for use_linked_lists in {self.__class__.__name__}.")
         self._potential_12_constant = 4.0 * prefactor * well_depth * characteristic_length ** 12
         self._potential_6_constant = 4.0 * prefactor * well_depth * characteristic_length ** 6
         self._gradient_12_constant = 12.0 * self._potential_12_constant
@@ -105,7 +110,9 @@ class LennardJonesPotential(SoftMatterPotential):
             self._cell_size = size_of_particle_space / self._number_of_cells_in_each_direction
             self._leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
             self._particle_links = [None for _ in range(number_of_particles)]
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
+                           characteristic_length=characteristic_length, well_depth=well_depth,
+                           cutoff_length=cutoff_length, use_linked_lists=use_linked_lists, prefactor=prefactor)
 
     def get_value(self, positions):
         """
