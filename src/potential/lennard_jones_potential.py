@@ -3,7 +3,7 @@ from .soft_matter_potential import SoftMatterPotential
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
-from model_settings import number_of_particles, size_of_particle_space
+from model_settings import dimensionality_of_particle_space, number_of_particles, size_of_particle_space
 import itertools
 import logging
 import numpy as np
@@ -34,7 +34,7 @@ class LennardJonesPotential(SoftMatterPotential):
     """
 
     def __init__(self, characteristic_length: float = 1.0, well_depth: float = 1.0, cutoff_length: float = 2.5,
-                 prefactor: float = 1.0) -> None:
+                 use_linked_lists: bool = False, prefactor: float = 1.0) -> None:
         """
         The constructor of the LennardJonesPotential class.
 
@@ -49,6 +49,8 @@ class LennardJonesPotential(SoftMatterPotential):
         cutoff_length : float, optional
             The cutoff distance at which the bare potential is truncated. If no cutoff is required, give inf in the
             configuration file.
+        use_linked_lists : bool, optional
+            If True, use the linked-lists cell algorithm.
         prefactor : float, optional
             The prefactor k of the potential.
 
@@ -63,6 +65,8 @@ class LennardJonesPotential(SoftMatterPotential):
             If cutoff_length is less than 2.5 * characteristic_length.
         base.exceptions.ConfigurationError
             If characteristic_length is less than 0.5.
+        base.exceptions.ConfigurationError
+            If use_linked_lists is True and dimensionality_of_particle_space does not equal 3.
         """
         super().__init__(prefactor)
         for element in size_of_particle_space:
@@ -76,6 +80,11 @@ class LennardJonesPotential(SoftMatterPotential):
         if characteristic_length < 0.5:
             raise ConfigurationError(f"Give a value not less than 0.5 for characteristic_length in "
                                      f"{self.__class__.__name__}.")
+        if use_linked_lists is True and dimensionality_of_particle_space == 3:
+            raise ConfigurationError(f"For size_of_particle_space, give a one-dimensional list of length 3 (and "
+                                     f"composed of floats) when use_linked_lists in {self.__class__.__name__} is True. "
+                                     f"This is because the dimensionality of particle space must be 3 when using the "
+                                     f"linked-lists algorithm in {self.__class__.__name__}.")
         self._potential_12_constant = 4.0 * prefactor * well_depth * characteristic_length ** 12
         self._potential_6_constant = 4.0 * prefactor * well_depth * characteristic_length ** 6
         self._gradient_12_constant = 12.0 * self._potential_12_constant
@@ -88,6 +97,7 @@ class LennardJonesPotential(SoftMatterPotential):
             self._cutoff_length = cutoff_length
             self._bare_potential_at_cut_off = (self._potential_12_constant * cutoff_length ** (- 12.0) -
                                                self._potential_6_constant * cutoff_length ** (- 6.0))
+        self._use_linked_lists = use_linked_lists
         self._number_of_cells_in_each_direction = np.array([2, 2, 2])
         self._total_number_of_cells = np.multiply(self._number_of_cells_in_each_direction)
         self._cell_size = size_of_particle_space / self._number_of_cells_in_each_direction
@@ -119,17 +129,13 @@ class LennardJonesPotential(SoftMatterPotential):
         for cell_one in itertools.product(range(self._number_of_cells_in_each_direction[0]),
                                           range(self._number_of_cells_in_each_direction[1]),
                                           range(self._number_of_cells_in_each_direction[2])):
-            cell_one_index = (cell_one[0] + self._number_of_cells_in_each_direction[0] * cell_one[1] +
-                              self._number_of_cells_in_each_direction[0] *
-                              self._number_of_cells_in_each_direction[1] * cell_one[2])
+            cell_one_index = self._get_cell_index(cell_one)
             for cell_two in itertools.product(range(cell_one[0] - 1, cell_one[0] + 1),
                                               range(cell_one[1] - 1, cell_one[1] + 1),
                                               range(cell_one[2] - 1, cell_one[2] + 1)):
                 cell_two = [element % self._number_of_cells_in_each_direction[index] for index, element in
                             enumerate(cell_two)]
-                cell_two_index = (cell_two[0] + self._number_of_cells_in_each_direction[0] * cell_two[1] +
-                                  self._number_of_cells_in_each_direction[0] *
-                                  self._number_of_cells_in_each_direction[1] * cell_two[2])
+                cell_two_index = self._get_cell_index(cell_two)
                 particle_one_index = self._leading_particle_of_cell[cell_one_index]
                 while particle_one_index is not None:
                     particle_two_index = self._leading_particle_of_cell[cell_two_index]
@@ -228,8 +234,10 @@ class LennardJonesPotential(SoftMatterPotential):
         self._leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
         for index, position in enumerate(positions):
             cell_coordinates = position // self._cell_size
-            cell_index = (cell_coordinates[0] + self._number_of_cells_in_each_direction[0] * cell_coordinates[1] +
-                          self._number_of_cells_in_each_direction[0] * self._number_of_cells_in_each_direction[1] *
-                          cell_coordinates[2])
+            cell_index = self._get_cell_index(cell_coordinates)
             self._particle_links[index] = self._leading_particle_of_cell[cell_index]
             self._leading_particle_of_cell[cell_index] = index
+
+    def _get_cell_index(self, cell):
+        return (cell[0] + self._number_of_cells_in_each_direction[0] * cell[1] +
+                self._number_of_cells_in_each_direction[0] * self._number_of_cells_in_each_direction[1] * cell[2])
