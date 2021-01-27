@@ -45,9 +45,13 @@ def main(argv):
             if config.get("ToroidalLeapfrogMediator", "potential") == 'coulomb_potential':
                 reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_unit_charge_coulomb_particles_unit_cube_'
                                               'beta_2_separation_reference_sample.csv', dtype=float, delimiter=',')
-            else:
+            elif config.get("ModelSettings", "number_of_particles") == '2':
                 reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_5x5x5_cube_well_'
                                               'depth_one_quarter_beta_2_separation_reference_sample.csv', dtype=float,
+                                              delimiter=',')
+            else:
+                reference_sample = np.loadtxt('output/srmc_in_soft_matter/eight_lennard_jones_particles_8x8x8_cube_'
+                                              'cutoff_3_beta_1_separation_reference_sample.csv', dtype=float,
                                               delimiter=',')
         except NoSectionError:
             sampler = factory.build_from_config(
@@ -57,9 +61,13 @@ def main(argv):
             if config.get("LazyToroidalLeapfrogMediator", "potential") == 'coulomb_potential':
                 reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_unit_charge_coulomb_particles_unit_cube_'
                                               'beta_2_separation_reference_sample.csv', dtype=float, delimiter=',')
-            else:
+            elif config.get("ModelSettings", "number_of_particles") == '2':
                 reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_5x5x5_cube_well_'
                                               'depth_one_quarter_beta_2_separation_reference_sample.csv', dtype=float,
+                                              delimiter=',')
+            else:
+                reference_sample = np.loadtxt('output/srmc_in_soft_matter/eight_lennard_jones_particles_8x8x8_cube_'
+                                              'cutoff_3_beta_1_separation_reference_sample.csv', dtype=float,
                                               delimiter=',')
 
     reference_cdf = get_cumulative_distribution(reference_sample)
