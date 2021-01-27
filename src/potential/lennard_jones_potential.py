@@ -130,9 +130,10 @@ class LennardJonesPotential(SoftMatterPotential):
                 for cell_two in itertools.product(range(cell_one[0] - 1, cell_one[0] + 1),
                                                   range(cell_one[1] - 1, cell_one[1] + 1),
                                                   range(cell_one[2] - 1, cell_one[2] + 1)):
-                    cell_two = [element % self._number_of_cells_in_each_direction[index] for index, element in
-                                enumerate(cell_two)]
-                    cell_two_index = self._get_cell_index(cell_two)
+                    cell_two_index = self._get_cell_index([(element + self._number_of_cells_in_each_direction[index] /
+                                                            2) % self._number_of_cells_in_each_direction[index] -
+                                                           self._number_of_cells_in_each_direction[index] / 2
+                                                           for index, element in enumerate(cell_two)])
                     particle_one_index = self._leading_particle_of_cell[cell_one_index]
                     while particle_one_index is not None:
                         particle_two_index = self._leading_particle_of_cell[cell_two_index]
@@ -150,7 +151,7 @@ class LennardJonesPotential(SoftMatterPotential):
                         range(number_of_particles) for j in range(i + 1, number_of_particles)])
         return sum([self._get_non_zero_two_particle_potential(
             np.linalg.norm(get_shortest_vectors_on_torus(positions[i] - positions[j]))) for i in
-                    range(number_of_particles) for j in range(i + 1, number_of_particles)])
+            range(number_of_particles) for j in range(i + 1, number_of_particles)])
 
     def get_gradient(self, positions):
         """
