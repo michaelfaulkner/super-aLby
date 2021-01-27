@@ -4,6 +4,7 @@ from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
 from model_settings import dimensionality_of_particle_space, number_of_particles, size_of_particle_space
+from typing import Sequence
 import itertools
 import logging
 import numpy as np
@@ -98,11 +99,12 @@ class LennardJonesPotential(SoftMatterPotential):
             self._bare_potential_at_cut_off = (self._potential_12_constant * cutoff_length ** (- 12.0) -
                                                self._potential_6_constant * cutoff_length ** (- 6.0))
         self._use_linked_lists = use_linked_lists
-        self._number_of_cells_in_each_direction = np.int_(size_of_particle_space / self._cutoff_length)
-        self._total_number_of_cells = np.prod(self._number_of_cells_in_each_direction)
-        self._cell_size = size_of_particle_space / self._number_of_cells_in_each_direction
-        self._leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
-        self._particle_links = [None for _ in range(number_of_particles)]
+        if self._use_linked_lists:
+            self._number_of_cells_in_each_direction = np.int_(size_of_particle_space / self._cutoff_length)
+            self._total_number_of_cells = int(np.prod(self._number_of_cells_in_each_direction))
+            self._cell_size = size_of_particle_space / self._number_of_cells_in_each_direction
+            self._leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
+            self._particle_links = [None for _ in range(number_of_particles)]
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
     def get_value(self, positions):
@@ -130,11 +132,10 @@ class LennardJonesPotential(SoftMatterPotential):
                 for cell_two in itertools.product(range(cell_one[0] - 1, cell_one[0] + 1),
                                                   range(cell_one[1] - 1, cell_one[1] + 1),
                                                   range(cell_one[2] - 1, cell_one[2] + 1)):
-                    cell_two = [int((element + self._number_of_cells_in_each_direction[index] / 2) %
-                                    self._number_of_cells_in_each_direction[index] -
-                                    self._number_of_cells_in_each_direction[index] / 2) for index, element in
-                                enumerate(cell_two)]
-                    cell_two_index = self._get_cell_index(cell_two)
+                    cell_two_index = self._get_cell_index([int((element + self._number_of_cells_in_each_direction[index]
+                                                                / 2) % self._number_of_cells_in_each_direction[index] -
+                                                               self._number_of_cells_in_each_direction[index] / 2) for
+                                                           index, element in enumerate(cell_two)])
                     particle_one_index = self._leading_particle_of_cell[cell_one_index]
                     while particle_one_index is not None:
                         particle_two_index = self._leading_particle_of_cell[cell_two_index]
@@ -153,30 +154,6 @@ class LennardJonesPotential(SoftMatterPotential):
         return sum([self._get_non_zero_two_particle_potential(
             np.linalg.norm(get_shortest_vectors_on_torus(positions[i] - positions[j]))) for i in
             range(number_of_particles) for j in range(i + 1, number_of_particles)])
-
-    def get_gradient(self, positions):
-        """
-        Returns the gradient of the potential for the given positions.
-
-        Parameters
-        ----------
-        positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle.
-
-        Returns
-        -------
-        numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the gradient of the potential of a single particle.
-        """
-        gradient = np.zeros((number_of_particles, 3))
-        for i in range(number_of_particles):
-            for j in range(i + 1, number_of_particles):
-                two_particle_gradient = self._get_two_particle_gradient(positions[i], positions[j])
-                gradient[i] += two_particle_gradient
-                gradient[j] -= two_particle_gradient
-        return gradient
 
     def _get_two_particle_potential(self, position_one, position_two):
         """
@@ -219,6 +196,68 @@ class LennardJonesPotential(SoftMatterPotential):
         return (self._potential_12_constant * separation_distance ** (- 12.0) -
                 self._potential_6_constant * separation_distance ** (- 6.0) - self._bare_potential_at_cut_off)
 
+    def get_gradient(self, positions):
+        """
+        Returns the gradient of the potential for the given positions.
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the gradient of the potential of a single particle.
+        """
+        gradient = np.zeros((number_of_particles, dimensionality_of_particle_space))
+        if self._use_linked_lists:
+            self._reset_linked_lists(positions)
+            for cell_one in itertools.product(range(self._number_of_cells_in_each_direction[0]),
+                                              range(self._number_of_cells_in_each_direction[1]),
+                                              range(self._number_of_cells_in_each_direction[2])):
+                cell_one_index = self._get_cell_index(cell_one)
+                for cell_two in itertools.product(range(cell_one[0] - 1, cell_one[0] + 1),
+                                                  range(cell_one[1] - 1, cell_one[1] + 1),
+                                                  range(cell_one[2] - 1, cell_one[2] + 1)):
+                    cell_two_index = self._get_cell_index([int((element + self._number_of_cells_in_each_direction[index]
+                                                                / 2) % self._number_of_cells_in_each_direction[index] -
+                                                               self._number_of_cells_in_each_direction[index] / 2) for
+                                                           index, element in enumerate(cell_two)])
+                    particle_one_index = self._leading_particle_of_cell[cell_one_index]
+                    while particle_one_index is not None:
+                        particle_two_index = self._leading_particle_of_cell[cell_two_index]
+                        while particle_two_index is not None:
+                            if particle_one_index > particle_two_index:
+                                separation_vector = get_shortest_vectors_on_torus(positions[particle_one_index] -
+                                                                                  positions[particle_two_index])
+                                separation_distance = np.linalg.norm(separation_vector)
+                                if separation_distance <= self._cutoff_length:
+                                    two_particle_gradient = self._get_non_zero_two_particle_gradient(
+                                        separation_vector, separation_distance)
+                                    gradient[particle_one_index] += two_particle_gradient
+                                    gradient[particle_two_index] -= two_particle_gradient
+                            particle_two_index = self._particle_links[particle_two_index]
+                        particle_one_index = self._particle_links[particle_one_index]
+            return gradient
+        elif self._cutoff_length is not None:
+            for i in range(number_of_particles):
+                for j in range(i + 1, number_of_particles):
+                    two_particle_gradient = self._get_two_particle_gradient(positions[i], positions[j])
+                    gradient[i] += two_particle_gradient
+                    gradient[j] -= two_particle_gradient
+            return gradient
+        for i in range(number_of_particles):
+            for j in range(i + 1, number_of_particles):
+                separation_vector = get_shortest_vectors_on_torus(positions[i] - positions[j])
+                two_particle_gradient = self._get_non_zero_two_particle_gradient(separation_vector,
+                                                                                 np.linalg.norm(separation_vector))
+                gradient[i] += two_particle_gradient
+                gradient[j] -= two_particle_gradient
+        return gradient
+
     def _get_two_particle_gradient(self, position_one, position_two):
         """
         Returns the gradient of the Lennard-Jones potential for two particles.
@@ -240,18 +279,33 @@ class LennardJonesPotential(SoftMatterPotential):
         """
         separation_vector = get_shortest_vectors_on_torus(position_one - position_two)
         separation_distance = np.linalg.norm(separation_vector)
-        if self._cutoff_length is None or separation_distance <= self._cutoff_length:
-            return - separation_vector * (self._gradient_12_constant * separation_distance ** (- 14.0) -
-                                          self._gradient_6_constant * separation_distance ** (- 8.0))
+        if separation_distance <= self._cutoff_length:
+            return self._get_non_zero_two_particle_gradient(separation_vector, separation_distance)
         return 0.0
+
+    def _get_non_zero_two_particle_gradient(self, separation_vector, separation_distance):
+        """
+        Returns the Lennard-Jones potential for two particles whose shortest separation distance is not greater than
+        self._cutoff_length.
+
+        Parameters
+        ----------
+        separation_distance : float
+            The shortest separation distance between the two particles.
+
+        Returns
+        -------
+        float
+            The two-particle Lennard-Jones potential (for all cases for which it is non-zero).
+        """
+        return - separation_vector * (self._gradient_12_constant * separation_distance ** (- 14.0) -
+                                      self._gradient_6_constant * separation_distance ** (- 8.0))
 
     def _reset_linked_lists(self, positions):
         """
         Resets the linked lists (self._leading_particle_of_cell and self._particle_links) that allow us to avoid
         computing the bare two-particle potential and two-particle gradient for two particles whose minimum separation
         distance is greater than self._cutoff_length.
-
-        This is currently only used in self.get_value but we will eventually use it in self.get_gradient too.
 
         Parameters
         ----------
@@ -267,5 +321,14 @@ class LennardJonesPotential(SoftMatterPotential):
             self._leading_particle_of_cell[cell_index] = index
 
     def _get_cell_index(self, cell):
+        """
+        Gets the cell index for some given cell coordinates.
+
+        Parameters
+        ----------
+        cell : Sequence[int]
+            A one-dimensional Python list of size 3; each element is an int and represents one Cartesian component of
+            the cell coordinates.
+        """
         return (cell[0] + self._number_of_cells_in_each_direction[0] * cell[1] +
                 self._number_of_cells_in_each_direction[0] * self._number_of_cells_in_each_direction[1] * cell[2])
