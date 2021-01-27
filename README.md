@@ -9,8 +9,8 @@ Carlo (though we did not name it).
 
 To install super-aLby, clone this repository.
 
-The super-aLby Python application was written using Python 3.8 but is likely to support any Python version >= 3.6 
-(though we need to check this). It has been tested with CPython.
+super-aLby was written using Python 3.8 but is likely to support any Python version >= 3.6 (though we need to check 
+this). It has been tested with CPython.
 
 super-aLby depends on [`numpy`](https://numpy.org). Some of the sample-analysis code (i.e., scripts contained in the 
 [`output`](src/output) directory) also depends on [`matplotlib`](https://matplotlib.org) and [`rpy2`](
