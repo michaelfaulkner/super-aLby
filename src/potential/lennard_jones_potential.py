@@ -98,7 +98,7 @@ class LennardJonesPotential(SoftMatterPotential):
             self._bare_potential_at_cut_off = (self._potential_12_constant * cutoff_length ** (- 12.0) -
                                                self._potential_6_constant * cutoff_length ** (- 6.0))
         self._use_linked_lists = use_linked_lists
-        self._number_of_cells_in_each_direction = np.array([2, 2, 2])
+        self._number_of_cells_in_each_direction = np.int_(size_of_particle_space / self._cutoff_length)
         self._total_number_of_cells = np.multiply(self._number_of_cells_in_each_direction)
         self._cell_size = size_of_particle_space / self._number_of_cells_in_each_direction
         self._leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
