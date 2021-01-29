@@ -218,7 +218,7 @@ def displacement_until_new_norm_sq_component_negative(old_vector: Sequence[float
 _permutations_3d = [itemgetter(*[0, 1, 2]), itemgetter(*[1, 2, 0]), itemgetter(*[2, 0, 1])]
 
 
-def permutation_3d(vector: Sequence[float], main_direction: int) -> Sequence[float]:
+def get_permuted_3d_vector(vector: Sequence[float], main_direction: int) -> Sequence[float]:
     """
     Return the vector rotated until the component at the given main direction is first.
 

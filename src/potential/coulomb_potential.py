@@ -2,7 +2,7 @@
 from .soft_matter_potential import SoftMatterPotential
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
-from base.vectors import get_shortest_vectors_on_torus, permutation_3d
+from base.vectors import get_shortest_vectors_on_torus, get_permuted_3d_vector
 from model_settings import dimensionality_of_particle_space, number_of_particles, size_of_particle_space
 import logging
 import math
@@ -10,7 +10,7 @@ import numpy as np
 
 
 class CoulombPotential(SoftMatterPotential):
-    # todo add functionality for non-like charges and many particles
+    # todo add functionality for non-like charges
     r"""
     This class implements the machine-precise Coulomb potential
 
@@ -126,41 +126,38 @@ class CoulombPotential(SoftMatterPotential):
         Parameters
         ----------
         positions : numpy.ndarray
-            The particle position vectors {r_i}.
+            A two-dimensional numpy array of size (number_of_particles, 3); each element is a float and represents one
+            Cartesian component of the position of a single particle.
 
         Returns
         -------
         float
             The potential.
         """
-        separation = get_shortest_vectors_on_torus(positions[0] - positions[1])
-        return (self._get_two_particle_position_space_potential(separation) +
-                self._get_two_particle_fourier_space_potential(separation))
+        return sum([self._get_two_particle_potential(positions[i], positions[j]) for i in range(number_of_particles)
+                    for j in range(i + 1, number_of_particles)])
 
-    def get_gradient(self, positions):
+    def _get_two_particle_potential(self, position_one, position_two):
         """
-        Returns the gradient of the potential for the given positions.
+        Returns the two-particle potential between particles one and two.
 
         Parameters
         ----------
-        positions : numpy.ndarray
-            The particle position vectors {r_i}.
+        position_one : numpy.ndarray
+            A one-dimensional numpy array of size 3; each element is a float and represents one Cartesian component of
+            the position of particle one.
+        position_two : numpy.ndarray
+            A one-dimensional numpy array of size 3; each element is a float and represents one Cartesian component of
+            the position of particle two.
 
         Returns
         -------
-        numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the gradient of the potential of a single particle.
+        float
+            The two-particle potential.
         """
-        gradient = np.empty((number_of_particles, 3))
-        separation = get_shortest_vectors_on_torus(positions[0] - positions[1])
-        for direction in range(3):
-            permuted_separation = permutation_3d(separation, direction)
-            two_particle_gradient = (self._get_two_particle_position_space_gradient(permuted_separation) +
-                                     self._get_two_particle_fourier_space_gradient(permuted_separation))
-            gradient[0][direction] = two_particle_gradient
-            gradient[1][direction] = - two_particle_gradient
-        return gradient
+        separation = get_shortest_vectors_on_torus(position_one - position_two)
+        return (self._get_two_particle_position_space_potential(separation) +
+                self._get_two_particle_fourier_space_potential(separation))
 
     def _get_two_particle_position_space_potential(self, separation):
         """Returns the position-space part of the Ewald sum of the two-particle potential."""
@@ -192,6 +189,33 @@ class CoulombPotential(SoftMatterPotential):
                                                              self._system_length / np.pi)
                     cos, sin = self._update_trig_functions(cos, sin, delta_cos, delta_sin, cutoff_y, cutoff_z, i, j, k)
         return two_particle_fourier_space_potential
+
+    def get_gradient(self, positions):
+        """
+        Returns the gradient of the potential for the given positions.
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            The particle position vectors {r_i}.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the gradient of the potential of a single particle.
+        """
+        gradient = np.zeros((number_of_particles, 3))
+        for i in range(number_of_particles):
+            for j in range(i + 1, number_of_particles):
+                separation = get_shortest_vectors_on_torus(positions[i] - positions[j])
+                for direction in range(3):
+                    permuted_separation = get_permuted_3d_vector(separation, direction)
+                    two_particle_gradient = (self._get_two_particle_position_space_gradient(permuted_separation) +
+                                             self._get_two_particle_fourier_space_gradient(permuted_separation))
+                    gradient[i][direction] += two_particle_gradient
+                    gradient[j][direction] -= two_particle_gradient
+        return gradient
 
     def _get_two_particle_position_space_gradient(self, separation):
         """Returns the position-space part of the Ewald sum of the two-particle gradient."""
