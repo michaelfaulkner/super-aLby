@@ -68,8 +68,6 @@ class CoulombPotential(SoftMatterPotential):
             If the cutoff in Fourier space is less than 0.
         base.exceptions.ConfigurationError
             If the cutoff in position space is less than 0.
-        base.exceptions.ConfigurationError
-            If model_settings.number_of_particles does not equal two.
         """
         super().__init__(prefactor)
         if dimensionality_of_particle_space != 3:
@@ -86,9 +84,6 @@ class CoulombPotential(SoftMatterPotential):
             raise ConfigurationError(f"Give a value not less than 0 for fourier_cutoff in {self.__class__.__name__}.")
         if position_cutoff < 0:
             raise ConfigurationError(f"Give a value not less than 0 for position_cutoff in {self.__class__.__name__}.")
-        if number_of_particles != 2:
-            raise ConfigurationError(f"Give a value of 2 as the number_of_particles in [ModelSettings] when using "
-                                     f"{self.__class__.__name__} as it is currently a two-particle potential.")
         self._system_length = size_of_particle_space[0]  # todo convert to non-cubic particle space
         self._fourier_cutoff = fourier_cutoff
         self._position_cutoff = position_cutoff
