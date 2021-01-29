@@ -8,7 +8,7 @@ import numpy as np
 
 class LennardJonesPotentialWithoutLinkedLists(LennardJonesPotentialsWithCutoff):
     r"""
-    Without linked-lists, this class implements the two-particle Lennard-Jones potential
+    Without linked-lists, this class implements the Lennard-Jones potential
 
         $ U = k * \sum_{i > j} U_{{\rm LJ}, ij} $ ,
 
