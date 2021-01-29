@@ -58,7 +58,10 @@ class CoulombPotential(SoftMatterPotential):
             If model_settings.range_of_initial_particle_positions does not give an real-valued interval for each
             component of the initial positions of each particle.
         base.exceptions.ConfigurationError
-            If dimensionality_of_particle_space does not equal three.
+            If the values of each component of model_settings.size_of_particle_space are not equal (since the Ewald sum
+            is currently only configured for the three-dimensional cube).
+        base.exceptions.ConfigurationError
+            If model_settings.dimensionality_of_particle_space does not equal three.
         base.exceptions.ConfigurationError
             If the convergence parameter alpha is not greater than 0.0.
         base.exceptions.ConfigurationError
@@ -66,12 +69,16 @@ class CoulombPotential(SoftMatterPotential):
         base.exceptions.ConfigurationError
             If the cutoff in position space is less than 0.
         base.exceptions.ConfigurationError
-            If number_of_particles does not equal two.
+            If model_settings.number_of_particles does not equal two.
         """
         super().__init__(prefactor)
         if dimensionality_of_particle_space != 3:
             raise ConfigurationError(f"For size_of_particle_space, give a list of length 3, where each component is a "
                                      f"list of two float values, when using {self.__class__.__name__}.")
+        if (size_of_particle_space[0] != size_of_particle_space[1] or size_of_particle_space[1] !=
+                size_of_particle_space[2] or size_of_particle_space[2] != size_of_particle_space[0]):
+            raise ConfigurationError(f"When using {self.__class__.__name__}, give equal values for each component of "
+                                     f"size_of_particle_space.")
         if alpha <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 for the convergence factor alpha of "
                                      f"{self.__class__.__name__}.")
