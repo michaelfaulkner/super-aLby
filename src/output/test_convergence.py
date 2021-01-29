@@ -45,7 +45,7 @@ def main(argv):
             if config.get("ToroidalLeapfrogMediator", "potential") == 'coulomb_potential':
                 reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_unit_charge_coulomb_particles_unit_cube_'
                                               'beta_2_separation_reference_sample.csv', dtype=float, delimiter=',')
-            elif config.get("ModelSettings", "number_of_particles") == '2':
+            elif config.get("ModelSettings", "number_of_particles") != '8':
                 reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_5x5x5_cube_well_'
                                               'depth_one_quarter_beta_2_separation_reference_sample.csv', dtype=float,
                                               delimiter=',')
@@ -61,7 +61,7 @@ def main(argv):
             if config.get("LazyToroidalLeapfrogMediator", "potential") == 'coulomb_potential':
                 reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_unit_charge_coulomb_particles_unit_cube_'
                                               'beta_2_separation_reference_sample.csv', dtype=float, delimiter=',')
-            elif config.get("ModelSettings", "number_of_particles") == '2':
+            elif config.get("ModelSettings", "number_of_particles") != '8':
                 reference_sample = np.loadtxt('output/srmc_in_soft_matter/two_lennard_jones_particles_5x5x5_cube_well_'
                                               'depth_one_quarter_beta_2_separation_reference_sample.csv', dtype=float,
                                               delimiter=',')
