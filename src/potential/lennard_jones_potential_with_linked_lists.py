@@ -160,8 +160,9 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
     def _reset_linked_lists(self, positions):
         """
         Resets the linked lists (self._leading_particle_of_cell and self._particle_links) that allow us to avoid
-        computing the bare two-particle potential and two-particle gradient for two particles whose minimum separation
-        distance is greater than self._cutoff_length.
+        computing the bare two-particle potential and two-particle gradient for two particles whose cells are separated
+        by at least one other cell in any Cartesian direction (since the length of each dimension of each cell is not
+        less than self._cutoff_length).
 
         Parameters
         ----------
