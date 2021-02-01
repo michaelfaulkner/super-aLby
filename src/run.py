@@ -1,10 +1,11 @@
 """Executable script which runs the super-aLby application based on an input configuration file. This script and most
     of the base package are taken from the JeLLyFysh application, which one of the super-aLby authors co-wrote."""
 from base import factory
+from base.exceptions import ConfigurationError
+from base.logging import set_up_logging, print_and_log
+from base.parsing import parse_options, read_config
 from base.strings import to_camel_case
 from base.uuid import get_uuid
-from base.parsing import parse_options, read_config
-from base.logging import set_up_logging, print_and_log
 from version import version
 from typing import Sequence
 import platform
@@ -38,7 +39,13 @@ def main(argv: Sequence[str]) -> None:
     used_sections = factory.used_sections
     for section in config.sections():
         if section not in used_sections and section not in ["Run", "ModelSettings"]:
-            logger.warning("The section {0} in the .ini file has not been used!".format(section))
+            logger.warning("The section {0} in the configuration file has not been used!".format(section))
+
+    if config.get("Run", "mediator") == "lazy_toroidal_leapfrog_mediator":
+        if config.get("LazyToroidalLeapfrogMediator", "potential") == "lennard_jones_potential_with_linked_lists":
+            raise ConfigurationError(f"When using LennardJonesPotentialWithLinkedLists, give a value of "
+                                     f"lazy_toroidal_leapfrog_mediator for mediator in the [Run] section of the "
+                                     f"configuration file.")
 
     print_and_log(logger, "Running the super-relativistic Monte Carlo simulation.")
     start_time = time.time()

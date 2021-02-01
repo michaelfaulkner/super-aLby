@@ -65,8 +65,8 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
         if dimensionality_of_particle_space != 3:
             raise ConfigurationError(f"For size_of_particle_space, give a one-dimensional list of length 3 (and "
                                      f"composed of floats) in {self.__class__.__name__}. This is because the "
-                                     f"dimensionality of particle space must be 3 when using the linked-lists algorithm "
-                                     f"in {self.__class__.__name__}.")
+                                     f"dimensionality of particle space must be 3 when using the linked-lists "
+                                     f"algorithm in {self.__class__.__name__}.")
         self._number_of_cells_in_each_direction = np.int_(size_of_particle_space / self._cutoff_length)
         self._total_number_of_cells = int(np.prod(self._number_of_cells_in_each_direction))
         self._cell_size = size_of_particle_space / self._number_of_cells_in_each_direction
