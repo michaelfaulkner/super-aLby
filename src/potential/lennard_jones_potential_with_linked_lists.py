@@ -36,9 +36,7 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
     def __init__(self, characteristic_length: float = 1.0, well_depth: float = 1.0, cutoff_length: float = 2.5,
                  prefactor: float = 1.0) -> None:
         """
-        The constructor of the LennardJonesPotential class.
-
-        The default values are optimized so that the result has machine precision.
+        The constructor of the LennardJonesPotentialWithLinkedLists class.
 
         Parameters
         ----------
