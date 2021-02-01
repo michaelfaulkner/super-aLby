@@ -71,7 +71,7 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
         self._total_number_of_cells = int(np.prod(self._number_of_cells_in_each_direction))
         self._cell_size = size_of_particle_space / self._number_of_cells_in_each_direction
         self._leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
-        self._particle_links = [None for _ in range(number_of_particles)]
+        self._next_particle_in_same_cell = [None for _ in range(number_of_particles)]
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            characteristic_length=characteristic_length, well_depth=well_depth,
                            cutoff_length=cutoff_length, prefactor=prefactor)
@@ -111,8 +111,8 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
                         if particle_one_index > particle_two_index:
                             potential += self._get_two_particle_potential(positions[particle_one_index],
                                                                           positions[particle_two_index])
-                        particle_two_index = self._particle_links[particle_two_index]
-                    particle_one_index = self._particle_links[particle_one_index]
+                        particle_two_index = self._next_particle_in_same_cell[particle_two_index]
+                    particle_one_index = self._next_particle_in_same_cell[particle_one_index]
         return potential
 
     def get_gradient(self, positions):
@@ -153,16 +153,16 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
                                                                                     positions[particle_two_index])
                             gradient[particle_one_index] += two_particle_gradient
                             gradient[particle_two_index] -= two_particle_gradient
-                        particle_two_index = self._particle_links[particle_two_index]
-                    particle_one_index = self._particle_links[particle_one_index]
+                        particle_two_index = self._next_particle_in_same_cell[particle_two_index]
+                    particle_one_index = self._next_particle_in_same_cell[particle_one_index]
         return gradient
 
     def _reset_linked_lists(self, positions):
         """
-        Resets the linked lists (self._leading_particle_of_cell and self._particle_links) that allow us to avoid
-        computing the bare two-particle potential and two-particle gradient for two particles whose cells are separated
-        by at least one other cell in any Cartesian direction (since the length of each dimension of each cell is not
-        less than self._cutoff_length).
+        Resets the linked lists (self._leading_particle_of_cell and self._next_particle_in_same_cell) that allow us to
+        avoid computing the bare two-particle potential and two-particle gradient for two particles whose cells are
+        separated by at least one other cell in any Cartesian direction (since the length of each dimension of each
+        cell is not less than self._cutoff_length).
 
         Parameters
         ----------
@@ -174,7 +174,7 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
         for index, position in enumerate(positions):
             cell = np.int_(position // self._cell_size)
             cell_index = self._get_cell_index(cell)
-            self._particle_links[index] = self._leading_particle_of_cell[cell_index]
+            self._next_particle_in_same_cell[index] = self._leading_particle_of_cell[cell_index]
             self._leading_particle_of_cell[cell_index] = index
 
     def _get_cell_index(self, cell):
