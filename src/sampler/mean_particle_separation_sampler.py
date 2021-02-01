@@ -53,7 +53,7 @@ class MeanParticleSeparationSampler(Sampler):
         numpy.ndarray
             Numpy array of zeros of the required structure.
         """
-        return np.zeros(total_number_of_iterations + 1)
+        return np.zeros((total_number_of_iterations + 1, 1))
 
     def get_observation(self, momenta, positions):
         """
