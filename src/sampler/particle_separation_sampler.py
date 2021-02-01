@@ -10,7 +10,7 @@ import numpy as np
 
 class ParticleSeparationSampler(Sampler):
     """
-    Class for taking observations of the mean particle-particle separation distances.
+    Class for taking observations of the particle-particle separation distances.
     """
 
     def __init__(self, output_directory: str):
