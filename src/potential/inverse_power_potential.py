@@ -9,6 +9,7 @@ import numpy as np
 
 
 class InversePowerPotential(Potential):
+    # TODO this class does not work with NonreversibleMediator -- acceptance rates are 0 or 1, depending on step size
     """This class implements the inverse power potential U = sum(|| positions[i] || ** (- power) / power)"""
 
     def __init__(self, power: float = 1.0, prefactor: float = 1.0):
