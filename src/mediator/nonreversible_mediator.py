@@ -154,20 +154,10 @@ class NonreversibleMediator(Mediator, metaclass=ABCMeta):
 
     def _proposal_dynamics_adaptor(self):
         """Tunes the size of either the numerical integration step or the width of the proposal distribution."""
-        print('proposal dynamics adaptor called')
-        print('-----')
         acceptance_rate = self._number_of_accepted_trajectories / 100.0
-        print(acceptance_rate)
-        print('-----')
-        # if acceptance_rate > 1.05 * self._target_acceptance_rate:
-        if acceptance_rate > self._target_acceptance_rate + 0.05:
-            print('self._step_size multiplied by 1.1')
-            print('-----')
+        if acceptance_rate > 1.05 * self._target_acceptance_rate:
             self._step_size *= 1.1
-        # elif acceptance_rate < 0.95 * self._target_acceptance_rate:
-        elif acceptance_rate < self._target_acceptance_rate - 0.05:
-            print('self._step_size multiplied by 0.9')
-            print('-----')
+        elif acceptance_rate < 0.95 * self._target_acceptance_rate:
             self._step_size *= 0.9
 
     def _print_markov_chain_summary(self):
