@@ -1,11 +1,11 @@
 """Module for the GinzburgLandauPotential class."""
-from .one_dimensional_particle_space_potential import OneDimensionalParticleSpacePotential
+from .non_compact_one_dim_particle_space_potential import NonCompactOneDimParticleSpacePotential
 from base.logging import log_init_arguments
 import logging
 import numpy as np
 
 
-class GinzburgLandauPotential(OneDimensionalParticleSpacePotential):
+class GinzburgLandauPotential(NonCompactOneDimParticleSpacePotential):
     """
     This class implements the Ginzburg-Landau potential with one-dimensional order parameter on a three-dimensional
         periodic cubic lattice.
@@ -93,6 +93,30 @@ class GinzburgLandauPotential(OneDimensionalParticleSpacePotential):
                     self._pos_y_translation(positions) + self._neg_y_translation(positions) +
                     self._pos_z_translation(positions) + self._neg_z_translation(positions) - 6 * positions) +
             self._tau_dot_lambda * positions ** 3)
+
+    def get_potential_difference(self, active_particle_index, candidate_position, positions):
+        # TODO write the code for this method!
+        """
+        Returns the potential difference resulting from moving the single active particle to candidate_position.
+
+        Parameters
+        ----------
+        active_particle_index : int
+            The index of the active particle.
+        candidate_position : numpy.ndarray
+            A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
+            represents one Cartesian component of the proposed position of the active particle.
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle. In this case, the
+            entire positions array corresponds to the entire array of superconducting phase.
+
+        Returns
+        -------
+        float
+            The potential difference resulting from moving the single active particle to candidate_position.
+        """
+        raise SystemError(f"The get_potential_difference method of {self.__class__.__name__} has not been written.")
 
     def _pos_x_translation(self, position):
         # reshape to a self._lattice_length x self._lattice_length x self._lattice_length matrix

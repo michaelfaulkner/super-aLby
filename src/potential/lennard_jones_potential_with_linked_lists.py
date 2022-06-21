@@ -157,6 +157,31 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
                     particle_one_index = self._next_particle_in_same_cell[particle_one_index]
         return gradient
 
+    def get_potential_difference(self, active_particle_index, candidate_position, positions):
+        # TODO write the code for this method!
+        """
+        Returns the potential difference resulting from moving the single active particle to candidate_position.
+
+        Parameters
+        ----------
+        active_particle_index : int
+            The index of the active particle.
+        candidate_position : numpy.ndarray
+            A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
+            represents one Cartesian component of the proposed position of the active particle.
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
+            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
+            lattice, the entire positions array corresponds to the entire array of superconducting phase.
+
+        Returns
+        -------
+        float
+            The potential difference resulting from moving the single active particle to candidate_position.
+        """
+        raise SystemError(f"The get_potential_difference method of {self.__class__.__name__} has not been written.")
+
     def _reset_linked_lists(self, positions):
         """
         Resets the linked lists (self._leading_particle_of_cell and self._next_particle_in_same_cell) that allow us to

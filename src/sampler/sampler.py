@@ -59,9 +59,9 @@ class Sampler(metaclass=ABCMeta):
 
         Parameters
         ----------
-        momenta : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the momentum of a single particle.
+        momenta : None or numpy.ndarray
+            None or a two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each
+            element is a float and represents one Cartesian component of the momentum of a single particle.
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the position of a single particle. For Bayesian
@@ -99,6 +99,7 @@ class Sampler(metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    # TODO switch to npy files (also convert each sample_file_string (provided in each child class) from .csv to .npy)
     def _write_sample_to_file(self, sample, sample_file_string):
         with open(os.path.join(os.getcwd(), self._output_directory, sample_file_string), 'w') as file:
             np.savetxt(file, np.reshape(sample, (sample.shape[0], -1)), delimiter=',')

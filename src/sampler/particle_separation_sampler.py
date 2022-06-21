@@ -61,9 +61,9 @@ class ParticleSeparationSampler(Sampler):
 
         Parameters
         ----------
-        momenta : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the momentum of a single particle.
+        momenta : None or numpy.ndarray
+            None or a two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each
+            element is a float and represents one Cartesian component of the momentum of a single particle.
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the position of a single particle. For Bayesian

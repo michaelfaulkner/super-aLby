@@ -1,4 +1,4 @@
-"""Module for the abstract OneDimensionalParticleSpacePotential class."""
+"""Module for the abstract NonCompactOneDimParticleSpacePotential class."""
 from .potential import Potential
 from base.exceptions import ConfigurationError
 from model_settings import dimensionality_of_particle_space, size_of_particle_space
@@ -6,16 +6,16 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 
 
-class OneDimensionalParticleSpacePotential(Potential, metaclass=ABCMeta):
+class NonCompactOneDimParticleSpacePotential(Potential, metaclass=ABCMeta):
     """
-    Abstract class for potentials restricted to one-dimensional particle space.
+    Abstract class for potentials restricted to non-compact one-dimensional particle space.
 
     A general potential class provides the function itself and its gradient.
     """
 
     def __init__(self, prefactor: float = 1.0, **kwargs):
         """
-        The constructor of the OneDimensionalParticleSpacePotential class.
+        The constructor of the NonCompactOneDimParticleSpacePotential class.
 
         This abstract class verifies that i) element is None for each element of size_of_particle_space, and ii) the
         dimensionality of particle space is one. The static method _get_higher_dimension_array() is also provided,
@@ -84,6 +84,31 @@ class OneDimensionalParticleSpacePotential(Potential, metaclass=ABCMeta):
         numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the gradient of the potential of a single particle.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_potential_difference(self, active_particle_index, candidate_position, positions):
+        """
+        Returns the potential difference resulting from moving the single active particle to candidate_position.
+
+        Parameters
+        ----------
+        active_particle_index : int
+            The index of the active particle.
+        candidate_position : numpy.ndarray
+            A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
+            represents one Cartesian component of the proposed position of the active particle.
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
+            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
+            lattice, the entire positions array corresponds to the entire array of superconducting phase.
+
+        Returns
+        -------
+        float
+            The potential difference resulting from moving the single active particle to candidate_position.
         """
         raise NotImplementedError
 
