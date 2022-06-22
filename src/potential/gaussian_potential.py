@@ -9,7 +9,7 @@ import numpy as np
 
 class GaussianPotential(Potential):
     """
-    This class implements the Gaussian potential U = sum(x[i] ** 2 / 2)
+    This class implements the Gaussian potential U = prefactor * sum(x[i] ** 2) / 2
     """
 
     def __init__(self, prefactor: float = 1.0):
