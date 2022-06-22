@@ -9,7 +9,7 @@ import numpy as np
 
 
 class InversePowerPotential(Potential):
-    # TODO this class does not work with NonreversibleMediator -- acceptance rates are 0 or 1, depending on step size
+    # TODO this class does not work with DeterministicMediator -- acceptance rates are 0 or 1, depending on step size
     """This class implements the inverse power potential U = sum(|| positions[i] || ** (- power) / power)"""
 
     def __init__(self, power: float = 1.0, prefactor: float = 1.0):
@@ -42,8 +42,8 @@ class InversePowerPotential(Potential):
         self._negative_power = - power
         self._negative_power_minus_two = - power - 2.0
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power, prefactor=prefactor)
-        # TODO remove the following warning once the class works with NonreversibleMediator
-        Warning(f"{self.__class__.__name__} does not currently work with NonreversibleMediator.  Acceptance rates are "
+        # TODO remove the following warning once the class works with DeterministicMediator
+        Warning(f"{self.__class__.__name__} does not currently work with DeterministicMediator.  Acceptance rates are "
                 f"either 0 or 1, depending on step size of the numerical integrator.")
 
     def get_value(self, positions):

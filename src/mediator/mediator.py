@@ -30,7 +30,7 @@ class Mediator(metaclass=ABCMeta):
             Number of sample observations, i.e., the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
         proposal_dynamics_adaptor_is_on : bool, optional
-            When True, the size of either the numerical integration step (NonreversibleMediator) or the width of the
+            When True, the size of either the numerical integration step (DeterministicMediator) or the width of the
             proposal distribution (MetropolisMediator) is tuned during the equilibration process.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
@@ -122,7 +122,7 @@ class Mediator(metaclass=ABCMeta):
 
     @abstractmethod
     def _proposal_dynamics_adaptor(self):
-        """Tunes the size of either the numerical integration step (NonreversibleMediator) or the width of the proposal
+        """Tunes the size of either the numerical integration step (DeterministicMediator) or the width of the proposal
             distribution (MetropolisMediator)."""
         raise NotImplementedError
 

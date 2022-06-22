@@ -1,4 +1,4 @@
-"""Module for the NonreversibleMediator class."""
+"""Module for the DeterministicMediator class."""
 from .mediator import Mediator
 from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
@@ -9,8 +9,9 @@ from sampler.sampler import Sampler
 import numpy as np
 
 
-class NonreversibleMediator(Mediator, metaclass=ABCMeta):
-    """Abstract NonreversibleMediator class."""
+class DeterministicMediator(Mediator, metaclass=ABCMeta):
+    """Abstract DeterministicMediator class.  This is the parent class for all mediators that use Newtonian,
+        relativistic or super-relativistic dynamics."""
 
     def __init__(self, potential: Potential, sampler: Sampler, kinetic_energy: KineticEnergy,
                  number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
@@ -18,7 +19,7 @@ class NonreversibleMediator(Mediator, metaclass=ABCMeta):
                  max_number_of_integration_steps: int = 10, randomise_number_of_integration_steps: bool = False,
                  use_metropolis_accept_reject: bool = True, **kwargs):
         r"""
-        The constructor of the NonreversibleMediator class.
+        The constructor of the DeterministicMediator class.
 
         This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
         init to the next class in the MRO via super.

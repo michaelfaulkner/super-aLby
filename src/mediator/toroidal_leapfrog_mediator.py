@@ -1,5 +1,5 @@
 """Module for the ToroidalLeapfrogIntegrator class."""
-from .nonreversible_mediator import NonreversibleMediator
+from .deterministic_mediator import DeterministicMediator
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
@@ -11,7 +11,7 @@ import logging
 import numpy as np
 
 
-class ToroidalLeapfrogMediator(NonreversibleMediator):
+class ToroidalLeapfrogMediator(DeterministicMediator):
     """
     This class implements the mediator using the leapfrog numerical integrator with corrections of the particle
     positions to account for the toroidal geometry (using base.vectors.get_shortest_vectors_on_torus()).

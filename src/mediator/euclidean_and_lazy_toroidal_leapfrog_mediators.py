@@ -1,5 +1,5 @@
 """Module for the EuclideanAndLazyToroidalLeapfrogMediators class."""
-from .nonreversible_mediator import NonreversibleMediator
+from .deterministic_mediator import DeterministicMediator
 from kinetic_energy.kinetic_energy import KineticEnergy
 from model_settings import beta
 from potential.potential import Potential
@@ -7,7 +7,7 @@ from sampler.sampler import Sampler
 from abc import ABCMeta, abstractmethod
 
 
-class EuclideanAndLazyToroidalLeapfrogMediators(NonreversibleMediator, metaclass=ABCMeta):
+class EuclideanAndLazyToroidalLeapfrogMediators(DeterministicMediator, metaclass=ABCMeta):
     """
     Abstract EuclideanAndLazyToroidalLeapfrogMediators class. This class provides a method common to both
     EuclideanMediator and LazyToroidalLeapfrogMediator.
