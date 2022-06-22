@@ -87,7 +87,6 @@ class MetropolisMediator(Mediator):
             elif acceptance_rate < 0.9 * self._target_acceptance_rate:
                 self._noise_distribution.width_of_noise_distribution *= 0.9
 
-
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
         print(f"Acceptance rate = "
