@@ -9,7 +9,7 @@ import numpy as np
 
 class ExponentialPowerPotential(Potential):
     """
-    This class implements the exponential power potential U = sum(x[i] ** power / power)
+    This class implements the exponential power potential U = sum(|x[i]| ** power / power)
 
     x is an n-dimensional vector of floats.
     """
@@ -42,7 +42,7 @@ class ExponentialPowerPotential(Potential):
                                      f"{self.__class__.__name__}.")
         self._potential_constant = prefactor / power
         self._power = power
-        self._power_minus_two = power - 2
+        self._power_minus_two = power - 2.0
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power, prefactor=prefactor)
 
     def get_value(self, positions):
