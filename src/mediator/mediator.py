@@ -1,10 +1,8 @@
 """Module for the Mediator class."""
 from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
-from model_settings import dimensionality_of_particle_space, number_of_particles, range_of_initial_particle_positions
 from potential.potential import Potential
 from sampler.sampler import Sampler
-import numpy as np
 
 
 class Mediator(metaclass=ABCMeta):
@@ -61,7 +59,7 @@ class Mediator(metaclass=ABCMeta):
         self._number_of_observations_between_screen_prints_for_clock = int(number_of_observations / 10)
         self._total_number_of_iterations = number_of_equilibration_iterations + number_of_observations
         self._proposal_dynamics_adaptor_is_on = proposal_dynamics_adaptor_is_on
-        self._positions = self._initialise_position_array()
+        self._positions = self._potential.initialised_position_array()
         self._sample = self._sampler.initialise_sample_array(self._total_number_of_iterations)
         self._number_of_accepted_trajectories = 0
         self._use_metropolis_accept_reject = True
@@ -85,35 +83,6 @@ class Mediator(metaclass=ABCMeta):
         """Runs all methods that follow the Markov process."""
         self._sampler.output_sample(self._sample)
         self._print_markov_chain_summary()
-
-    @staticmethod
-    def _initialise_position_array():
-        # TODO move to potential class
-        """
-        Returns the initial positions array.
-
-        Returns
-        -------
-        numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle, e.g., two particles
-            (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
-            particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
-            represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
-        """
-        if dimensionality_of_particle_space == 1:
-            if type(range_of_initial_particle_positions) == float:
-                return np.array(
-                    [np.atleast_1d(range_of_initial_particle_positions) for _ in range(number_of_particles)])
-            else:
-                return np.array([np.atleast_1d(np.random.uniform(*range_of_initial_particle_positions))
-                                 for _ in range(number_of_particles)])
-        else:
-            if type(range_of_initial_particle_positions[0]) == float:
-                return np.array([range_of_initial_particle_positions for _ in range(number_of_particles)])
-            else:
-                return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]
-                                 for _ in range(number_of_particles)])
 
     @abstractmethod
     def _generate_single_observation(self, markov_chain_step_index):

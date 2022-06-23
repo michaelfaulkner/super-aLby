@@ -1,6 +1,8 @@
 """Module for the abstract ContinuousPotential class."""
 from .potential import Potential
 from abc import ABCMeta, abstractmethod
+from model_settings import dimensionality_of_particle_space, number_of_particles, range_of_initial_particle_positions
+import numpy as np
 
 
 class ContinuousPotential(Potential, metaclass=ABCMeta):
@@ -97,3 +99,30 @@ class ContinuousPotential(Potential, metaclass=ABCMeta):
             The potential difference resulting from moving the single active particle to candidate_position.
         """
         raise NotImplementedError
+
+    def initialised_position_array(self):
+        """
+        Returns the initial positions array.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle, e.g., two particles
+            (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
+            particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
+            represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
+        """
+        if dimensionality_of_particle_space == 1:
+            if type(range_of_initial_particle_positions) == float:
+                return np.array(
+                    [np.atleast_1d(range_of_initial_particle_positions) for _ in range(number_of_particles)])
+            else:
+                return np.array([np.atleast_1d(np.random.uniform(*range_of_initial_particle_positions))
+                                 for _ in range(number_of_particles)])
+        else:
+            if type(range_of_initial_particle_positions[0]) == float:
+                return np.array([range_of_initial_particle_positions for _ in range(number_of_particles)])
+            else:
+                return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]
+                                 for _ in range(number_of_particles)])
