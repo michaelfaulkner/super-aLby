@@ -109,22 +109,33 @@ method of the corresponding class, and its value provides the argument. Property
 properties for which the class does not provide a default value; for each property that does not have a default value, 
 a property-value pair may be given. Properties and values should be given in snake_case; sections should be given in 
 CamelCase. If a value corresponds to the instance of another class, then a corresponding section is required. In our 
-example, the first of the remaining sections is therefore of the form
+example, the first of the remaining sections is therefore either of the form
 
 ```INI
 [SomeMediator]
 potential = some_potential
-kinetic_energy = some_kinetic_energy
 sampler = some_sampler
+kinetic_energy = some_kinetic_energy
 ...
 ```
 
-where the ellipsis accounts for further pairs of properties and values that do not correspond to other classes. This 
-configuration file therefore also requires the sections `[SomePotential]`, `[SomeKineticEnergy]` and `[SomeSampler]`. 
+or of the form
+
+```INI
+[SomeMediator]
+potential = some_potential
+sampler = some_sampler
+noise_distribution = some_noise_distribution
+...
+```
+
+where the ellipsis accounts for further pairs of properties and values that do not correspond to other classes. The 
+first / second example therefore also requires the sections `[SomePotential]`, `[SomeSampler]` and`[SomeKineticEnergy]` 
+/ `[SomeNoiseDistribution]`. 
 
 Some example configuration files are located in the [`src/config_files`](src/config_files) directory. To get a feel for 
 the application, run `python run.py 
-config_files/other_convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini`, 
-before running `python output/test_convergence.py 
-config_files/other_convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini` 
+config_files/convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini`, 
+before running `python sample_analysis/test_convergence.py 
+config_files/convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini` 
 once the simulation has finished. 
