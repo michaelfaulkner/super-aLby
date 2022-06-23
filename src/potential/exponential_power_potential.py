@@ -1,5 +1,5 @@
 """Module for the ExponentialPowerPotential class."""
-from .potential import Potential
+from .continuous_potential import ContinuousPotential
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from model_settings import size_of_particle_space
@@ -7,7 +7,7 @@ import logging
 import numpy as np
 
 
-class ExponentialPowerPotential(Potential):
+class ExponentialPowerPotential(ContinuousPotential):
     """
     This class implements the exponential power potential U = sum(|x[i]| ** power / power)
 

@@ -1,5 +1,5 @@
 """Module for the InversePowerPotential class."""
-from .potential import Potential
+from .continuous_potential import ContinuousPotential
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
@@ -8,7 +8,7 @@ import logging
 import numpy as np
 
 
-class InversePowerPotential(Potential):
+class InversePowerPotential(ContinuousPotential):
     # TODO this class does not work with DeterministicMediator -- acceptance rates are 0 or 1, depending on step size
     """This class implements the inverse power potential U = prefactor * sum(| positions[i] | ** (- power)) / power"""
 

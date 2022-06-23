@@ -1,16 +1,14 @@
 """Module for the abstract SoftMatterPotential class."""
-from .potential import Potential
+from .continuous_potential import ContinuousPotential
 from base.exceptions import ConfigurationError
 from model_settings import range_of_initial_particle_positions, size_of_particle_space
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
 
-class SoftMatterPotential(Potential, metaclass=ABCMeta):
+class SoftMatterPotential(ContinuousPotential, metaclass=ABCMeta):
     """
     Abstract class for soft-matter potentials, which are potentials that are functions of particle-separation vectors.
-
-    A general potential class provides the function itself and its gradient.
     """
 
     def __init__(self, prefactor: float = 1.0, **kwargs):

@@ -7,7 +7,8 @@ class Potential(metaclass=ABCMeta):
     """
     Abstract class for potentials used in the algorithm code.
 
-    A general potential class provides the function itself and its gradient.
+    A general potential class provides the function itself and the potential difference resulting from the displacement
+        of a single particle.
     """
 
     def __init__(self, prefactor: float = 1.0, **kwargs):
@@ -51,27 +52,6 @@ class Potential(metaclass=ABCMeta):
         -------
         float
             The potential function.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_gradient(self, positions):
-        """
-        Returns the gradient of the potential function for the given particle positions.
-
-        Parameters
-        ----------
-        positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
-            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
-            lattice, the entire positions array corresponds to the entire array of superconducting phase.
-
-        Returns
-        -------
-        numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
         raise NotImplementedError
 
