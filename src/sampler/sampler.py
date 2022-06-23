@@ -99,10 +99,9 @@ class Sampler(metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    # TODO switch to npy files (also convert each sample_file_string (provided in each child class) from .csv to .npy)
     def _write_sample_to_file(self, sample, sample_file_string):
-        with open(os.path.join(os.getcwd(), self._output_directory, sample_file_string), 'w') as file:
-            np.savetxt(file, np.reshape(sample, (sample.shape[0], -1)), delimiter=',')
+        np.save(os.path.join(os.getcwd(), self._output_directory, sample_file_string),
+                np.reshape(sample, (sample.shape[0], -1)))
 
     def _read_sample_from_file(self, sample_file_string):
-        return np.loadtxt(self._output_directory + '/' + sample_file_string, dtype=float, delimiter=',')
+        return np.load(self._output_directory + '/' + sample_file_string)

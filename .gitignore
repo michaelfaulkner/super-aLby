@@ -2,7 +2,10 @@
 *.dat
 *.csv
 !*reference_sample.csv
-!src/input_data_files/*.csv
+!src/permanent_data/*.csv
+*.npy
+!*reference_sample.npy
+!src/permanent_data/*.npy
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
