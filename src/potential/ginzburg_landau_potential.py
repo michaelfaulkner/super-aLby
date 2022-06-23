@@ -95,7 +95,7 @@ class GinzburgLandauPotential(NonCompactOneDimParticleSpacePotential):
             self._tau_dot_lambda * positions ** 3)
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
-        # TODO write the code for this method!
+        # TODO test this code!
         """
         Returns the potential difference resulting from moving the single active particle to candidate_position.
 
@@ -116,7 +116,22 @@ class GinzburgLandauPotential(NonCompactOneDimParticleSpacePotential):
         float
             The potential difference resulting from moving the single active particle to candidate_position.
         """
-        raise SystemError(f"The get_potential_difference method of {self.__class__.__name__} has not been written.")
+        positions = np.reshape(positions, tuple([positions.shape[i] for i in range(len(positions.shape) - 1)]))
+        return self._prefactor * (
+                0.5 * self._one_minus_tau * (candidate_position ** 2 - positions[active_particle_index] ** 2) +
+                0.5 * self._tau_dot_alpha * ((self._pos_x_translation(positions)[active_particle_index] -
+                                              candidate_position) ** 2 -
+                                             (self._pos_x_translation(positions)[active_particle_index] -
+                                              positions[active_particle_index]) ** 2 +
+                                             (self._pos_y_translation(positions)[active_particle_index] -
+                                              candidate_position) ** 2 -
+                                             (self._pos_y_translation(positions)[active_particle_index] -
+                                              positions[active_particle_index]) ** 2 +
+                                             (self._pos_z_translation(positions)[active_particle_index] -
+                                              candidate_position) ** 2 -
+                                             (self._pos_z_translation(positions)[active_particle_index] -
+                                              positions[active_particle_index]) ** 2) +
+                0.25 * self._tau_dot_lambda * (candidate_position ** 4 - positions[active_particle_index] ** 4))
 
     def _pos_x_translation(self, position):
         # reshape to a self._lattice_length x self._lattice_length x self._lattice_length matrix
