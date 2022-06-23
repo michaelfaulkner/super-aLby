@@ -79,7 +79,7 @@ class Mediator(metaclass=ABCMeta):
             if (markov_chain_index + 1) % self._number_of_observations_between_screen_prints_for_clock == 0:
                 current_sample_size = markov_chain_index + 1
                 print(f"{current_sample_size} observations drawn out of a total of {self._total_number_of_iterations} "
-                      f"(including equilibration observations).")
+                      f"(including {self._number_of_equilibration_iterations} equilibration observations).")
 
     def post_simulation_methods(self):
         """Runs all methods that follow the Markov process."""
