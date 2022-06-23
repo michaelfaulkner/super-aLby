@@ -78,18 +78,36 @@ def main(argv):
             well_depth = parsing.get_value(config, strings.to_camel_case(potential), "well_depth")
         except (NoOptionError, RuntimeError) as _:
             well_depth = 1.0  # set as default value
+        try:
+            characteristic_length = parsing.get_value(config, strings.to_camel_case(potential), "characteristic_length")
+        except (NoOptionError, RuntimeError) as _:
+            characteristic_length = 1.0  # set as default value
         if potential == "lennard_jones_potential_without_cutoff":
             if (config.get("ModelSettings", "number_of_particles") == "2" and combined_potential_prefactor == 2.0 and
-                    well_depth == 0.25 and config.get("ModelSettings", "size_of_particle_space") == "[5.0, 5.0, 5.0]"):
-                reference_sample = np.load('permanent_data/reference_data/two_lennard_jones_particles_without_cutoff_'
-                                           'well_depth_one_quarter_beta_2_5x5x5_cube_separation_reference_sample.npy')
+                    well_depth == 0.25 and characteristic_length == 1.0 and (
+                            config.get("ModelSettings", "size_of_particle_space") == "[5.0, 5.0, 5.0]" or
+                            config.get("ModelSettings", "size_of_particle_space") == "[2.0, 2.0, 2.0]" or
+                            config.get("ModelSettings", "size_of_particle_space") == "[1.0, 1.0, 1.0]")):
+                if config.get("ModelSettings", "size_of_particle_space") == "[5.0, 5.0, 5.0]":
+                    reference_sample = np.load(
+                        'permanent_data/reference_data/two_lennard_jones_particles_without_cutoff_well_depth_one_'
+                        'quarter_char_length_1_beta_2_5x5x5_cube_separation_reference_sample.npy')
+                elif config.get("ModelSettings", "size_of_particle_space") == "[2.0, 2.0, 2.0]":
+                    reference_sample = np.load(
+                        'permanent_data/reference_data/two_lennard_jones_particles_without_cutoff_well_depth_one_'
+                        'quarter_char_length_1_beta_2_2x2x2_cube_separation_reference_sample.npy')
+                else:
+                    reference_sample = np.load(
+                        'permanent_data/reference_data/two_lennard_jones_particles_without_cutoff_well_depth_one_'
+                        'quarter_char_length_1_beta_2_1x1x1_cube_separation_reference_sample.npy',)
             else:
                 raise ValueError("LennardJonesPotentialWithoutCutoff reference data only available for models for "
                                  "which the product of beta and LennardJonesPotentialWithoutCutoff.prefactor is equal "
                                  "to 2.0, LennardJonesPotentialWithoutCutoff.well_depth is equal to 0.25, "
-                                 "number_of_particles equals 2, size_of_particle_space equals [5.0, 5.0, 5.0] (n.b., "
-                                 "beta, number_of_particles and size_of_particle_space are set in the ModelSettings "
-                                 "section).")
+                                 "LennardJonesPotentialWithoutCutoff.characteristic_length is equal to 1.0, "
+                                 "number_of_particles equals 2, size_of_particle_space equals [5.0, 5.0, 5.0], "
+                                 "[2.0, 2.0, 2.0] or [1.0, 1.0, 1.0] (n.b., beta, number_of_particles and "
+                                 "size_of_particle_space are set in the ModelSettings section).")
         elif (potential == "lennard_jones_potential_with_linked_lists" or
               potential == "lennard_jones_potential_without_linked_lists"):
             try:
@@ -97,10 +115,10 @@ def main(argv):
             except (NoOptionError, RuntimeError) as _:
                 cutoff_length = 2.5  # set as default value
             if (config.get("ModelSettings", "number_of_particles") == "8" and combined_potential_prefactor == 1.0 and
-                    well_depth == 1.0 and cutoff_length == 3.0 and
+                    well_depth == 1.0 and characteristic_length == 1.0 and cutoff_length == 3.0 and
                     config.get("ModelSettings", "size_of_particle_space") == "[8.0, 8.0, 8.0]"):
                 reference_sample = np.load('permanent_data/reference_data/eight_lennard_jones_particles_cutoff_3_well_'
-                                           'depth_1_beta_1_8x8x8_cube_separation_reference_sample.npy')
+                                           'depth_1_char_length_1_beta_1_8x8x8_cube_separation_reference_sample.npy')
             else:
                 raise ValueError("LennardJonesPotentialWithLinkedLists / LennardJonesPotentialWithoutLinkedLists "
                                  "reference data only available for models for which the product of beta and "

@@ -3,7 +3,7 @@ from .mediator import Mediator
 from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
 from kinetic_energy.kinetic_energy import KineticEnergy
-from model_settings import beta
+from model_settings import beta, size_of_particle_space
 from potential.potential import Potential
 from sampler.sampler import Sampler
 import numpy as np
@@ -69,6 +69,9 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
             If type(proposal_dynamics_adaptor_is_on) is not bool.
         base.exceptions.ConfigurationError
             If type(use_metropolis_accept_reject) is not bool
+        base.exceptions.ConfigurationError
+            If potential is an instance of LennardJonesPotentialWithoutCutoff and element is less than 2.0 *
+            LennardJonesPotentialWithoutCutoff.characteristic_length for element in size_of_particle_space.
         """
         super().__init__(potential, sampler, number_of_equilibration_iterations, number_of_observations,
                          proposal_dynamics_adaptor_is_on, ** kwargs)
@@ -84,6 +87,12 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         if type(use_metropolis_accept_reject) is not bool:
             raise ConfigurationError(f"Give a value of type bool as randomise_number_of_integration_steps in "
                                      f"{self.__class__.__name__}.")
+        if "LennardJonesPotentialWithoutCutoff" in str(self._potential):
+            for element in size_of_particle_space:
+                if 2.0 * self._potential.characteristic_length > element:
+                    raise ConfigurationError(f"When using {self.__class__.__name__}, ensure that the value of each "
+                                             f"component of size_of_particle_space is not less than twice the value "
+                                             f"of characteristic_length in LennardJonesPotentialWithoutCutoff.")
         self._kinetic_energy = kinetic_energy
         self._initial_step_size = initial_step_size
         self._step_size = initial_step_size

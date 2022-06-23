@@ -96,7 +96,6 @@ class LennardJonesPotentialWithoutCutoff(LennardJonesPotentials):
         return gradient
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
-        # TODO write the code for this method!
         """
         Returns the potential difference resulting from moving the single active particle to candidate_position.
 
@@ -118,4 +117,6 @@ class LennardJonesPotentialWithoutCutoff(LennardJonesPotentials):
         float
             The potential difference resulting from moving the single active particle to candidate_position.
         """
-        raise SystemError(f"The get_potential_difference method of {self.__class__.__name__} has not been written.")
+        candidate_positions = positions.copy()
+        candidate_positions[active_particle_index] = candidate_position
+        return self.get_value(candidate_positions) - self.get_value(positions)

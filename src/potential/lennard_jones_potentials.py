@@ -1,7 +1,6 @@
 """Module for the LennardJonesPotential class."""
 from .soft_matter_potential import SoftMatterPotential
 from base.exceptions import ConfigurationError
-from model_settings import size_of_particle_space
 from abc import ABCMeta, abstractmethod
 
 
@@ -48,24 +47,17 @@ class LennardJonesPotentials(SoftMatterPotential, metaclass=ABCMeta):
             If model_settings.range_of_initial_particle_positions does not give an real-valued interval for each
             component of the initial positions of each particle.
         base.exceptions.ConfigurationError
-            If element is less than 2.0 * characteristic_length for element in size_of_particle_space.
-        base.exceptions.ConfigurationError
             If characteristic_length is less than 0.5.
         """
         super().__init__(prefactor)
-        for element in size_of_particle_space:
-            if element < 2.0 * characteristic_length:
-                raise ConfigurationError(f"Ensure that the value of each component of size_of_particle_space is not "
-                                         f"less than twice the value of characteristic_length in "
-                                         f"{self.__class__.__name__}.")
         if characteristic_length < 0.5:
             raise ConfigurationError(f"Give a value not less than 0.5 for characteristic_length in "
                                      f"{self.__class__.__name__}.")
+        self.characteristic_length = characteristic_length
         self._potential_12_constant = 4.0 * prefactor * well_depth * characteristic_length ** 12
         self._potential_6_constant = 4.0 * prefactor * well_depth * characteristic_length ** 6
         self._gradient_12_constant = 12.0 * self._potential_12_constant
         self._gradient_6_constant = 6.0 * self._potential_6_constant
-        self._characteristic_length = characteristic_length
         self._bare_potential_at_cut_off = 0.0
 
     @abstractmethod

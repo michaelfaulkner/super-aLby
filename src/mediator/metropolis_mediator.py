@@ -1,7 +1,8 @@
 """Module for the MetropolisMediator class."""
 from .mediator import Mediator
+from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
-from model_settings import beta, number_of_particles
+from model_settings import beta, number_of_particles, size_of_particle_space
 from noise_distribution.noise_distribution import NoiseDistribution
 from potential.potential import Potential
 from sampler.sampler import Sampler
@@ -52,12 +53,21 @@ class MetropolisMediator(Mediator):
             If type(proposal_dynamics_adaptor_is_on) is not bool.
         base.exceptions.ConfigurationError
             If type(use_metropolis_accept_reject) is not bool
+        base.exceptions.ConfigurationError
+            If potential is an instance of LennardJonesPotentialWithoutCutoff and element is greater than 2.0 *
+            LennardJonesPotentialWithoutCutoff.characteristic_length for element in size_of_particle_space.
         """
         super().__init__(potential, sampler, number_of_equilibration_iterations, number_of_observations,
                          proposal_dynamics_adaptor_is_on)
         self._target_acceptance_rate = 0.44  # TODO add functionality so the user can set self._target_acceptance_rate
         self._noise_distribution = noise_distribution
         self._sample[0, :] = self._sampler.get_observation(None, self._positions)
+        if "LennardJonesPotentialWithoutCutoff" in str(self._potential):
+            for element in size_of_particle_space:
+                if 2.0 * self._potential.characteristic_length < element:
+                    raise ConfigurationError(f"When using {self.__class__.__name__}, ensure that the value of each "
+                                             f"component of size_of_particle_space is not greater than twice the value "
+                                             f"of characteristic_length in LennardJonesPotentialWithoutCutoff.")
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            potential=potential, sampler=sampler, noise_distribution=noise_distribution,
                            number_of_equilibration_iterations=number_of_equilibration_iterations,
