@@ -21,21 +21,26 @@ class UniformNoiseDistribution(ContinuousNoiseDistribution):
         """
         super().__init__(initial_width_of_noise_distribution)
 
-    def get_finite_change_in_position(self, number_of_active_particles):
+    def get_candidate_position(self, active_particle_index, positions):
         """
-        Returns a proposed finite change in position for each active particle.
+        Returns a candidate position for the active particle in the Metropolis algorithm.
 
         Parameters
         ----------
-        number_of_active_particles : int
-            An integer representing the number of active particles requiring a proposed change in position.
+        active_particle_index : int
+            The index of the active particle.
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
+            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
+            lattice, the entire positions array corresponds to the entire array of superconducting phase.
 
         Returns
         -------
         numpy.ndarray
-            A two-dimensional numpy array of size (number_of_active_particles, dimensionality_of_particle_space); each
-            element is a float and represents one Cartesian component of the proposed change in position of a single
-            active particle.
+            A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
+            represents one Cartesian component of the proposed position of the active particle.
         """
-        return np.random.uniform(-0.5 * self.width_of_noise_distribution, 0.5 * self.width_of_noise_distribution,
-                                 size=(number_of_active_particles, dimensionality_of_particle_space))
+        return (positions[active_particle_index] +
+                np.random.uniform(-0.5 * self.width_of_noise_distribution, 0.5 * self.width_of_noise_distribution,
+                                  size=dimensionality_of_particle_space))

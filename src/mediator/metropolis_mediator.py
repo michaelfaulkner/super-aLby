@@ -44,15 +44,7 @@ class MetropolisMediator(Mediator):
         base.exceptions.ConfigurationError
             If number_of_observations is not greater than 0.
         base.exceptions.ConfigurationError
-            If initial_step_size is not greater than 0.0.
-        base.exceptions.ConfigurationError
-            If max_number_of_integration_steps is not greater than 0.
-        base.exceptions.ConfigurationError
-            If type(randomise_number_of_integration_steps) is not bool.
-        base.exceptions.ConfigurationError
             If type(proposal_dynamics_adaptor_is_on) is not bool.
-        base.exceptions.ConfigurationError
-            If type(use_metropolis_accept_reject) is not bool
         base.exceptions.ConfigurationError
             If potential is an instance of LennardJonesPotentialWithoutCutoff and element is greater than 2.0 *
             LennardJonesPotentialWithoutCutoff.characteristic_length for element in size_of_particle_space.
@@ -79,8 +71,7 @@ class MetropolisMediator(Mediator):
         particles_to_update = [index for index in range(number_of_particles)]
         random.shuffle(particles_to_update)  # randomises order of elements in particles_to_update
         for active_particle_index in particles_to_update:
-            candidate_position = (self._positions[active_particle_index] +
-                                  self._noise_distribution.get_finite_change_in_position(1)[0])
+            candidate_position = self._noise_distribution.get_candidate_position(active_particle_index, self._positions)
             potential_difference = self._potential.get_potential_difference(active_particle_index, candidate_position,
                                                                             self._positions)
             if potential_difference < 0.0 or np.random.uniform(0.0, 1.0) < np.exp(- beta * potential_difference):
@@ -91,7 +82,7 @@ class MetropolisMediator(Mediator):
     def _proposal_dynamics_adaptor(self):
         """Tunes the size of either the numerical integration step or the width of the proposal distribution."""
         acceptance_rate = self._number_of_accepted_trajectories / 100.0 / number_of_particles
-        if type(self._noise_distribution.width_of_noise_distribution) is not None:
+        if type(self._noise_distribution.width_of_noise_distribution) == float:
             if acceptance_rate > 1.1 * self._target_acceptance_rate:
                 self._noise_distribution.width_of_noise_distribution *= 1.1
             elif acceptance_rate < 0.9 * self._target_acceptance_rate:
@@ -101,7 +92,7 @@ class MetropolisMediator(Mediator):
         """Prints a summary of the completed Markov process to the screen."""
         print(f"Acceptance rate = "
               f"{self._number_of_accepted_trajectories / self._number_of_observations / number_of_particles}")
-        if type(self._noise_distribution.width_of_noise_distribution) is not None:
+        if type(self._noise_distribution.width_of_noise_distribution) == float:
             if self._proposal_dynamics_adaptor_is_on:
                 print(f"Initial width of noise distribution = "
                       f"{self._noise_distribution.initial_width_of_noise_distribution}")

@@ -41,14 +41,14 @@ class IsingPotential(Potential):
             raise ConfigurationError(
                 f"For the value of number_of_particles in ModelSettings, give lattice_length ** lattice_dimensionality "
                 f"when using {self.__class__.__name__}, where lattice_length is an integer not less than 2.")
-        if not (type(size_of_particle_space) == int and size_of_particle_space >= 2):
+        if not (type(size_of_particle_space[0]) == np.int64 and size_of_particle_space[0] >= 2):
             raise ConfigurationError(
-                f"size_of_particle_space must be an integer greater than 1 when using {self.__class__.__name__}.  This "
-                f"object represents the number of elements in the discrete (or integer-valued) particle space, eg, the "
-                f"number of possible spin values available to each particle.")
+                f"size_of_particle_space provided in ModelSettings must be an integer greater than 1 when using "
+                f"{self.__class__.__name__}.  This object represents the number of elements in the discrete (or "
+                f"integer-valued) particle space, eg, the number of possible spin values available to each particle.")
         self._lattice_dimensionality = lattice_dimensionality
         self._potential_constant = - prefactor * exchange_constant
-        self._lattice_length = lattice_length  # number of lattice sites along each dimension of the hypercubic lattice
+        self._lattice_length = int(lattice_length)  # no of lattice sites along each dimension of the hypercubic lattice
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            lattice_dimensionality=lattice_dimensionality, exchange_constant=exchange_constant,
                            prefactor=prefactor)
@@ -120,13 +120,14 @@ class IsingPotential(Potential):
                 f"randomly chosen) for the value of range_of_initial_particle_positions in the ModelSettings section "
                 f"when using {self.__class__.__name__}.")
         if type(range_of_initial_particle_positions) == int:
-            return np.array([range_of_initial_particle_positions for _ in range(number_of_particles)])
+            return np.array([np.atleast_1d(range_of_initial_particle_positions) for _ in range(number_of_particles)])
         else:
-            return np.random.choice(range_of_initial_particle_positions, size=number_of_particles)
+            return np.array([np.atleast_1d(
+                np.random.choice(range_of_initial_particle_positions)) for _ in range(number_of_particles)])
 
     def _get_east_neighbour(self, lattice_site_index):
         return lattice_site_index + (
-                lattice_site_index + 1) % self._lattice_length - lattice_site_index - 1 % self._lattice_length
+                lattice_site_index + 1) % self._lattice_length - lattice_site_index % self._lattice_length
 
     def _get_west_neighbour(self, lattice_site_index):
         return lattice_site_index + (lattice_site_index - 1 + self._lattice_length) % self._lattice_length - (

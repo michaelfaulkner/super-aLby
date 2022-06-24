@@ -50,7 +50,7 @@ if (dimensionality_of_particle_space == 1 and type(size_of_particle_space) == fl
 elif (dimensionality_of_particle_space == 1 and type(size_of_particle_space) == int or
         (dimensionality_of_particle_space > 1 and type(size_of_particle_space) == list and
          type(size_of_particle_space[0]) == int)):
-    size_of_particle_space_over_two = np.int(0.5 * np.atleast_1d(size_of_particle_space))
+    size_of_particle_space_over_two = np.int64(0.5 * np.atleast_1d(size_of_particle_space))
 else:
     size_of_particle_space_over_two = np.atleast_1d(size_of_particle_space)
 size_of_particle_space_over_two.flags.writeable = False

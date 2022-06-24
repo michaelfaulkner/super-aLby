@@ -1,15 +1,13 @@
-"""Module for the abstract DiscreteNoiseDistribution class."""
+"""Module for the abstract SignFlipNoiseDistribution class."""
 from .noise_distribution import NoiseDistribution
-from model_settings import dimensionality_of_particle_space
-import numpy as np
 
 
-class DiscreteNoiseDistribution(NoiseDistribution):
-    r"""Class for generating a change of \pm 1 in each Cartesian component of the active-particle position."""
+class SignFlipNoiseDistribution(NoiseDistribution):
+    r"""Class for flipping the sign of each Cartesian component of the active-particle position."""
 
     def __init__(self, initial_width_of_noise_distribution=None):
         """
-        The constructor of the DiscreteNoiseDistribution class.
+        The constructor of the SignFlipNoiseDistribution class.
 
         Parameters
         ----------
@@ -36,4 +34,4 @@ class DiscreteNoiseDistribution(NoiseDistribution):
             A one-dimensional numpy array of length dimensionality_of_particle_space; each element is an int and
             represents one Cartesian component of the proposed position of the active particle.
         """
-        return positions[active_particle_index] + np.random.choice([-1, 1], size=dimensionality_of_particle_space)
+        return - positions[active_particle_index]
