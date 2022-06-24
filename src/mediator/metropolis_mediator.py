@@ -54,12 +54,6 @@ class MetropolisMediator(Mediator):
         self._target_acceptance_rate = 0.44  # TODO add functionality so the user can set self._target_acceptance_rate
         self._noise_distribution = noise_distribution
         self._sample[0, :] = self._sampler.get_observation(None, self._positions)
-        if "LennardJonesPotentialWithoutCutoff" in str(self._potential):
-            for element in size_of_particle_space:
-                if 2.0 * self._potential.characteristic_length < element:
-                    raise ConfigurationError(f"When using {self.__class__.__name__}, ensure that the value of each "
-                                             f"component of size_of_particle_space is not greater than twice the value "
-                                             f"of characteristic_length in LennardJonesPotentialWithoutCutoff.")
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            potential=potential, sampler=sampler, noise_distribution=noise_distribution,
                            number_of_equilibration_iterations=number_of_equilibration_iterations,

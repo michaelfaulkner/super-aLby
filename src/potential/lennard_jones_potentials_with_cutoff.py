@@ -36,6 +36,14 @@ class LennardJonesPotentialsWithCutoff(LennardJonesPotentials, metaclass=ABCMeta
         """
         The constructor of the LennardJonesPotentialsWithCutoff class.
 
+        NOTE THAT:
+            i) The Metropolis algorithm does not seem to converge for two Lennard-Jones particles for which the
+            value of each component of size_of_particle_space is greater than twice the value of characteristic_length
+            -- perhaps due to too much time spent with particles independently drifting around.
+            ii) Newtonian- and relativistic-dynamics-based algorithms do not seem to converge for two Lennard-Jones
+            particles for which the value of each component of size_of_particle_space is less than twice the value of
+            characteristic_length -- perhaps due to discontinuities in the potential gradients.
+
         Parameters
         ----------
         characteristic_length : float, optional
