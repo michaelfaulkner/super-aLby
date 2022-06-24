@@ -13,9 +13,6 @@ class StandardPositionSampler(PositionSampler):
         """
         The constructor of the StandardPositionSampler class.
 
-        This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
-        init to the next class in the MRO via super.
-
         Parameters
         ----------
         output_directory : str
