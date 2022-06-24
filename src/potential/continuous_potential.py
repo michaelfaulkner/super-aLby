@@ -1,6 +1,7 @@
 """Module for the abstract ContinuousPotential class."""
 from .potential import Potential
 from abc import ABCMeta, abstractmethod
+from base.exceptions import ConfigurationError
 from model_settings import dimensionality_of_particle_space, number_of_particles, range_of_initial_particle_positions
 import numpy as np
 
@@ -114,14 +115,44 @@ class ContinuousPotential(Potential, metaclass=ABCMeta):
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
         if dimensionality_of_particle_space == 1:
-            if type(range_of_initial_particle_positions) == float:
+            if not (range_of_initial_particle_positions is None or type(range_of_initial_particle_positions) == float or
+                    (type(range_of_initial_particle_positions) == list and
+                     len(range_of_initial_particle_positions) == 2 and
+                     [type(bound) == float for bound in range_of_initial_particle_positions])):
+                raise ConfigurationError(
+                    f"Give either None (indicating that the initial position is drawn from the real line), a float "
+                    f"(representing a precise initial position for each particle) or a list of two floats "
+                    f"(representing the bounds of the interval from which each initial particle position is randomly "
+                    f"chosen) for the value of range_of_initial_particle_positions in the ModelSettings section when "
+                    f"using {self.__class__.__name__} (or any child class of ContinuousPotential) with a "
+                    f"one-dimensional particle space.")
+            if range_of_initial_particle_positions is None:
+                return np.array([np.atleast_1d(np.random.normal()) for _ in range(number_of_particles)])
+            elif type(range_of_initial_particle_positions) == float:
                 return np.array(
                     [np.atleast_1d(range_of_initial_particle_positions) for _ in range(number_of_particles)])
             else:
                 return np.array([np.atleast_1d(np.random.uniform(*range_of_initial_particle_positions))
                                  for _ in range(number_of_particles)])
         else:
-            if type(range_of_initial_particle_positions[0]) == float:
+            if not (type(range_of_initial_particle_positions) == list and
+                    len(range_of_initial_particle_positions) == dimensionality_of_particle_space and
+                    ([component is None for component in range_of_initial_particle_positions] or
+                     [type(component) == float for component in range_of_initial_particle_positions] or
+                     [type(component) == list and len(component) == 2 and type(bound) == float
+                      for component in range_of_initial_particle_positions for bound in component])):
+                raise ConfigurationError(
+                    f"Give a list of length dimensionality_of_particle_space for range_of_initial_particle_positions "
+                    f"in the ModelSettings section when using {self.__class__.__name__} (or any child class of "
+                    f"ContinuousPotential) with a particle space of dimension greater than one.  Each element of the "
+                    f"list corresponds to a Cartesian component of each particle position and must be either None "
+                    f"(indicating that the initial Cartesian component is drawn from the real line), a float "
+                    f"(representing a precise initial Cartesian component) or a list of two floats (representing the "
+                    f"bounds of the interval from which the initial Cartesian component is randomly chosen).")
+            if range_of_initial_particle_positions[0] is None:
+                return np.array([np.random.normal(size=dimensionality_of_particle_space)
+                                 for _ in range(number_of_particles)])
+            elif type(range_of_initial_particle_positions[0]) == float:
                 return np.array([range_of_initial_particle_positions for _ in range(number_of_particles)])
             else:
                 return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]

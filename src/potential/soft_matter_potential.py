@@ -1,7 +1,7 @@
 """Module for the abstract SoftMatterPotential class."""
 from .continuous_potential import ContinuousPotential
 from base.exceptions import ConfigurationError
-from model_settings import range_of_initial_particle_positions, size_of_particle_space
+from model_settings import dimensionality_of_particle_space, range_of_initial_particle_positions, size_of_particle_space
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
@@ -38,17 +38,43 @@ class SoftMatterPotential(ContinuousPotential, metaclass=ABCMeta):
             component of the initial positions of each particle.
         """
         super().__init__(prefactor, **kwargs)
-        for element in size_of_particle_space:
-            if type(element) != np.float64:
-                raise ConfigurationError(f"For each component of size_of_particle_space, give a float value when using "
-                                         f"{self.__class__.__name__}.")
-        conditions = [type(component) == list and len(component) == 2 and type(bound) == float
-                      for component in range_of_initial_particle_positions for bound in component]
-        for condition in np.atleast_1d(conditions):
-            if not condition:
-                raise ConfigurationError(f"For each component of range_of_initial_particle_positions, give a list of "
-                                         f"two float values to avoid numerical divergences (due to initial "
-                                         f"configuration) in {self.__class__.__name__}.")
+        if dimensionality_of_particle_space == 1:
+            if not type(size_of_particle_space) == np.float64:
+                raise ConfigurationError(
+                    f"Give a float (representing the volume of the one-dimensional particle space) for the value of "
+                    f"size_of_particle_space in the ModelSettings section when using {self.__class__.__name__} (or any "
+                    f"child class of SoftMatterPotential) with a one-dimensional particle space.")
+        else:
+            if not (type(size_of_particle_space) == np.ndarray and
+                    dimensionality_of_particle_space == len(size_of_particle_space) and
+                    [type(component) == np.float64 for component in size_of_particle_space]):
+                raise ConfigurationError(
+                    f"Give a list of dimensionality_of_particle_space floats (each representing the length of the "
+                    f"corresponding Cartesian dimension of the dimensionality_of_particle_space-dimensional particle "
+                    f"space) for the value of size_of_particle_space in the ModelSettings section when using "
+                    f"{self.__class__.__name__} (or any child class of SoftMatterPotential) with a particle space of "
+                    f"dimension dimensionality_of_particle_space.")
+        if dimensionality_of_particle_space == 1:
+            if not (type(range_of_initial_particle_positions) == list and
+                    len(range_of_initial_particle_positions) == 2 and
+                    [type(bound) == float for bound in range_of_initial_particle_positions]):
+                raise ConfigurationError(
+                    f"Give a list of two floats (representing the bounds of the interval from which each particle "
+                    f"position is chosen) for the value of range_of_initial_particle_positions in the ModelSettings "
+                    f"section when using {self.__class__.__name__} (or any child class of SoftMatterPotential) with a "
+                    f"one-dimensional particle space.")
+        else:
+            if not (type(range_of_initial_particle_positions) == list and
+                    (len(range_of_initial_particle_positions) == dimensionality_of_particle_space and
+                     [type(component) == list and len(component) == 2 and type(bound) == float
+                      for component in range_of_initial_particle_positions for bound in component])):
+                raise ConfigurationError(
+                    f"Give a list of dimensionality_of_particle_space lists of two floats for the value of "
+                    f"range_of_initial_particle_positions in the ModelSettings section when using "
+                    f"{self.__class__.__name__} (or any child class of SoftMatterPotential) with a particle space of "
+                    f"dimension dimensionality_of_particle_space.  Each element of the list corresponds to a Cartesian "
+                    f"component of each particle position and each sub-list represents the bounds of the interval from "
+                    f"which the corresponding initial Cartesian component is randomly chosen.")
 
     @abstractmethod
     def get_value(self, positions):
