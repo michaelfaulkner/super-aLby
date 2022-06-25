@@ -3,7 +3,7 @@ from .mediator import Mediator
 from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
 from kinetic_energy.kinetic_energy import KineticEnergy
-from model_settings import beta, size_of_particle_space
+from model_settings import beta
 from potential.potential import Potential
 from sampler.sampler import Sampler
 import numpy as np
@@ -96,8 +96,8 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
         self._target_acceptance_rate = 0.85  # TODO add functionality so the user can set self._target_acceptance_rate
         self._momenta = self._kinetic_energy.get_momentum_observations()
-        self._sample[0, :] = self._sampler.get_observation(self._momenta, self._positions)
         self._current_potential = self._potential.get_value(self._positions)
+        self._sample[0, :] = self._sampler.get_observation(self._momenta, self._positions, self._current_potential)
         self._number_of_unstable_trajectories = 0
 
     def _generate_single_observation(self, markov_chain_step_index):
@@ -116,7 +116,8 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         else:
             self._update_system_state(candidate_momenta, candidate_positions, candidate_potential)
         self._momenta = self._kinetic_energy.get_momentum_observations()
-        self._sample[markov_chain_step_index + 1, :] = self._sampler.get_observation(self._momenta, self._positions)
+        self._sample[markov_chain_step_index + 1, :] = self._sampler.get_observation(self._momenta, self._positions,
+                                                                                     self._current_potential)
 
     @abstractmethod
     def _get_candidate_configuration(self):

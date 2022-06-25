@@ -23,7 +23,7 @@ class ToroidalPositionSampler(PositionSampler):
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            output_directory=output_directory)
 
-    def get_observation(self, momenta, positions):
+    def get_observation(self, momenta, positions, potential):
         """
         Returns an observation of the system for the given particle momenta and positions.
 
@@ -37,6 +37,9 @@ class ToroidalPositionSampler(PositionSampler):
             is a float and represents one Cartesian component of the position of a single particle. For Bayesian
             models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
             lattice, the entire positions array corresponds to the entire array of superconducting phase.
+        potential : float or potential.potential.Potential
+            If a float, the current value of the potential; otherwise, an instance of the chosen child class of
+            potential.potential.Potential.
 
         Returns
         -------

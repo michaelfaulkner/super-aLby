@@ -47,7 +47,7 @@ def main(argv: Sequence[str]) -> None:
                                      f"lazy_toroidal_leapfrog_mediator for mediator in the [Run] section of the "
                                      f"configuration file.")
 
-    print_and_log(logger, "Running the super-relativistic Monte Carlo simulation.")
+    print_and_log(logger, "Running the Monte Carlo simulation.")
     start_time = time.time()
     mediator.generate_sample()
     end_time = time.time()

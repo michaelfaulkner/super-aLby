@@ -17,9 +17,6 @@ class ParticleSeparationSampler(Sampler):
         """
         The constructor of the ParticleSeparationSampler class.
 
-        This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
-        init to the next class in the MRO via super.
-
         Parameters
         ----------
         output_directory : str
@@ -55,7 +52,7 @@ class ParticleSeparationSampler(Sampler):
         """
         return np.zeros((total_number_of_iterations + 1, number_of_particle_pairs))
 
-    def get_observation(self, momenta, positions):
+    def get_observation(self, momenta, positions, potential):
         """
         Returns an observation of the system for the given particle momenta and positions.
 
@@ -69,6 +66,9 @@ class ParticleSeparationSampler(Sampler):
             is a float and represents one Cartesian component of the position of a single particle. For Bayesian
             models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
             lattice, the entire positions array corresponds to the entire array of superconducting phase.
+        potential : float or potential.potential.Potential
+            If a float, the current value of the potential; otherwise, an instance of the chosen child class of
+            potential.potential.Potential.
 
         Returns
         -------

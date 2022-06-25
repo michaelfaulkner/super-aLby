@@ -62,7 +62,6 @@ class Mediator(metaclass=ABCMeta):
         self._positions = self._potential.initialised_position_array()
         self._sample = self._sampler.initialise_sample_array(self._total_number_of_iterations)
         self._number_of_accepted_trajectories = 0
-        self._use_metropolis_accept_reject = True
 
     def generate_sample(self):
         """Runs the Markov chain in order to generate the sample."""
