@@ -2,7 +2,6 @@
 from .zig_zag_kinetic_energy import ZigZagKineticEnergy
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
-from model_settings import beta
 import logging
 import numpy as np
 
@@ -32,8 +31,8 @@ class SuperRelativisticKineticEnergy(ZigZagKineticEnergy):
             power = 1 + 1 / (a + 1) for a <= -1.
         zig_zag_observation_parameter : float
             The normalised distance travelled through one-component momentum space (during the zig-zag algorithm)
-            between observations of the one-component momentum distribution. zig_zag_observation_parameter / beta is the
-            (non-normalised) distance travelled between observations.
+            between observations of the one-component momentum distribution. zig_zag_observation_parameter multiplied
+            by the current sampling temperature is the (non-normalised) distance travelled between observations.
 
         Raises
         ------
@@ -53,9 +52,9 @@ class SuperRelativisticKineticEnergy(ZigZagKineticEnergy):
                                      f"{self.__class__.__name__}.")
         self._one_over_gamma = 1.0 / gamma
         self._root_gamma = gamma ** 0.5
+        self._power = power
         self._power_over_two = 0.5 * power
         self._power_over_two_minus_one = self._power_over_two - 1.0
-        self._power_over_beta = power / beta
         self._one_over_power = 1.0 / power
         self._two_over_power = 2.0 / power
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, gamma=gamma, power=power,
@@ -98,13 +97,18 @@ class SuperRelativisticKineticEnergy(ZigZagKineticEnergy):
         return self._one_over_gamma * (momenta * (1.0 + self._one_over_gamma * momenta ** 2) **
                                        self._power_over_two_minus_one)
 
-    def _get_distance_from_origin_to_next_event(self):
+    def _get_distance_from_origin_to_next_event(self, temperature):
         r"""
         Returns the distance $|\eta|$ travelled (before the next zig-zag event) through the uphill part of
         one-dimensional momentum space, i.e., from the origin to $\eta$. This is calculated by inverting
 
             $ \rand(0.0, 1.0) =
-                \exp \left[- \beta * \int_0^{\eta} \left(\frac{\partial K}{\partial p}\right)^+ dp \right] $
+                \exp \left[- \int_0^{\eta} \left(\frac{\partial K}{\partial p}\right)^+ dp / temperature \right] $
+
+        Parameters
+        ----------
+        temperature : float
+            The sampling temperature.
 
         Returns
         -------
@@ -112,5 +116,5 @@ class SuperRelativisticKineticEnergy(ZigZagKineticEnergy):
             The distance travelled (before the next zig-zag event) through the uphill part of one-dimensional momentum
             space.
         """
-        return self._root_gamma * ((1.0 - self._power_over_beta * np.log(1.0 - np.random.random())) **
+        return self._root_gamma * ((1.0 - self._power * temperature * np.log(1.0 - np.random.random())) **
                                    self._two_over_power - 1.0) ** 0.5

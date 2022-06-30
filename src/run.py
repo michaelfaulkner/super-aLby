@@ -51,10 +51,10 @@ def main(argv: Sequence[str]) -> None:
     start_time = time.time()
     mediator.generate_sample()
     end_time = time.time()
-
-    print_and_log(logger, "Running the post-simulation methods.")
-    mediator.post_simulation_methods()
-    print_and_log(logger, f"Runtime of the simulation: --- {end_time - start_time} seconds ---")
+    print("---------------------------")
+    print_and_log(logger,
+                  f"Total runtime of the simulation (of all temperature values) = {end_time - start_time} seconds.")
+    print("---------------------------")
 
 
 def print_start_message():

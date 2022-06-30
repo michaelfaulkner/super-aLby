@@ -6,14 +6,10 @@ import sys
 
 args = parse_options(sys.argv[1:])
 config = read_config(args.config_file)
-beta = get_value(config, "ModelSettings", "beta")
 number_of_particles = get_value(config, "ModelSettings", "number_of_particles")
 size_of_particle_space = get_value(config, "ModelSettings", "size_of_particle_space")
 range_of_initial_particle_positions = get_value(config, "ModelSettings", "range_of_initial_particle_positions")
 # todo log the above values?
-
-one_over_beta = 1.0 / beta
-one_over_root_beta = beta ** (-0.5)
 
 number_of_particle_pairs = int(number_of_particles * (number_of_particles - 1) / 2)
 if size_of_particle_space is None or type(size_of_particle_space) == float or type(size_of_particle_space) == int:

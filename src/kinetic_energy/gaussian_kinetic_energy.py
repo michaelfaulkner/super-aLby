@@ -1,7 +1,7 @@
 """Module for the GaussianKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
 from base.logging import log_init_arguments
-from model_settings import dimensionality_of_momenta_array, one_over_root_beta
+from model_settings import dimensionality_of_momenta_array
 import logging
 import numpy as np
 
@@ -54,9 +54,14 @@ class GaussianKineticEnergy(KineticEnergy):
         """
         return momenta
 
-    def get_momentum_observations(self):
+    def get_momentum_observations(self, temperature):
         """
         Returns an observation of the momenta from the kinetic-energy distribution.
+
+        Parameters
+        ----------
+        temperature : float
+            The sampling temperature.
 
         Returns
         -------
@@ -64,4 +69,4 @@ class GaussianKineticEnergy(KineticEnergy):
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the newly observed momentum of a single particle.
         """
-        return np.random.normal(scale=one_over_root_beta, size=dimensionality_of_momenta_array)
+        return np.random.normal(scale=temperature ** 0.5, size=dimensionality_of_momenta_array)

@@ -12,6 +12,7 @@ src_directory = os.path.abspath(this_directory + "/../")
 sys.path.insert(0, src_directory)
 
 factory = importlib.import_module("base.factory")
+other_methods = importlib.import_module("other_methods")
 parsing = importlib.import_module("base.parsing")
 strings = importlib.import_module("base.strings")
 run_module = importlib.import_module("run")
@@ -39,11 +40,18 @@ def main(argv):
         raise IOError("Mediator not one of EuclideanLeapfrogMediator, ToroidalLeapfrogMediator, "
                       "LazyToroidalLeapfrogMediator or MetropolisMediator.")
 
+    temperatures = other_methods.get_temperatures(
+        parsing.get_value(config, config_file_mediator, "minimum_temperature"),
+        parsing.get_value(config, config_file_mediator, "maximum_temperature"),
+        parsing.get_value(config, config_file_mediator, "number_of_temperature_values"))
+    if len(temperatures) > 1:
+        raise RuntimeWarning(f"The value of number_of_temperature_values in {config_file_mediator} is greater than 1.  "
+                             f"Convergence is therefore tested only for the minimum temperature value.")
+    beta = 1.0 / temperatures[0]
     """n.b., potentials may include additional prefactors (to beta and potential_prefactor (latter defined below) in 
         their definitions, e.g., the definitions of ExponentialPowerPotential and GaussianPotential include additional 
         prefactors of 1/power and 1/2, respectively - potential_prefactor defines the relative weight of the potential 
         in question when included in the sum of a more complex model"""
-    beta = parsing.get_value(config, "ModelSettings", "beta")
     potential = config.get(config_file_mediator, "potential")
     try:
         potential_prefactor = parsing.get_value(config, strings.to_camel_case(potential), "prefactor")
@@ -60,7 +68,7 @@ def main(argv):
                                        'quarter_reference_sample.npy')
         else:
             raise ValueError("ExponentialPowerPotential reference data only available for models for which the product "
-                             "of beta (set in the ModelSettings section) and ExponentialPowerPotential.prefactor is "
+                             "of beta (the reciprocal sampling temperature) and ExponentialPowerPotential.prefactor is "
                              "equal to 0.25 (n.b., the potential's definition includes an additional prefactor of 1 / "
                              "power).")
     elif potential == "coulomb_potential":
@@ -70,9 +78,9 @@ def main(argv):
                                        'cube_separation_reference_sample.npy')
         else:
             raise ValueError("CoulombPotential reference data only available for models for which the product of beta "
-                             "and CoulombPotential.prefactor is equal to 2.0, number_of_particles equals 2 and "
-                             "size_of_particle_space equals [1.0, 1.0, 1.0] (n.b., beta, number_of_particles and "
-                             "size_of_particle_space are set in the ModelSettings section).")
+                             "(the reciprocal sampling temperature) and CoulombPotential.prefactor is equal to 2.0, "
+                             "number_of_particles equals 2 and size_of_particle_space equals [1.0, 1.0, 1.0] (n.b., "
+                             "number_of_particles and size_of_particle_space are set in the ModelSettings section).")
     elif "lennard_jones" in potential:
         try:
             well_depth = parsing.get_value(config, strings.to_camel_case(potential), "well_depth")
@@ -102,11 +110,12 @@ def main(argv):
                         'quarter_char_length_1_beta_2_1x1x1_cube_separation_reference_sample.npy',)
             else:
                 raise ValueError("LennardJonesPotentialWithoutCutoff reference data only available for models for "
-                                 "which the product of beta and LennardJonesPotentialWithoutCutoff.prefactor is equal "
-                                 "to 2.0, LennardJonesPotentialWithoutCutoff.well_depth is equal to 0.25, "
+                                 "which the product of beta (the reciprocal sampling temperature) and "
+                                 "LennardJonesPotentialWithoutCutoff.prefactor is equal to 2.0, "
+                                 "LennardJonesPotentialWithoutCutoff.well_depth is equal to 0.25, "
                                  "LennardJonesPotentialWithoutCutoff.characteristic_length is equal to 1.0, "
                                  "number_of_particles equals 2, size_of_particle_space equals [5.0, 5.0, 5.0], "
-                                 "[2.0, 2.0, 2.0] or [1.0, 1.0, 1.0] (n.b., beta, number_of_particles and "
+                                 "[2.0, 2.0, 2.0] or [1.0, 1.0, 1.0] (n.b., number_of_particles and "
                                  "size_of_particle_space are set in the ModelSettings section).")
         elif (potential == "lennard_jones_potential_with_linked_lists" or
               potential == "lennard_jones_potential_without_linked_lists"):
@@ -121,18 +130,18 @@ def main(argv):
                                            'depth_1_char_length_1_beta_1_8x8x8_cube_separation_reference_sample.npy')
             else:
                 raise ValueError("LennardJonesPotentialWithLinkedLists / LennardJonesPotentialWithoutLinkedLists "
-                                 "reference data only available for models for which the product of beta and "
-                                 "LennardJonesPotentialWithoutCutoff.prefactor is equal to 1.0, "
-                                 "LennardJonesPotentialWithoutCutoff.well_depth is equal to 1.0, "
+                                 "reference data only available for models for which the product of beta (the "
+                                 "reciprocal sampling temperature) and LennardJonesPotentialWithoutCutoff.prefactor is "
+                                 "equal to 1.0, LennardJonesPotentialWithoutCutoff.well_depth is equal to 1.0, "
                                  "LennardJonesPotentialWithoutCutoff.cut_off_length is equal to 3.0, "
                                  "number_of_particles equals 8, size_of_particle_space equals [8.0, 8.0, 8.0] (n.b., "
-                                 "beta, number_of_particles and size_of_particle_space are set in the ModelSettings "
+                                 "number_of_particles and size_of_particle_space are set in the ModelSettings "
                                  "section).")
     else:
         raise ValueError("Reference data not provided for this potential.")
 
     reference_cdf = get_cumulative_distribution(reference_sample)
-    sample = sampler.get_sample()[number_of_equilibration_iterations + 1:].flatten()
+    sample = sampler.get_sample(temperature_index=0)[number_of_equilibration_iterations + 1:].flatten()
     effective_sample_size = markov_chain_diagnostics.get_effective_sample_size(sample)
     print(f"Effective sample size = {effective_sample_size} (from a total sample size of {len(sample)}).")
     sample_cdf = get_cumulative_distribution(sample)

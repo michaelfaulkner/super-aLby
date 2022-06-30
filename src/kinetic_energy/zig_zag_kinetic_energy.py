@@ -1,7 +1,7 @@
 """Module for the abstract ZigZagKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
 from base.exceptions import ConfigurationError
-from model_settings import beta, dimensionality_of_momenta_array, number_of_momenta_components
+from model_settings import dimensionality_of_momenta_array, number_of_momenta_components
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
@@ -26,8 +26,8 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         ----------
         zig_zag_observation_parameter : float
             The normalised distance travelled through one-component momentum space (during the zig-zag algorithm)
-            between observations of the one-component momentum distribution. zig_zag_observation_parameter / beta is the
-            (non-normalised) distance travelled between observations.
+            between observations of the one-component momentum distribution. zig_zag_observation_parameter multiplied
+            by the current sampling temperature is the (non-normalised) distance travelled between observations.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
 
@@ -40,7 +40,7 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         if zig_zag_observation_parameter < 5.0:
             raise ConfigurationError(f"Give a not less than 5.0 as zig_zag_observation_parameter for "
                                      f"{self.__class__.__name__}.")
-        self._distance_between_zig_zag_observations = zig_zag_observation_parameter / beta
+        self._zig_zag_observation_parameter = zig_zag_observation_parameter
 
     @abstractmethod
     def get_value(self, momenta):
@@ -80,13 +80,18 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def get_momentum_observations(self):
+    def get_momentum_observations(self, temperature):
         """
         Returns an observation of the momenta from the kinetic-energy distribution using number_of_momenta_components
         one-dimensional zig-zag algorithms. In future, a parallelized C version will be preferable.
 
         Each one-dimensional zig-zag algorithm obtains an observation of a single Cartesian component of the momentum
         of a single particle. For simplicity, motion is always initialised from the centre of the space.
+
+        Parameters
+        ----------
+        temperature : float
+            The sampling temperature.
 
         Returns
         -------
@@ -95,10 +100,10 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         """
         momenta = np.empty(number_of_momenta_components)
         for i in range(number_of_momenta_components):
-            distance_left_before_observation = self._distance_between_zig_zag_observations
+            distance_left_before_observation = self._zig_zag_observation_parameter * temperature
             momentum_sign = np.random.choice((- 1.0, 1.0))
             while True:
-                distance_to_next_event = self._get_distance_from_origin_to_next_event()
+                distance_to_next_event = self._get_distance_from_origin_to_next_event(temperature)
                 if distance_left_before_observation < distance_to_next_event:
                     momenta[i] = momentum_sign * distance_left_before_observation
                     break
@@ -110,13 +115,18 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
         return np.reshape(momenta, dimensionality_of_momenta_array)
 
     @abstractmethod
-    def _get_distance_from_origin_to_next_event(self):
+    def _get_distance_from_origin_to_next_event(self, temperature):
         r"""
         Returns the distance $|\eta|$ travelled (before the next zig-zag event) through the uphill part of
         one-dimensional momentum space, i.e., from the origin to $\eta$. This is calculated by inverting
 
             $ \rand(0.0, 1.0) =
-                \exp \left[- \beta * \int_0^{\eta} \left(\frac{\partial K}{\partial p}\right)^+ dp \right] $
+                \exp \left[- \int_0^{\eta} \left(\frac{\partial K}{\partial p}\right)^+ dp / temperature \right] $
+
+        Parameters
+        ----------
+        temperature : float
+            The sampling temperature.
 
         Returns
         -------

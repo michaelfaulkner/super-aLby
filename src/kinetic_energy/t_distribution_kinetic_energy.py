@@ -2,7 +2,7 @@
 from .kinetic_energy import KineticEnergy
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
-from model_settings import beta, dimensionality_of_momenta_array
+from model_settings import dimensionality_of_momenta_array
 import logging
 import numpy as np
 
@@ -25,15 +25,11 @@ class TDistributionKineticEnergy(KineticEnergy):
         ------
         base.exceptions.ConfigurationError
             If degrees_of_freedom is less than 1.
-        base.exceptions.ConfigurationError
-            If beta does not equal 1.0.
         """
         super().__init__()
         if degrees_of_freedom < 1:
             raise ConfigurationError(f"Give a value not less than 1 as degrees_of_freedom for "
                                      f"{self.__class__.__name__}.")
-        if beta != 1.0:
-            raise ConfigurationError(f"Set beta equal to 1.0 when using {self.__class__.__name__}.")
         self._degrees_of_freedom = float(degrees_of_freedom)
         self._degrees_of_freedom_minus_one = self._degrees_of_freedom - 1.0
         self._degrees_of_freedom_plus_one = self._degrees_of_freedom + 1.0
@@ -79,9 +75,14 @@ class TDistributionKineticEnergy(KineticEnergy):
         """
         return self._degrees_of_freedom_plus_one * momenta / (self._degrees_of_freedom + momenta ** 2)
 
-    def get_momentum_observations(self):
+    def get_momentum_observations(self, temperature):
         """
         Returns an observation of the momenta from the kinetic-energy distribution.
+
+        Parameters
+        ----------
+        temperature : float
+            The sampling temperature.
 
         Returns
         -------
@@ -89,4 +90,7 @@ class TDistributionKineticEnergy(KineticEnergy):
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the newly observed momentum of a single particle.
         """
+        if temperature != 1.0:
+            raise ConfigurationError(
+                f"{self.__class__.__name__} only valid when the sampling temperature is equal to 1.0.")
         return np.random.standard_t(df=self._degrees_of_freedom, size=dimensionality_of_momenta_array)
