@@ -116,13 +116,15 @@ class Mediator(metaclass=ABCMeta):
 
     def _print_temperature_message(self, temperature, temperature_index):
         """Prints details of the current sampling temperature before each temperature iteration."""
-        print("---------------------------")
         if len(self._temperatures) == 1:
+            print("---------------------------------------------")
             print(f"Temperature = {temperature:.4f} (only temperature value)")
+            print("---------------------------------------------")
         else:
+            print("--------------------------------------------------")
             print(f"Temperature = {temperature:.4f} ({self._get_ordinal(temperature_index + 1)} of "
                   f"{len(self._temperatures)} temperature values)")
-        print("---------------------------")
+            print("--------------------------------------------------")
 
     @abstractmethod
     def _reset_arrays_and_counters(self, temperature):
