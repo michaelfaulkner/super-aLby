@@ -40,11 +40,21 @@ def main(argv):
         raise IOError("Mediator not one of EuclideanLeapfrogMediator, ToroidalLeapfrogMediator, "
                       "LazyToroidalLeapfrogMediator or MetropolisMediator.")
 
+    potential = config.get(config_file_mediator, "potential")
+    try:
+        potential_prefactor = parsing.get_value(config, strings.to_camel_case(potential), "prefactor")
+    except (NoOptionError, RuntimeError) as _:
+        potential_prefactor = 1.0  # set as default value
+
     temperatures = other_methods.get_temperatures(
         parsing.get_value(config, config_file_mediator, "minimum_temperature"),
         parsing.get_value(config, config_file_mediator, "maximum_temperature"),
         parsing.get_value(config, config_file_mediator, "number_of_temperature_values"))
-    if len(temperatures) > 1:
+    if potential == "ising_potential":
+        if not (len(temperatures) == 2 and temperatures[0] == 2.0 and temperatures[1] == 3.0):
+            raise ValueError("IsingPotential reference data only available for models for which two sampling "
+                             "temperatures are given with values 0.5 and 4.0.")
+    elif len(temperatures) > 1:
         raise RuntimeWarning(f"The value of number_of_temperature_values in {config_file_mediator} is greater than 1.  "
                              f"Convergence is therefore tested only for the minimum temperature value.")
     beta = 1.0 / temperatures[0]
@@ -52,15 +62,10 @@ def main(argv):
         their definitions, e.g., the definitions of ExponentialPowerPotential and GaussianPotential include additional 
         prefactors of 1/power and 1/2, respectively - potential_prefactor defines the relative weight of the potential 
         in question when included in the sum of a more complex model"""
-    potential = config.get(config_file_mediator, "potential")
-    try:
-        potential_prefactor = parsing.get_value(config, strings.to_camel_case(potential), "prefactor")
-    except (NoOptionError, RuntimeError) as _:
-        potential_prefactor = 1.0  # set as default value
     combined_potential_prefactor = beta * potential_prefactor
 
     if potential == "gaussian_potential" or (potential == "exponential_power_potential" and config.get(
-                "ExponentialPowerPotential", "power") == "2.0"):
+            "ExponentialPowerPotential", "power") == "2.0"):
         reference_sample = np.random.normal(0.0, combined_potential_prefactor ** (- 0.5), size=10000)
     elif potential == "exponential_power_potential" and config.get("ExponentialPowerPotential", "power") == "4.0":
         if combined_potential_prefactor == 0.25:
@@ -107,7 +112,7 @@ def main(argv):
                 else:
                     reference_sample = np.load(
                         'permanent_data/reference_data/two_lennard_jones_particles_without_cutoff_well_depth_one_'
-                        'quarter_char_length_1_beta_2_1x1x1_cube_separation_reference_sample.npy',)
+                        'quarter_char_length_1_beta_2_1x1x1_cube_separation_reference_sample.npy', )
             else:
                 raise ValueError("LennardJonesPotentialWithoutCutoff reference data only available for models for "
                                  "which the product of beta (the reciprocal sampling temperature) and "
@@ -137,26 +142,76 @@ def main(argv):
                                  "number_of_particles equals 8, size_of_particle_space equals [8.0, 8.0, 8.0] (n.b., "
                                  "number_of_particles and size_of_particle_space are set in the ModelSettings "
                                  "section).")
+    elif potential == "ising_potential":
+        try:
+            lattice_dimensionality = parsing.get_value(config, strings.to_camel_case(potential),
+                                                       "lattice_dimensionality")
+        except (NoOptionError, RuntimeError) as _:
+            lattice_dimensionality = 2  # set as default value
+        try:
+            exchange_constant = parsing.get_value(config, strings.to_camel_case(potential), "exchange_constant")
+        except (NoOptionError, RuntimeError) as _:
+            exchange_constant = 1.0  # set as default value
+        number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
+        if (number_of_particles == 16 and lattice_dimensionality == 2 and
+                potential_prefactor * exchange_constant == 1.0 and
+                config.get("ModelSettings", "size_of_particle_space") == "2"):
+            # [number_of_equilibration_iterations + 1::100] in next line removes equilibration obs and then thins
+            samples = [sampler.get_sample(temperature_index)[number_of_equilibration_iterations + 1::10].flatten() for
+                       temperature_index in range(len(temperatures))]
+            if config.get(possible_mediator, "sampler") == "standard_mean_position_sampler":
+                # sampler is the magnetic density and we're interested in the expected absolute magnetic density, so...
+                samples = [np.abs(sample) for sample in samples]
+            squared_deviation_samples = [(sample - np.mean(sample)) ** 2 for sample in samples]
+            sample_means_and_errors = [
+                [np.mean(sample), np.std(sample) / len(sample) ** 0.5] for sample in samples]
+            sample_variances_and_errors = np.array(
+                [[np.mean(sample), np.std(sample) / len(sample) ** 0.5] for sample in
+                 squared_deviation_samples])
+            # todo ajouter des valeurs de reference en dessous (tout marche bien, avec de bons parametres dans le ini)
+            for index, temperature in enumerate(temperatures):
+                print("---------------------------------")
+                print(f"Temperature = {temperature:.4f}")
+                if config.get(possible_mediator, "sampler") == "standard_mean_position_sampler":
+                    print(f"Expected absolute magnetic density = {sample_means_and_errors[index][0]} +- "
+                          f"{sample_means_and_errors[index][1]}")
+                    print(f"Expected (absolute-)magnetic susceptibility per particle = "
+                          f"{number_of_particles * sample_variances_and_errors[index][0] / temperature} +- "
+                          f"{number_of_particles * sample_variances_and_errors[index][1] / temperature}")
+                elif config.get(possible_mediator, "sampler") == "potential_sampler":
+                    print(f"Expected potential per particle = "
+                          f"{sample_means_and_errors[index][0] / number_of_particles} +- "
+                          f"{sample_means_and_errors[index][1] / number_of_particles}")
+                    print(f"Expected specific heat per particle = "
+                          f"{sample_variances_and_errors[index][0] / number_of_particles / temperature ** 2} +- "
+                          f"{sample_variances_and_errors[index][1] / number_of_particles / temperature ** 2}")
+                print("---------------------------------")
+        else:
+            raise ValueError("IsingPotential reference data only available for 16-particle models on a two-dimensional "
+                             "lattice for which size_of_particle_space equals 2 and the product of "
+                             "IsingPotential.prefactor and IsingPotential.exchange_constant is equal to 1.0 (n.b., "
+                             "number_of_particles and size_of_particle_space are set in the ModelSettings section).")
     else:
         raise ValueError("Reference data not provided for this potential.")
 
-    reference_cdf = get_cumulative_distribution(reference_sample)
-    sample = sampler.get_sample(temperature_index=0)[number_of_equilibration_iterations + 1:].flatten()
-    effective_sample_size = markov_chain_diagnostics.get_effective_sample_size(sample)
-    print(f"Effective sample size = {effective_sample_size} (from a total sample size of {len(sample)}).")
-    sample_cdf = get_cumulative_distribution(sample)
+    if potential != "ising_potential":
+        reference_cdf = get_cumulative_distribution(reference_sample)
+        sample = sampler.get_sample(temperature_index=0)[number_of_equilibration_iterations + 1:].flatten()
+        effective_sample_size = markov_chain_diagnostics.get_effective_sample_size(sample)
+        print(f"Effective sample size = {effective_sample_size} (from a total sample size of {len(sample)}).")
+        sample_cdf = get_cumulative_distribution(sample)
 
-    plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
-    plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-aLby data')
+        plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
+        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-aLby data')
 
-    plt.xlabel(r"$x$", fontsize=15, labelpad=10)
-    plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)
-    plt.tick_params(axis='both', which='major', labelsize=14, pad=10)
-    legend = plt.legend(loc='lower right', fontsize=10)
-    legend.get_frame().set_edgecolor('k')
-    legend.get_frame().set_lw(1.5)
-    plt.tight_layout()
-    plt.show()
+        plt.xlabel(r"$x$", fontsize=15, labelpad=10)
+        plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)
+        plt.tick_params(axis='both', which='major', labelsize=14, pad=10)
+        legend = plt.legend(loc='lower right', fontsize=10)
+        legend.get_frame().set_edgecolor('k')
+        legend.get_frame().set_lw(1.5)
+        plt.tight_layout()
+        plt.show()
 
 
 def get_cumulative_distribution(input_sample):
