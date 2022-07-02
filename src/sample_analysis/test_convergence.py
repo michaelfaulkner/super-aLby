@@ -51,9 +51,9 @@ def main(argv):
         parsing.get_value(config, config_file_mediator, "maximum_temperature"),
         parsing.get_value(config, config_file_mediator, "number_of_temperature_values"))
     if potential == "ising_potential":
-        if not (len(temperatures) == 2 and temperatures[0] == 2.0 and temperatures[1] == 3.0):
+        if not (len(temperatures) == 2 and temperatures[0] == 1.2 and temperatures[1] == 3.0):
             raise ValueError("IsingPotential reference data only available for models for which two sampling "
-                             "temperatures are given with values 0.5 and 4.0.")
+                             "temperatures are given with values 1.2 and 3.0.")
     elif len(temperatures) > 1:
         raise RuntimeWarning(f"The value of number_of_temperature_values in {config_file_mediator} is greater than 1.  "
                              f"Convergence is therefore tested only for the minimum temperature value.")
@@ -159,34 +159,46 @@ def main(argv):
             # [number_of_equilibration_iterations + 1::100] in next line removes equilibration obs and then thins
             samples = [sampler.get_sample(temperature_index)[number_of_equilibration_iterations + 1::10].flatten() for
                        temperature_index in range(len(temperatures))]
-            if config.get(possible_mediator, "sampler") == "standard_mean_position_sampler":
-                # sampler is the magnetic density and we're interested in the expected absolute magnetic density, so...
-                samples = [np.abs(sample) for sample in samples]
             squared_deviation_samples = [(sample - np.mean(sample)) ** 2 for sample in samples]
-            sample_means_and_errors = [
-                [np.mean(sample), np.std(sample) / len(sample) ** 0.5] for sample in samples]
-            sample_variances_and_errors = np.array(
-                [[np.mean(sample), np.std(sample) / len(sample) ** 0.5] for sample in
-                 squared_deviation_samples])
-            # todo ajouter des valeurs de reference en dessous (tout marche bien, avec de bons parametres dans le ini)
+            sample_variances_and_errors = np.array([[np.mean(sample), np.std(sample) / len(sample) ** 0.5]
+                                                    for sample in squared_deviation_samples])
+            if config.get(possible_mediator, "sampler") == "standard_mean_position_sampler":
+                # sampler is the magnetic density and we're interested in the expected absolute magnetic density (in
+                # order to distinguish the high- and low-T phases when using the symm-restoring Wolff algorithm) so...
+                samples = [np.abs(sample) for sample in samples]
+            sample_means_and_errors = np.array([[np.mean(sample), np.std(sample) / len(sample) ** 0.5]
+                                                for sample in samples])
+            expected_absolute_magnetic_density_reference_values = ["0.997", "0.600"]
+            expected_magnetic_susc_per_particle_reference_values = ["0.008", "2.39"]
+            expected_potential_per_particle_reference_values = ["-1.99", "-1.02"]
+            expected_spec_heat_per_particle_reference_values = ["0.0696", "0.604"]
             for index, temperature in enumerate(temperatures):
                 print("---------------------------------")
                 print(f"Temperature = {temperature:.4f}")
                 if config.get(possible_mediator, "sampler") == "standard_mean_position_sampler":
-                    print(f"Expected absolute magnetic density = {sample_means_and_errors[index][0]} +- "
-                          f"{sample_means_and_errors[index][1]}")
-                    print(f"Expected (absolute-)magnetic susceptibility per particle = "
-                          f"{number_of_particles * sample_variances_and_errors[index][0] / temperature} +- "
-                          f"{number_of_particles * sample_variances_and_errors[index][1] / temperature}")
+                    # expected absolute magnetic density is E(|m|) où m = sum_i s_i / N
+                    print(f"Sample estimate of expected absolute magnetic density = "
+                          f"{sample_means_and_errors[index][0]:.3g} +- {sample_means_and_errors[index][1]:.3g} "
+                          f"(ref. value = {expected_absolute_magnetic_density_reference_values[index]})")
+                    # w/M = Nm the magnetisation, expected magnetic susc is dE(M)/dh = beta N^2 Var(m) (not Var(|m|)!!!)
+                    print(f"Sample estimate of expected magnetic susc. per particle = "
+                          f"{number_of_particles * sample_variances_and_errors[index][0] / temperature:.3g} +- "
+                          f"{number_of_particles * sample_variances_and_errors[index][1] / temperature:.3g} (ref. "
+                          f"value = {expected_magnetic_susc_per_particle_reference_values[index]} but large low-T "
+                          f"flucts)")
                 elif config.get(possible_mediator, "sampler") == "potential_sampler":
-                    print(f"Expected potential per particle = "
+                    print(f"Sample estimate of expected potential per particle = "
                           f"{sample_means_and_errors[index][0] / number_of_particles} +- "
-                          f"{sample_means_and_errors[index][1] / number_of_particles}")
-                    print(f"Expected specific heat per particle = "
+                          f"{sample_means_and_errors[index][1] / number_of_particles} (ref. value = "
+                          f"{expected_potential_per_particle_reference_values[index]})")
+                    # expected specific heat is dE(U)/dT = beta^2 Var(U) (a dimensionless quantity)
+                    print(f"Sample estimate of expected specific heat per particle = "
                           f"{sample_variances_and_errors[index][0] / number_of_particles / temperature ** 2} +- "
-                          f"{sample_variances_and_errors[index][1] / number_of_particles / temperature ** 2}")
+                          f"{sample_variances_and_errors[index][1] / number_of_particles / temperature ** 2} (ref. "
+                          f"value = {expected_spec_heat_per_particle_reference_values[index]} but large low-T flucts)")
                 print("---------------------------------")
         else:
+
             raise ValueError("IsingPotential reference data only available for 16-particle models on a two-dimensional "
                              "lattice for which size_of_particle_space equals 2 and the product of "
                              "IsingPotential.prefactor and IsingPotential.exchange_constant is equal to 1.0 (n.b., "
