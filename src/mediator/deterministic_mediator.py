@@ -113,6 +113,14 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         self._current_potential = None
         self._number_of_unstable_trajectories = None
 
+    def _reset_arrays_and_counters(self, temperature):
+        """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
+        super()._reset_arrays_and_counters(temperature)
+        self._momenta = self._kinetic_energy.get_momentum_observations(temperature)
+        self._current_potential = self._potential.get_value(self._positions)
+        self._sample[0, :] = self._sampler.get_observation(self._momenta, self._positions, self._current_potential)
+        self._number_of_unstable_trajectories = 0
+
     def _generate_single_observation(self, markov_chain_step_index, temperature):
         """Advances the Markov chain by one step and adds a single observation to the sample."""
         if self._randomise_number_of_integration_steps:
@@ -174,14 +182,6 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
             The potential of the accepted configuration.
         """
         self._momenta, self._positions, self._current_potential = new_momenta, new_positions, new_potential
-
-    def _reset_arrays_and_counters(self, temperature):
-        """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
-        super()._reset_arrays_and_counters(temperature)
-        self._momenta = self._kinetic_energy.get_momentum_observations(temperature)
-        self._current_potential = self._potential.get_value(self._positions)
-        self._sample[0, :] = self._sampler.get_observation(self._momenta, self._positions, self._current_potential)
-        self._number_of_unstable_trajectories = 0
 
     def _proposal_dynamics_adaptor(self):
         """Tunes the size of either the numerical integration step or the width of the proposal distribution."""
