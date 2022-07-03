@@ -1,5 +1,5 @@
 """Module for the MetropolisMediator class."""
-from .mediator import Mediator
+from .diffusive_mediator import DiffusiveMediator
 from base.logging import log_init_arguments
 from model_settings import number_of_particles
 from noise_distribution.noise_distribution import NoiseDistribution
@@ -10,7 +10,7 @@ import numpy as np
 import random
 
 
-class MetropolisMediator(Mediator):
+class MetropolisMediator(DiffusiveMediator):
     """The MetropolisMediator class provides functionality for the Metropolis algorithm, which is equivalent to the
         Metropolis-within-Gibbs algorithm blocked to the level of single-particle dynamics."""
 
@@ -53,9 +53,6 @@ class MetropolisMediator(Mediator):
             If number_of_observations is not greater than 0.
         base.exceptions.ConfigurationError
             If type(proposal_dynamics_adaptor_is_on) is not bool.
-        base.exceptions.ConfigurationError
-            If potential is an instance of LennardJonesPotentialWithoutCutoff and element is greater than 2.0 *
-            LennardJonesPotentialWithoutCutoff.characteristic_length for element in size_of_particle_space.
         """
         super().__init__(potential, sampler, minimum_temperature, maximum_temperature, number_of_temperature_values,
                          number_of_equilibration_iterations, number_of_observations, proposal_dynamics_adaptor_is_on)
@@ -82,11 +79,6 @@ class MetropolisMediator(Mediator):
                 self._number_of_accepted_trajectories += 1
         self._sample[markov_chain_step_index + 1, :] = self._sampler.get_observation(None, self._positions,
                                                                                      self._potential)
-
-    def _reset_arrays_and_counters(self, temperature):
-        """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
-        super()._reset_arrays_and_counters(temperature)
-        self._sample[0, :] = self._sampler.get_observation(None, self._positions, self._potential)
 
     def _proposal_dynamics_adaptor(self):
         """Tunes the size of either the numerical integration step or the width of the proposal distribution."""

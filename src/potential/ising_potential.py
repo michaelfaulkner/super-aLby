@@ -47,7 +47,7 @@ class IsingPotential(Potential):
                 f"{self.__class__.__name__}.  This object represents the number of elements in the discrete (or "
                 f"integer-valued) particle space, eg, the number of possible spin values available to each particle.")
         self._lattice_dimensionality = lattice_dimensionality
-        self._potential_constant = - prefactor * exchange_constant
+        self.potential_constant = - prefactor * exchange_constant
         self._lattice_length = int(lattice_length)  # no of lattice sites along each dimension of the hypercubic lattice
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            lattice_dimensionality=lattice_dimensionality, exchange_constant=exchange_constant,
@@ -69,9 +69,9 @@ class IsingPotential(Potential):
         float
             The potential.
         """
-        return self._potential_constant * np.sum([positions[index] * positions[self._get_east_neighbour(index)] +
-                                                  positions[index] * positions[self._get_north_neighbour(index)]
-                                                  for index in range(number_of_particles)])
+        return self.potential_constant * np.sum([positions[index] * positions[self._get_east_neighbour(index)] +
+                                                 positions[index] * positions[self._get_north_neighbour(index)]
+                                                 for index in range(number_of_particles)])
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
         """
@@ -98,8 +98,8 @@ class IsingPotential(Potential):
                                      positions[self._get_north_neighbour(active_particle_index)] +
                                      positions[self._get_west_neighbour(active_particle_index)] +
                                      positions[self._get_south_neighbour(active_particle_index)])
-        return self._potential_constant * sum_of_neighbouring_spins * (candidate_position -
-                                                                       positions[active_particle_index])
+        return self.potential_constant * sum_of_neighbouring_spins * (candidate_position -
+                                                                      positions[active_particle_index])
 
     def initialised_position_array(self):
         """
@@ -116,7 +116,7 @@ class IsingPotential(Potential):
                  [type(bound) == int for bound in range_of_initial_particle_positions])):
             raise ConfigurationError(
                 f"Give either an integer (representing a precise initial position for each particle) or a list of two "
-                f"integers (representing the inclusice bounds of the set from which each initial particle position is "
+                f"integers (representing the inclusive bounds of the set from which each initial particle position is "
                 f"randomly chosen) for the value of range_of_initial_particle_positions in the ModelSettings section "
                 f"when using {self.__class__.__name__}.")
         if type(range_of_initial_particle_positions) == int:
@@ -125,20 +125,29 @@ class IsingPotential(Potential):
             return np.array([np.atleast_1d(
                 np.random.choice(range_of_initial_particle_positions)) for _ in range(number_of_particles)])
 
+    def get_neighbours(self, lattice_site_index):
+        """Returns a list of the four neighbours (on the 2D lattice) of lattice_site_index"""
+        return [self._get_east_neighbour(lattice_site_index), self._get_north_neighbour(lattice_site_index),
+                self._get_west_neighbour(lattice_site_index), self._get_south_neighbour(lattice_site_index)]
+
     def _get_east_neighbour(self, lattice_site_index):
+        """Returns the eastwards neighbour (on the 2D lattice) of lattice_site_index"""
         return lattice_site_index + (
                 lattice_site_index + 1) % self._lattice_length - lattice_site_index % self._lattice_length
 
-    def _get_west_neighbour(self, lattice_site_index):
-        return lattice_site_index + (lattice_site_index - 1 + self._lattice_length) % self._lattice_length - (
-                lattice_site_index + self._lattice_length) % self._lattice_length
-
     def _get_north_neighbour(self, lattice_site_index):
+        """Returns the northwards neighbour (on the 2D lattice) of lattice_site_index"""
         return lattice_site_index + self._lattice_length * (
                 (int(lattice_site_index / self._lattice_length) + 1) % self._lattice_length -
                 (int(lattice_site_index / self._lattice_length)) % self._lattice_length)
 
+    def _get_west_neighbour(self, lattice_site_index):
+        """Returns the westwards neighbour (on the 2D lattice) of lattice_site_index"""
+        return lattice_site_index + (lattice_site_index - 1 + self._lattice_length) % self._lattice_length - (
+                lattice_site_index + self._lattice_length) % self._lattice_length
+
     def _get_south_neighbour(self, lattice_site_index):
+        """Returns the southwards neighbour (on the 2D lattice) of lattice_site_index"""
         return lattice_site_index + self._lattice_length * (
                 (int(lattice_site_index / self._lattice_length) + self._lattice_length - 1) % self._lattice_length -
                 (int(lattice_site_index / self._lattice_length) + self._lattice_length) % self._lattice_length)
