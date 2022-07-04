@@ -47,6 +47,10 @@ class Mediator(metaclass=ABCMeta):
         Raises
         ------
         base.exceptions.ConfigurationError
+            If potential is not an instance of some child class of potential.potential.Potential.
+        base.exceptions.ConfigurationError
+            If sampler is not an instance of some child class of sampler.sampler.Sampler.
+        base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
             If number_of_observations is not greater than 0.
@@ -54,6 +58,10 @@ class Mediator(metaclass=ABCMeta):
             If type(proposal_dynamics_adaptor_is_on) is not bool.
         """
         super().__init__(**kwargs)
+        if not isinstance(potential, Potential):
+            raise ConfigurationError(f"Give a potential class as the value for potential in {self.__class__.__name__}.")
+        if not isinstance(sampler, Sampler):
+            raise ConfigurationError(f"Give a sampler class as the value for sampler in {self.__class__.__name__}.")
         if minimum_temperature < 0.0:
             raise ConfigurationError(f"Give a value not less than 0.0 as minimum_temperature in "
                                      f"{self.__class__.__name__}.")

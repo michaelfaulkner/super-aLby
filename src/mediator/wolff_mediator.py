@@ -44,6 +44,10 @@ class WolffMediator(DiffusiveMediator):
         Raises
         ------
         base.exceptions.ConfigurationError
+            If potential is not an instance of some child class of potential.potential.Potential.
+        base.exceptions.ConfigurationError
+            If sampler is not an instance of some child class of sampler.sampler.Sampler.
+        base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
             If number_of_observations is not greater than 0.

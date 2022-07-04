@@ -66,9 +66,17 @@ class LazyToroidalLeapfrogMediator(EuclideanAndLazyToroidalLeapfrogMediators):
         Raises
         ------
         base.exceptions.ConfigurationError
+            If potential is not an instance of some child class of potential.potential.Potential.
+        base.exceptions.ConfigurationError
+            If sampler is not an instance of some child class of sampler.sampler.Sampler.
+        base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
             If number_of_observations is not greater than 0.
+        base.exceptions.ConfigurationError
+            If type(proposal_dynamics_adaptor_is_on) is not bool.
+        base.exceptions.ConfigurationError
+            If kinetic_energy is not an instance of some child class of kinetic_energy.kinetic_energy.KineticEnergy.
         base.exceptions.ConfigurationError
             If initial_step_size is not greater than 0.0.
         base.exceptions.ConfigurationError
@@ -76,9 +84,7 @@ class LazyToroidalLeapfrogMediator(EuclideanAndLazyToroidalLeapfrogMediators):
         base.exceptions.ConfigurationError
             If type(randomise_number_of_integration_steps) is not bool.
         base.exceptions.ConfigurationError
-            If type(proposal_dynamics_adaptor_is_on) is not bool.
-        base.exceptions.ConfigurationError
-            If type(use_metropolis_accept_reject) is not bool.
+            If type(use_metropolis_accept_reject) is not bool
         base.exceptions.ConfigurationError
             If type(element) is not np.float64 for element in size_of_particle_space.
         """

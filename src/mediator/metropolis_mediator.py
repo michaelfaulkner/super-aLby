@@ -1,5 +1,6 @@
 """Module for the MetropolisMediator class."""
 from .diffusive_mediator import DiffusiveMediator
+from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from model_settings import number_of_particles
 from noise_distribution.noise_distribution import NoiseDistribution
@@ -48,14 +49,24 @@ class MetropolisMediator(DiffusiveMediator):
         Raises
         ------
         base.exceptions.ConfigurationError
+            If potential is not an instance of some child class of potential.potential.Potential.
+        base.exceptions.ConfigurationError
+            If sampler is not an instance of some child class of sampler.sampler.Sampler.
+        base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
             If number_of_observations is not greater than 0.
         base.exceptions.ConfigurationError
             If type(proposal_dynamics_adaptor_is_on) is not bool.
+        base.exceptions.ConfigurationError
+            If noise_distribution is not an instance of some child class of
+            noise_distribution.noise_distribution.NoiseDistribution.
         """
         super().__init__(potential, sampler, minimum_temperature, maximum_temperature, number_of_temperature_values,
                          number_of_equilibration_iterations, number_of_observations, proposal_dynamics_adaptor_is_on)
+        if not isinstance(noise_distribution, NoiseDistribution):
+            raise ConfigurationError(f"Give a noise_distribution class as the value for noise_distribution in "
+                                     f"{self.__class__.__name__}.")
         self._target_acceptance_rate = 0.44  # TODO add functionality so the user can set self._target_acceptance_rate
         self._noise_distribution = noise_distribution
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,

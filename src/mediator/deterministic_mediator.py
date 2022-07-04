@@ -4,6 +4,7 @@ from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
 from kinetic_energy.kinetic_energy import KineticEnergy
 from potential.continuous_potential import ContinuousPotential
+from potential.ising_potential import IsingPotential
 from sampler.sampler import Sampler
 import numpy as np
 
@@ -65,9 +66,17 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         Raises
         ------
         base.exceptions.ConfigurationError
+            If potential is not an instance of some child class of potential.potential.Potential.
+        base.exceptions.ConfigurationError
+            If sampler is not an instance of some child class of sampler.sampler.Sampler.
+        base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
             If number_of_observations is not greater than 0.
+        base.exceptions.ConfigurationError
+            If type(proposal_dynamics_adaptor_is_on) is not bool.
+        base.exceptions.ConfigurationError
+            If kinetic_energy is not an instance of some child class of kinetic_energy.kinetic_energy.KineticEnergy.
         base.exceptions.ConfigurationError
             If initial_step_size is not greater than 0.0.
         base.exceptions.ConfigurationError
@@ -75,16 +84,14 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If type(randomise_number_of_integration_steps) is not bool.
         base.exceptions.ConfigurationError
-            If type(proposal_dynamics_adaptor_is_on) is not bool.
-        base.exceptions.ConfigurationError
             If type(use_metropolis_accept_reject) is not bool
-        base.exceptions.ConfigurationError
-            If potential is an instance of LennardJonesPotentialWithoutCutoff and element is less than 2.0 *
-            LennardJonesPotentialWithoutCutoff.characteristic_length for element in size_of_particle_space.
         """
         super().__init__(potential, sampler, minimum_temperature, maximum_temperature, number_of_temperature_values,
                          number_of_equilibration_iterations, number_of_observations, proposal_dynamics_adaptor_is_on,
                          **kwargs)
+        if not isinstance(kinetic_energy, KineticEnergy):
+            raise ConfigurationError(f"Give a kinetic_energy class as the value for kinetic_energy in "
+                                     f"{self.__class__.__name__}.")
         if initial_step_size <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 as initial_step_size in "
                                      f"{self.__class__.__name__}.")
@@ -97,6 +104,10 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         if type(use_metropolis_accept_reject) is not bool:
             raise ConfigurationError(f"Give a value of type bool as randomise_number_of_integration_steps in "
                                      f"{self.__class__.__name__}.")
+        if isinstance(potential, IsingPotential):
+            raise ConfigurationError(f"Do not give IsingPotential as the value for potential in "
+                                     f"{self.__class__.__name__} as child classes of DeterministicMediator cannot "
+                                     f"resolve potentials defined on discrete configuration space.")
         """In the following line, we re-declare self._potential (it has already been declared in Mediator.__init__()) 
             as the default potential of DeterministicMediator is ContinuousPotential, which contains get_gradient()."""
         self._potential = potential
