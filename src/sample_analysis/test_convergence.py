@@ -1,5 +1,6 @@
 from configparser import NoSectionError, NoOptionError
 import importlib
+import markov_chain_diagnostics
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,7 +17,6 @@ other_methods = importlib.import_module("other_methods")
 parsing = importlib.import_module("base.parsing")
 strings = importlib.import_module("base.strings")
 run_module = importlib.import_module("run")
-markov_chain_diagnostics = importlib.import_module("sample_analysis.markov_chain_diagnostics")
 
 
 def main(argv):
@@ -168,11 +168,12 @@ def main(argv):
                 # sampler is the magnetic density and we're interested in the expected absolute magnetic density (in
                 # order to distinguish the high- and low-T phases when using the symm-restoring Wolff algorithm) so...
                 samples = [np.abs(sample) for sample in samples]
-            sample_means_and_errors = np.array([[np.mean(sample), np.std(sample) / len(sample) ** 0.5]
+            sample_means_and_errors = np.array([markov_chain_diagnostics.get_sample_mean_and_error(sample)
                                                 for sample in samples])
             squared_deviation_samples = [(sample - np.mean(sample)) ** 2 for sample in samples]
-            sample_variances_and_errors = np.array([[np.mean(sample), np.std(sample) / len(sample) ** 0.5]
+            sample_variances_and_errors = np.array([markov_chain_diagnostics.get_sample_mean_and_error(sample)
                                                     for sample in squared_deviation_samples])
+
             expected_magnetic_norm_density_reference_values = ["0.997", "0.601"]
             expected_magnetic_norm_susc_per_particle_reference_values = ["0.00566", "0.476"]
             expected_potential_per_particle_reference_values = ["-1.99", "-1.01"]
@@ -181,12 +182,12 @@ def main(argv):
                 print("---------------------------------")
                 print(f"Temperature = {temperature:.4f}")
                 if config.get(possible_mediator, "sampler") == "standard_mean_position_sampler":
-                    # expected magnetic-norm density is E(|m|) où m = sum_i s_i / N
+                    # expected magnetic-norm density is E[|m|] où m = sum_i s_i / N
                     print(f"Sample estimate of expected magnetic-norm density = "
                           f"{sample_means_and_errors[index][0]:.3g} +- {sample_means_and_errors[index][1]:.3g} "
                           f"(ref. value = {expected_magnetic_norm_density_reference_values[index]})")
-                    # w/M = Nm the magnetisation, expected magnetic susc is dE(M)/dh = beta N^2 Var(m), but to compare
-                    # Wolff and Metropolis simulations, we estimate the expected magnetic-norm susc beta N^2 Var(|m|)
+                    # w/M = Nm the magnetisation, expected magnetic susc is \nabla_h E[M] = beta N^2 Var[m], but to
+                    # compare Wolff and Metropolis, we estimate the expected magnetic-norm susc beta N^2 Var[|m|]
                     print(f"Sample estimate of expected magnetic-norm susc. per particle = "
                           f"{number_of_particles * sample_variances_and_errors[index][0] / temperature:.3g} +- "
                           f"{number_of_particles * sample_variances_and_errors[index][1] / temperature:.3g} (ref. "
@@ -196,7 +197,7 @@ def main(argv):
                           f"{sample_means_and_errors[index][0] / number_of_particles} +- "
                           f"{sample_means_and_errors[index][1] / number_of_particles} (ref. value = "
                           f"{expected_potential_per_particle_reference_values[index]})")
-                    # expected specific heat is dE(U)/dT = beta^2 Var(U) (a dimensionless quantity)
+                    # expected specific heat is \partial_T E[U] = beta^2 Var[U] (a dimensionless quantity)
                     print(f"Sample estimate of expected specific heat per particle = "
                           f"{sample_variances_and_errors[index][0] / number_of_particles / temperature ** 2} +- "
                           f"{sample_variances_and_errors[index][1] / number_of_particles / temperature ** 2} (ref. "
@@ -211,11 +212,11 @@ def main(argv):
         raise ValueError("Reference data not provided for this potential.")
 
     if potential != "ising_potential":
-        reference_cdf = get_cumulative_distribution(reference_sample)
+        reference_cdf = markov_chain_diagnostics.get_cumulative_distribution(reference_sample)
         sample = sampler.get_sample(temperature_index=0)[number_of_equilibration_iterations + 1:].flatten()
         effective_sample_size = markov_chain_diagnostics.get_effective_sample_size(sample)
         print(f"Effective sample size = {effective_sample_size} (from a total sample size of {len(sample)}).")
-        sample_cdf = get_cumulative_distribution(sample)
+        sample_cdf = markov_chain_diagnostics.get_cumulative_distribution(sample)
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
         plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-aLby data')
@@ -228,12 +229,6 @@ def main(argv):
         legend.get_frame().set_lw(1.5)
         plt.tight_layout()
         plt.show()
-
-
-def get_cumulative_distribution(input_sample):
-    bin_values = np.arange(1, len(input_sample) + 1) / float(len(input_sample))
-    ordered_input_sample = np.sort(input_sample)
-    return ordered_input_sample, bin_values
 
 
 if __name__ == '__main__':
