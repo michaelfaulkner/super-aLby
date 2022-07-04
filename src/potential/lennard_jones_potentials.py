@@ -61,6 +61,8 @@ class LennardJonesPotentials(SoftMatterPotential, metaclass=ABCMeta):
         if characteristic_length < 0.5:
             raise ConfigurationError(f"Give a value not less than 0.5 for characteristic_length in "
                                      f"{self.__class__.__name__}.")
+        self._characteristic_length = characteristic_length
+        self._well_depth = well_depth
         self._potential_12_constant = 4.0 * prefactor * well_depth * characteristic_length ** 12
         self._potential_6_constant = 4.0 * prefactor * well_depth * characteristic_length ** 6
         self._gradient_12_constant = 12.0 * self._potential_12_constant

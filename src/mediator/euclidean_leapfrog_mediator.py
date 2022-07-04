@@ -6,6 +6,7 @@ from kinetic_energy.kinetic_energy import KineticEnergy
 from model_settings import size_of_particle_space
 from potential.continuous_potential import ContinuousPotential
 from sampler.sampler import Sampler
+from typing import Sequence
 import logging
 
 
@@ -14,7 +15,7 @@ class EuclideanLeapfrogMediator(EuclideanAndLazyToroidalLeapfrogMediators):
     This class implements the mediator using the leapfrog numerical integrator on Euclidean space.
     """
 
-    def __init__(self, potential: ContinuousPotential, sampler: Sampler, kinetic_energy: KineticEnergy,
+    def __init__(self, potential: ContinuousPotential, samplers: Sequence[Sampler], kinetic_energy: KineticEnergy,
                  minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
                  number_of_temperature_values: int = 1, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True,
@@ -27,8 +28,8 @@ class EuclideanLeapfrogMediator(EuclideanAndLazyToroidalLeapfrogMediators):
         ----------
         potential : potential.continuous_potential.ContinuousPotential
             Instance of the chosen child class of potential.continuous_potential.ContinuousPotential.
-        sampler : sampler.sampler.Sampler
-            Instance of the chosen child class of sampler.sampler.Sampler.
+        samplers : Sequence[sampler.sampler.Sampler]
+            Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
         kinetic_energy : kinetic_energy.kinetic_energy.KineticEnergy
             Instance of the chosen child class of kinetic_energy.kinetic_energy.KineticEnergy.
         minimum_temperature : float, optional
@@ -63,7 +64,7 @@ class EuclideanLeapfrogMediator(EuclideanAndLazyToroidalLeapfrogMediators):
         base.exceptions.ConfigurationError
             If potential is not an instance of some child class of potential.potential.Potential.
         base.exceptions.ConfigurationError
-            If sampler is not an instance of some child class of sampler.sampler.Sampler.
+            If samplers is not a sequence of instances of some child classes of sampler.sampler.Sampler.
         base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
@@ -83,7 +84,7 @@ class EuclideanLeapfrogMediator(EuclideanAndLazyToroidalLeapfrogMediators):
         base.exceptions.ConfigurationError
             If element is not None for element in size_of_particle_space.
         """
-        super().__init__(potential, sampler, kinetic_energy, minimum_temperature, maximum_temperature,
+        super().__init__(potential, samplers, kinetic_energy, minimum_temperature, maximum_temperature,
                          number_of_temperature_values, number_of_equilibration_iterations, number_of_observations,
                          proposal_dynamics_adaptor_is_on, initial_step_size, max_number_of_integration_steps,
                          randomise_number_of_integration_steps, use_metropolis_accept_reject)
@@ -92,7 +93,7 @@ class EuclideanLeapfrogMediator(EuclideanAndLazyToroidalLeapfrogMediators):
                 raise ConfigurationError(f"For each component of size_of_particle_space, give None when using "
                                          f"{self.__class__.__name__}.")
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           potential=potential, sampler=sampler, kinetic_energy=kinetic_energy,
+                           potential=potential, samplers=samplers, kinetic_energy=kinetic_energy,
                            minimum_temperature=minimum_temperature, maximum_temperature=maximum_temperature,
                            number_of_temperature_values=number_of_temperature_values,
                            number_of_equilibration_iterations=number_of_equilibration_iterations,

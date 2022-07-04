@@ -6,6 +6,7 @@ from model_settings import number_of_particles
 from noise_distribution.noise_distribution import NoiseDistribution
 from potential.potential import Potential
 from sampler.sampler import Sampler
+from typing import Sequence
 import logging
 import numpy as np
 import random
@@ -15,7 +16,7 @@ class MetropolisMediator(DiffusiveMediator):
     """The MetropolisMediator class provides functionality for the Metropolis algorithm, which is equivalent to the
         Metropolis-within-Gibbs algorithm blocked to the level of single-particle dynamics."""
 
-    def __init__(self, potential: Potential, sampler: Sampler, noise_distribution: NoiseDistribution,
+    def __init__(self, potential: Potential, samplers: Sequence[Sampler], noise_distribution: NoiseDistribution,
                  minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
                  number_of_temperature_values: int = 1, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True):
@@ -26,8 +27,8 @@ class MetropolisMediator(DiffusiveMediator):
         ----------
         potential : potential.potential.Potential
             Instance of the chosen child class of potential.potential.Potential.
-        sampler : sampler.sampler.Sampler
-            Instance of the chosen child class of sampler.sampler.Sampler.
+        samplers : Sequence[sampler.sampler.Sampler]
+            Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
         noise_distribution : noise_distribution.noise_distribution.NoiseDistribution
             Instance of the chosen child class of noise_distribution.noise_distribution.NoiseDistribution.
         minimum_temperature : float, optional
@@ -51,7 +52,7 @@ class MetropolisMediator(DiffusiveMediator):
         base.exceptions.ConfigurationError
             If potential is not an instance of some child class of potential.potential.Potential.
         base.exceptions.ConfigurationError
-            If sampler is not an instance of some child class of sampler.sampler.Sampler.
+            If samplers is not a sequence of instances of some child classes of sampler.sampler.Sampler.
         base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
@@ -62,7 +63,7 @@ class MetropolisMediator(DiffusiveMediator):
             If noise_distribution is not an instance of some child class of
             noise_distribution.noise_distribution.NoiseDistribution.
         """
-        super().__init__(potential, sampler, minimum_temperature, maximum_temperature, number_of_temperature_values,
+        super().__init__(potential, samplers, minimum_temperature, maximum_temperature, number_of_temperature_values,
                          number_of_equilibration_iterations, number_of_observations, proposal_dynamics_adaptor_is_on)
         if not isinstance(noise_distribution, NoiseDistribution):
             raise ConfigurationError(f"Give a noise_distribution class as the value for noise_distribution in "
@@ -70,15 +71,15 @@ class MetropolisMediator(DiffusiveMediator):
         self._target_acceptance_rate = 0.44  # TODO add functionality so the user can set self._target_acceptance_rate
         self._noise_distribution = noise_distribution
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           potential=potential, sampler=sampler, noise_distribution=noise_distribution,
+                           potential=potential, samplers=samplers, noise_distribution=noise_distribution,
                            minimum_temperature=minimum_temperature, maximum_temperature=maximum_temperature,
                            number_of_temperature_values=number_of_temperature_values,
                            number_of_equilibration_iterations=number_of_equilibration_iterations,
                            number_of_observations=number_of_observations,
                            proposal_dynamics_adaptor_is_on=proposal_dynamics_adaptor_is_on)
 
-    def _generate_single_observation(self, markov_chain_step_index, temperature):
-        """Advances the Markov chain by one step and adds a single observation to the sample."""
+    def _advance_markov_chain(self, markov_chain_step_index, temperature):
+        """Advances the Markov chain by one step."""
         particles_to_update = [index for index in range(number_of_particles)]
         random.shuffle(particles_to_update)  # randomises order of elements in particles_to_update
         for active_particle_index in particles_to_update:
@@ -88,8 +89,6 @@ class MetropolisMediator(DiffusiveMediator):
             if potential_difference < 0.0 or np.random.uniform(0.0, 1.0) < np.exp(- potential_difference / temperature):
                 self._positions[active_particle_index] = candidate_position
                 self._number_of_accepted_trajectories += 1
-        self._sample[markov_chain_step_index + 1, :] = self._sampler.get_observation(None, self._positions,
-                                                                                     self._potential)
 
     def _proposal_dynamics_adaptor(self):
         """Tunes the size of either the numerical integration step or the width of the proposal distribution."""

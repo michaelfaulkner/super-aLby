@@ -5,6 +5,7 @@ from base.logging import log_init_arguments
 from model_settings import number_of_particles
 from potential.ising_potential import IsingPotential
 from sampler.sampler import Sampler
+from typing import Sequence
 import logging
 import numpy as np
 
@@ -12,7 +13,7 @@ import numpy as np
 class WolffMediator(DiffusiveMediator):
     """The WolffMediator class provides functionality for the Wolff algorithm for the square-lattice Ising model."""
 
-    def __init__(self, potential: IsingPotential, sampler: Sampler, minimum_temperature: float = 1.0,
+    def __init__(self, potential: IsingPotential, samplers: Sequence[Sampler], minimum_temperature: float = 1.0,
                  maximum_temperature: float = 1.0, number_of_temperature_values: int = 1,
                  number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
                  proposal_dynamics_adaptor_is_on: bool = False):
@@ -23,8 +24,8 @@ class WolffMediator(DiffusiveMediator):
         ----------
         potential : potential.potential.Potential
             Instance of potential.ising_potential.IsingPotential (the only permitted potential for WolffMediator).
-        sampler : sampler.sampler.Sampler
-            Instance of the chosen child class of sampler.sampler.Sampler.
+        samplers : Sequence[sampler.sampler.Sampler]
+            Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
         minimum_temperature : float, optional
             The minimum value of the model temperature, n.b., the temperature is the reciprocal of the inverse
             temperature, beta (up to a proportionality constant).
@@ -46,7 +47,7 @@ class WolffMediator(DiffusiveMediator):
         base.exceptions.ConfigurationError
             If potential is not an instance of some child class of potential.potential.Potential.
         base.exceptions.ConfigurationError
-            If sampler is not an instance of some child class of sampler.sampler.Sampler.
+            If samplers is not a sequence of instances of some child classes of sampler.sampler.Sampler.
         base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
@@ -58,7 +59,7 @@ class WolffMediator(DiffusiveMediator):
         base.exceptions.ConfigurationError
             If proposal_dynamics_adaptor_is_on is not False.
         """
-        super().__init__(potential, sampler, minimum_temperature, maximum_temperature, number_of_temperature_values,
+        super().__init__(potential, samplers, minimum_temperature, maximum_temperature, number_of_temperature_values,
                          number_of_equilibration_iterations, number_of_observations, proposal_dynamics_adaptor_is_on)
         if isinstance(potential, IsingPotential):
             self._potential_constant = self._potential.potential_constant
@@ -68,15 +69,15 @@ class WolffMediator(DiffusiveMediator):
             raise ConfigurationError(f"Give a value of False for proposal_dynamics_adaptor_is_on in "
                                      f"{self.__class__.__name__}.")
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           potential=potential, sampler=sampler, minimum_temperature=minimum_temperature,
+                           potential=potential, samplers=samplers, minimum_temperature=minimum_temperature,
                            maximum_temperature=maximum_temperature,
                            number_of_temperature_values=number_of_temperature_values,
                            number_of_equilibration_iterations=number_of_equilibration_iterations,
                            number_of_observations=number_of_observations,
                            proposal_dynamics_adaptor_is_on=proposal_dynamics_adaptor_is_on)
 
-    def _generate_single_observation(self, markov_chain_step_index, temperature):
-        """Advances the Markov chain by one step and adds a single observation to the sample."""
+    def _advance_markov_chain(self, markov_chain_step_index, temperature):
+        """Advances the Markov chain by one step."""
         # n.b., self._potential_constant = - k * J -- *** NOTE THE MINUS SIGN FOR THE LINE BELOW! ***
         prob_of_adding_neighbour_to_cluster = 1.0 - np.exp(2.0 * self._potential_constant / temperature)
         base_lattice_site = np.random.choice(number_of_particles)
@@ -89,8 +90,6 @@ class WolffMediator(DiffusiveMediator):
                         np.random.rand() < prob_of_adding_neighbour_to_cluster):
                     self._positions[neighbouring_lattice_site] *= -1
                     extremity_sites_of_cluster.append(neighbouring_lattice_site)
-        self._sample[markov_chain_step_index + 1, :] = self._sampler.get_observation(None, self._positions,
-                                                                                     self._potential)
 
     def _proposal_dynamics_adaptor(self):
         """Proposal dynamics cannot be adapted in the Wolff algorithm."""

@@ -4,12 +4,13 @@ from base.exceptions import ConfigurationError
 from other_methods import get_temperatures
 from potential.potential import Potential
 from sampler.sampler import Sampler
+from typing import Sequence
 
 
 class Mediator(metaclass=ABCMeta):
     """Abstract Mediator class."""
 
-    def __init__(self, potential: Potential, sampler: Sampler, minimum_temperature: float = 1.0,
+    def __init__(self, potential: Potential, samplers: Sequence[Sampler], minimum_temperature: float = 1.0,
                  maximum_temperature: float = 1.0, number_of_temperature_values: int = 1,
                  number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
                  proposal_dynamics_adaptor_is_on: bool = True, **kwargs):
@@ -23,8 +24,8 @@ class Mediator(metaclass=ABCMeta):
         ----------
         potential : potential.potential.Potential
             Instance of the chosen child class of potential.potential.Potential.
-        sampler : sampler.sampler.Sampler
-            Instance of the chosen child class of sampler.sampler.Sampler.
+        samplers : Sequence[sampler.sampler.Sampler]
+            Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
         minimum_temperature : float, optional
             The minimum value of the model temperature, n.b., the temperature is the reciprocal of the inverse
             temperature, beta (up to a proportionality constant).
@@ -49,7 +50,7 @@ class Mediator(metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If potential is not an instance of some child class of potential.potential.Potential.
         base.exceptions.ConfigurationError
-            If sampler is not an instance of some child class of sampler.sampler.Sampler.
+            If samplers is not a sequence of instances of some child classes of sampler.sampler.Sampler.
         base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
@@ -60,8 +61,10 @@ class Mediator(metaclass=ABCMeta):
         super().__init__(**kwargs)
         if not isinstance(potential, Potential):
             raise ConfigurationError(f"Give a potential class as the value for potential in {self.__class__.__name__}.")
-        if not isinstance(sampler, Sampler):
-            raise ConfigurationError(f"Give a sampler class as the value for sampler in {self.__class__.__name__}.")
+        for sampler in samplers:
+            if not isinstance(sampler, Sampler):
+                raise ConfigurationError(f"Give a list of sampler classes as the value for samplers in "
+                                         f"{self.__class__.__name__}.")
         if minimum_temperature < 0.0:
             raise ConfigurationError(f"Give a value not less than 0.0 as minimum_temperature in "
                                      f"{self.__class__.__name__}.")
@@ -88,7 +91,7 @@ class Mediator(metaclass=ABCMeta):
             raise ConfigurationError(f"Give a value of type bool as proposal_dynamics_adaptor_is_on in "
                                      f"{self.__class__.__name__}.")
         self._potential = potential
-        self._sampler = sampler
+        self._samplers = samplers
         self._temperatures = get_temperatures(minimum_temperature, maximum_temperature, number_of_temperature_values)
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
@@ -97,7 +100,7 @@ class Mediator(metaclass=ABCMeta):
         self._proposal_dynamics_adaptor_is_on = proposal_dynamics_adaptor_is_on
         """The following objects are set in self._reset_arrays_and_counters()"""
         self._positions = None
-        self._sample = None
+        self._samples = None
         self._number_of_accepted_trajectories = None
 
     def generate_sample(self):
@@ -119,7 +122,8 @@ class Mediator(metaclass=ABCMeta):
                     print(f"{current_sample_size} observations drawn out of a total of "
                           f"{self._total_number_of_iterations} (including {self._number_of_equilibration_iterations} "
                           f"equilibration observations).")
-            self._sampler.output_sample(self._sample, temperature_index)
+            [sampler.output_sample(self._samples[sampler_index], temperature_index) for sampler_index, sampler in
+             enumerate(self._samplers)]
             self._print_markov_chain_summary()
 
     def _print_temperature_message(self, temperature, temperature_index):
@@ -138,7 +142,8 @@ class Mediator(metaclass=ABCMeta):
     def _reset_arrays_and_counters(self, temperature):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
         self._positions = self._potential.initialised_position_array()
-        self._sample = self._sampler.initialise_sample_array(self._total_number_of_iterations)
+        self._samples = [sampler.initialise_sample_array(self._total_number_of_iterations) for sampler in
+                         self._samplers]
         self._number_of_accepted_trajectories = 0
 
     @abstractmethod

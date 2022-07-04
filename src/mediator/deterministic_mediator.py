@@ -6,6 +6,7 @@ from kinetic_energy.kinetic_energy import KineticEnergy
 from potential.continuous_potential import ContinuousPotential
 from potential.ising_potential import IsingPotential
 from sampler.sampler import Sampler
+from typing import Sequence
 import numpy as np
 
 
@@ -13,7 +14,7 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
     """Abstract DeterministicMediator class.  This is the parent class for all mediators that use Newtonian,
         relativistic or super-relativistic dynamics."""
 
-    def __init__(self, potential: ContinuousPotential, sampler: Sampler, kinetic_energy: KineticEnergy,
+    def __init__(self, potential: ContinuousPotential, samplers: Sequence[Sampler], kinetic_energy: KineticEnergy,
                  minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
                  number_of_temperature_values: int = 1, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True,
@@ -30,8 +31,8 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         ----------
         potential : potential.continuous_potential.ContinuousPotential
             Instance of the chosen child class of potential.continuous_potential.ContinuousPotential.
-        sampler : sampler.sampler.Sampler
-            Instance of the chosen child class of sampler.sampler.Sampler.
+        samplers : Sequence[sampler.sampler.Sampler]
+            Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
         kinetic_energy : kinetic_energy.kinetic_energy.KineticEnergy
             Instance of the chosen child class of kinetic_energy.kinetic_energy.KineticEnergy.
         minimum_temperature : float, optional
@@ -68,7 +69,7 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If potential is not an instance of some child class of potential.potential.Potential.
         base.exceptions.ConfigurationError
-            If sampler is not an instance of some child class of sampler.sampler.Sampler.
+            If samplers is not a sequence of instances of some child classes of sampler.sampler.Sampler.
         base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
@@ -86,7 +87,7 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If type(use_metropolis_accept_reject) is not bool
         """
-        super().__init__(potential, sampler, minimum_temperature, maximum_temperature, number_of_temperature_values,
+        super().__init__(potential, samplers, minimum_temperature, maximum_temperature, number_of_temperature_values,
                          number_of_equilibration_iterations, number_of_observations, proposal_dynamics_adaptor_is_on,
                          **kwargs)
         if not isinstance(kinetic_energy, KineticEnergy):
@@ -129,7 +130,9 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         super()._reset_arrays_and_counters(temperature)
         self._momenta = self._kinetic_energy.get_momentum_observations(temperature)
         self._current_potential = self._potential.get_value(self._positions)
-        self._sample[0, :] = self._sampler.get_observation(self._momenta, self._positions, self._current_potential)
+        for sampler_index, sampler in enumerate(self._samplers):
+            self._samples[sampler_index][0, :] = sampler.get_observation(self._momenta, self._positions,
+                                                                         self._potential)
         self._number_of_unstable_trajectories = 0
 
     def _generate_single_observation(self, markov_chain_step_index, temperature):
@@ -148,8 +151,9 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         else:
             self._update_system_state(candidate_momenta, candidate_positions, candidate_potential)
         self._momenta = self._kinetic_energy.get_momentum_observations(temperature)
-        self._sample[markov_chain_step_index + 1, :] = self._sampler.get_observation(self._momenta, self._positions,
-                                                                                     self._current_potential)
+        for sampler_index, sampler in enumerate(self._samplers):
+            self._samples[sampler_index][markov_chain_step_index + 1, :] = sampler.get_observation(
+                self._momenta, self._positions, self._potential)
 
     @abstractmethod
     def _get_candidate_configuration(self, temperature):
