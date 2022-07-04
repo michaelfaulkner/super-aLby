@@ -73,19 +73,18 @@ class WolffMediator(DiffusiveMediator):
 
     def _generate_single_observation(self, markov_chain_step_index, temperature):
         """Advances the Markov chain by one step and adds a single observation to the sample."""
-        # todo check the following line after testing code with celui d'après
-        # prob_of_adding_spin_to_cluster = 1.0 - np.exp(2.0 * self._potential_constant / temperature)
-        prob_of_adding_spin_to_cluster = 1.0 - np.exp(- 2.0 / temperature)
+        # n.b., self._potential_constant = - k * J -- *** NOTE THE MINUS SIGN FOR THE LINE BELOW! ***
+        prob_of_adding_neighbour_to_cluster = 1.0 - np.exp(2.0 * self._potential_constant / temperature)
         base_lattice_site = np.random.choice(number_of_particles)
-        stack = [base_lattice_site]
+        extremity_sites_of_cluster = [base_lattice_site]
         self._positions[base_lattice_site] *= -1
-        while stack:
-            current_lattice_site = stack.pop()
+        while extremity_sites_of_cluster:
+            current_lattice_site = extremity_sites_of_cluster.pop()
             for neighbouring_lattice_site in self._potential.get_neighbours(current_lattice_site):
                 if (self._positions[neighbouring_lattice_site] == -self._positions[base_lattice_site] and
-                        np.random.rand() < prob_of_adding_spin_to_cluster):
+                        np.random.rand() < prob_of_adding_neighbour_to_cluster):
                     self._positions[neighbouring_lattice_site] *= -1
-                    stack.append(neighbouring_lattice_site)
+                    extremity_sites_of_cluster.append(neighbouring_lattice_site)
         self._sample[markov_chain_step_index + 1, :] = self._sampler.get_observation(None, self._positions,
                                                                                      self._potential)
 
@@ -94,5 +93,6 @@ class WolffMediator(DiffusiveMediator):
         pass
 
     def _print_markov_chain_summary(self):
-        """Markov-process summary not printed to screen as acceptance rates and proposal dynamics are not relevant."""
+        """Markov-process summary not printed to screen as neither acceptance rates nor proposal dynamics are
+            relevant."""
         pass
