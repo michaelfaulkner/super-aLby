@@ -23,7 +23,7 @@ def get_mean_particle_separation(sample_directory, temperature, temperature_inde
     number_of_equilibration_iterations : None or int, optional
         The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
     thinning_level : None or int, optional
-        1 - the number of observations to be discarded between retained observations of the thinning process.  If None,
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
         all observations are retained.
 
     Returns
@@ -57,7 +57,7 @@ def get_mean_positions(sample_directory, temperature, temperature_index, number_
     number_of_equilibration_iterations : None or int, optional
         The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
     thinning_level : None or int, optional
-        1 - the number of observations to be discarded between retained observations of the thinning process.  If None,
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
         all observations are retained.
 
     Returns
@@ -93,7 +93,7 @@ def get_momenta(sample_directory, temperature, temperature_index, number_of_part
     number_of_equilibration_iterations : None or int, optional
         The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
     thinning_level : None or int, optional
-        1 - the number of observations to be discarded between retained observations of the thinning process.  If None,
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
         all observations are retained.
 
     Returns
@@ -127,7 +127,7 @@ def get_particle_separations(sample_directory, temperature, temperature_index, n
     number_of_equilibration_iterations : None or int, optional
         The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
     thinning_level : None or int, optional
-        1 - the number of observations to be discarded between retained observations of the thinning process.  If None,
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
         all observations are retained.
 
     Returns
@@ -162,7 +162,7 @@ def get_positions(sample_directory, temperature, temperature_index, number_of_pa
     number_of_equilibration_iterations : None or int, optional
         The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
     thinning_level : None or int, optional
-        1 - the number of observations to be discarded between retained observations of the thinning process.  If None,
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
         all observations are retained.
 
     Returns
@@ -197,7 +197,7 @@ def get_potential(sample_directory, temperature, temperature_index, number_of_pa
     number_of_equilibration_iterations : None or int, optional
         The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
     thinning_level : None or int, optional
-        1 - the number of observations to be discarded between retained observations of the thinning process.  If None,
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
         all observations are retained.
 
     Returns
@@ -231,7 +231,7 @@ def get_single_particle_separation(sample_directory, temperature, temperature_in
     number_of_equilibration_iterations : None or int, optional
         The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
     thinning_level : None or int, optional
-        1 - the number of observations to be discarded between retained observations of the thinning process.  If None,
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
         all observations are retained.
 
     Returns
@@ -273,7 +273,7 @@ def get_specific_heat(sample_directory, temperature, temperature_index, number_o
     number_of_equilibration_iterations : None or int, optional
         The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
     thinning_level : None or int, optional
-        1 - the number of observations to be discarded between retained observations of the thinning process.  If None,
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
         all observations are retained.
 
     Returns
@@ -307,7 +307,7 @@ def get_magnetic_density(sample_directory, temperature, temperature_index, numbe
     number_of_equilibration_iterations : None or int, optional
         The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
     thinning_level : None or int, optional
-        1 - the number of observations to be discarded between retained observations of the thinning process.  If None,
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
         all observations are retained.
 
     Returns
@@ -341,7 +341,7 @@ def get_magnetic_susceptibility(sample_directory, temperature, temperature_index
     number_of_equilibration_iterations : None or int, optional
         The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
     thinning_level : None or int, optional
-        1 - the number of observations to be discarded between retained observations of the thinning process.  If None,
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
         all observations are retained.
 
     Returns
@@ -377,7 +377,7 @@ def get_magnetic_norm_density(sample_directory, temperature, temperature_index, 
     number_of_equilibration_iterations : None or int, optional
         The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
     thinning_level : None or int, optional
-        1 - the number of observations to be discarded between retained observations of the thinning process.  If None,
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
         all observations are retained.
 
     Returns
@@ -413,7 +413,7 @@ def get_magnetic_norm_susceptibility(sample_directory, temperature, temperature_
     number_of_equilibration_iterations : None or int, optional
         The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
     thinning_level : None or int, optional
-        1 - the number of observations to be discarded between retained observations of the thinning process.  If None,
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
         all observations are retained.
 
     Returns

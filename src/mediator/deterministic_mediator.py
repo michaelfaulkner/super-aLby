@@ -16,7 +16,7 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
 
     def __init__(self, potential: ContinuousPotential, samplers: Sequence[Sampler], kinetic_energy: KineticEnergy,
                  minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
-                 number_of_temperature_values: int = 1, number_of_equilibration_iterations: int = 10000,
+                 number_of_temperature_increments: int = 1, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True,
                  initial_step_size: float = 0.1, max_number_of_integration_steps: int = 10,
                  randomise_number_of_integration_steps: bool = False, use_metropolis_accept_reject: bool = True,
@@ -41,8 +41,8 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         maximum_temperature : float, optional
             The maximum value of the model temperature, n.b., the temperature is the reciprocal of the inverse
             temperature, beta (up to a proportionality constant).
-        number_of_temperature_values : int, optional
-            The number of temperature values to iterate over.
+        number_of_temperature_increments : int, optional
+            number_of_temperature_increments + 1 is the number of temperature values to iterate over.
         number_of_equilibration_iterations : int, optional
             Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
@@ -71,6 +71,16 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If samplers is not a sequence of instances of some child classes of sampler.sampler.Sampler.
         base.exceptions.ConfigurationError
+            If minimum_temperature is less than 0.0.
+        base.exceptions.ConfigurationError
+            If maximum_temperature is less than 0.0.
+        base.exceptions.ConfigurationError
+            If maximum_temperature is less than minimum_temperature.
+        base.exceptions.ConfigurationError
+            If number_of_temperature_increments is less than 0.
+        base.exceptions.ConfigurationError
+            If number_of_temperature_increments is 0 and minimum_temperature does not equal maximum_temperature.
+        base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
             If number_of_observations is not greater than 0.
@@ -87,9 +97,9 @@ class DeterministicMediator(Mediator, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If type(use_metropolis_accept_reject) is not bool
         """
-        super().__init__(potential, samplers, minimum_temperature, maximum_temperature, number_of_temperature_values,
-                         number_of_equilibration_iterations, number_of_observations, proposal_dynamics_adaptor_is_on,
-                         **kwargs)
+        super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
+                         number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations,
+                         proposal_dynamics_adaptor_is_on, **kwargs)
         if not isinstance(kinetic_energy, KineticEnergy):
             raise ConfigurationError(f"Give a kinetic_energy class as the value for kinetic_energy in "
                                      f"{self.__class__.__name__}.")

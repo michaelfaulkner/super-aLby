@@ -1,7 +1,7 @@
 """Module for the Mediator class."""
 from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
-from other_methods import get_temperatures
+from helper_methods import get_temperatures
 from potential.potential import Potential
 from sampler.sampler import Sampler
 from typing import Sequence
@@ -11,7 +11,7 @@ class Mediator(metaclass=ABCMeta):
     """Abstract Mediator class."""
 
     def __init__(self, potential: Potential, samplers: Sequence[Sampler], minimum_temperature: float = 1.0,
-                 maximum_temperature: float = 1.0, number_of_temperature_values: int = 1,
+                 maximum_temperature: float = 1.0, number_of_temperature_increments: int = 0,
                  number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
                  proposal_dynamics_adaptor_is_on: bool = True, **kwargs):
         r"""
@@ -32,8 +32,8 @@ class Mediator(metaclass=ABCMeta):
         maximum_temperature : float, optional
             The maximum value of the model temperature, n.b., the temperature is the reciprocal of the inverse
             temperature, beta (up to a proportionality constant).
-        number_of_temperature_values : int, optional
-            The number of temperature values to iterate over.
+        number_of_temperature_increments : int, optional
+            number_of_temperature_increments + 1 is the number of temperature values to iterate over.
         number_of_equilibration_iterations : int, optional
             Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
@@ -51,6 +51,16 @@ class Mediator(metaclass=ABCMeta):
             If potential is not an instance of some child class of potential.potential.Potential.
         base.exceptions.ConfigurationError
             If samplers is not a sequence of instances of some child classes of sampler.sampler.Sampler.
+        base.exceptions.ConfigurationError
+            If minimum_temperature is less than 0.0.
+        base.exceptions.ConfigurationError
+            If maximum_temperature is less than 0.0.
+        base.exceptions.ConfigurationError
+            If maximum_temperature is less than minimum_temperature.
+        base.exceptions.ConfigurationError
+            If number_of_temperature_increments is less than 0.
+        base.exceptions.ConfigurationError
+            If number_of_temperature_increments is 0 and minimum_temperature does not equal maximum_temperature.
         base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
@@ -75,12 +85,13 @@ class Mediator(metaclass=ABCMeta):
             raise ConfigurationError(f"Give values of minimum_temperature and maximum_temperature in "
                                      f"{self.__class__.__name__} such that the value of maximum_temperature is not "
                                      f"less than the value of minimum_temperature.")
-        if number_of_temperature_values < 1:
-            raise ConfigurationError(f"Give a value not less than 1 as number_of_temperature_values in "
+        if number_of_temperature_increments < 0:
+            raise ConfigurationError(f"Give a value not less than 0 as number_of_temperature_increments in "
                                      f"{self.__class__.__name__}.")
-        if number_of_temperature_values == 1 and minimum_temperature != maximum_temperature:
-            raise ConfigurationError(f"As the value of number_of_temperature_values is equal to 1, give equal values "
-                                     f"of minimum_temperature and maximum_temperature in {self.__class__.__name__}.")
+        if number_of_temperature_increments == 0 and minimum_temperature != maximum_temperature:
+            raise ConfigurationError(f"As the value of number_of_temperature_increments is equal to 0, give equal "
+                                     f"values of minimum_temperature and maximum_temperature in "
+                                     f"{self.__class__.__name__}.")
         if number_of_equilibration_iterations < 0:
             raise ConfigurationError(f"Give a value not less than 0 as number_of_equilibration_iterations in "
                                      f"{self.__class__.__name__}.")
@@ -92,7 +103,8 @@ class Mediator(metaclass=ABCMeta):
                                      f"{self.__class__.__name__}.")
         self._potential = potential
         self._samplers = samplers
-        self._temperatures = get_temperatures(minimum_temperature, maximum_temperature, number_of_temperature_values)
+        self._temperatures = get_temperatures(minimum_temperature, maximum_temperature,
+                                              number_of_temperature_increments)
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
         self._number_of_observations_between_screen_prints_for_clock = int(number_of_observations / 10)
