@@ -1,5 +1,6 @@
 ## Sample files
 *.dat
+*.tsv
 *.csv
 !*reference_sample.csv
 !src/permanent_data/*.csv
@@ -32,7 +33,6 @@
 *.eps
 *.pdf
 *.png
-
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
