@@ -38,8 +38,9 @@ def main(number_of_system_sizes=5):
     [axis.set_xlabel(r"$1 / (\beta J)$", fontsize=20, labelpad=3) for axis in axes]
     axes[0].set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N^{1 / 2}$", fontsize=20, labelpad=1)
     axes[1].set_ylabel(r"$\mathbb{E} {|m|}$", fontsize=20, labelpad=1)
-    # axes[0].set_yscale('log')
     axes[1].set_ylim([0.0, 1.05])
+    figure.text(0.235, -0.11, "(a)", fontsize=20)
+    figure.text(0.75, -0.11, "(b)", fontsize=20)
     colors = ["black", "red", "blue", "green", "yellow", "cyan", "magenta"][:number_of_system_sizes]
     colors.reverse()
 
