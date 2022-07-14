@@ -26,15 +26,17 @@ def main(number_of_system_sizes=5):
     if config_file_mediator == "metropolis_mediator":
         thinning_level = 10
     else:
-        thinning_level = 1
+        thinning_level = None
 
     figure, axes = plt.subplots(1, 2, figsize=(12.5, 4.5))
     figure.tight_layout(w_pad=5.0)
     [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"] for axis in axes]
+    transition_temperature = 2.269185314213
     for axis in axes:
         axis.tick_params(which='both', direction='in', width=3)
         axis.tick_params(which='major', length=7, labelsize=18, pad=5)
         axis.tick_params(which='minor', length=4)
+        axis.axvline(x=transition_temperature, color='y', linestyle='--')
     [axis.set_xlabel(r"$1 / (\beta J)$", fontsize=20, labelpad=3) for axis in axes]
     axes[0].set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N^{1 / 2}$", fontsize=20, labelpad=1)
     axes[1].set_ylabel(r"$\mathbb{E} {|m|}$", fontsize=20, labelpad=1)
@@ -74,7 +76,8 @@ def main(number_of_system_sizes=5):
                     "specific_heat", config_file_mediator, output_directory, sample_directories[lattice_length_index],
                     temperatures, lattice_length ** 2, number_of_equilibration_iterations, thinning_level)
 
-        axes[0].errorbar(temperatures, specific_heat_vs_temp / lattice_length, specific_heat_errors_vs_temp / lattice_length, marker=".", markersize=8,
+        axes[0].errorbar(temperatures, specific_heat_vs_temp / lattice_length,
+                         specific_heat_errors_vs_temp / lattice_length, marker=".", markersize=8,
                          color=colors[lattice_length_index], linestyle="None",
                          label=fr"$N$ = {lattice_length}x{lattice_length}")
         axes[1].errorbar(temperatures, magnetic_norm_density_vs_temp, magnetic_norm_density_errors_vs_temp, marker=".",
