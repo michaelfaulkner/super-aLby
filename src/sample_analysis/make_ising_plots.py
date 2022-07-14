@@ -24,12 +24,13 @@ def main(number_of_system_sizes=5):
     output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
     sample_directories_wolff = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]
     sample_directories_metrop = [f"{output_directory}/{length}x{length}_metropolis" for length in lattice_lengths]
-    if config_file_mediator == "metropolis_mediator":
+    '''if config_file_mediator == "metropolis_mediator":
         thinning_level = 10
     else:
-        thinning_level = None
+        thinning_level = None'''
+    thinning_level = None
 
-    figure, axes = plt.subplots(1, 2, figsize=(12.5, 4.5))
+    figure, axes = plt.subplots(1, 2, figsize=(12.5, 4.0))
     figure.tight_layout(w_pad=5.0)
     [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"] for axis in axes]
     transition_temperature = 2.269185314213
@@ -42,8 +43,7 @@ def main(number_of_system_sizes=5):
     axes[0].set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N^{1 / 2}$", fontsize=20, labelpad=1)
     axes[1].set_ylabel(r"$\mathbb{E} {|m|}$", fontsize=20, labelpad=1)
     axes[1].set_ylim([0.0, 1.05])
-    figure.text(0.235, -0.11, "(a)", fontsize=20)
-    figure.text(0.75, -0.11, "(b)", fontsize=20)
+    axes[0].text(3.675, 28.0, "(a)", fontsize=20), axes[1].text(3.675, 0.96, "(b)", fontsize=20)
     colors = ["black", "red", "blue", "green", "yellow", "cyan", "magenta"][:number_of_system_sizes]
     colors.reverse()
 
@@ -123,8 +123,8 @@ def main(number_of_system_sizes=5):
     legends = [axes[0].legend(loc="upper left", fontsize=12), axes[1].legend(loc="lower left", fontsize=12)]
     [legend.get_frame().set_edgecolor("k") for legend in legends]
     [legend.get_frame().set_lw(3) for legend in legends]
-    plt.savefig(f"{output_directory}/2d_ising_model_spec_heat_and_mag_norm_density_vs_temperature_"
-                f"{config_file_mediator.replace('_mediator', '')}.pdf", bbox_inches="tight")
+    figure.savefig(f"{output_directory}/2d_ising_model_spec_heat_and_mag_norm_density_vs_temperature_"
+                   f"{config_file_mediator.replace('_mediator', '')}.pdf", bbox_inches="tight")
 
 
 def get_observable_mean_and_error_vs_temperature(observable_string, config_file_mediator, output_directory,
