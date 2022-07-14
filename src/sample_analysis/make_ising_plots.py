@@ -22,7 +22,8 @@ def main(number_of_system_sizes=5):
     (config_file_mediator, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
      number_of_observations, _, _) = helper_methods.get_basic_config_data(config_file_4x4_wolff)
     output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
-    sample_directories = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]
+    sample_directories_wolff = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]
+    sample_directories_metrop = [f"{output_directory}/{length}x{length}_metropolis" for length in lattice_lengths]
     if config_file_mediator == "metropolis_mediator":
         thinning_level = 10
     else:
@@ -47,35 +48,30 @@ def main(number_of_system_sizes=5):
     colors.reverse()
 
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
-        (magnetic_norm_density_vs_temp, magnetic_norm_density_errors_vs_temp, specific_heat_vs_temp,
-         specific_heat_errors_vs_temp) = (None, None, None, None)
-        for sampler in samplers:
-            if sampler == "standard_mean_position_sampler":
-                _, _ = get_observable_mean_and_error_vs_temperature(
-                    "magnetic_density", config_file_mediator, output_directory,
-                    sample_directories[lattice_length_index], temperatures, lattice_length ** 2,
-                    number_of_equilibration_iterations, thinning_level)
-                (magnetic_norm_density_vs_temp,
-                 magnetic_norm_density_errors_vs_temp) = get_observable_mean_and_error_vs_temperature(
-                    "magnetic_norm_density", config_file_mediator, output_directory,
-                    sample_directories[lattice_length_index], temperatures, lattice_length ** 2,
-                    number_of_equilibration_iterations, thinning_level)
-                _, _ = get_observable_mean_and_error_vs_temperature(
-                    "magnetic_susceptibility", config_file_mediator, output_directory,
-                    sample_directories[lattice_length_index], temperatures, lattice_length ** 2,
-                    number_of_equilibration_iterations, thinning_level)
-                _, _ = get_observable_mean_and_error_vs_temperature(
-                    "magnetic_norm_susceptibility", config_file_mediator, output_directory,
-                    sample_directories[lattice_length_index], temperatures, lattice_length ** 2,
-                    number_of_equilibration_iterations, thinning_level)
-            elif sampler == "potential_sampler":
-                _, _ = get_observable_mean_and_error_vs_temperature(
-                    "potential", config_file_mediator, output_directory, sample_directories[lattice_length_index],
-                    temperatures, lattice_length ** 2, number_of_equilibration_iterations, thinning_level)
-                (specific_heat_vs_temp, specific_heat_errors_vs_temp) = get_observable_mean_and_error_vs_temperature(
-                    "specific_heat", config_file_mediator, output_directory, sample_directories[lattice_length_index],
-                    temperatures, lattice_length ** 2, number_of_equilibration_iterations, thinning_level)
-
+        _, _ = get_observable_mean_and_error_vs_temperature(
+            "magnetic_density", config_file_mediator, output_directory,
+            sample_directories_wolff[lattice_length_index], temperatures, lattice_length ** 2,
+            number_of_equilibration_iterations, thinning_level)
+        (magnetic_norm_density_vs_temp,
+         magnetic_norm_density_errors_vs_temp) = get_observable_mean_and_error_vs_temperature(
+            "magnetic_norm_density", config_file_mediator, output_directory,
+            sample_directories_wolff[lattice_length_index], temperatures, lattice_length ** 2,
+            number_of_equilibration_iterations, thinning_level)
+        _, _ = get_observable_mean_and_error_vs_temperature(
+            "magnetic_susceptibility", config_file_mediator, output_directory,
+            sample_directories_wolff[lattice_length_index], temperatures, lattice_length ** 2,
+            number_of_equilibration_iterations, thinning_level)
+        _, _ = get_observable_mean_and_error_vs_temperature(
+            "magnetic_norm_susceptibility", config_file_mediator, output_directory,
+            sample_directories_wolff[lattice_length_index], temperatures, lattice_length ** 2,
+            number_of_equilibration_iterations, thinning_level)
+        _, _ = get_observable_mean_and_error_vs_temperature(
+            "potential", config_file_mediator, output_directory, sample_directories_wolff[lattice_length_index],
+            temperatures, lattice_length ** 2, number_of_equilibration_iterations, thinning_level)
+        (specific_heat_vs_temp, specific_heat_errors_vs_temp) = get_observable_mean_and_error_vs_temperature(
+            "specific_heat", config_file_mediator, output_directory,
+            sample_directories_wolff[lattice_length_index], temperatures, lattice_length ** 2,
+            number_of_equilibration_iterations, thinning_level)
         axes[0].errorbar(temperatures, specific_heat_vs_temp / lattice_length,
                          specific_heat_errors_vs_temp / lattice_length, marker=".", markersize=8,
                          color=colors[lattice_length_index], linestyle="None",
@@ -83,6 +79,47 @@ def main(number_of_system_sizes=5):
         axes[1].errorbar(temperatures, magnetic_norm_density_vs_temp, magnetic_norm_density_errors_vs_temp, marker=".",
                          markersize=8, color=colors[lattice_length_index], linestyle="None",
                          label=fr"$N$ = {lattice_length}x{lattice_length}")
+
+        #if lattice_length_index == lattice_lengths[-1]:
+        if lattice_length_index == 0:
+            figure_trace_plot, axes_trace_plot = plt.subplots(2, 2, figsize=(12.5, 5.0))
+            figure_trace_plot.tight_layout(h_pad=-1.0, w_pad=-2.0)
+            subfigure_labels = ["(a)", "(b)", "(c)", "(d)"]
+            [axis.text(149.0, 0.86, subfigure_labels[axis_index], fontsize=18) for axis_index, axis in
+             enumerate(axes_trace_plot.flatten())]
+            [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"] for axis in
+             axes_trace_plot.flatten()]
+            for axis in axes_trace_plot.flatten():
+                axis.tick_params(which='both', direction='in', width=3)
+                axis.tick_params(which='major', length=7, labelsize=18, pad=5)
+                axis.tick_params(which='minor', length=4)
+            [axes_trace_plot[0, i].tick_params(labelbottom=False) for i in range(2)]
+            axes_trace_plot[1, 0].set_xlabel(r"Metropolis observation, $t$", fontsize=18, labelpad=3)
+            axes_trace_plot[1, 1].set_xlabel(r"Wolff observation, $t$", fontsize=18, labelpad=3)
+            [axis.set_xlim([-5, 160]) for axis in axes_trace_plot.flatten()]
+            [axes_trace_plot[i, 1].tick_params(labelleft=False) for i in range(2)]
+            axes_trace_plot[0, 0].set_ylabel(r"$m\left( x(t); \beta J = 1 \right)$", fontsize=18, labelpad=3)
+            axes_trace_plot[1, 0].set_ylabel(r"$m\left( x(t); \beta J = 1 \, / \, 2.4 \right)$", fontsize=18,
+                                             labelpad=3)
+            [axis.set_ylim([-1.15, 1.15]) for axis in axes_trace_plot.flatten()]
+            plot_magnetic_density(
+                axes_trace_plot[0, 0], "metropolis", output_directory, sample_directories_metrop[lattice_length_index],
+                temperatures[0], 0, lattice_lengths[lattice_length_index], number_of_equilibration_iterations)
+            plot_magnetic_density(
+                axes_trace_plot[0, 1], "wolff", output_directory, sample_directories_wolff[lattice_length_index],
+                temperatures[0], 0, lattice_lengths[lattice_length_index], number_of_equilibration_iterations)
+            plot_magnetic_density(
+                axes_trace_plot[1, 0], "metropolis", output_directory, sample_directories_metrop[lattice_length_index],
+                temperatures[int(len(temperatures) / 2)], int(len(temperatures) / 2),
+                lattice_lengths[lattice_length_index], number_of_equilibration_iterations)
+            plot_magnetic_density(
+                axes_trace_plot[1, 1], "wolff", output_directory, sample_directories_wolff[lattice_length_index],
+                temperatures[int(len(temperatures) / 2)], int(len(temperatures) / 2),
+                lattice_lengths[lattice_length_index], number_of_equilibration_iterations)
+            figure_trace_plot.savefig(
+                f"{output_directory}/{lattice_lengths[lattice_length_index]}x{lattice_lengths[lattice_length_index]}_"
+                f"zero_field_ising_model_mag_density_vs_time_metrop_and_wolff.pdf", bbox_inches="tight")
+
     legends = [axes[0].legend(loc="upper left", fontsize=12), axes[1].legend(loc="lower left", fontsize=12)]
     [legend.get_frame().set_edgecolor("k") for legend in legends]
     [legend.get_frame().set_lw(3) for legend in legends]
@@ -117,6 +154,22 @@ def get_observable_mean_and_error_vs_temperature(observable_string, config_file_
             errors_vs_temperature.append(sample_error)
         output_file.close()
     return np.array([means_vs_temperature, errors_vs_temperature])
+
+
+def plot_magnetic_density(axis, algorithm_string, output_directory, sample_directory, temperature, temperature_index,
+                          lattice_length, number_of_equilibration_iterations):
+    try:
+        reduced_magnetic_density_sample = np.load(
+            f"{output_directory}/{lattice_length}x{lattice_length}_zero_field_ising_model_temperature_"
+            f"{temperature_index:02d}_{algorithm_string}_algorithm_reduced_magnetic_density_sample.npy")
+    except IOError:
+        reduced_magnetic_density_sample = sample_getter.get_magnetic_density(
+            sample_directory, temperature, temperature_index, lattice_length ** 2,
+            number_of_equilibration_iterations)[:150].flatten()
+        np.save(f"{output_directory}/{lattice_length}x{lattice_length}_zero_field_ising_model_temperature_"
+                f"{temperature_index:02d}_{algorithm_string}_algorithm_reduced_magnetic_density_sample.npy",
+                reduced_magnetic_density_sample)
+    axis.plot(reduced_magnetic_density_sample, color="k", linewidth=1, linestyle="-")
 
 
 if __name__ == "__main__":
