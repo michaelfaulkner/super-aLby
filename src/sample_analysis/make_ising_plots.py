@@ -18,8 +18,6 @@ parsing = importlib.import_module("base.parsing")
 
 
 def main(number_of_system_sizes=5):
-    get_onsager_specific_heat_density()
-
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     lattice_lengths = [4 + index * 4 for index in range(number_of_system_sizes)]
     config_file_4x4_wolff = ["config_files/sampling_algos/ising_figures/4x4_wolff.ini"]
@@ -45,31 +43,45 @@ def main(number_of_system_sizes=5):
         axis.tick_params(which='major', length=7, labelsize=18, pad=5)
         axis.tick_params(which='minor', length=4)
     [axis.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3) for axis in axes]
-    axes[0].set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N^{1 / 2}$", fontsize=20, labelpad=1)
+    axes[0].set_xlim([0.375, 1.7375]), axes[0].set_ylim([-0.1, 2.0])
+    axes[0].set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N$", fontsize=20, labelpad=1)
     axes[1].set_ylabel(r"$\mathbb{E} {|m|}$", fontsize=20, labelpad=1)
-    axes[1].set_ylim([0.0, 1.05])
-    axes[0].text(1.63, 28.0, "(a)", fontsize=20), axes[1].text(1.63, 0.96, "(b)", fontsize=20)
-    inset_axis = plt.axes([0.33, 0.575, 0.125, 0.275])
+    axes[1].set_xlim([0.37, 1.7375]), axes[1].set_ylim([0.0, 1.05])
+    axes[0].text(1.63, 1.825, "(a)", fontsize=20), axes[1].text(1.63, 0.96, "(b)", fontsize=20)
+    '''inset_axis = plt.axes([0.33, 0.575, 0.125, 0.275])
     inset_axis.tick_params(which='both', direction='in', length=4, width=2, labelsize=12)
     inset_axis.set_xlim([0.86, 1.16])
     [inset_axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"]]
     inset_axis.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=12, labelpad=3)
-    inset_axis.set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N$", fontsize=12, labelpad=1)
+    inset_axis.set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N$", fontsize=12, labelpad=1)'''
     colors = ["black", "red", "blue", "green", "yellow", "cyan", "magenta"][:number_of_system_sizes]
     colors.reverse()
 
     """plot analytical solutions"""
-    continuous_temperatures = np.linspace(0.9 * transition_temperature, 1.1 * transition_temperature, 100)
+    '''continuous_temperatures = np.linspace(0.9 * transition_temperature, 1.1 * transition_temperature, 100)
     onsager_specific_heat = - np.log(np.abs(continuous_temperatures - transition_temperature)) - 0.5
     inset_axis.plot(continuous_temperatures / transition_temperature, onsager_specific_heat, color="black",
-                    linestyle="-", label="Onsager")
-    continuous_temperatures = np.linspace(temperatures[0], temperatures[-1], 400)
+                    linestyle="-", label="Onsager")'''
+
+    """onsager_specific_heat_temperatures_and_density = get_onsager_specific_heat_temperatures_and_density(
+        output_directory)
+    (continuous_specific_heat_temperatures, onsager_specific_heat_density
+     ) = onsager_specific_heat_temperatures_and_density[:, (onsager_specific_heat_temperatures_and_density[0] >
+                                                            temperatures[0]) &
+                                                           (onsager_specific_heat_temperatures_and_density[0] <
+                                                            temperatures[-1])]"""
+    (continuous_specific_heat_temperatures,
+     onsager_specific_heat_density) = get_onsager_specific_heat_temperatures_and_density(output_directory)
+    axes[0].plot(continuous_specific_heat_temperatures / transition_temperature, onsager_specific_heat_density,
+                 color="black", linestyle="-", label=r"$N \to \infty$")
+
+    continuous_temperatures = np.linspace(temperatures[0] - 0.2, temperatures[-1] + 0.2, 800)
     onsager_yang_mag_density = np.piecewise(
         continuous_temperatures,
         [continuous_temperatures < transition_temperature, continuous_temperatures > transition_temperature],
         [lambda temperature: (1.0 - 1.0 / np.sinh(2.0 / temperature) ** 4) ** (1 / 8), 0.0])
     axes[1].plot(continuous_temperatures / transition_temperature, onsager_yang_mag_density, color="black",
-                 linestyle="-", label="Onsager-Yang")
+                 linestyle="-", label=r"$N \to \infty$")
 
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
         _, _ = get_observable_mean_and_error_vs_temperature(
@@ -96,13 +108,13 @@ def main(number_of_system_sizes=5):
             "specific_heat", config_file_mediator, output_directory,
             sample_directories_wolff[lattice_length_index], temperatures, lattice_length ** 2,
             number_of_equilibration_iterations, thinning_level)
-        axes[0].errorbar(reduced_temperatures, specific_heat_vs_temp / lattice_length,
-                         specific_heat_errors_vs_temp / lattice_length, marker=".", markersize=8,
+        axes[0].errorbar(reduced_temperatures, specific_heat_vs_temp / lattice_length ** 2,
+                         specific_heat_errors_vs_temp / lattice_length ** 2, marker=".", markersize=8,
                          color=colors[lattice_length_index], linestyle="None",
                          label=fr"$N$ = {lattice_length}x{lattice_length}")
-        inset_axis.errorbar(reduced_temperatures, specific_heat_vs_temp / lattice_length ** 2,
+        '''inset_axis.errorbar(reduced_temperatures, specific_heat_vs_temp / lattice_length ** 2,
                             specific_heat_errors_vs_temp / lattice_length ** 2, marker=".", markersize=8,
-                            color=colors[lattice_length_index], linestyle="None")
+                            color=colors[lattice_length_index], linestyle="None")'''
         axes[1].errorbar(reduced_temperatures, magnetic_norm_density_vs_temp, magnetic_norm_density_errors_vs_temp,
                          marker=".", markersize=8, color=colors[lattice_length_index], linestyle="None",
                          label=fr"$N$ = {lattice_length}x{lattice_length}")
@@ -147,63 +159,55 @@ def main(number_of_system_sizes=5):
                 f"{output_directory}/{lattice_lengths[lattice_length_index]}x{lattice_lengths[lattice_length_index]}_"
                 f"zero_field_ising_model_mag_density_vs_time_metrop_and_wolff.pdf", bbox_inches="tight")
 
-    current_handles, _ = axes[0].get_legend_handles_labels()
-    current_handles.insert(0, Line2D([0], [0], color="black", label="Onsager"))
-    legends = [axes[0].legend(handles=current_handles, loc="upper left", fontsize=12),
-               axes[1].legend(loc="lower left", fontsize=12)]
+    '''handles_a, labels_a = axes[0].get_legend_handles_labels()
+    handles_b, labels_b = axes[1].get_legend_handles_labels()
+    handles_a.append(handles_a.pop(0)), labels_a.append(labels_a.pop(0))  # move each zeroth element to end of each list
+    handles_b.append(handles_b.pop(0)), labels_b.append(labels_b.pop(0))  # move each zeroth element to end of each list
+    legends = [axes[0].legend(handles=handles_a, labels=labels_a, loc="upper left", fontsize=12),
+               axes[1].legend(handles=handles_b, labels=labels_b, loc="lower left", fontsize=12)]'''
+    legends = [axes[0].legend(loc="upper left", fontsize=12), axes[1].legend(loc="lower left", fontsize=12)]
     [legend.get_frame().set_edgecolor("k") for legend in legends]
     [legend.get_frame().set_lw(3) for legend in legends]
     figure.savefig(f"{output_directory}/2d_ising_model_spec_heat_and_mag_norm_density_vs_temperature_"
                    f"{config_file_mediator.replace('_mediator', '')}.pdf", bbox_inches="tight")
 
 
-def get_onsager_specific_heat_density(max_temperature=4.0, no_of_temperature_integration_values=1000,
-                                      no_of_x_integration_values=1000):
-    delta_temperature = max_temperature / no_of_temperature_integration_values
-    temperatures = np.linspace(delta_temperature, max_temperature, no_of_temperature_integration_values,
-                               dtype=np.float128)
-    inverse_temperatures = 1.0 / temperatures
-    alpha = 2.0 * np.sinh(2.0 * inverse_temperatures) / np.cosh(2.0 * inverse_temperatures) ** 2
-    dalpha_dbeta = 4.0 * (
-            1.0 - 2.0 * np.tanh(2.0 * inverse_temperatures) ** 2) / np.cosh(2.0 * inverse_temperatures)
-    gamma_2, dgamma_2_dbeta = np.zeros(len(temperatures)), np.zeros(len(temperatures))
-    x = np.linspace(0.0, math.pi / 2.0, no_of_x_integration_values, dtype=np.float128)
-    for temperature_index in range(len(temperatures)):
-        gamma_2_integrand = np.log(0.5 * (1.0 + np.sqrt(1.0 - alpha[temperature_index] ** 2 * np.sin(x) ** 2)))
-        gamma_2[temperature_index] = np.trapz(gamma_2_integrand, x=x) / math.pi
-        dgamma_2_dbeta_integrand = - alpha[temperature_index] * dalpha_dbeta[temperature_index] * np.sin(x) ** 2 / (
-                1.0 - alpha[temperature_index] ** 2 * np.sin(x) ** 2 + np.sqrt(1.0 - alpha[temperature_index] ** 2 *
-                                                                               np.sin(x) ** 2))
-        dgamma_2_dbeta[temperature_index] = np.trapz(dgamma_2_dbeta_integrand, x=x) / math.pi
-    free_energy_density = - temperatures * (np.log(2.0 * np.cosh(2.0 * inverse_temperatures)) + gamma_2)
-    expected_potential_density = - 2.0 * np.tanh(2.0 * inverse_temperatures) - dgamma_2_dbeta
-    specific_heat_density = np.diff(expected_potential_density) / delta_temperature
-    specific_heat_temperatures = temperatures[:len(temperatures) - 1]
-    '''plt.plot(temperatures, free_energy_density, color='k', linewidth=2, linestyle='-', label='free energy density')
-    plt.plot(temperatures, expected_potential_density, color='r', linewidth=2, linestyle='-',
-             label='expected potential density')
-    plt.plot(specific_heat_temperatures, specific_heat_density, color='b', linewidth=2, linestyle='-',
-             label='specific-heat density')'''
-    '''transition_temperature = 2.0 / math.log(1 + 2 ** 0.5)
-    specific_heat_temperatures_lower = np.delete(specific_heat_temperatures, np.argwhere(specific_heat_temperatures >
-                                                                                         transition_temperature))
-    specific_heat_temperatures_higher = np.delete(specific_heat_temperatures, np.argwhere(specific_heat_temperatures <
-                                                                                          transition_temperature))
-    specific_heat_density_lower = np.delete(specific_heat_density, np.argwhere(specific_heat_temperatures >
-                                                                               transition_temperature))
-    specific_heat_density_higher = np.delete(specific_heat_density, np.argwhere(specific_heat_temperatures <
-                                                                                transition_temperature))
-    plt.plot(specific_heat_temperatures_lower, specific_heat_density_lower, color='b', linewidth=2, linestyle='-',
-             label='specific-heat density')
-    plt.plot(specific_heat_temperatures_higher, specific_heat_density_higher, color='b', linewidth=2, linestyle='-')'''
-
-    '''plt.xlabel(r"$1 / (\beta J)$", fontsize=15, labelpad=10)
-    plt.tick_params(axis='both', which='major', direction='in', labelsize=14, pad=10)
-    legend = plt.legend(loc='lower left', fontsize=10)
-    legend.get_frame().set_edgecolor('k')
-    legend.get_frame().set_lw(1.5)
-    plt.tight_layout()
-    plt.show()'''
+def get_onsager_specific_heat_temperatures_and_density(output_directory, no_of_temperature_integration_values=1000,
+                                                       no_of_x_integration_values=1000, max_temperature=4.0):
+    try:
+        return np.load(f"{output_directory}/2d_ising_model_onsager_specific_heat_density_vs_temperature_"
+                       f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy")
+    except IOError:
+        delta_temperature = max_temperature / no_of_temperature_integration_values
+        temperatures = np.linspace(delta_temperature, max_temperature, no_of_temperature_integration_values,
+                                   dtype=np.float128)
+        inverse_temperatures = 1.0 / temperatures
+        alpha = 2.0 * np.sinh(2.0 * inverse_temperatures) / np.cosh(2.0 * inverse_temperatures) ** 2
+        dalpha_dbeta = 4.0 * (
+                1.0 - 2.0 * np.tanh(2.0 * inverse_temperatures) ** 2) / np.cosh(2.0 * inverse_temperatures)
+        gamma_2, dgamma_2_dbeta = np.zeros(len(temperatures)), np.zeros(len(temperatures))
+        x = np.linspace(0.0, math.pi / 2.0, no_of_x_integration_values, dtype=np.float128)
+        for temperature_index in range(len(temperatures)):
+            gamma_2_integrand = np.log(0.5 * (1.0 + np.sqrt(1.0 - alpha[temperature_index] ** 2 * np.sin(x) ** 2)))
+            gamma_2[temperature_index] = np.trapz(gamma_2_integrand, x=x) / math.pi
+            dgamma_2_dbeta_integrand = - alpha[temperature_index] * dalpha_dbeta[temperature_index] * np.sin(x) ** 2 / (
+                    1.0 - alpha[temperature_index] ** 2 * np.sin(x) ** 2 + np.sqrt(1.0 - alpha[temperature_index] ** 2 *
+                                                                                   np.sin(x) ** 2))
+            dgamma_2_dbeta[temperature_index] = np.trapz(dgamma_2_dbeta_integrand, x=x) / math.pi
+        free_energy_density = - temperatures * (np.log(2.0 * np.cosh(2.0 * inverse_temperatures)) + gamma_2)
+        expected_potential_density = - 2.0 * np.tanh(2.0 * inverse_temperatures) - dgamma_2_dbeta
+        specific_heat_density = np.diff(expected_potential_density) / delta_temperature
+        specific_heat_temperatures = temperatures[:len(temperatures) - 1]
+        np.save(f"{output_directory}/2d_ising_model_onsager_free_energy_density_vs_temperature_"
+                f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
+                np.array([temperatures, free_energy_density]))
+        np.save(f"{output_directory}/2d_ising_model_onsager_expected_potential_density_vs_temperature_"
+                f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
+                np.array([temperatures, expected_potential_density]))
+        np.save(f"{output_directory}/2d_ising_model_onsager_specific_heat_density_vs_temperature_"
+                f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
+                np.array([specific_heat_temperatures, specific_heat_density]))
+        return np.array([specific_heat_temperatures, specific_heat_density])
 
 
 def get_observable_mean_and_error_vs_temperature(observable_string, config_file_mediator, output_directory,
