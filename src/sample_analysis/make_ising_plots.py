@@ -1,5 +1,4 @@
 from markov_chain_diagnostics import get_sample_mean_and_error
-from matplotlib.lines import Line2D
 import importlib
 import math
 import matplotlib
