@@ -26,62 +26,87 @@ def main(number_of_system_sizes=5):
     output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
     sample_directories_wolff = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]
     sample_directories_metrop = [f"{output_directory}/{length}x{length}_metropolis" for length in lattice_lengths]
-    '''if config_file_mediator == "metropolis_mediator":
-        thinning_level = 10
-    else:
-        thinning_level = None'''
     thinning_level = None
 
     transition_temperature = 2.0 / math.log(1 + 2 ** 0.5)
     reduced_temperatures = [temperature / transition_temperature for temperature in temperatures]
 
-    figure, axes = plt.subplots(1, 2, figsize=(12.5, 4.0))
-    figure.tight_layout(w_pad=5.0)
-    [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"] for axis in axes]
-    for axis in axes:
+    fig_1, axis_1 = plt.subplots(1, figsize=(6.25, 4.0))
+    fig_1.tight_layout()
+    additional_y_axis = axis_1.twinx()  # add a twinned y axis to the right-hand subplot
+    [axis_1.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"]]
+    axis_1.tick_params(which='both', direction='in', width=3)
+    axis_1.tick_params(which='major', length=5, labelsize=18, pad=5)
+    axis_1.tick_params(which='minor', length=4)
+    additional_y_axis.tick_params(which='both', direction='in', width=3, colors='red')
+    additional_y_axis.tick_params(which='major', length=5, labelsize=18, pad=5)
+    additional_y_axis.tick_params(which='minor', length=4)
+    additional_y_axis.tick_params(axis='y', labelcolor='red')
+    additional_y_axis.spines["right"].set_color("red"), additional_y_axis.spines["right"].set_linewidth(3)
+    axis_1.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3)
+    axis_1.set_ylabel(r"${\rm lim}_{N \to \infty} \left[ \mathbb{E} C_{\rm V} \right.$ / $\left. N \right]$",
+                      fontsize=20, labelpad=1)
+    additional_y_axis.set_ylabel(r"$m_0$", fontsize=20, labelpad=1, color="red")
+    axis_1.set_xlim([0.375, 1.7375]), axis_1.set_ylim([-0.05, 2.2]), additional_y_axis.set_ylim([-0.025, 1.05])
+
+    fig_2, axes_2 = plt.subplots(1, 2, figsize=(12.5, 4.0))
+    fig_2.tight_layout(w_pad=5.0)
+    [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"] for axis in axes_2]
+    for axis in axes_2:
         axis.tick_params(which='both', direction='in', width=3)
-        axis.tick_params(which='major', length=7, labelsize=18, pad=5)
+        axis.tick_params(which='major', length=5, labelsize=18, pad=5)
         axis.tick_params(which='minor', length=4)
-    [axis.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3) for axis in axes]
-    axes[0].set_xlim([0.375, 1.7375]), axes[0].set_ylim([-0.1, 2.0])
-    axes[0].set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N$", fontsize=20, labelpad=1)
-    axes[1].set_ylabel(r"$\mathbb{E} {|m|}$", fontsize=20, labelpad=1)
-    axes[1].set_xlim([0.37, 1.7375]), axes[1].set_ylim([0.0, 1.05])
-    axes[0].text(1.63, 1.825, "(a)", fontsize=20), axes[1].text(1.63, 0.96, "(b)", fontsize=20)
-    '''inset_axis = plt.axes([0.33, 0.575, 0.125, 0.275])
-    inset_axis.tick_params(which='both', direction='in', length=4, width=2, labelsize=12)
-    inset_axis.set_xlim([0.86, 1.16])
-    [inset_axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"]]
-    inset_axis.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=12, labelpad=3)
-    inset_axis.set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N$", fontsize=12, labelpad=1)'''
+    [axis.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3) for axis in axes_2]
+    axes_2[0].set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N$", fontsize=20, labelpad=1)
+    axes_2[1].set_ylabel(r"$\mathbb{E} {|m|}$", fontsize=20, labelpad=1)
+    axes_2[0].set_xlim([0.375, 1.7375]), axes_2[0].set_ylim([-0.05, 2.2])
+    axes_2[1].set_xlim([0.37, 1.7375]), axes_2[1].set_ylim([-0.025, 1.05])
+    axes_2[0].text(1.63, 2.01, "(a)", fontsize=20), axes_2[1].text(1.63, 0.96, "(b)", fontsize=20)
+
+    figure_trace_plot, axes_trace_plot = plt.subplots(2, 2, figsize=(12.5, 5.0))
+    figure_trace_plot.tight_layout(h_pad=-1.0, w_pad=-2.0)
+    subfigure_labels = ["(a)", "(b)", "(c)", "(d)"]
+    [axis.text(149.0, 0.86, subfigure_labels[axis_index], fontsize=18) for axis_index, axis in
+     enumerate(axes_trace_plot.flatten())]
+    [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"] for axis in
+     axes_trace_plot.flatten()]
+    for axis in axes_trace_plot.flatten():
+        axis.tick_params(which='both', direction='in', width=3)
+        axis.tick_params(which='major', length=5, labelsize=18, pad=5)
+        axis.tick_params(which='minor', length=4)
+    [axes_trace_plot[0, i].tick_params(labelbottom=False) for i in range(2)]
+    axes_trace_plot[1, 0].set_xlabel(r"Metropolis observation, $t$", fontsize=18, labelpad=3)
+    axes_trace_plot[1, 1].set_xlabel(r"Wolff observation, $t$", fontsize=18, labelpad=3)
+    [axis.set_xlim([-5, 160]) for axis in axes_trace_plot.flatten()]
+    [axes_trace_plot[i, 1].tick_params(labelleft=False) for i in range(2)]
+    axes_trace_plot[0, 0].set_ylabel(r"$m\left( x(t); \beta J = 1 \right)$", fontsize=18, labelpad=3)
+    axes_trace_plot[1, 0].set_ylabel(r"$m\left( x(t); \beta J = 1 \, / \, 2.4 \right)$", fontsize=18,
+                                     labelpad=3)
+    [axis.set_ylim([-1.15, 1.15]) for axis in axes_trace_plot.flatten()]
+
     colors = ["black", "red", "blue", "green", "yellow", "cyan", "magenta"][:number_of_system_sizes]
     colors.reverse()
 
     """plot analytical solutions"""
-    '''continuous_temperatures = np.linspace(0.9 * transition_temperature, 1.1 * transition_temperature, 100)
-    onsager_specific_heat = - np.log(np.abs(continuous_temperatures - transition_temperature)) - 0.5
-    inset_axis.plot(continuous_temperatures / transition_temperature, onsager_specific_heat, color="black",
-                    linestyle="-", label="Onsager")'''
-
-    """onsager_specific_heat_temperatures_and_density = get_onsager_specific_heat_temperatures_and_density(
-        output_directory)
-    (continuous_specific_heat_temperatures, onsager_specific_heat_density
-     ) = onsager_specific_heat_temperatures_and_density[:, (onsager_specific_heat_temperatures_and_density[0] >
-                                                            temperatures[0]) &
-                                                           (onsager_specific_heat_temperatures_and_density[0] <
-                                                            temperatures[-1])]"""
-    (continuous_specific_heat_temperatures,
+    """specific-heat density"""
+    (continuous_temperatures,
      onsager_specific_heat_density) = get_onsager_specific_heat_temperatures_and_density(output_directory)
-    axes[0].plot(continuous_specific_heat_temperatures / transition_temperature, onsager_specific_heat_density,
-                 color="black", linestyle="-", label=r"$N \to \infty$")
-
+    axis_1.plot(continuous_temperatures / transition_temperature, onsager_specific_heat_density, color="black",
+                linestyle="-", linewidth=2.0)
+    axes_2[0].plot(continuous_temperatures / transition_temperature, onsager_specific_heat_density,
+                   color="black", linestyle="-", linewidth=2.0, label=r"$N \to \infty$")
+    """magnetic density"""
     continuous_temperatures = np.linspace(temperatures[0] - 0.2, temperatures[-1] + 0.2, 800)
     onsager_yang_mag_density = np.piecewise(
         continuous_temperatures,
         [continuous_temperatures < transition_temperature, continuous_temperatures > transition_temperature],
         [lambda temperature: (1.0 - 1.0 / np.sinh(2.0 / temperature) ** 4) ** (1 / 8), 0.0])
-    axes[1].plot(continuous_temperatures / transition_temperature, onsager_yang_mag_density, color="black",
-                 linestyle="-", label=r"$N \to \infty$")
+    additional_y_axis.plot(continuous_temperatures / transition_temperature, onsager_yang_mag_density, color="red",
+                           linestyle="-", linewidth=2.0)
+    axes_2[1].plot(continuous_temperatures / transition_temperature, onsager_yang_mag_density, color="black",
+                   linestyle="-", linewidth=2.0, label=r"$N \to \infty$")
+    fig_1.savefig(f"{output_directory}/2d_ising_model_spec_heat_and_mag_norm_density_vs_temperature_analytical_"
+                  f"solutions.pdf", bbox_inches="tight")
 
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
         _, _ = get_observable_mean_and_error_vs_temperature(
@@ -108,39 +133,16 @@ def main(number_of_system_sizes=5):
             "specific_heat", config_file_mediator, output_directory,
             sample_directories_wolff[lattice_length_index], temperatures, lattice_length ** 2,
             number_of_equilibration_iterations, thinning_level)
-        axes[0].errorbar(reduced_temperatures, specific_heat_vs_temp / lattice_length ** 2,
+        axes_2[0].errorbar(reduced_temperatures, specific_heat_vs_temp / lattice_length ** 2,
                          specific_heat_errors_vs_temp / lattice_length ** 2, marker=".", markersize=8,
                          color=colors[lattice_length_index], linestyle="None",
                          label=fr"$N$ = {lattice_length}x{lattice_length}")
-        '''inset_axis.errorbar(reduced_temperatures, specific_heat_vs_temp / lattice_length ** 2,
-                            specific_heat_errors_vs_temp / lattice_length ** 2, marker=".", markersize=8,
-                            color=colors[lattice_length_index], linestyle="None")'''
-        axes[1].errorbar(reduced_temperatures, magnetic_norm_density_vs_temp, magnetic_norm_density_errors_vs_temp,
+        axes_2[1].errorbar(reduced_temperatures, magnetic_norm_density_vs_temp, magnetic_norm_density_errors_vs_temp,
                          marker=".", markersize=8, color=colors[lattice_length_index], linestyle="None",
                          label=fr"$N$ = {lattice_length}x{lattice_length}")
 
         #if lattice_length_index == lattice_lengths[-1]:
         if lattice_length_index == 0:
-            figure_trace_plot, axes_trace_plot = plt.subplots(2, 2, figsize=(12.5, 5.0))
-            figure_trace_plot.tight_layout(h_pad=-1.0, w_pad=-2.0)
-            subfigure_labels = ["(a)", "(b)", "(c)", "(d)"]
-            [axis.text(149.0, 0.86, subfigure_labels[axis_index], fontsize=18) for axis_index, axis in
-             enumerate(axes_trace_plot.flatten())]
-            [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"] for axis in
-             axes_trace_plot.flatten()]
-            for axis in axes_trace_plot.flatten():
-                axis.tick_params(which='both', direction='in', width=3)
-                axis.tick_params(which='major', length=7, labelsize=18, pad=5)
-                axis.tick_params(which='minor', length=4)
-            [axes_trace_plot[0, i].tick_params(labelbottom=False) for i in range(2)]
-            axes_trace_plot[1, 0].set_xlabel(r"Metropolis observation, $t$", fontsize=18, labelpad=3)
-            axes_trace_plot[1, 1].set_xlabel(r"Wolff observation, $t$", fontsize=18, labelpad=3)
-            [axis.set_xlim([-5, 160]) for axis in axes_trace_plot.flatten()]
-            [axes_trace_plot[i, 1].tick_params(labelleft=False) for i in range(2)]
-            axes_trace_plot[0, 0].set_ylabel(r"$m\left( x(t); \beta J = 1 \right)$", fontsize=18, labelpad=3)
-            axes_trace_plot[1, 0].set_ylabel(r"$m\left( x(t); \beta J = 1 \, / \, 2.4 \right)$", fontsize=18,
-                                             labelpad=3)
-            [axis.set_ylim([-1.15, 1.15]) for axis in axes_trace_plot.flatten()]
             plot_magnetic_density(
                 axes_trace_plot[0, 0], "metropolis", output_directory, sample_directories_metrop[lattice_length_index],
                 temperatures[0], 0, lattice_lengths[lattice_length_index], number_of_equilibration_iterations)
@@ -159,17 +161,11 @@ def main(number_of_system_sizes=5):
                 f"{output_directory}/{lattice_lengths[lattice_length_index]}x{lattice_lengths[lattice_length_index]}_"
                 f"zero_field_ising_model_mag_density_vs_time_metrop_and_wolff.pdf", bbox_inches="tight")
 
-    '''handles_a, labels_a = axes[0].get_legend_handles_labels()
-    handles_b, labels_b = axes[1].get_legend_handles_labels()
-    handles_a.append(handles_a.pop(0)), labels_a.append(labels_a.pop(0))  # move each zeroth element to end of each list
-    handles_b.append(handles_b.pop(0)), labels_b.append(labels_b.pop(0))  # move each zeroth element to end of each list
-    legends = [axes[0].legend(handles=handles_a, labels=labels_a, loc="upper left", fontsize=12),
-               axes[1].legend(handles=handles_b, labels=labels_b, loc="lower left", fontsize=12)]'''
-    legends = [axes[0].legend(loc="upper left", fontsize=12), axes[1].legend(loc="lower left", fontsize=12)]
+    legends = [axes_2[0].legend(loc="upper left", fontsize=12), axes_2[1].legend(loc="lower left", fontsize=12)]
     [legend.get_frame().set_edgecolor("k") for legend in legends]
     [legend.get_frame().set_lw(3) for legend in legends]
-    figure.savefig(f"{output_directory}/2d_ising_model_spec_heat_and_mag_norm_density_vs_temperature_"
-                   f"{config_file_mediator.replace('_mediator', '')}.pdf", bbox_inches="tight")
+    fig_2.savefig(f"{output_directory}/2d_ising_model_spec_heat_and_mag_norm_density_vs_temperature_"
+                  f"{config_file_mediator.replace('_mediator', '')}_simulations.pdf", bbox_inches="tight")
 
 
 def get_onsager_specific_heat_temperatures_and_density(output_directory, no_of_temperature_integration_values=1000,
