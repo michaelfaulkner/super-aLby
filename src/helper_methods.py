@@ -32,7 +32,7 @@ def get_temperatures(minimum_temperature, maximum_temperature, number_of_tempera
         return [minimum_temperature]
     temperature_increment = (maximum_temperature - minimum_temperature) / number_of_temperature_increments
     return [minimum_temperature + temperature_increment * temperature_index
-            for temperature_index in range(number_of_temperature_increments)]
+            for temperature_index in range(number_of_temperature_increments + 1)]
 
 
 def get_basic_config_data(config_file_string):
