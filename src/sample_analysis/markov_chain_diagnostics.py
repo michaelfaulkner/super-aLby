@@ -50,3 +50,13 @@ def get_cumulative_distribution(one_dimensional_sample):
     bin_values = np.arange(1, len(one_dimensional_sample) + 1) / float(len(one_dimensional_sample))
     ordered_sample = np.sort(one_dimensional_sample)
     return [ordered_sample, bin_values]
+
+
+def get_autocorrelation(one_dimensional_sample):
+    if len(np.atleast_2d(one_dimensional_sample)) > 1:
+        raise Exception("Error: the sample passed to markov_chain_diagnostics.get_autocorrelation() must be one "
+                        "(Cartesian) dimensional.")
+    mean_zero_sample = one_dimensional_sample - np.mean(one_dimensional_sample)
+    full_acf = np.correlate(mean_zero_sample, mean_zero_sample, mode='full')
+    """np.correlate() is symmetric about t = 0 when mode='full' - full_acf[full_acf.size // 2:] returns t >= 0 values"""
+    return full_acf[full_acf.size // 2:]
