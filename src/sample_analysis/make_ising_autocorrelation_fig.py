@@ -90,23 +90,32 @@ def main(number_of_system_sizes=3):
                              marker=".", markersize=8, color=temperature_colors[temperature_index], linestyle="--",
                              label=fr"$1 / (\beta J)$ = {temperatures[temperature_index]:.02}")
 
-        correlation_times = []
+        metrop_correlation_times, wolff_correlation_times = [], []
         for temperature_index, temperature in enumerate(temperatures):
             max_acf_index = min(next(index for index, value in enumerate(
                 magnetic_norm_density_acf_vs_temp_metrop[temperature_index]) if value < 0.1), 2)
             if magnetic_norm_density_acf_vs_temp_metrop[temperature_index, max_acf_index] < 0.0:
                 max_acf_index = 1
-            correlation_times.append(
+            metrop_correlation_times.append(
                 - max_acf_index / np.log(magnetic_norm_density_acf_vs_temp_metrop[temperature_index, max_acf_index]))
+            max_acf_index = min(next(index for index, value in enumerate(
+                magnetic_norm_density_acf_vs_temp_wolff[temperature_index]) if value < 0.1), 2)
+            if magnetic_norm_density_acf_vs_temp_wolff[temperature_index, max_acf_index] < 0.0:
+                max_acf_index = 1
+            wolff_correlation_times.append(
+                - max_acf_index / np.log(magnetic_norm_density_acf_vs_temp_wolff[temperature_index, max_acf_index]))
             '''exponential_fit = np.polyfit(np.arange(max_acf_index),
             np.log(magnetic_norm_density_acf_vs_temp_metrop[temperature_index, :max_acf_index]), 1)
             print(exponential_fit)'''
 
-        axes[1].plot(reduced_temperatures, correlation_times, marker=".", markersize=8,
-                     color=system_size_colors[lattice_length_index], linestyle="None",
-                     label=fr"$N$ = {lattice_length}x{lattice_length}")
+        axes[1].plot(reduced_temperatures, wolff_correlation_times, marker="*", markersize=8,
+                     color=system_size_colors[lattice_length_index], linestyle="--",
+                     label=fr"$N$ = {lattice_length}x{lattice_length} Wolff")
+        axes[1].plot(reduced_temperatures, metrop_correlation_times, marker=".", markersize=8,
+                     color=system_size_colors[lattice_length_index], linestyle="-",
+                     label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
 
-    legends = [axes[0].legend(loc="upper right", fontsize=12), axes[1].legend(loc="upper left", fontsize=12)]
+    legends = [axes[0].legend(loc="upper right", fontsize=12), axes[1].legend(loc="upper left", fontsize=8)]
     [legend.get_frame().set_edgecolor("k") for legend in legends]
     [legend.get_frame().set_lw(3) for legend in legends]
     fig.savefig(f"{output_directory}/2d_ising_model_magnetic_fluctuation_acf.pdf", bbox_inches="tight")
