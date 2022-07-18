@@ -52,7 +52,6 @@ def main(number_of_system_sizes=3):
     axes[1].set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3)
     axes[1].set_ylabel(r"$\tau_m^{\rm M/W}$", fontsize=20, labelpad=1)
     axes[0].set_xlim([-1.0, 51.0]), axes[0].set_ylim([0.09, 1.1])  # 0.049787068368 ~= e^(-3)
-    # axes[1].set_xlim([0.37, 1.7375]), axes[1].set_ylim([-0.025, 1.05])
     # axes[0].text(1.63, 2.01, "(a)", fontsize=20), axes_2[1].text(1.63, 0.96, "(b)", fontsize=20)
 
     system_size_colors = ["black", "red", "blue", "green", "yellow", "cyan", "magenta"][:number_of_system_sizes]
@@ -61,16 +60,6 @@ def main(number_of_system_sizes=3):
     temperature_colors = list(islice(cycle(temperature_colors), len(temperatures)))
 
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
-        _ = get_observable_autocorrelation_vs_temperature(
-            "magnetic_density", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
-            temperatures, lattice_length ** 2, number_of_equilibration_iterations)
-        magnetic_norm_density_acf_vs_temp_wolff = get_observable_autocorrelation_vs_temperature(
-            "magnetic_norm_density", wolff_mediator, output_directory,
-            sample_directories_wolff[lattice_length_index], temperatures, lattice_length ** 2,
-            number_of_equilibration_iterations)
-        _ = get_observable_autocorrelation_vs_temperature(
-            "potential", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
-            temperatures, lattice_length ** 2, number_of_equilibration_iterations)
         _ = get_observable_autocorrelation_vs_temperature(
             "magnetic_density", metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
             temperatures, lattice_length ** 2, number_of_equilibration_iterations)
@@ -81,16 +70,43 @@ def main(number_of_system_sizes=3):
         _ = get_observable_autocorrelation_vs_temperature(
             "potential", metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
             temperatures, lattice_length ** 2, number_of_equilibration_iterations)
+        _ = get_observable_autocorrelation_vs_temperature(
+            "magnetic_density", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
+            temperatures, lattice_length ** 2, number_of_equilibration_iterations)
+        magnetic_norm_density_acf_vs_temp_wolff = get_observable_autocorrelation_vs_temperature(
+            "magnetic_norm_density", wolff_mediator, output_directory,
+            sample_directories_wolff[lattice_length_index], temperatures, lattice_length ** 2,
+            number_of_equilibration_iterations)
+        _ = get_observable_autocorrelation_vs_temperature(
+            "potential", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
+            temperatures, lattice_length ** 2, number_of_equilibration_iterations)
+
+        magnetic_norm_density_acf_vs_temp_metrop /= magnetic_norm_density_acf_vs_temp_metrop[:, 0, None]
+        magnetic_norm_density_acf_vs_temp_wolff /= magnetic_norm_density_acf_vs_temp_wolff[:, 0, None]
 
         if lattice_length_index == len(lattice_lengths) - 1:
             for temperature_index in acf_temperatures_indices:
-                axes[0].plot(
-                    magnetic_norm_density_acf_vs_temp_metrop[temperature_index, :100] /
-                    magnetic_norm_density_acf_vs_temp_metrop[temperature_index, 0],
-                    marker=".", markersize=8, color=temperature_colors[temperature_index], linestyle="--",
-                    label=fr"$1 / (\beta J)$ = {temperatures[temperature_index]:.02}")
+                axes[0].plot(magnetic_norm_density_acf_vs_temp_metrop[temperature_index, :100],
+                             marker=".", markersize=8, color=temperature_colors[temperature_index], linestyle="--",
+                             label=fr"$1 / (\beta J)$ = {temperatures[temperature_index]:.02}")
 
-    legends = [axes[0].legend(loc="upper right", fontsize=12), axes[1].legend(loc="lower left", fontsize=12)]
+        correlation_times = []
+        for temperature_index, temperature in enumerate(temperatures):
+            max_acf_index = min(next(index for index, value in enumerate(
+                magnetic_norm_density_acf_vs_temp_metrop[temperature_index]) if value < 0.1), 2)
+            if magnetic_norm_density_acf_vs_temp_metrop[temperature_index, max_acf_index] < 0.0:
+                max_acf_index = 1
+            correlation_times.append(
+                - max_acf_index / np.log(magnetic_norm_density_acf_vs_temp_metrop[temperature_index, max_acf_index]))
+            '''exponential_fit = np.polyfit(np.arange(max_acf_index),
+            np.log(magnetic_norm_density_acf_vs_temp_metrop[temperature_index, :max_acf_index]), 1)
+            print(exponential_fit)'''
+
+        axes[1].plot(reduced_temperatures, correlation_times, marker=".", markersize=8,
+                     color=system_size_colors[lattice_length_index], linestyle="None",
+                     label=fr"$N$ = {lattice_length}x{lattice_length}")
+
+    legends = [axes[0].legend(loc="upper right", fontsize=12), axes[1].legend(loc="upper left", fontsize=12)]
     [legend.get_frame().set_edgecolor("k") for legend in legends]
     [legend.get_frame().set_lw(3) for legend in legends]
     fig.savefig(f"{output_directory}/2d_ising_model_magnetic_fluctuation_acf.pdf", bbox_inches="tight")
