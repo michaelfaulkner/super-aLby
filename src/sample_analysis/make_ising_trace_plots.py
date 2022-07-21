@@ -18,7 +18,6 @@ parsing = importlib.import_module("base.parsing")
 def main(number_of_system_sizes=3):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
-    # lattice_lengths = [4 + index * 4 for index in range(number_of_system_sizes)]
     config_file_4x4_wolff = ["config_files/sampling_algos/ising_figures/4x4_wolff.ini"]
     config_file_4x4_metrop = ["config_files/sampling_algos/ising_figures/4x4_metropolis.ini"]
     (wolff_mediator, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
@@ -27,7 +26,6 @@ def main(number_of_system_sizes=3):
     output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
     sample_directory_wolff = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths][-1]
     sample_directory_metrop = [f"{output_directory}/{length}x{length}_metropolis" for length in lattice_lengths][-1]
-
 
     max_lattice_length = lattice_lengths[-1]
     transition_temperature = 2.0 / math.log(1 + 2 ** 0.5)
@@ -97,8 +95,9 @@ if __name__ == "__main__":
               "greater than 0 and less than 6 (default value is 5).")
         chosen_number_of_system_sizes = int(sys.argv[1])
         if chosen_number_of_system_sizes < 1 or chosen_number_of_system_sizes > 4:
-            raise Exception("InterfaceError: chosen_number_of_system_sizes must be an integer greater than 0 and less "
-                            "than 6 (default value is 5).")
+            raise Exception(
+                "InterfaceError: chosen_number_of_system_sizes must be an integer greater than 0 and less "
+                "than 6 (default value is 5).")
         main(chosen_number_of_system_sizes)
     else:
         print("No positional arguments provided.  None are required but you may provide chosen_number_of_system_sizes, "

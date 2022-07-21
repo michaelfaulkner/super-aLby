@@ -8,8 +8,6 @@ import os
 import sample_getter
 import sys
 
-from itertools import cycle, islice
-
 # Add the directory that contains the module plotting_functions to sys.path
 this_directory = os.path.dirname(os.path.abspath(__file__))
 src_directory = os.path.abspath(this_directory + "/../")
@@ -21,7 +19,6 @@ parsing = importlib.import_module("base.parsing")
 def main(number_of_system_sizes=3):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
-    # lattice_lengths = [4 + index * 4 for index in range(number_of_system_sizes)]
     config_file_4x4_wolff = ["config_files/sampling_algos/ising_figures/4x4_wolff.ini"]
     config_file_4x4_metrop = ["config_files/sampling_algos/ising_figures/4x4_metropolis.ini"]
     (wolff_mediator, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
@@ -54,10 +51,9 @@ def main(number_of_system_sizes=3):
     axes[0].set_xlim([-1.0, 51.0]), axes[0].set_ylim([0.09, 1.1])  # 0.049787068368 ~= e^(-3)
     fig.text(0.43, 0.125, "(a)", fontsize=20), fig.text(0.945, 0.88, "(b)", fontsize=20)
 
-    system_size_colors = ["black", "red", "blue", "green", "yellow", "cyan", "magenta"][:number_of_system_sizes]
+    system_size_colors = ["black", "red", "blue", "green", "tab:brown", "cyan", "magenta"][:number_of_system_sizes]
     system_size_colors.reverse()
-    temperature_colors = ["black", "red", "blue", "green", "yellow", "cyan", "magenta"]
-    temperature_colors = list(islice(cycle(temperature_colors), len(temperatures)))
+    temperature_colors = ["black", "red", "blue", "green", "tab:brown", "cyan", "magenta"]
 
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
         _ = get_observable_autocorrelation_vs_temperature(
@@ -83,10 +79,12 @@ def main(number_of_system_sizes=3):
         magnetic_norm_density_acf_vs_temp_wolff /= magnetic_norm_density_acf_vs_temp_wolff[:, 0, None]
 
         if lattice_length_index == len(lattice_lengths) - 1:
+            count = 0
             for temperature_index in acf_temperatures_indices:
                 axes[0].plot(magnetic_norm_density_acf_vs_temp_metrop[temperature_index, :100],
-                             marker=".", markersize=8, color=temperature_colors[temperature_index], linestyle="--",
+                             marker=".", markersize=8, color=temperature_colors[count], linestyle="--",
                              label=fr"$1 / (\beta J)$ = {temperatures[temperature_index]:.02}")
+                count += 1
 
         metrop_correlation_times, wolff_correlation_times = [], []
         for temperature_index, temperature in enumerate(temperatures):

@@ -19,7 +19,6 @@ parsing = importlib.import_module("base.parsing")
 def main(number_of_system_sizes=3):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
-    # lattice_lengths = [4 + index * 4 for index in range(number_of_system_sizes)]
     config_file_4x4 = ["config_files/sampling_algos/ising_figures/4x4_wolff.ini"]
     (mediator, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
      number_of_observations, _, _) = helper_methods.get_basic_config_data(config_file_4x4)
@@ -60,7 +59,7 @@ def main(number_of_system_sizes=3):
     axes_2[1].set_xlim([0.4, 1.625]), axes_2[1].set_ylim([-0.025, 1.05])
     axes_2[0].text(1.525, 2.01, "(a)", fontsize=20), axes_2[1].text(1.525, 0.96, "(b)", fontsize=20)
 
-    system_size_colors = ["black", "red", "blue", "green", "yellow", "cyan", "magenta"][:number_of_system_sizes]
+    system_size_colors = ["black", "red", "blue", "green", "tab:brown", "cyan", "magenta"][:number_of_system_sizes]
     system_size_colors.reverse()
 
     """plot analytical solutions"""
@@ -79,8 +78,8 @@ def main(number_of_system_sizes=3):
                            linestyle="-", linewidth=2.0)
     axes_2[1].plot(continuous_temperatures / transition_temperature, onsager_yang_mag_density, color="black",
                    linestyle="-", linewidth=2.0, label=r"$N \to \infty$")
-    fig_1.savefig(f"{output_directory}/2d_ising_model_spec_heat_and_mag_norm_density_vs_temperature_analytical_"
-                  f"solutions.pdf", bbox_inches="tight")
+    fig_1.savefig(f"{output_directory}/2d_ising_model_thermodynamic_specific_heat_and_spontaneous_magnetic_density_vs_"
+                  f"temperature.pdf", bbox_inches="tight")
 
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
         _, _ = get_observable_mean_and_error_vs_temperature(
@@ -193,8 +192,9 @@ if __name__ == "__main__":
               "greater than 0 and less than 6 (default value is 5).")
         chosen_number_of_system_sizes = int(sys.argv[1])
         if chosen_number_of_system_sizes < 1 or chosen_number_of_system_sizes > 4:
-            raise Exception("InterfaceError: chosen_number_of_system_sizes must be an integer greater than 0 and less "
-                            "than 6 (default value is 5).")
+            raise Exception(
+                "InterfaceError: chosen_number_of_system_sizes must be an integer greater than 0 and less "
+                "than 6 (default value is 5).")
         main(chosen_number_of_system_sizes)
     else:
         print("No positional arguments provided.  None are required but you may provide chosen_number_of_system_sizes, "
