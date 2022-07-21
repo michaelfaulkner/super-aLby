@@ -62,24 +62,22 @@ def main(number_of_system_sizes=3):
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
         _ = get_observable_autocorrelation_vs_temperature(
             "magnetic_density", metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-            temperatures, lattice_length ** 2, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations)
         magnetic_norm_density_acf_vs_temp_metrop = get_observable_autocorrelation_vs_temperature(
-            "magnetic_norm_density", metrop_mediator, output_directory,
-            sample_directories_metrop[lattice_length_index], temperatures, lattice_length ** 2,
-            number_of_equilibration_iterations)
+            "magnetic_norm_density", metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
+            temperatures, lattice_length, number_of_equilibration_iterations)
         _ = get_observable_autocorrelation_vs_temperature(
             "potential", metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-            temperatures, lattice_length ** 2, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations)
         _ = get_observable_autocorrelation_vs_temperature(
             "magnetic_density", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
-            temperatures, lattice_length ** 2, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations)
         magnetic_norm_density_acf_vs_temp_wolff = get_observable_autocorrelation_vs_temperature(
-            "magnetic_norm_density", wolff_mediator, output_directory,
-            sample_directories_wolff[lattice_length_index], temperatures, lattice_length ** 2,
-            number_of_equilibration_iterations)
+            "magnetic_norm_density", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
+            temperatures, lattice_length, number_of_equilibration_iterations)
         _ = get_observable_autocorrelation_vs_temperature(
             "potential", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
-            temperatures, lattice_length ** 2, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations)
 
         magnetic_norm_density_acf_vs_temp_metrop /= magnetic_norm_density_acf_vs_temp_metrop[:, 0, None]
         magnetic_norm_density_acf_vs_temp_wolff /= magnetic_norm_density_acf_vs_temp_wolff[:, 0, None]
@@ -121,20 +119,20 @@ def main(number_of_system_sizes=3):
     fig.savefig(f"{output_directory}/2d_ising_model_magnetic_fluctuation_acf.pdf", bbox_inches="tight")
 
 
-def get_observable_autocorrelation_vs_temperature(observable_string, config_file_mediator, output_directory,
+def get_observable_autocorrelation_vs_temperature(observable_string, mediator, output_directory,
                                                   sample_directory, temperatures, lattice_length,
                                                   number_of_equilibration_iterations, thinning_level=None):
     try:
         return np.load(
-            f"{output_directory}/{lattice_length}x{lattice_length}_zero_field_ising_model_{observable_string}_"
-            f"autocorrelation_vs_temperature_{config_file_mediator.replace('_mediator', '')}_algorithm.npy")
+            f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_autocorrelation_vs_"
+            f"temperature_{mediator.replace('_mediator', '')}_algorithm.npy")
     except IOError:
         get_sample_method = getattr(sample_getter, "get_" + observable_string)
         acf_vs_temperature = np.array([get_autocorrelation(get_sample_method(
             sample_directory, temperature, temperature_index, lattice_length ** 2, number_of_equilibration_iterations,
             thinning_level)) for temperature_index, temperature in enumerate(temperatures)])
-        np.save(f"{output_directory}/{lattice_length}x{lattice_length}_zero_field_ising_model_{observable_string}_"
-                f"autocorrelation_vs_temperature_{config_file_mediator.replace('_mediator', '')}_algorithm.npy",
+        np.save(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_autocorrelation_"
+                f"vs_temperature_{mediator.replace('_mediator', '')}_algorithm.npy",
                 acf_vs_temperature)
     return acf_vs_temperature
 

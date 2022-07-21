@@ -20,11 +20,15 @@ def main(number_of_system_sizes=3):
     lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
     # lattice_lengths = [4 + index * 4 for index in range(number_of_system_sizes)]
     config_file_4x4_wolff = ["config_files/sampling_algos/ising_figures/4x4_wolff.ini"]
-    (_, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
+    config_file_4x4_metrop = ["config_files/sampling_algos/ising_figures/4x4_metropolis.ini"]
+    (wolff_mediator, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
      number_of_observations, _, _) = helper_methods.get_basic_config_data(config_file_4x4_wolff)
+    metrop_mediator = helper_methods.get_basic_config_data(config_file_4x4_metrop)[0]
     output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
     sample_directory_wolff = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths][-1]
     sample_directory_metrop = [f"{output_directory}/{length}x{length}_metropolis" for length in lattice_lengths][-1]
+
+
     max_lattice_length = lattice_lengths[-1]
     transition_temperature = 2.0 / math.log(1 + 2 ** 0.5)
     temperatures = np.array(temperatures)
@@ -52,33 +56,33 @@ def main(number_of_system_sizes=3):
     [axis.set_ylim([-1.15, 1.15]) for axis in axes.flatten()]
 
     plot_magnetic_density_vs_time(
-        axes[0, 0], "metropolis", output_directory, sample_directory_metrop, temperatures[0], 0, max_lattice_length,
+        axes[0, 0], metrop_mediator, output_directory, sample_directory_metrop, temperatures[0], 0, max_lattice_length,
         number_of_equilibration_iterations)
     plot_magnetic_density_vs_time(
-        axes[0, 1], "wolff", output_directory, sample_directory_wolff, temperatures[0], 0, max_lattice_length,
+        axes[0, 1], wolff_mediator, output_directory, sample_directory_wolff, temperatures[0], 0, max_lattice_length,
         number_of_equilibration_iterations)
     plot_magnetic_density_vs_time(
-        axes[1, 0], "metropolis", output_directory, sample_directory_metrop, temperature_near_critical_point,
+        axes[1, 0], metrop_mediator, output_directory, sample_directory_metrop, temperature_near_critical_point,
         temperature_near_critical_point_index, max_lattice_length, number_of_equilibration_iterations)
     plot_magnetic_density_vs_time(
-        axes[1, 1], "wolff", output_directory, sample_directory_wolff, temperature_near_critical_point,
+        axes[1, 1], wolff_mediator, output_directory, sample_directory_wolff, temperature_near_critical_point,
         temperature_near_critical_point_index, max_lattice_length, number_of_equilibration_iterations)
-    fig.savefig(f"{output_directory}/{max_lattice_length}x{max_lattice_length}_ising_model_mag_density_vs_time_metrop_"
-                f"and_wolff.pdf", bbox_inches="tight")
+    fig.savefig(f"{output_directory}/{max_lattice_length}x{max_lattice_length}_ising_model_magnetic_density_vs_time_"
+                f"metropolis_and_wolff.pdf", bbox_inches="tight")
 
 
-def plot_magnetic_density_vs_time(axis, algorithm_string, output_directory, sample_directory, temperature,
+def plot_magnetic_density_vs_time(axis, mediator, output_directory, sample_directory, temperature,
                                   temperature_index, lattice_length, number_of_equilibration_iterations):
     try:
         reduced_magnetic_density_sample = np.load(
             f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_temperature_{temperature_index:02d}_"
-            f"{algorithm_string}_algorithm_reduced_magnetic_density_sample.npy")
+            f"reduced_magnetic_density_sample_{mediator.replace('_mediator', '')}_algorithm.npy")
     except IOError:
         reduced_magnetic_density_sample = sample_getter.get_magnetic_density(
             sample_directory, temperature, temperature_index, lattice_length ** 2,
             number_of_equilibration_iterations)[:150].flatten()
-        np.save(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_temperature_"
-                f"{temperature_index:02d}_{algorithm_string}_algorithm_reduced_magnetic_density_sample.npy",
+        np.save(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_temperature_{temperature_index:02d}_"
+                f"reduced_magnetic_density_sample_{mediator.replace('_mediator', '')}_algorithm.npy",
                 reduced_magnetic_density_sample)
     axis.plot(reduced_magnetic_density_sample, color="k", linewidth=1, linestyle="-")
 

@@ -65,7 +65,7 @@ def main(number_of_system_sizes=3):
 
     """plot analytical solutions"""
     (continuous_temperatures,
-     onsager_specific_heat_density) = get_onsager_specific_heat_temperatures_and_density(output_directory)
+     onsager_specific_heat_density) = get_thermodynamic_specific_heat_density_vs_temperature(output_directory)
     axis_1.plot(continuous_temperatures / transition_temperature, onsager_specific_heat_density, color="black",
                 linestyle="-", linewidth=2.0)
     axes_2[0].plot(continuous_temperatures / transition_temperature, onsager_specific_heat_density,
@@ -85,23 +85,23 @@ def main(number_of_system_sizes=3):
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
         _, _ = get_observable_mean_and_error_vs_temperature(
             "magnetic_density", mediator, output_directory, sample_directories[lattice_length_index], temperatures,
-            lattice_length ** 2, number_of_equilibration_iterations)
+            lattice_length, number_of_equilibration_iterations)
         (magnetic_norm_density_vs_temp,
          magnetic_norm_density_errors_vs_temp) = get_observable_mean_and_error_vs_temperature(
             "magnetic_norm_density", mediator, output_directory, sample_directories[lattice_length_index], temperatures,
-            lattice_length ** 2, number_of_equilibration_iterations)
+            lattice_length, number_of_equilibration_iterations)
         _, _ = get_observable_mean_and_error_vs_temperature(
             "magnetic_susceptibility", mediator, output_directory, sample_directories[lattice_length_index],
-            temperatures, lattice_length ** 2, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations)
         _, _ = get_observable_mean_and_error_vs_temperature(
             "magnetic_norm_susceptibility", mediator, output_directory, sample_directories[lattice_length_index],
-            temperatures, lattice_length ** 2, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations)
         _, _ = get_observable_mean_and_error_vs_temperature(
             "potential", mediator, output_directory, sample_directories[lattice_length_index], temperatures,
-            lattice_length ** 2, number_of_equilibration_iterations)
+            lattice_length, number_of_equilibration_iterations)
         (specific_heat_vs_temp, specific_heat_errors_vs_temp) = get_observable_mean_and_error_vs_temperature(
             "specific_heat", mediator, output_directory, sample_directories[lattice_length_index], temperatures,
-            lattice_length ** 2, number_of_equilibration_iterations)
+            lattice_length, number_of_equilibration_iterations)
         axes_2[0].errorbar(reduced_temperatures, specific_heat_vs_temp / lattice_length ** 2,
                            specific_heat_errors_vs_temp / lattice_length ** 2, marker=".", markersize=8,
                            color=system_size_colors[lattice_length_index], linestyle="None",
@@ -113,14 +113,14 @@ def main(number_of_system_sizes=3):
     legends = [axes_2[0].legend(loc="upper left", fontsize=12), axes_2[1].legend(loc="lower left", fontsize=12)]
     [legend.get_frame().set_edgecolor("k") for legend in legends]
     [legend.get_frame().set_lw(3) for legend in legends]
-    fig_2.savefig(f"{output_directory}/2d_ising_model_spec_heat_and_mag_norm_density_vs_temperature_"
+    fig_2.savefig(f"{output_directory}/2d_ising_model_expected_specific_heat_and_magnetic_norm_density_vs_temperature_"
                   f"{mediator.replace('_mediator', '')}_simulations.pdf", bbox_inches="tight")
 
 
-def get_onsager_specific_heat_temperatures_and_density(output_directory, no_of_temperature_integration_values=1000,
-                                                       no_of_x_integration_values=1000, max_temperature=4.0):
+def get_thermodynamic_specific_heat_density_vs_temperature(output_directory, no_of_temperature_integration_values=1000,
+                                                           no_of_x_integration_values=1000, max_temperature=4.0):
     try:
-        return np.load(f"{output_directory}/2d_ising_model_onsager_specific_heat_density_vs_temperature_"
+        return np.load(f"{output_directory}/2d_ising_model_thermodynamic_specific_heat_density_vs_temperature_"
                        f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy")
     except IOError:
         delta_temperature = max_temperature / no_of_temperature_integration_values
@@ -143,41 +143,40 @@ def get_onsager_specific_heat_temperatures_and_density(output_directory, no_of_t
         expected_potential_density = - 2.0 * np.tanh(2.0 * inverse_temperatures) - dgamma_2_dbeta
         specific_heat_density = np.diff(expected_potential_density) / delta_temperature
         specific_heat_temperatures = temperatures[:len(temperatures) - 1]
-        np.save(f"{output_directory}/2d_ising_model_onsager_free_energy_density_vs_temperature_"
+        np.save(f"{output_directory}/2d_ising_model_thermodynamic_free_energy_density_vs_temperature_"
                 f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
                 np.array([temperatures, free_energy_density]))
-        np.save(f"{output_directory}/2d_ising_model_onsager_expected_potential_density_vs_temperature_"
+        np.save(f"{output_directory}/2d_ising_model_thermodynamic_potential_density_vs_temperature_"
                 f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
                 np.array([temperatures, expected_potential_density]))
-        np.save(f"{output_directory}/2d_ising_model_onsager_specific_heat_density_vs_temperature_"
+        np.save(f"{output_directory}/2d_ising_model_thermodynamic_specific_heat_density_vs_temperature_"
                 f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
                 np.array([specific_heat_temperatures, specific_heat_density]))
         return np.array([specific_heat_temperatures, specific_heat_density])
 
 
-def get_observable_mean_and_error_vs_temperature(observable_string, config_file_mediator, output_directory,
-                                                 sample_directory, temperatures, number_of_particles,
+def get_observable_mean_and_error_vs_temperature(observable_string, mediator, output_directory,
+                                                 sample_directory, temperatures, lattice_length,
                                                  number_of_equilibration_iterations, thinning_level=None):
     try:
-        with open(
-                f"{output_directory}/2d_ising_model_{observable_string}_vs_temperature_"
-                f"{config_file_mediator.replace('_mediator', '')}_{number_of_particles}_sites.tsv", "r") as output_file:
+        with open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_expected_{observable_string}_vs_"
+                  f"temperature_{mediator.replace('_mediator', '')}.tsv", "r") as output_file:
             output_file_sans_header = np.array([np.fromstring(line, dtype=float, sep='\t') for line in output_file
                                                 if not line.startswith('#')]).transpose()
             means_vs_temperature, errors_vs_temperature = output_file_sans_header[1], output_file_sans_header[2]
     except IOError:
         output_file = open(
-            f"{output_directory}/2d_ising_model_{observable_string}_vs_temperature_"
-            f"{config_file_mediator.replace('_mediator', '')}_{number_of_particles}_sites.tsv", "w")
+            f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_expected_{observable_string}_vs_"
+            f"temperature_{mediator.replace('_mediator', '')}.tsv", "w")
         output_file.write("# temperature".ljust(30) + observable_string.ljust(35) + observable_string + " error" + "\n")
         means_vs_temperature, errors_vs_temperature = [], []
         get_sample_method = getattr(sample_getter, "get_" + observable_string)
         for temperature_index, temperature in enumerate(temperatures):
             sample_mean, sample_error = get_sample_mean_and_error(get_sample_method(
-                sample_directory, temperature, temperature_index, number_of_particles,
+                sample_directory, temperature, temperature_index, lattice_length ** 2,
                 number_of_equilibration_iterations, thinning_level))
-            output_file.write(
-                f"{temperature:.14e}".ljust(30) + f"{sample_mean:.14e}".ljust(35) + f"{sample_error:.14e}" + "\n")
+            output_file.write(f"{temperature:.14e}".ljust(30) + f"{sample_mean:.14e}".ljust(35) +
+                              f"{sample_error:.14e}" + "\n")
             means_vs_temperature.append(sample_mean)
             errors_vs_temperature.append(sample_error)
         output_file.close()
