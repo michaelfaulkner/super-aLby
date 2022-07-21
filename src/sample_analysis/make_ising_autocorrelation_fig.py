@@ -52,7 +52,7 @@ def main(number_of_system_sizes=3):
     axes[1].set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3)
     axes[1].set_ylabel(r"$\tau_m^{\rm M/W}$", fontsize=20, labelpad=1)
     axes[0].set_xlim([-1.0, 51.0]), axes[0].set_ylim([0.09, 1.1])  # 0.049787068368 ~= e^(-3)
-    # axes[0].text(1.63, 2.01, "(a)", fontsize=20), axes_2[1].text(1.63, 0.96, "(b)", fontsize=20)
+    fig.text(0.43, 0.125, "(a)", fontsize=20), fig.text(0.945, 0.88, "(b)", fontsize=20)
 
     system_size_colors = ["black", "red", "blue", "green", "yellow", "cyan", "magenta"][:number_of_system_sizes]
     system_size_colors.reverse()
