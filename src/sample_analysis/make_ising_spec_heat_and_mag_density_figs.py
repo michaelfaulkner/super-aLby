@@ -3,6 +3,7 @@ import importlib
 import math
 import matplotlib
 import matplotlib.pyplot as plt
+import multiprocessing as mp
 import numpy as np
 import os
 import sample_getter
@@ -21,7 +22,8 @@ def main(number_of_system_sizes=3):
     lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
     config_file_4x4 = ["config_files/sampling_algos/ising_figures/4x4_wolff.ini"]
     (mediator, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
-     number_of_observations, _, _) = helper_methods.get_basic_config_data(config_file_4x4)
+     number_of_observations, _, _, number_of_jobs, max_number_of_cpus) = helper_methods.get_basic_config_data(
+        config_file_4x4)
     output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
     sample_directories = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]
     transition_temperature = 2.0 / math.log(1 + 2 ** 0.5)
@@ -81,26 +83,34 @@ def main(number_of_system_sizes=3):
     fig_1.savefig(f"{output_directory}/2d_ising_model_thermodynamic_specific_heat_and_spontaneous_magnetic_density_vs_"
                   f"temperature.pdf", bbox_inches="tight")
 
+    if number_of_jobs > 1:
+        number_of_cpus = mp.cpu_count()
+        pool = mp.Pool(min(number_of_cpus, max_number_of_cpus))
+    else:
+        pool = None
+
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
         _, _ = get_observable_mean_and_error_vs_temperature(
             "magnetic_density", mediator, output_directory, sample_directories[lattice_length_index], temperatures,
-            lattice_length, number_of_equilibration_iterations)
+            lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs, pool)
         (magnetic_norm_density_vs_temp,
          magnetic_norm_density_errors_vs_temp) = get_observable_mean_and_error_vs_temperature(
             "magnetic_norm_density", mediator, output_directory, sample_directories[lattice_length_index], temperatures,
-            lattice_length, number_of_equilibration_iterations)
+            lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs, pool)
         _, _ = get_observable_mean_and_error_vs_temperature(
             "magnetic_susceptibility", mediator, output_directory, sample_directories[lattice_length_index],
-            temperatures, lattice_length, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs,
+            pool)
         _, _ = get_observable_mean_and_error_vs_temperature(
             "magnetic_norm_susceptibility", mediator, output_directory, sample_directories[lattice_length_index],
-            temperatures, lattice_length, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs,
+            pool)
         _, _ = get_observable_mean_and_error_vs_temperature(
             "potential", mediator, output_directory, sample_directories[lattice_length_index], temperatures,
-            lattice_length, number_of_equilibration_iterations)
+            lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs, pool)
         (specific_heat_vs_temp, specific_heat_errors_vs_temp) = get_observable_mean_and_error_vs_temperature(
             "specific_heat", mediator, output_directory, sample_directories[lattice_length_index], temperatures,
-            lattice_length, number_of_equilibration_iterations)
+            lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs, pool)
         axes_2[0].errorbar(reduced_temperatures, specific_heat_vs_temp / lattice_length ** 2,
                            specific_heat_errors_vs_temp / lattice_length ** 2, marker=".", markersize=8,
                            color=system_size_colors[lattice_length_index], linestyle="None",
@@ -156,24 +166,34 @@ def get_thermodynamic_specific_heat_density_vs_temperature(output_directory, no_
 
 def get_observable_mean_and_error_vs_temperature(observable_string, mediator, output_directory,
                                                  sample_directory, temperatures, lattice_length,
-                                                 number_of_equilibration_iterations, thinning_level=None):
+                                                 number_of_equilibration_iterations, number_of_observations,
+                                                 number_of_jobs, pool, thinning_level=None):
     try:
         with open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_expected_{observable_string}_vs_"
-                  f"temperature_{mediator.replace('_mediator', '')}.tsv", "r") as output_file:
+                  f"temperature_{mediator.replace('_mediator', '')}_{number_of_jobs}x{number_of_observations}_"
+                  f"observations.tsv", "r") as output_file:
             output_file_sans_header = np.array([np.fromstring(line, dtype=float, sep='\t') for line in output_file
                                                 if not line.startswith('#')]).transpose()
             means_vs_temperature, errors_vs_temperature = output_file_sans_header[1], output_file_sans_header[2]
     except IOError:
-        output_file = open(
-            f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_expected_{observable_string}_vs_"
-            f"temperature_{mediator.replace('_mediator', '')}.tsv", "w")
+        output_file = open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_expected_"
+                           f"{observable_string}_vs_temperature_{mediator.replace('_mediator', '')}_{number_of_jobs}x"
+                           f"{number_of_observations}_observations.tsv", "w")
         output_file.write("# temperature".ljust(30) + observable_string.ljust(35) + observable_string + " error" + "\n")
         means_vs_temperature, errors_vs_temperature = [], []
         get_sample_method = getattr(sample_getter, "get_" + observable_string)
         for temperature_index, temperature in enumerate(temperatures):
-            sample_mean, sample_error = get_sample_mean_and_error(get_sample_method(
-                sample_directory, temperature, temperature_index, lattice_length ** 2,
-                number_of_equilibration_iterations, thinning_level))
+            if number_of_jobs == 1:
+                sample_mean, sample_error = get_sample_mean_and_error(get_sample_method(
+                    sample_directory, temperature, temperature_index, lattice_length ** 2,
+                    number_of_equilibration_iterations, thinning_level))
+            else:
+                sample_means_and_errors = np.transpose(
+                    np.array(pool.starmap(get_sample_mean_and_error, [[get_sample_method(
+                        f"{sample_directory}/job_{job_number:02d}", temperature, temperature_index, lattice_length ** 2,
+                        number_of_equilibration_iterations, thinning_level)] for job_number in range(number_of_jobs)])))
+                sample_mean = np.mean(sample_means_and_errors[0])
+                sample_error = np.linalg.norm(sample_means_and_errors[1])
             output_file.write(f"{temperature:.14e}".ljust(30) + f"{sample_mean:.14e}".ljust(35) +
                               f"{sample_error:.14e}" + "\n")
             means_vs_temperature.append(sample_mean)

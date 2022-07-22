@@ -23,7 +23,7 @@ def main(config_file_string):
     """nb, argument of parsing.parse_options() must be of type Sequence[str]"""
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
-     _, number_of_particles, _) = helper_methods.get_basic_config_data(config_file_string)
+     _, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
     if potential == "ising_potential":
         if not (len(temperatures) == 2 and temperatures[0] == 1.2 and temperatures[1] == 3.0):
             raise ValueError("IsingPotential reference data only available for models for which two sampling "

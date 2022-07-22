@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
 from helper_methods import get_temperatures
 from potential.potential import Potential
+from run import get_ordinal
 from sampler.sampler import Sampler
 from typing import Sequence
 
@@ -146,8 +147,8 @@ class Mediator(metaclass=ABCMeta):
             print("---------------------------------------------")
         else:
             print("--------------------------------------------------")
-            print(f"Temperature = {temperature:.4f} ({self._get_ordinal(temperature_index + 1)} of "
-                  f"{len(self._temperatures)} temperature values)")
+            print(f"Temperature = {temperature:.4f} ({get_ordinal(temperature_index + 1)} of {len(self._temperatures)} "
+                  f"temperature values)")
             print("--------------------------------------------------")
 
     @abstractmethod
@@ -173,8 +174,3 @@ class Mediator(metaclass=ABCMeta):
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
         raise NotImplementedError
-
-    @staticmethod
-    def _get_ordinal(integer):
-        """Returns a string that states the ordinal of the integer provided."""
-        return str(integer) + {1: "st", 2: "nd", 3: "rd"}.get(4 if 10 <= integer % 100 < 20 else integer % 10, "th")

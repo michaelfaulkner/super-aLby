@@ -1,4 +1,5 @@
 """Helper methods used in the main package and/or some sample analysis script(s)."""
+from base.exceptions import ConfigurationError
 from configparser import NoSectionError
 import importlib
 import os
@@ -60,10 +61,12 @@ def get_basic_config_data(config_file_string):
         except NoSectionError:
             continue
     if potential is None:
-        raise IOError("Mediator not one of EuclideanLeapfrogMediator, ToroidalLeapfrogMediator, "
-                      "LazyToroidalLeapfrogMediator, MetropolisMediator or WolffMediator.")
+        raise ConfigurationError("Mediator not one of EuclideanLeapfrogMediator, ToroidalLeapfrogMediator, "
+                                 "LazyToroidalLeapfrogMediator, MetropolisMediator or WolffMediator.")
     sample_directories = [config.get(strings.to_camel_case(sampler), "output_directory") for sampler in samplers]
     return (config_file_mediator, potential, samplers, sample_directories, temperatures,
             number_of_equilibration_iterations, number_of_observations,
             parsing.get_value(config, "ModelSettings", "number_of_particles"), 
-            parsing.get_value(config, "ModelSettings", "size_of_particle_space"))
+            parsing.get_value(config, "ModelSettings", "size_of_particle_space"),
+            parsing.get_value(config, "Run", "number_of_jobs"),
+            parsing.get_value(config, "Run", "max_number_of_cpus"))

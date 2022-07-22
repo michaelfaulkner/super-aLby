@@ -3,6 +3,7 @@ import importlib
 import math
 import matplotlib
 import matplotlib.pyplot as plt
+import multiprocessing as mp
 import numpy as np
 import os
 import sample_getter
@@ -22,7 +23,8 @@ def main(number_of_system_sizes=3):
     config_file_4x4_wolff = ["config_files/sampling_algos/ising_figures/4x4_wolff.ini"]
     config_file_4x4_metrop = ["config_files/sampling_algos/ising_figures/4x4_metropolis.ini"]
     (wolff_mediator, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
-     number_of_observations, _, _) = helper_methods.get_basic_config_data(config_file_4x4_wolff)
+     number_of_observations, _, _, number_of_jobs, max_number_of_cpus) = helper_methods.get_basic_config_data(
+        config_file_4x4_wolff)
     metrop_mediator = helper_methods.get_basic_config_data(config_file_4x4_metrop)[0]
     output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
     sample_directories_wolff = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]
@@ -55,33 +57,45 @@ def main(number_of_system_sizes=3):
     system_size_colors.reverse()
     temperature_colors = ["black", "red", "blue", "green", "tab:brown", "cyan", "magenta"]
 
+    if number_of_jobs > 1:
+        number_of_cpus = mp.cpu_count()
+        pool = mp.Pool(min(number_of_cpus, max_number_of_cpus))
+    else:
+        pool = None
+
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
         _ = get_observable_autocorrelation_vs_temperature(
             "magnetic_density", metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-            temperatures, lattice_length, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs,
+            pool)
         magnetic_norm_density_acf_vs_temp_metrop = get_observable_autocorrelation_vs_temperature(
             "magnetic_norm_density", metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-            temperatures, lattice_length, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs,
+            pool)
         _ = get_observable_autocorrelation_vs_temperature(
             "potential", metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-            temperatures, lattice_length, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs,
+            pool)
         _ = get_observable_autocorrelation_vs_temperature(
             "magnetic_density", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
-            temperatures, lattice_length, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs,
+            pool)
         magnetic_norm_density_acf_vs_temp_wolff = get_observable_autocorrelation_vs_temperature(
             "magnetic_norm_density", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
-            temperatures, lattice_length, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs,
+            pool)
         _ = get_observable_autocorrelation_vs_temperature(
             "potential", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
-            temperatures, lattice_length, number_of_equilibration_iterations)
+            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs,
+            pool)
 
-        magnetic_norm_density_acf_vs_temp_metrop /= magnetic_norm_density_acf_vs_temp_metrop[:, 0, None]
-        magnetic_norm_density_acf_vs_temp_wolff /= magnetic_norm_density_acf_vs_temp_wolff[:, 0, None]
+        magnetic_norm_density_acf_vs_temp_metrop /= magnetic_norm_density_acf_vs_temp_metrop[0, :, 0, None]
+        magnetic_norm_density_acf_vs_temp_wolff /= magnetic_norm_density_acf_vs_temp_wolff[0, :, 0, None]
 
         if lattice_length_index == len(lattice_lengths) - 1:
             count = 0
             for temperature_index in acf_temperatures_indices:
-                axes[0].plot(magnetic_norm_density_acf_vs_temp_metrop[temperature_index, :100],
+                axes[0].plot(magnetic_norm_density_acf_vs_temp_metrop[0, temperature_index, :100],
                              marker=".", markersize=8, color=temperature_colors[count], linestyle="--",
                              label=fr"$1 / (\beta J)$ = {temperatures[temperature_index]:.02}")
                 count += 1
@@ -89,17 +103,17 @@ def main(number_of_system_sizes=3):
         metrop_correlation_times, wolff_correlation_times = [], []
         for temperature_index, temperature in enumerate(temperatures):
             max_acf_index = min(next(index for index, value in enumerate(
-                magnetic_norm_density_acf_vs_temp_metrop[temperature_index]) if value < 0.1), 2)
-            if magnetic_norm_density_acf_vs_temp_metrop[temperature_index, max_acf_index] < 0.0:
+                magnetic_norm_density_acf_vs_temp_metrop[0, temperature_index]) if value < 0.1), 2)
+            if magnetic_norm_density_acf_vs_temp_metrop[0, temperature_index, max_acf_index] < 0.0:
                 max_acf_index = 1
             metrop_correlation_times.append(
-                - max_acf_index / np.log(magnetic_norm_density_acf_vs_temp_metrop[temperature_index, max_acf_index]))
+                - max_acf_index / np.log(magnetic_norm_density_acf_vs_temp_metrop[0, temperature_index, max_acf_index]))
             max_acf_index = min(next(index for index, value in enumerate(
-                magnetic_norm_density_acf_vs_temp_wolff[temperature_index]) if value < 0.1), 2)
-            if magnetic_norm_density_acf_vs_temp_wolff[temperature_index, max_acf_index] < 0.0:
+                magnetic_norm_density_acf_vs_temp_wolff[0, temperature_index]) if value < 0.1), 2)
+            if magnetic_norm_density_acf_vs_temp_wolff[0, temperature_index, max_acf_index] < 0.0:
                 max_acf_index = 1
             wolff_correlation_times.append(
-                - max_acf_index / np.log(magnetic_norm_density_acf_vs_temp_wolff[temperature_index, max_acf_index]))
+                - max_acf_index / np.log(magnetic_norm_density_acf_vs_temp_wolff[0, temperature_index, max_acf_index]))
             '''exponential_fit = np.polyfit(np.arange(max_acf_index),
             np.log(magnetic_norm_density_acf_vs_temp_metrop[temperature_index, :max_acf_index]), 1)
             print(exponential_fit)'''
@@ -114,24 +128,31 @@ def main(number_of_system_sizes=3):
     legends = [axes[0].legend(loc="upper right", fontsize=12), axes[1].legend(loc="upper left", fontsize=8)]
     [legend.get_frame().set_edgecolor("k") for legend in legends]
     [legend.get_frame().set_lw(3) for legend in legends]
-    fig.savefig(f"{output_directory}/2d_ising_model_magnetic_fluctuation_acf.pdf", bbox_inches="tight")
+    fig.savefig(f"{output_directory}/2d_ising_model_magnetic_fluctuation_acf_{number_of_jobs}x{number_of_observations}_"
+                f"observations.pdf", bbox_inches="tight")
 
 
 def get_observable_autocorrelation_vs_temperature(observable_string, mediator, output_directory,
                                                   sample_directory, temperatures, lattice_length,
-                                                  number_of_equilibration_iterations, thinning_level=None):
+                                                  number_of_equilibration_iterations, number_of_observations,
+                                                  number_of_jobs, pool, thinning_level=None):
     try:
-        return np.load(
-            f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_autocorrelation_vs_"
-            f"temperature_{mediator.replace('_mediator', '')}_algorithm.npy")
+        return np.load(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_"
+                       f"autocorrelation_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_{number_of_jobs}x"
+                       f"{number_of_observations}_observations.npy")
     except IOError:
         get_sample_method = getattr(sample_getter, "get_" + observable_string)
-        acf_vs_temperature = np.array([get_autocorrelation(get_sample_method(
-            sample_directory, temperature, temperature_index, lattice_length ** 2, number_of_equilibration_iterations,
-            thinning_level)) for temperature_index, temperature in enumerate(temperatures)])
+        acfs, acf_errors = [], []
+        for temperature_index, temperature in enumerate(temperatures):
+            acf_vs_job = pool.starmap(get_autocorrelation, [[get_sample_method(
+                f"{sample_directory}/job_{job_number:02d}", temperature, temperature_index, lattice_length ** 2,
+                number_of_equilibration_iterations, thinning_level)] for job_number in range(number_of_jobs)])
+            acf, acf_error = np.mean(acf_vs_job, axis=0), np.std(acf_vs_job, axis=0) / number_of_jobs ** 0.5
+            acfs.append(acf), acf_errors.append(acf_error)
+        acf_vs_temperature = np.array([acfs, acf_errors])
         np.save(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_autocorrelation_"
-                f"vs_temperature_{mediator.replace('_mediator', '')}_algorithm.npy",
-                acf_vs_temperature)
+                f"vs_temperature_{mediator.replace('_mediator', '')}_algorithm_{number_of_jobs}x"
+                f"{number_of_observations}_observations.npy", acf_vs_temperature)
     return acf_vs_temperature
 
 

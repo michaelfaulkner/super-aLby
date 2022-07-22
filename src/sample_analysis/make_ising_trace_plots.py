@@ -17,17 +17,18 @@ parsing = importlib.import_module("base.parsing")
 
 def main(number_of_system_sizes=3):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
-    lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
-    config_file_4x4_wolff = ["config_files/sampling_algos/ising_figures/4x4_wolff.ini"]
-    config_file_4x4_metrop = ["config_files/sampling_algos/ising_figures/4x4_metropolis.ini"]
-    (wolff_mediator, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
-     number_of_observations, _, _) = helper_methods.get_basic_config_data(config_file_4x4_wolff)
-    metrop_mediator = helper_methods.get_basic_config_data(config_file_4x4_metrop)[0]
-    output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
-    sample_directory_wolff = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths][-1]
-    sample_directory_metrop = [f"{output_directory}/{length}x{length}_metropolis" for length in lattice_lengths][-1]
+    max_lattice_length = 2 ** (number_of_system_sizes + 1)
+    config_file_wolff = [
+        f"config_files/sampling_algos/ising_figures/{max_lattice_length}x{max_lattice_length}_wolff.ini"]
+    config_file_metrop = [
+        f"config_files/sampling_algos/ising_figures/{max_lattice_length}x{max_lattice_length}_metropolis.ini"]
+    (wolff_mediator, _, samplers, sample_directories_wolff, temperatures, number_of_equilibration_iterations,
+     number_of_observations, _, _, _, _) = helper_methods.get_basic_config_data(config_file_wolff)
+    metrop_mediator = helper_methods.get_basic_config_data(config_file_metrop)[0]
+    output_directory = sample_directories_wolff[0].replace(f"/{max_lattice_length}x{max_lattice_length}_wolff", "")
+    sample_directory_wolff = f"{sample_directories_wolff[0]}/job_00"
+    sample_directory_metrop = f"{output_directory}/{max_lattice_length}x{max_lattice_length}_metropolis/job_00"
 
-    max_lattice_length = lattice_lengths[-1]
     transition_temperature = 2.0 / math.log(1 + 2 ** 0.5)
     temperatures = np.array(temperatures)
     temperature_near_critical_point = np.min(np.delete(temperatures, np.where(temperatures < transition_temperature)))

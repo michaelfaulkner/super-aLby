@@ -15,12 +15,12 @@ try:
         return np.array(laplaces_demon_r_package.ESS(one_dimensional_sample))[0]
 
 
-    def get_sample_mean_and_error(one_dimensional_sample):
+    '''def get_sample_mean_and_error(one_dimensional_sample):
         if len(np.atleast_2d(one_dimensional_sample)) > 1:
             raise Exception("Error: the sample passed to markov_chain_diagnostics.get_sample_mean_and_error() must be "
                             "one (Cartesian) dimensional.")
         sample_mean_and_error = np.array(mcmcse_r_package.mcse(one_dimensional_sample))
-        return [sample_mean_and_error[0, 0], sample_mean_and_error[1, 0]]
+        return [sample_mean_and_error[0, 0], sample_mean_and_error[1, 0]]'''
 
 except (ModuleNotFoundError, ValueError) as _:
     def get_effective_sample_size(_):
@@ -28,8 +28,8 @@ except (ModuleNotFoundError, ValueError) as _:
         return None
 
 
-    def get_sample_mean_and_error(sample):
-        return [np.mean(sample), np.std(sample) / len(sample) ** 0.5]
+def get_sample_mean_and_error(sample):
+    return [np.mean(sample), np.std(sample) / len(sample) ** 0.5]
 
 
 def get_thinned_sample(one_dimensional_sample, thinning_level):
