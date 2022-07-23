@@ -17,7 +17,7 @@ helper_methods = importlib.import_module("helper_methods")
 parsing = importlib.import_module("base.parsing")
 
 
-def main(number_of_system_sizes=3):
+def main(number_of_system_sizes=5):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
     config_file_4x4_wolff = ["config_files/sampling_algos/ising_figures/4x4_wolff.ini"]
@@ -53,9 +53,9 @@ def main(number_of_system_sizes=3):
     axes[0].set_xlim([-1.0, 51.0]), axes[0].set_ylim([0.09, 1.1])  # 0.049787068368 ~= e^(-3)
     fig.text(0.43, 0.125, "(a)", fontsize=20), fig.text(0.945, 0.88, "(b)", fontsize=20)
 
-    system_size_colors = ["black", "red", "blue", "green", "tab:brown", "cyan", "magenta"][:number_of_system_sizes]
+    system_size_colors = ["red", "blue", "green", "tab:brown", "magenta", "indigo"][:number_of_system_sizes]
     system_size_colors.reverse()
-    temperature_colors = ["black", "red", "blue", "green", "tab:brown", "cyan", "magenta"]
+    temperature_colors = ["red", "blue", "green", "tab:brown", "magenta", "indigo", "olive"]
 
     if number_of_jobs > 1:
         number_of_cpus = mp.cpu_count()

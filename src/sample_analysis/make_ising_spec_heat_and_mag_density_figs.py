@@ -17,7 +17,7 @@ helper_methods = importlib.import_module("helper_methods")
 parsing = importlib.import_module("base.parsing")
 
 
-def main(number_of_system_sizes=3):
+def main(number_of_system_sizes=5):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
     config_file_4x4 = ["config_files/sampling_algos/ising_figures/4x4_wolff.ini"]
@@ -61,7 +61,7 @@ def main(number_of_system_sizes=3):
     axes_2[1].set_xlim([0.4, 1.625]), axes_2[1].set_ylim([-0.025, 1.05])
     axes_2[0].text(1.525, 2.01, "(a)", fontsize=20), axes_2[1].text(1.525, 0.96, "(b)", fontsize=20)
 
-    system_size_colors = ["black", "red", "blue", "green", "tab:brown", "cyan", "magenta"][:number_of_system_sizes]
+    system_size_colors = ["red", "blue", "green", "tab:brown", "magenta", "indigo"][:number_of_system_sizes]
     system_size_colors.reverse()
 
     """plot analytical solutions"""

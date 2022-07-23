@@ -15,7 +15,7 @@ helper_methods = importlib.import_module("helper_methods")
 parsing = importlib.import_module("base.parsing")
 
 
-def main(number_of_system_sizes=3):
+def main(number_of_system_sizes=5):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     max_lattice_length = 2 ** (number_of_system_sizes + 1)
     config_file_wolff = [
