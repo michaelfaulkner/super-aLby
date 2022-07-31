@@ -79,12 +79,12 @@ def main(number_of_system_sizes=5):
 
         magnetic_norm_density_acf_vs_temp_metrop /= magnetic_norm_density_acf_vs_temp_metrop[0, :, 0, None]
         magnetic_norm_density_acf_vs_temp_wolff /= magnetic_norm_density_acf_vs_temp_wolff[0, :, 0, None]
-        metrop_integrated_autocorrelation_times = [
-            get_integrated_autocorrelation_time(magnetic_norm_density_acf_vs_temp_metrop[0, temperature_index]) for
-            temperature_index, _ in enumerate(temperatures)]
-        wolff_integrated_autocorrelation_times = [
-            get_integrated_autocorrelation_time(magnetic_norm_density_acf_vs_temp_wolff[0, temperature_index]) for
-            temperature_index, _ in enumerate(temperatures)]
+        metrop_integrated_autocorrelation_times = get_magnetic_norm_integrated_autocorrelation_times_vs_temperature(
+            magnetic_norm_density_acf_vs_temp_metrop[0], metrop_mediator, output_directory, temperatures,
+            lattice_length, number_of_observations, number_of_jobs)
+        wolff_integrated_autocorrelation_times = get_magnetic_norm_integrated_autocorrelation_times_vs_temperature(
+            magnetic_norm_density_acf_vs_temp_wolff[0], wolff_mediator, output_directory, temperatures,
+            lattice_length, number_of_observations, number_of_jobs)
         axis.plot(reduced_temperatures, wolff_integrated_autocorrelation_times, marker="*", markersize=8,
                   color=system_size_colors[lattice_length_index], linestyle="--",
                   label=fr"$N$ = {lattice_length}x{lattice_length} Wolff")
@@ -120,6 +120,31 @@ def get_observable_autocorrelation_vs_temperature(observable_string, mediator, o
                 f"vs_temperature_{mediator.replace('_mediator', '')}_algorithm_{number_of_jobs}x"
                 f"{number_of_observations}_observations.npy", acf_vs_temperature)
     return acf_vs_temperature
+
+
+def get_magnetic_norm_integrated_autocorrelation_times_vs_temperature(autocorrelation_function, mediator,
+                                                                      output_directory, temperatures, lattice_length,
+                                                                      number_of_observations, number_of_jobs):
+    try:
+        with open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_norm_integrated_"
+                  f"autocorrelation_times_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_"
+                  f"{number_of_jobs}x{number_of_observations}_observations.tsv", "r") as output_file:
+            output_file_sans_header = np.array([np.fromstring(line, dtype=float, sep='\t') for line in output_file
+                                                if not line.startswith('#')]).transpose()
+            integrated_autocorrelation_times_vs_temperature = output_file_sans_header[1]
+    except IOError:
+        integrated_autocorrelation_times_vs_temperature = [get_integrated_autocorrelation_time(
+            autocorrelation_function[temperature_index]) for temperature_index, _ in enumerate(temperatures)]
+        output_file = open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_norm_integrated_"
+                           f"autocorrelation_times_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_"
+                           f"{number_of_jobs}x{number_of_observations}_observations.tsv", "w")
+        output_file.write("# temperature".ljust(30) + "magnetic-norm integrated autocorrelation time".ljust(35) + "\n")
+        for temperature_index, temperature in enumerate(temperatures):
+            output_file.write(f"{temperature:.14e}".ljust(30) +
+                              f"{integrated_autocorrelation_times_vs_temperature[temperature_index]:.14e}".ljust(35) +
+                              "\n")
+        output_file.close()
+    return np.array(integrated_autocorrelation_times_vs_temperature)
 
 
 if __name__ == "__main__":
