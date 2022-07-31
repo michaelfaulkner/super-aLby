@@ -1,4 +1,4 @@
-from markov_chain_diagnostics import get_autocorrelation
+from markov_chain_diagnostics import get_autocorrelation, get_integrated_autocorrelation_time
 import importlib
 import math
 import matplotlib
@@ -20,8 +20,8 @@ parsing = importlib.import_module("base.parsing")
 def main(number_of_system_sizes=5):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
-    config_file_4x4_wolff = ["config_files/sampling_algos/ising_figures/4x4_wolff.ini"]
-    config_file_4x4_metrop = ["config_files/sampling_algos/ising_figures/4x4_metropolis.ini"]
+    config_file_4x4_wolff = ["config_files/sampling_algos_ising_figs/4x4_wolff.ini"]
+    config_file_4x4_metrop = ["config_files/sampling_algos_ising_figs/4x4_metropolis.ini"]
     (wolff_mediator, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
      number_of_observations, _, _, number_of_jobs, max_number_of_cpus) = helper_methods.get_basic_config_data(
         config_file_4x4_wolff)
@@ -30,32 +30,20 @@ def main(number_of_system_sizes=5):
     sample_directories_wolff = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]
     sample_directories_metrop = [f"{output_directory}/{length}x{length}_metropolis" for length in lattice_lengths]
     transition_temperature = 2.0 / math.log(1 + 2 ** 0.5)
-    temperatures = np.array(temperatures)
-    temperature_near_critical_point = np.min(np.delete(temperatures, np.where(temperatures < transition_temperature)))
-    temperature_near_critical_point_index = np.where(temperatures == temperature_near_critical_point)[0][0]
-    acf_temperatures_indices = [
-        index for index, _ in enumerate(temperatures)
-        if temperature_near_critical_point_index - 4 < index < temperature_near_critical_point_index + 4]
+    temperatures = temperatures
     reduced_temperatures = [temperature / transition_temperature for temperature in temperatures]
 
-    fig, axes = plt.subplots(1, 2, figsize=(12.5, 4.0))
-    fig.tight_layout(w_pad=5.0)
-    [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"] for axis in axes]
-    for axis in axes:
-        axis.tick_params(which='both', direction='in', width=3)
-        axis.tick_params(which='major', length=5, labelsize=18, pad=5)
-        axis.tick_params(which='minor', length=4)
-    axes[0].set_xlabel(r"$s$", fontsize=20, labelpad=3)
-    axes[0].set_ylabel(r"$K_m(s)$ / $K_m(s = 0)$", fontsize=20, labelpad=1)
-    axes[0].set_yscale('log')
-    axes[1].set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3)
-    axes[1].set_ylabel(r"$\tau_m^{\rm M/W}$", fontsize=20, labelpad=1)
-    axes[0].set_xlim([-1.0, 51.0]), axes[0].set_ylim([0.09, 1.1])  # 0.049787068368 ~= e^(-3)
-    fig.text(0.43, 0.125, "(a)", fontsize=20), fig.text(0.945, 0.88, "(b)", fontsize=20)
-
-    system_size_colors = ["red", "blue", "green", "tab:brown", "magenta", "indigo"][:number_of_system_sizes]
+    fig, axis = plt.subplots(1, figsize=(6.25, 4.0))
+    fig.tight_layout()
+    [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"]]
+    axis.tick_params(which='both', direction='in', width=3)
+    axis.tick_params(which='major', length=5, labelsize=18, pad=5)
+    axis.tick_params(which='minor', length=4)
+    axis.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3)
+    axis.set_ylabel(r"$\tau_{|m|}$", fontsize=20, labelpad=1)
+    # axis.set_ylim([-5.0, 400.0])  # 0.049787068368 ~= e^(-3)
+    system_size_colors = ["red", "blue", "green", "magenta", "indigo", "tab:brown"][:number_of_system_sizes]
     system_size_colors.reverse()
-    temperature_colors = ["red", "blue", "green", "tab:brown", "magenta", "indigo", "olive"]
 
     if number_of_jobs > 1:
         number_of_cpus = mp.cpu_count()
@@ -91,45 +79,23 @@ def main(number_of_system_sizes=5):
 
         magnetic_norm_density_acf_vs_temp_metrop /= magnetic_norm_density_acf_vs_temp_metrop[0, :, 0, None]
         magnetic_norm_density_acf_vs_temp_wolff /= magnetic_norm_density_acf_vs_temp_wolff[0, :, 0, None]
+        metrop_integrated_autocorrelation_times = [
+            get_integrated_autocorrelation_time(magnetic_norm_density_acf_vs_temp_metrop[0, temperature_index]) for
+            temperature_index, _ in enumerate(temperatures)]
+        wolff_integrated_autocorrelation_times = [
+            get_integrated_autocorrelation_time(magnetic_norm_density_acf_vs_temp_wolff[0, temperature_index]) for
+            temperature_index, _ in enumerate(temperatures)]
+        axis.plot(reduced_temperatures, wolff_integrated_autocorrelation_times, marker="*", markersize=8,
+                  color=system_size_colors[lattice_length_index], linestyle="--",
+                  label=fr"$N$ = {lattice_length}x{lattice_length} Wolff")
+        axis.plot(reduced_temperatures, metrop_integrated_autocorrelation_times, marker=".", markersize=8,
+                  color=system_size_colors[lattice_length_index], linestyle="-",
+                  label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
 
-        if lattice_length_index == len(lattice_lengths) - 1:
-            count = 0
-            for temperature_index in acf_temperatures_indices:
-                axes[0].plot(magnetic_norm_density_acf_vs_temp_metrop[0, temperature_index, :100],
-                             marker=".", markersize=8, color=temperature_colors[count], linestyle="--",
-                             label=fr"$1 / (\beta J)$ = {temperatures[temperature_index]:.02}")
-                count += 1
-
-        metrop_correlation_times, wolff_correlation_times = [], []
-        for temperature_index, temperature in enumerate(temperatures):
-            max_acf_index = min(next(index for index, value in enumerate(
-                magnetic_norm_density_acf_vs_temp_metrop[0, temperature_index]) if value < 0.1), 2)
-            if magnetic_norm_density_acf_vs_temp_metrop[0, temperature_index, max_acf_index] < 0.0:
-                max_acf_index = 1
-            metrop_correlation_times.append(
-                - max_acf_index / np.log(magnetic_norm_density_acf_vs_temp_metrop[0, temperature_index, max_acf_index]))
-            max_acf_index = min(next(index for index, value in enumerate(
-                magnetic_norm_density_acf_vs_temp_wolff[0, temperature_index]) if value < 0.1), 2)
-            if magnetic_norm_density_acf_vs_temp_wolff[0, temperature_index, max_acf_index] < 0.0:
-                max_acf_index = 1
-            wolff_correlation_times.append(
-                - max_acf_index / np.log(magnetic_norm_density_acf_vs_temp_wolff[0, temperature_index, max_acf_index]))
-            '''exponential_fit = np.polyfit(np.arange(max_acf_index),
-            np.log(magnetic_norm_density_acf_vs_temp_metrop[temperature_index, :max_acf_index]), 1)
-            print(exponential_fit)'''
-
-        axes[1].plot(reduced_temperatures, wolff_correlation_times, marker="*", markersize=8,
-                     color=system_size_colors[lattice_length_index], linestyle="--",
-                     label=fr"$N$ = {lattice_length}x{lattice_length} Wolff")
-        axes[1].plot(reduced_temperatures, metrop_correlation_times, marker=".", markersize=8,
-                     color=system_size_colors[lattice_length_index], linestyle="-",
-                     label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
-
-    legends = [axes[0].legend(loc="upper right", fontsize=12), axes[1].legend(loc="upper left", fontsize=8)]
-    [legend.get_frame().set_edgecolor("k") for legend in legends]
-    [legend.get_frame().set_lw(3) for legend in legends]
-    fig.savefig(f"{output_directory}/2d_ising_model_magnetic_fluctuation_acf_{number_of_jobs}x{number_of_observations}_"
-                f"observations.pdf", bbox_inches="tight")
+    legend = axis.legend(loc="upper left", fontsize=10)
+    legend.get_frame().set_edgecolor("k"), legend.get_frame().set_lw(3)
+    fig.savefig(f"{output_directory}/2d_ising_model_magnetic_norm_integrated_autocorrelation_time_"
+                f"{number_of_jobs}x{number_of_observations}_observations.pdf", bbox_inches="tight")
 
 
 def get_observable_autocorrelation_vs_temperature(observable_string, mediator, output_directory,

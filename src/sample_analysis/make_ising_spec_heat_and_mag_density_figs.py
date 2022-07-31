@@ -20,7 +20,7 @@ parsing = importlib.import_module("base.parsing")
 def main(number_of_system_sizes=5):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
-    config_file_4x4 = ["config_files/sampling_algos/ising_figures/4x4_wolff.ini"]
+    config_file_4x4 = ["config_files/sampling_algos_ising_figs/4x4_wolff.ini"]
     (mediator, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
      number_of_observations, _, _, number_of_jobs, max_number_of_cpus) = helper_methods.get_basic_config_data(
         config_file_4x4)
@@ -45,7 +45,7 @@ def main(number_of_system_sizes=5):
     axis_1.set_ylabel(r"${\rm lim}_{N \to \infty} \left[ \mathbb{E} C_{\rm V} \right.$ / $\left. N \right]$",
                       fontsize=20, labelpad=1)
     additional_y_axis.set_ylabel(r"$m_0$", fontsize=20, labelpad=1, color="red")
-    axis_1.set_xlim([0.4, 1.625]), axis_1.set_ylim([-0.05, 2.2]), additional_y_axis.set_ylim([-0.025, 1.05])
+    axis_1.set_xlim([0.4, 1.625]), axis_1.set_ylim([-0.05, 2.4]), additional_y_axis.set_ylim([-0.025, 1.05])
 
     fig_2, axes_2 = plt.subplots(1, 2, figsize=(12.5, 4.0))
     fig_2.tight_layout(w_pad=5.0)
@@ -57,11 +57,11 @@ def main(number_of_system_sizes=5):
     [axis.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3) for axis in axes_2]
     axes_2[0].set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N$", fontsize=20, labelpad=1)
     axes_2[1].set_ylabel(r"$\mathbb{E} {|m|}$", fontsize=20, labelpad=1)
-    axes_2[0].set_xlim([0.4, 1.625]), axes_2[0].set_ylim([-0.05, 2.2])
+    axes_2[0].set_xlim([0.4, 1.625]), axes_2[0].set_ylim([-0.05, 2.4])
     axes_2[1].set_xlim([0.4, 1.625]), axes_2[1].set_ylim([-0.025, 1.05])
-    axes_2[0].text(1.525, 2.01, "(a)", fontsize=20), axes_2[1].text(1.525, 0.96, "(b)", fontsize=20)
+    axes_2[0].text(1.525, 2.2, "(a)", fontsize=20), axes_2[1].text(1.525, 0.96, "(b)", fontsize=20)
 
-    system_size_colors = ["red", "blue", "green", "tab:brown", "magenta", "indigo"][:number_of_system_sizes]
+    system_size_colors = ["red", "blue", "green", "magenta", "indigo", "tab:brown"][:number_of_system_sizes]
     system_size_colors.reverse()
 
     """plot analytical solutions"""

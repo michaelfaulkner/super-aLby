@@ -1,3 +1,4 @@
+import math
 import numpy as np
 
 try:
@@ -60,3 +61,8 @@ def get_autocorrelation(one_dimensional_sample):
     full_acf = np.correlate(mean_zero_sample, mean_zero_sample, mode='full')
     """np.correlate() is symmetric about t = 0 when mode='full' - full_acf[full_acf.size // 2:] returns t >= 0 values"""
     return full_acf[full_acf.size // 2:]
+
+
+def get_integrated_autocorrelation_time(autocorrelation_function, cutoff=math.e ** (-2)):
+    max_acf_index = [index for index, value in enumerate(autocorrelation_function) if value < cutoff][0] - 1
+    return 2.0 * np.sum(autocorrelation_function[:max_acf_index]) - 1.0
