@@ -50,18 +50,19 @@ The [`run.py`](src/run.py) script also takes optional arguments. These are:
 A configuration file is composed of sections that correspond to either the [`run.py`](src/run.py) file, the model 
 settings (contained in [`model_settings/__init__.py`](src/model_settings/__init__.py)), or a class of the super-aLby 
 application. Each configuration file must contain `[Run]` and `[ModelSettings]` sections, which (respectively) 
-correspond to the [`run.py`](src/run.py) file and the [model settings](src/model_settings/__init__.py):
+correspond to the [`run.py`](src/run.py) file and the [model settings](src/model_settings/__init__.py).  For example, 
 
 ```INI
 [Run]
 mediator = some_mediator
+number_of_jobs = 1
+max_number_of_cpus = 1
 ```
 
-and (for example)
+and 
 
 ```INI
 [ModelSettings]
-beta = 1.0
 number_of_particles = 2
 size_of_particle_space = None
 range_of_initial_particle_positions = 1.0
@@ -82,25 +83,23 @@ src/mediator/lazy_toroidal_leapfrog_mediator.py) for models on compact subspaces
 geometry).
 
 The ```[ModelSettings]``` section specifies both the *NVT* physical parameters of the simulation and the range of the 
-initial particle positions. `beta` is a `float` that represents the inverse temperature. `number_of_particles` is an 
-`int` that represents number of particles. `size_of_particle_space` represents the size and dimensions of the spaces on 
-which each particle exits and is either `None`, a `float` or a Python `list` of `None` or `float` values (`None` 
-corresponds to the whole real line). `range_of_initial_particle_positions` represents the range of the initial position 
-of each particle and is either a `float`, a one-dimensional Python `list` of length 
-`len(range_of_initial_particle_positions)` and composed of `float` values, or a two-dimensional Python `list` of size 
-`(len(range_of_initial_particle_positions), 2)` and composed of `float` values. The above example represents a 
-two-particle system at `beta = 1.0`, where each particle exists on the entire real line and has initial position *1.0*, 
-while
+initial particle positions. `number_of_particles` is an `int` that represents number of particles. 
+`size_of_particle_space` represents the size and dimensions of the spaces on which each particle exits and is either 
+`None`, a `float` or a Python `list` of `None` or `float` values (`None` corresponds to the whole real line). 
+`range_of_initial_particle_positions` represents the range of the initial position of each particle and is either a 
+`float`, a one-dimensional Python `list` of length `len(range_of_initial_particle_positions)` and composed of `float` 
+values, or a two-dimensional Python `list` of size `(len(range_of_initial_particle_positions), 2)` and composed of 
+`float` values. The above example represents a two-particle system in which each particle exists on the entire real 
+line and has initial position *1.0*, while
 
 ```INI
 [ModelSettings]
-beta = 2.0
 number_of_particles = 4
 size_of_particle_space = [1.0, 1.0]
 range_of_initial_particle_positions = [[-0.5, 0.5], [-0.5, 0.5]]
 ```
 
-represents a four-particle system at `beta = 2.0`, where each particle exists on the toroidal compact subspace (of 
+represents a four-particle system in which each particle exists on the toroidal compact subspace (of 
 volume *1.0 x 1.0*) of two-dimensional Euclidean space and takes an initial position anywhere on that subspace.
 
 The remaining sections of the configuration file correspond to the different classes chosen for the simulation. Each 
@@ -139,3 +138,19 @@ config_files/convergence_tests/exponential_power_potential_power_equals_4/super_
 before running `python sample_analysis/test_convergence.py 
 config_files/convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini` 
 once the simulation has finished. 
+
+## Generation of the 2D-Ising figures included in Sampling algorithms in statistical physics
+
+To make figures 2, 4, 5 and 6 of *Sampling algorithms in statistical physics: a guide for statistics and machine 
+learning*, first run each configuration file in [`config_files/sampling_algos_ising_figs`](
+src/config_files/sampling_algos_ising_figs) via the command `python run.py 
+config_files/sampling_algos_ising_figs/4x4_metropolis.ini`, etc.  
+
+Then, once all simulations are complete, run the relevant sample-analysis scripts via the commands 
+- `python sample_analysis/make_ising_autocorrelation_fig.py`
+- `python sample_analysis/make_ising_spec_heat_and_mag_density_figs.py`
+- `python sample_analysis/make_ising_trace_plots.py`
+
+To make figure 7, go to [xy-type-models](https://github.com/michaelfaulkner/xy-type-models) and follow the instructions 
+in the [README](https://github.com/michaelfaulkner/xy-type-models/blob/main/README.md).  We aim to eventually integrate 
+xy-type-models into [super-aLby](https://github.com/michaelfaulkner/super-aLby).
