@@ -19,7 +19,7 @@ import time
 def print_start_message():
     """Print the start message which includes the copyright."""
     print(f"super-aLby (version {version}) - a Python application for super-relativistic, Hamiltonian, Metropolis and "
-          f"Wolff Monte Carlo")
+          f"Wolff Monte Carlo in statistical physics and Bayesian computation")
     print("Copyright (C) 2022 The super-aLby organisation")
 
 
