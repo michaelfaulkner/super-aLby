@@ -33,15 +33,8 @@ def main(number_of_system_sizes=5):
     temperatures = temperatures
     reduced_temperatures = [temperature / transition_temperature for temperature in temperatures]
 
-    fig, axis = plt.subplots(1, figsize=(6.25, 4.0))
-    fig.tight_layout()
-    [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"]]
-    axis.tick_params(which='both', direction='in', width=3)
-    axis.tick_params(which='major', length=5, labelsize=18, pad=5)
-    axis.tick_params(which='minor', length=4)
-    axis.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3)
-    axis.set_ylabel(r"$\tau_{|m|}$", fontsize=20, labelpad=1)
-    # axis.set_ylim([-5.0, 400.0])  # 0.049787068368 ~= e^(-3)
+    fig_1, axis_1 = make_empty_fig()
+    fig_2, axis_2 = make_empty_fig()
     system_size_colors = ["red", "blue", "green", "magenta", "indigo", "tab:brown"][:number_of_system_sizes]
     system_size_colors.reverse()
 
@@ -85,17 +78,35 @@ def main(number_of_system_sizes=5):
         wolff_integrated_autocorrelation_times = get_magnetic_norm_integrated_autocorrelation_times_vs_temperature(
             magnetic_norm_density_acf_vs_temp_wolff[0], wolff_mediator, output_directory, temperatures,
             lattice_length, number_of_observations, number_of_jobs)
-        axis.plot(reduced_temperatures, wolff_integrated_autocorrelation_times, marker="*", markersize=8,
-                  color=system_size_colors[lattice_length_index], linestyle="--",
-                  label=fr"$N$ = {lattice_length}x{lattice_length} Wolff")
-        axis.plot(reduced_temperatures, metrop_integrated_autocorrelation_times, marker=".", markersize=8,
-                  color=system_size_colors[lattice_length_index], linestyle="-",
-                  label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
+        axis_1.plot(reduced_temperatures, wolff_integrated_autocorrelation_times, marker="*", markersize=8,
+                    color=system_size_colors[lattice_length_index], linestyle="--",
+                    label=fr"$N$ = {lattice_length}x{lattice_length} Wolff")
+        axis_1.plot(reduced_temperatures, metrop_integrated_autocorrelation_times, marker=".", markersize=8,
+                    color=system_size_colors[lattice_length_index], linestyle="-",
+                    label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
+        axis_2.plot(reduced_temperatures, metrop_integrated_autocorrelation_times, marker=".", markersize=8,
+                    color=system_size_colors[lattice_length_index], linestyle="-",
+                    label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
 
-    legend = axis.legend(loc="upper left", fontsize=10)
-    legend.get_frame().set_edgecolor("k"), legend.get_frame().set_lw(3)
-    fig.savefig(f"{output_directory}/2d_ising_model_magnetic_norm_integrated_autocorrelation_time_"
-                f"{number_of_jobs}x{number_of_observations}_observations.pdf", bbox_inches="tight")
+    legends = [axis_1.legend(loc="upper left", fontsize=10), axis_2.legend(loc="upper left", fontsize=10)]
+    [legend.get_frame().set_edgecolor("k") for legend in legends], [legend.get_frame().set_lw(3) for legend in legends]
+    fig_1.savefig(f"{output_directory}/2d_ising_model_magnetic_norm_integrated_autocorrelation_time_"
+                  f"{number_of_jobs}x{number_of_observations}_observations.pdf", bbox_inches="tight")
+    fig_2.savefig(f"{output_directory}/2d_ising_model_magnetic_norm_integrated_autocorrelation_time_"
+                  f"{number_of_jobs}x{number_of_observations}_observations_metrop_only.pdf", bbox_inches="tight")
+
+
+def make_empty_fig():
+    fig, axis = plt.subplots(1, figsize=(6.25, 4.0))
+    fig.tight_layout()
+    [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"]]
+    axis.tick_params(which='both', direction='in', width=3)
+    axis.tick_params(which='major', length=5, labelsize=18, pad=5)
+    axis.tick_params(which='minor', length=4)
+    axis.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3)
+    axis.set_ylabel(r"$\tau_{|m|}$", fontsize=20, labelpad=1)
+    # axis.set_ylim([-5.0, 400.0])  # 0.049787068368 ~= e^(-3)
+    return fig, axis
 
 
 def get_observable_autocorrelation_vs_temperature(observable_string, mediator, output_directory,

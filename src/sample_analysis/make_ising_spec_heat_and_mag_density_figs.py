@@ -21,13 +21,18 @@ def main(number_of_system_sizes=5):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
     config_file_4x4 = ["config_files/sampling_algos_ising_figs/4x4_wolff.ini"]
-    (mediator, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
+    (mediator_wolff, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
      number_of_observations, _, _, number_of_jobs, max_number_of_cpus) = helper_methods.get_basic_config_data(
         config_file_4x4)
+    config_file_metrop = "config_files/sampling_algos_ising_figs/64x64_metropolis_supplementary_fig.ini"
+    (mediator_metrop, _, _, sample_directories_metrop, temperatures_metrop, number_of_equilibration_iterations_metrop,
+     number_of_observations_metrop, _, _, number_of_jobs_metrop, max_number_of_cpus_metrop
+     ) = helper_methods.get_basic_config_data(config_file_metrop)
     output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
     sample_directories = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]
     transition_temperature = 2.0 / math.log(1 + 2 ** 0.5)
     reduced_temperatures = [temperature / transition_temperature for temperature in temperatures]
+    reduced_temperatures_metrop = [temperature / transition_temperature for temperature in temperatures_metrop]
 
     fig_1, axis_1 = plt.subplots(1, figsize=(6.25, 4.0))
     fig_1.tight_layout()
@@ -47,19 +52,8 @@ def main(number_of_system_sizes=5):
     additional_y_axis.set_ylabel(r"$m_0$", fontsize=20, labelpad=1, color="red")
     axis_1.set_xlim([0.4, 1.625]), axis_1.set_ylim([-0.05, 2.4]), additional_y_axis.set_ylim([-0.025, 1.05])
 
-    fig_2, axes_2 = plt.subplots(1, 2, figsize=(12.5, 4.0))
-    fig_2.tight_layout(w_pad=5.0)
-    [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"] for axis in axes_2]
-    for axis in axes_2:
-        axis.tick_params(which='both', direction='in', width=3)
-        axis.tick_params(which='major', length=5, labelsize=18, pad=5)
-        axis.tick_params(which='minor', length=4)
-    [axis.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3) for axis in axes_2]
-    axes_2[0].set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N$", fontsize=20, labelpad=1)
-    axes_2[1].set_ylabel(r"$\mathbb{E} {|m|}$", fontsize=20, labelpad=1)
-    axes_2[0].set_xlim([0.4, 1.625]), axes_2[0].set_ylim([-0.05, 2.4])
-    axes_2[1].set_xlim([0.4, 1.625]), axes_2[1].set_ylim([-0.025, 1.05])
-    axes_2[0].text(1.525, 2.2, "(a)", fontsize=20), axes_2[1].text(1.525, 0.96, "(b)", fontsize=20)
+    fig_2, axes_2 = make_empty_spec_heat_and_magnetisation_figs()
+    fig_3, axes_3 = make_empty_spec_heat_and_magnetisation_figs(True)
 
     system_size_colors = ["red", "blue", "green", "magenta", "indigo", "tab:brown"][:number_of_system_sizes]
     system_size_colors.reverse()
@@ -71,6 +65,8 @@ def main(number_of_system_sizes=5):
                 linestyle="-", linewidth=2.0)
     axes_2[0].plot(continuous_temperatures / transition_temperature, onsager_specific_heat_density,
                    color="black", linestyle="-", linewidth=2.0, label=r"$N \to \infty$")
+    axes_3[0].plot(continuous_temperatures / transition_temperature, onsager_specific_heat_density,
+                   color="black", linestyle="-", linewidth=2.0, label=r"$N \to \infty$")
     continuous_temperatures = np.linspace(temperatures[0] - 0.2, temperatures[-1] + 0.2, 800)
     onsager_yang_mag_density = np.piecewise(
         continuous_temperatures,
@@ -79,6 +75,8 @@ def main(number_of_system_sizes=5):
     additional_y_axis.plot(continuous_temperatures / transition_temperature, onsager_yang_mag_density, color="red",
                            linestyle="-", linewidth=2.0)
     axes_2[1].plot(continuous_temperatures / transition_temperature, onsager_yang_mag_density, color="black",
+                   linestyle="-", linewidth=2.0, label=r"$N \to \infty$")
+    axes_3[1].plot(continuous_temperatures / transition_temperature, onsager_yang_mag_density, color="black",
                    linestyle="-", linewidth=2.0, label=r"$N \to \infty$")
     fig_1.savefig(f"{output_directory}/2d_ising_model_thermodynamic_specific_heat_and_spontaneous_magnetic_density_vs_"
                   f"temperature.pdf", bbox_inches="tight")
@@ -91,25 +89,27 @@ def main(number_of_system_sizes=5):
 
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
         _, _ = get_observable_mean_and_error_vs_temperature(
-            "magnetic_density", mediator, output_directory, sample_directories[lattice_length_index], temperatures,
-            lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs, pool)
+            "magnetic_density", mediator_wolff, output_directory, sample_directories[lattice_length_index],
+            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs,
+            pool)
         (magnetic_norm_density_vs_temp,
          magnetic_norm_density_errors_vs_temp) = get_observable_mean_and_error_vs_temperature(
-            "magnetic_norm_density", mediator, output_directory, sample_directories[lattice_length_index], temperatures,
-            lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs, pool)
-        _, _ = get_observable_mean_and_error_vs_temperature(
-            "magnetic_susceptibility", mediator, output_directory, sample_directories[lattice_length_index],
+            "magnetic_norm_density", mediator_wolff, output_directory, sample_directories[lattice_length_index],
+            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs,
+            pool)
+        (_, _) = get_observable_mean_and_error_vs_temperature(
+            "magnetic_susceptibility", mediator_wolff, output_directory, sample_directories[lattice_length_index],
+            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs,
+            pool)
+        (_, _) = get_observable_mean_and_error_vs_temperature(
+            "magnetic_norm_susceptibility", mediator_wolff, output_directory, sample_directories[lattice_length_index],
             temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs,
             pool)
         _, _ = get_observable_mean_and_error_vs_temperature(
-            "magnetic_norm_susceptibility", mediator, output_directory, sample_directories[lattice_length_index],
-            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs,
-            pool)
-        _, _ = get_observable_mean_and_error_vs_temperature(
-            "potential", mediator, output_directory, sample_directories[lattice_length_index], temperatures,
+            "potential", mediator_wolff, output_directory, sample_directories[lattice_length_index], temperatures,
             lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs, pool)
         (specific_heat_vs_temp, specific_heat_errors_vs_temp) = get_observable_mean_and_error_vs_temperature(
-            "specific_heat", mediator, output_directory, sample_directories[lattice_length_index], temperatures,
+            "specific_heat", mediator_wolff, output_directory, sample_directories[lattice_length_index], temperatures,
             lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs, pool)
         axes_2[0].errorbar(reduced_temperatures, specific_heat_vs_temp / lattice_length ** 2,
                            specific_heat_errors_vs_temp / lattice_length ** 2, marker=".", markersize=8,
@@ -118,12 +118,66 @@ def main(number_of_system_sizes=5):
         axes_2[1].errorbar(reduced_temperatures, magnetic_norm_density_vs_temp, magnetic_norm_density_errors_vs_temp,
                            marker=".", markersize=8, color=system_size_colors[lattice_length_index], linestyle="None",
                            label=fr"$N$ = {lattice_length}x{lattice_length}")
+    make_legends_and_save_spec_heat_and_magnetisation_figs(fig_2, axes_2, mediator_wolff, output_directory)
 
-    legends = [axes_2[0].legend(loc="upper left", fontsize=12), axes_2[1].legend(loc="lower left", fontsize=12)]
-    [legend.get_frame().set_edgecolor("k") for legend in legends]
-    [legend.get_frame().set_lw(3) for legend in legends]
-    fig_2.savefig(f"{output_directory}/2d_ising_model_expected_specific_heat_and_magnetic_norm_density_vs_temperature_"
-                  f"{mediator.replace('_mediator', '')}_simulations.pdf", bbox_inches="tight")
+    lattice_length = 64
+    _, _ = get_observable_mean_and_error_vs_temperature(
+        "magnetic_density", mediator_metrop, output_directory, sample_directories_metrop[0], temperatures_metrop,
+        lattice_length, number_of_equilibration_iterations_metrop, number_of_observations_metrop, number_of_jobs_metrop,
+        None)
+    (magnetic_norm_density_vs_temp_metrop,
+     magnetic_norm_density_errors_vs_temp_metrop) = get_observable_mean_and_error_vs_temperature(
+        "magnetic_norm_density", mediator_metrop, output_directory, sample_directories_metrop[0], temperatures_metrop,
+        lattice_length, number_of_equilibration_iterations_metrop, number_of_observations_metrop, number_of_jobs_metrop,
+        None)
+    (_, _) = get_observable_mean_and_error_vs_temperature(
+        "magnetic_susceptibility", mediator_metrop, output_directory, sample_directories_metrop[0], temperatures_metrop,
+        lattice_length, number_of_equilibration_iterations_metrop, number_of_observations_metrop, number_of_jobs_metrop,
+        None)
+    (_, _) = get_observable_mean_and_error_vs_temperature(
+        "magnetic_norm_susceptibility", mediator_metrop, output_directory, sample_directories_metrop[0],
+        temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop, number_of_observations_metrop,
+        number_of_jobs_metrop, None)
+    _, _ = get_observable_mean_and_error_vs_temperature(
+        "potential", mediator_metrop, output_directory, sample_directories_metrop[0], temperatures_metrop,
+        lattice_length, number_of_equilibration_iterations_metrop, number_of_observations_metrop, number_of_jobs_metrop,
+        None)
+    (specific_heat_vs_temp_metrop, specific_heat_errors_vs_temp_metrop) = get_observable_mean_and_error_vs_temperature(
+        "specific_heat", mediator_metrop, output_directory, sample_directories_metrop[0], temperatures_metrop,
+        lattice_length, number_of_equilibration_iterations_metrop, number_of_observations_metrop, number_of_jobs_metrop,
+        None)
+    axes_3[0].errorbar(reduced_temperatures_metrop, specific_heat_vs_temp_metrop / lattice_length ** 2,
+                       specific_heat_errors_vs_temp_metrop / lattice_length ** 2, marker=".", markersize=8,
+                       color=system_size_colors[0], linestyle="None",
+                       label=fr"$N$ = {lattice_length}x{lattice_length} (Metrop.)")
+    axes_3[1].errorbar(reduced_temperatures_metrop, magnetic_norm_density_vs_temp_metrop,
+                       magnetic_norm_density_errors_vs_temp_metrop, marker=".", markersize=8,
+                       color=system_size_colors[0], linestyle="None",
+                       label=fr"$N$ = {lattice_length}x{lattice_length} (Metrop.)")
+    make_legends_and_save_spec_heat_and_magnetisation_figs(fig_3, axes_3, mediator_metrop, output_directory)
+
+
+def make_empty_spec_heat_and_magnetisation_figs(metropolis_figure=False):
+    fig, axes = plt.subplots(1, 2, figsize=(12.5, 4.0))
+    fig.tight_layout(w_pad=5.0)
+    [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"] for axis in axes]
+    for axis in axes:
+        axis.tick_params(which='both', direction='in', width=3)
+        axis.tick_params(which='major', length=5, labelsize=18, pad=5)
+        axis.tick_params(which='minor', length=4)
+    [axis.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3) for axis in axes]
+    if metropolis_figure:
+        axes[0].set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N$", fontsize=20, labelpad=1)
+        axes[1].set_ylabel(r"$\mathbb{E} {|m|}$", fontsize=20, labelpad=1)
+        axes[0].set_xlim([0.8, 1.2]), axes[0].set_ylim([-0.05, 2.4])
+        axes[1].set_xlim([0.8, 1.2]), axes[1].set_ylim([-0.025, 1.05])
+    else:
+        axes[0].set_ylabel(r"$\mathbb{E} C_{\rm V}$ / $N$", fontsize=20, labelpad=1)
+        axes[1].set_ylabel(r"$\mathbb{E} {|m|}$", fontsize=20, labelpad=1)
+        axes[0].set_xlim([0.4, 1.625]), axes[0].set_ylim([-0.05, 2.4])
+        axes[1].set_xlim([0.4, 1.625]), axes[1].set_ylim([-0.025, 1.05])
+        axes[0].text(1.525, 2.2, "(a)", fontsize=20), axes[1].text(1.525, 0.96, "(b)", fontsize=20)
+    return fig, axes
 
 
 def get_thermodynamic_specific_heat_density_vs_temperature(output_directory, no_of_temperature_integration_values=1000,
@@ -200,6 +254,14 @@ def get_observable_mean_and_error_vs_temperature(observable_string, mediator, ou
             errors_vs_temperature.append(sample_error)
         output_file.close()
     return np.array([means_vs_temperature, errors_vs_temperature])
+
+
+def make_legends_and_save_spec_heat_and_magnetisation_figs(fig, axes, mediator, output_directory):
+    legends = [axes[0].legend(loc="upper left", fontsize=12), axes[1].legend(loc="lower left", fontsize=12)]
+    [legend.get_frame().set_edgecolor("k") for legend in legends]
+    [legend.get_frame().set_lw(3) for legend in legends]
+    fig.savefig(f"{output_directory}/2d_ising_model_expected_specific_heat_and_magnetic_norm_density_vs_temperature_"
+                f"{mediator.replace('_mediator', '')}_simulations.pdf", bbox_inches="tight")
 
 
 if __name__ == "__main__":
