@@ -84,6 +84,7 @@ def main(number_of_system_sizes=5):
         axis_1.plot(reduced_temperatures, metrop_integrated_autocorrelation_times, marker=".", markersize=8,
                     color=system_size_colors[lattice_length_index], linestyle="-",
                     label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
+        """The following line plots Metropolis IACTs on a separate figure, w/out the Wolff data and for use in talks."""
         axis_2.plot(reduced_temperatures, metrop_integrated_autocorrelation_times, marker=".", markersize=8,
                     color=system_size_colors[lattice_length_index], linestyle="-",
                     label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
