@@ -35,27 +35,7 @@ def main(number_of_system_sizes=5):
     temperature_near_critical_point_index = np.where(temperatures == temperature_near_critical_point)[0][0]
 
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
-        fig, axes = plt.subplots(2, 2, figsize=(12.5, 5.0))
-        fig.tight_layout(h_pad=-1.0, w_pad=-2.0)
-        subfigure_labels = ["(a)", "(b)", "(c)", "(d)"]
-        [axis.text(149.0, 0.86, subfigure_labels[axis_index], fontsize=18) for axis_index, axis in
-         enumerate(axes.flatten())]
-        [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"] for axis in axes.flatten()]
-        for axis in axes.flatten():
-            axis.tick_params(which='both', direction='in', width=3)
-            axis.tick_params(which='major', length=5, labelsize=18, pad=5)
-            axis.tick_params(which='minor', length=4)
-        [axes[0, i].tick_params(labelbottom=False) for i in range(2)]
-        axes[1, 0].set_xlabel(r"Metropolis time, $t$", fontsize=18, labelpad=3)
-        axes[1, 1].set_xlabel(r"Wolff time, $t$", fontsize=18, labelpad=3)
-        [axis.set_xlim([-5, 160]) for axis in axes.flatten()]
-        [axes[i, 1].tick_params(labelleft=False) for i in range(2)]
-        axes[0, 0].set_ylabel(r"$m\left( x(t); \beta J = 1 \right)$", fontsize=18, labelpad=3)
-        """temperature_near_critical_point = 2.33
-        ... so we format as follows"""
-        axes[1, 0].set_ylabel(r"$m(x(t); \beta J = 1 \, / \, 2.\dot{3})$", fontsize=18, labelpad=3)
-        [axis.set_ylim([-1.15, 1.15]) for axis in axes.flatten()]
-
+        fig, axes = make_empty_two_temperature_figure(r"$m(x(t); \beta J = 1 \, / \, 2.\dot{3})$")
         plot_magnetic_density_vs_time(
             axes[0, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
             temperatures[0], 0, lattice_length, number_of_equilibration_iterations)
@@ -71,7 +51,87 @@ def main(number_of_system_sizes=5):
             temperature_near_critical_point, temperature_near_critical_point_index, lattice_length,
             number_of_equilibration_iterations)
         fig.savefig(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_density_vs_time_"
-                    f"metropolis_and_wolff.pdf", bbox_inches="tight")
+                    f"metropolis_and_wolff_low_temperature_vs_transition.pdf", bbox_inches="tight")
+
+        fig, axes = make_empty_two_temperature_figure(r"$m(x(t); \beta J = 1 \, / \, 2.7\dot{3})$")
+        plot_magnetic_density_vs_time(
+            axes[0, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
+            temperatures[0], 0, lattice_length, number_of_equilibration_iterations)
+        plot_magnetic_density_vs_time(
+            axes[0, 1], wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
+            temperatures[0], 0, lattice_length, number_of_equilibration_iterations)
+        plot_magnetic_density_vs_time(
+            axes[1, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
+            temperatures[26], 26, lattice_length, number_of_equilibration_iterations)
+        plot_magnetic_density_vs_time(
+            axes[1, 1], wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
+            temperatures[26], 26, lattice_length, number_of_equilibration_iterations)
+        fig.savefig(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_density_vs_time_"
+                    f"metropolis_and_wolff_low_vs_high_temperature.pdf", bbox_inches="tight")
+
+        fig, axes = plt.subplots(3, 2, figsize=(12.5, 7.5))
+        fig.tight_layout(h_pad=-1.0, w_pad=-2.0)
+        subfigure_labels = ["(a)", "(b)", "(c)", "(d)", "(e)", "(f)"]
+        [axis.text(149.0, 0.86, subfigure_labels[axis_index], fontsize=18) for axis_index, axis in
+         enumerate(axes.flatten())]
+        [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"] for axis in axes.flatten()]
+        for axis in axes.flatten():
+            axis.tick_params(which='both', direction='in', width=3)
+            axis.tick_params(which='major', length=5, labelsize=18, pad=5)
+            axis.tick_params(which='minor', length=4)
+        [axes[i, j].tick_params(labelbottom=False) for i in range(2) for j in range(2)]
+        axes[2, 0].set_xlabel(r"Metropolis time, $t$", fontsize=18, labelpad=3)
+        axes[2, 1].set_xlabel(r"Wolff time, $t$", fontsize=18, labelpad=3)
+        [axis.set_xlim([-5, 160]) for axis in axes.flatten()]
+        [axes[i, 1].tick_params(labelleft=False) for i in range(3)]
+        axes[0, 0].set_ylabel(r"$m\left( x(t); \beta J = 1 \right)$", fontsize=17.5, labelpad=3)
+        axes[1, 0].set_ylabel(r"$m(x(t); \beta J = 1 \, / \, 2.\dot{3})$", fontsize=17.5, labelpad=3)
+        axes[2, 0].set_ylabel(r"$m(x(t); \beta J = 1 \, / \, 2.7\dot{3})$", fontsize=17.5, labelpad=3)
+        [axis.set_ylim([-1.15, 1.15]) for axis in axes.flatten()]
+        plot_magnetic_density_vs_time(
+            axes[0, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
+            temperatures[0], 0, lattice_length, number_of_equilibration_iterations)
+        plot_magnetic_density_vs_time(
+            axes[0, 1], wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
+            temperatures[0], 0, lattice_length, number_of_equilibration_iterations)
+        plot_magnetic_density_vs_time(
+            axes[1, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
+            temperature_near_critical_point, temperature_near_critical_point_index, lattice_length,
+            number_of_equilibration_iterations)
+        plot_magnetic_density_vs_time(
+            axes[1, 1], wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
+            temperature_near_critical_point, temperature_near_critical_point_index, lattice_length,
+            number_of_equilibration_iterations)
+        plot_magnetic_density_vs_time(
+            axes[2, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
+            temperatures[26], 26, lattice_length, number_of_equilibration_iterations)
+        plot_magnetic_density_vs_time(
+            axes[2, 1], wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
+            temperatures[26], 26, lattice_length, number_of_equilibration_iterations)
+        fig.savefig(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_density_vs_time_"
+                    f"metropolis_and_wolff_all_temperatures.pdf", bbox_inches="tight")
+
+
+def make_empty_two_temperature_figure(higher_temperature_y_axis_label):
+    fig, axes = plt.subplots(2, 2, figsize=(12.5, 5.0))
+    fig.tight_layout(h_pad=-1.0, w_pad=-2.0)
+    subfigure_labels = ["(a)", "(b)", "(c)", "(d)"]
+    [axis.text(149.0, 0.86, subfigure_labels[axis_index], fontsize=18) for axis_index, axis in
+     enumerate(axes.flatten())]
+    [axis.spines[spine].set_linewidth(3) for spine in ["top", "bottom", "left", "right"] for axis in axes.flatten()]
+    for axis in axes.flatten():
+        axis.tick_params(which='both', direction='in', width=3)
+        axis.tick_params(which='major', length=5, labelsize=18, pad=5)
+        axis.tick_params(which='minor', length=4)
+    [axes[0, i].tick_params(labelbottom=False) for i in range(2)]
+    axes[1, 0].set_xlabel(r"Metropolis time, $t$", fontsize=18, labelpad=3)
+    axes[1, 1].set_xlabel(r"Wolff time, $t$", fontsize=18, labelpad=3)
+    [axis.set_xlim([-5, 160]) for axis in axes.flatten()]
+    [axes[i, 1].tick_params(labelleft=False) for i in range(2)]
+    axes[0, 0].set_ylabel(r"$m\left( x(t); \beta J = 1 \right)$", fontsize=18, labelpad=3)
+    axes[1, 0].set_ylabel(higher_temperature_y_axis_label, fontsize=18, labelpad=3)
+    [axis.set_ylim([-1.15, 1.15]) for axis in axes.flatten()]
+    return fig, axes
 
 
 def plot_magnetic_density_vs_time(axis, mediator, output_directory, sample_directory, temperature,
