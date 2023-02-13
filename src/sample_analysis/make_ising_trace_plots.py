@@ -35,7 +35,7 @@ def main(number_of_system_sizes=5):
     temperature_near_critical_point_index = np.where(temperatures == temperature_near_critical_point)[0][0]
 
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
-        fig, axes = make_empty_two_temperature_figure(r"$m(x(t); \beta J = 1 \, / \, 2.\dot{3})$")
+        fig, axes = make_empty_two_temperature_figure(r"$m(x(t); \beta J = 3 \, / \, 7)$")
         plot_magnetic_density_vs_time(
             axes[0, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
             temperatures[0], 0, lattice_length, number_of_equilibration_iterations)
