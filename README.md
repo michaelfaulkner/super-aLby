@@ -141,7 +141,7 @@ once the simulation has finished.
 
 ## Generation of the 2D-Ising figures included in Sampling algorithms in statistical physics
 
-To make figures 2, 6, 7 and 8 of *Sampling algorithms in statistical physics: a guide for statistics and machine 
+To make figures 2, 9, 10 and 11 of *Sampling algorithms in statistical physics: a guide for statistics and machine 
 learning*, first run each configuration file in [`config_files/sampling_algos_ising_figs`](
 src/config_files/sampling_algos_ising_figs) via the command `python run.py 
 config_files/sampling_algos_ising_figs/4x4_metropolis.ini`, etc.  
@@ -151,9 +151,8 @@ Then, once all simulations are complete, run the relevant sample-analysis script
 - `python sample_analysis/make_ising_spec_heat_and_mag_density_figs.py`
 - `python sample_analysis/make_ising_trace_plots.py`
 
-The first two scripts also create additional figures not presented in the paper.  These are useful for demonstrating 
-critical slowing down (in Metropolis simulations) and its effects. 
+Each script also creates additional figures not presented in the paper.  These may also be useful to the user. 
 
-To make figure 9, go to [xy-type-models](https://github.com/michaelfaulkner/xy-type-models) and follow the instructions 
+To make figure 12, go to [xy-type-models](https://github.com/michaelfaulkner/xy-type-models) and follow the instructions 
 in the [README](https://github.com/michaelfaulkner/xy-type-models/blob/main/README.md).  We aim to eventually integrate 
 xy-type-models into [super-aLby](https://github.com/michaelfaulkner/super-aLby).
