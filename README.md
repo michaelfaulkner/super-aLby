@@ -147,7 +147,7 @@ src/config_files/sampling_algos_ising_figs) via the command `python run.py
 config_files/sampling_algos_ising_figs/4x4_metropolis.ini`, etc.  
 
 Then, once all simulations are complete, run the relevant sample-analysis scripts via the commands 
-- `python sample_analysis/make_ising_autocorrelation_fig.py`
+- `python sample_analysis/make_ising_autocorrelation_figs.py`
 - `python sample_analysis/make_ising_spec_heat_and_mag_density_figs.py`
 - `python sample_analysis/make_ising_trace_plots.py`
 

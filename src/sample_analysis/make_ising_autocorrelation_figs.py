@@ -105,7 +105,7 @@ def make_empty_fig():
     axis.tick_params(which='major', length=5, labelsize=18, pad=5)
     axis.tick_params(which='minor', length=4)
     axis.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3)
-    axis.set_ylabel(r"$\tau_{|m|}$", fontsize=20, labelpad=1)
+    axis.set_ylabel(r"$\tau_{|m|} / \Delta t_{\rm Metrop/Wolff}$", fontsize=20, labelpad=1)
     # axis.set_ylim([-5.0, 400.0])  # 0.049787068368 ~= e^(-3)
     return fig, axis
 
