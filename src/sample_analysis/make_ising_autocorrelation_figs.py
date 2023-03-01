@@ -35,6 +35,8 @@ def main(number_of_system_sizes=5):
 
     fig_1, axis_1 = make_empty_fig()
     fig_2, axis_2 = make_empty_fig()
+    axis_1.set_ylabel(r"$\tau_{|m|} / \Delta t_{\rm Metrop/Wolff}$", fontsize=20, labelpad=1)
+    axis_2.set_ylabel(r"$\tau_{|m|} / \Delta t_{\rm Metrop}$", fontsize=20, labelpad=1)
     system_size_colors = ["red", "blue", "green", "magenta", "indigo", "tab:brown"][:number_of_system_sizes]
     system_size_colors.reverse()
 
@@ -105,7 +107,7 @@ def make_empty_fig():
     axis.tick_params(which='major', length=5, labelsize=18, pad=5)
     axis.tick_params(which='minor', length=4)
     axis.set_xlabel(r"$\beta_{\rm c} / \beta$", fontsize=20, labelpad=3)
-    axis.set_ylabel(r"$\tau_{|m|} / \Delta t_{\rm Metrop/Wolff}$", fontsize=20, labelpad=1)
+    # axis.set_ylabel(r"$\tau_{|m|} / \Delta t_{\rm Metrop/Wolff}$", fontsize=20, labelpad=1)
     # axis.set_ylim([-5.0, 400.0])  # 0.049787068368 ~= e^(-3)
     return fig, axis
 

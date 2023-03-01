@@ -80,8 +80,8 @@ def main(number_of_system_sizes=5):
             axis.tick_params(which='major', length=5, labelsize=18, pad=5)
             axis.tick_params(which='minor', length=4)
         [axes[i, j].tick_params(labelbottom=False) for i in range(2) for j in range(2)]
-        axes[2, 0].set_xlabel(r"Metropolis time, $t$", fontsize=18, labelpad=3)
-        axes[2, 1].set_xlabel(r"Wolff time, $t$", fontsize=18, labelpad=3)
+        axes[2, 0].set_xlabel(r"$t / \Delta t_{\rm Metrop}$", fontsize=18, labelpad=3)
+        axes[2, 1].set_xlabel(r"$t / \Delta t_{\rm Wolff}$", fontsize=18, labelpad=3)
         [axis.set_xlim([-5, 160]) for axis in axes.flatten()]
         [axes[i, 1].tick_params(labelleft=False) for i in range(3)]
         axes[0, 0].set_ylabel(r"$m\left( x(t); \beta J = 1 \right)$", fontsize=17.5, labelpad=3)
