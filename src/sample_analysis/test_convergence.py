@@ -180,8 +180,8 @@ def main(config_file_string):
                               f"{magnetic_norm_density_mean_and_error[1]:.3g} (ref. value = "
                               f"{expected_magnetic_norm_density_reference_values[temperature_index]})")
                         # w/M = Nm the magnetisation, the expected magnetic susc is \nabla_h E[M] = beta N^2 Var[m],
-                        # but to compare Wolff and Metropolis, we estimate beta N Var[|m|] (the expected magnetic-norm
-                        # susc (per particle))
+                        # but to compare Swendsen-Wang/Wolff and Metropolis, we estimate beta N Var[|m|] (the expected
+                        # magnetic-norm susc (per particle))
                         magnetic_norm_susceptibility_mean_and_error = get_sample_mean_and_error(
                             sample_getter.get_magnetic_norm_susceptibility(sample_directories[sample_index],
                                                                            temperature, temperature_index,
