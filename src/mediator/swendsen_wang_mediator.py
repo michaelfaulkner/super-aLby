@@ -1,4 +1,4 @@
-"""Module for the WolffMediator class."""
+"""Module for the SwendsenWangMediator class."""
 from .ising_cluster_mediator import IsingClusterMediator
 from base.logging import log_init_arguments
 from model_settings import number_of_particles
@@ -7,17 +7,19 @@ from sampler.sampler import Sampler
 from typing import Sequence
 import logging
 import numpy as np
+import random
 
 
-class WolffMediator(IsingClusterMediator):
-    """The WolffMediator class provides functionality for the Wolff algorithm for the square-lattice Ising model."""
+class SwendsenWangMediator(IsingClusterMediator):
+    """The SwendsenWangMediator class provides functionality for the Swendsen-Wang algorithm for the square-lattice
+        Ising model."""
 
     def __init__(self, potential: IsingPotential, samplers: Sequence[Sampler], minimum_temperature: float = 1.0,
                  maximum_temperature: float = 1.0, number_of_temperature_increments: int = 0,
                  number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
                  proposal_dynamics_adaptor_is_on: bool = False):
         r"""
-        The constructor of the WolffMediator class.
+        The constructor of the SwendsenWangMediator class.
 
         Parameters
         ----------
@@ -82,13 +84,23 @@ class WolffMediator(IsingClusterMediator):
     def _advance_markov_chain(self, markov_chain_step_index, temperature):
         """Advances the Markov chain by one step."""
         prob_of_adding_neighbour_to_cluster = self._get_prob_of_adding_neighbour_to_cluster(temperature)
-        base_lattice_site = np.random.choice(number_of_particles)
-        extremity_sites_of_cluster = [base_lattice_site]
-        self._positions[base_lattice_site] *= -1
-        while extremity_sites_of_cluster:
-            current_lattice_site = extremity_sites_of_cluster.pop()
-            for neighbouring_lattice_site in self._potential.get_neighbours(current_lattice_site):
-                if (self._positions[neighbouring_lattice_site] == -self._positions[base_lattice_site] and
-                        np.random.rand() < prob_of_adding_neighbour_to_cluster):
-                    self._positions[neighbouring_lattice_site] *= -1
-                    extremity_sites_of_cluster.append(neighbouring_lattice_site)
+        # create list of particles in random order
+        remaining_particles = list(range(number_of_particles))
+        random.shuffle(remaining_particles)
+        while remaining_particles:
+            base_lattice_site = remaining_particles.pop()
+            cluster = [base_lattice_site]
+            extremity_sites_of_cluster = [base_lattice_site]
+            while extremity_sites_of_cluster:
+                current_lattice_site = extremity_sites_of_cluster.pop()
+                for neighbouring_lattice_site in self._potential.get_neighbours(current_lattice_site):
+                    if (neighbouring_lattice_site in remaining_particles and
+                            self._positions[neighbouring_lattice_site] == self._positions[base_lattice_site] and
+                            np.random.rand() < prob_of_adding_neighbour_to_cluster):
+                        cluster.append(neighbouring_lattice_site)
+                        extremity_sites_of_cluster.append(neighbouring_lattice_site)
+                        remaining_particles.remove(neighbouring_lattice_site)
+            # now flip all spin values within cluster with probability one half
+            if np.random.rand() < 0.5:
+                for lattice_site in cluster:
+                    self._positions[lattice_site] *= -1
