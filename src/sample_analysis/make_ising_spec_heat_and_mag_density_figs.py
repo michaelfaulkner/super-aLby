@@ -23,8 +23,8 @@ def main(sampling_algos_paper=True, number_of_system_sizes=5):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     fig_0, axis_0 = plt.subplots(1, figsize=(6.25, 4.0))  # fig for spontaneous mag curve only
     setup_empty_thermodynamic_fig(fig_0, axis_0)
-    axis_0.set_ylabel(r"${\rm lim}_{N \to \infty} {\rm lim}_{h \!\! \downarrow \!\! 0} \, \mathbb{E} m$", fontsize=20,
-                      labelpad=1)
+    axis_0.set_ylabel(r"${\rm lim}_{h \!\! \downarrow \!\! 0} \, {\rm lim}_{N \to \infty} \, \mathbb{E} m$",
+                      fontsize=20, labelpad=1)
     axis_0.set_xlim([0.4, 1.625]), axis_0.set_ylim([-0.025, 1.05])
     transition_temperature = 2.0 / math.log(1 + 2 ** 0.5)
 
