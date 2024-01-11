@@ -14,10 +14,12 @@ this). It has been tested with CPython.
 
 super-aLby depends on [`numpy`](https://numpy.org). Some of the sample-analysis code (i.e., scripts contained in the 
 [`output`](src/output) directory) also depends on [`matplotlib`](https://matplotlib.org) and [`rpy2`](
-https://rpy2.github.io). [`markov_chain_diagnostics.py`](src/output/markov_chain_diagnostics.py) depends on the R 
-package [`LaplacesDemon`](https://cran.r-project.org/web/packages/LaplacesDemon/), which must be installed in R: 
-download [the relevant binary](https://cran.r-project.org/web/packages/LaplacesDemon/) at CRAN and then run `R CMD 
-INSTALL <binary location>` in your terminal.
+https://rpy2.github.io). [`markov_chain_diagnostics.py`](sample_analysis/markov_chain_diagnostics.py) depends on the R packages 
+[`LaplacesDemon`](https://cran.r-project.org/web/packages/LaplacesDemon/) and [`mcmcse`](
+https://cran.r-project.org/web/packages/mcmcse/). To install these R packages: download the binaries [here](
+https://cran.r-project.org/web/packages/LaplacesDemon/) and [here](https://cran.r-project.org/web/packages/mcmcse/) 
+and then run `R CMD INSTALL <binary location>` in your terminal. You may also need to install various dependencies of 
+these R packages (listed under Imports on the relevant CRAN package page).
 
 To manage external Python packages, we use [conda](https://docs.conda.io/projects/conda/en/latest/) environments via 
 the [miniconda distribution](https://docs.conda.io/en/latest/miniconda.html). However, we found [`rpy2`](
