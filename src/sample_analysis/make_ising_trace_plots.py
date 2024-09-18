@@ -251,11 +251,12 @@ def make_empty_two_temperature_figure(higher_temperature_y_axis_label, sampling_
         axis.tick_params(which='major', length=5, labelsize=18, pad=5)
         axis.tick_params(which='minor', length=4)
     [axes[0, i].tick_params(labelbottom=False) for i in range(2)]
-    axes[1, 0].set_xlabel(r"$t / \Delta t_{\rm Metrop}$", fontsize=18, labelpad=3)
     if sampling_algos_paper:
+        axes[1, 0].set_xlabel(r"$t / \Delta t_{\rm Metrop}$", fontsize=18, labelpad=3)
         axes[1, 1].set_xlabel(r"$t / \Delta t_{\rm Wolff}$", fontsize=18, labelpad=3)
     else:
-        axes[1, 1].set_xlabel(r"$t / \Delta t_{{\rm Swendsen}\!-\!{\rm Wang}}$", fontsize=18, labelpad=3)
+        axes[1, 0].set_xlabel(r"$t / \Delta t_{\rm Metrop}^{\rm Ising}$", fontsize=18, labelpad=3)
+        axes[1, 1].set_xlabel(r"$t / \Delta t_{{\rm Swendsen}\!-\!{\rm Wang}}^{\rm Ising}$", fontsize=18, labelpad=3)
     [axis.set_xlim([-5, 160]) for axis in axes.flatten()]
     [axes[i, 1].tick_params(labelleft=False) for i in range(2)]
     if simple_axis_labels:
