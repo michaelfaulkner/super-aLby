@@ -14,12 +14,16 @@ this). It has been tested with CPython.
 
 super-aLby depends on [`numpy`](https://numpy.org). Some of the sample-analysis code (i.e., scripts contained in the 
 [`output`](src/output) directory) also depends on [`matplotlib`](https://matplotlib.org) and [`rpy2`](
-https://rpy2.github.io). [`markov_chain_diagnostics.py`](sample_analysis/markov_chain_diagnostics.py) depends on the R packages 
+https://rpy2.github.io).  However, everything can run without [`rpy2`](https://rpy2.github.io) - measurements of effective sample size would then be the only 
+lost functionality (we may resolve this in the future).
+
+[`markov_chain_diagnostics.py`](sample_analysis/markov_chain_diagnostics.py) depends on the R packages 
 [`LaplacesDemon`](https://cran.r-project.org/web/packages/LaplacesDemon/) and [`mcmcse`](
 https://cran.r-project.org/web/packages/mcmcse/). To install these R packages: download the binaries [here](
 https://cran.r-project.org/web/packages/LaplacesDemon/) and [here](https://cran.r-project.org/web/packages/mcmcse/) 
-and then run `R CMD INSTALL <binary location>` in your terminal. You may also need to install various dependencies of 
-these R packages (listed under Imports on the relevant CRAN package page).
+and then run `R CMD INSTALL <binary location>` in your terminal.  You may also need to install various dependencies of 
+these R packages (listed under Imports on the relevant CRAN package page).  Note again that everything can run without 
+[`rpy2`](https://rpy2.github.io) and these R packages (see preceding paragraph).
 
 To manage external Python packages, we use [conda](https://docs.conda.io/projects/conda/en/latest/) environments via 
 the [miniconda distribution](https://docs.conda.io/en/latest/miniconda.html). However, we found [`rpy2`](
@@ -141,10 +145,37 @@ before running `python sample_analysis/test_convergence.py
 config_files/convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini` 
 once the simulation has finished. 
 
-## Generation of the 2D-Ising figures included in Sampling algorithms in statistical physics
 
-To make figures 2, 9, 10 and 11 of *Sampling algorithms in statistical physics: a guide for statistics and machine 
-learning*, first run each configuration file in [`config_files/sampling_algos_ising_figs`](
+## *Emergent electrostatics in planar XY spin models* [Faulkner2024b]
+
+This details how to make its Ising-related figures.
+
+### Figure 1
+
+Run the script `python sample_analysis/make_ising_spec_heat_and_mag_density_figs.py False`.
+
+### Figure 2
+
+1. Run each configuration file in [`config_files/emergent_electrostatics_ising_figs`](
+src/config_files/emergent_electrostatics_ising_figs) via the command 
+`python run.py config_files/emergent_electrostatics_ising_figs/4x4_metropolis.ini`, etc.  
+2. Once all simulations are complete, run the relevant sample-analysis script via the command 
+`python sample_analysis/make_ising_spec_heat_and_mag_density_figs.py False`.
+
+### Other figures
+
+For Figures 5-9, 11 and 14-17, go to [xy-type-models](https://github.com/michaelfaulkner/xy-type-models) and follow the 
+instructions in the [README](https://github.com/michaelfaulkner/xy-type-models/blob/main/README.md).  We aim to 
+eventually integrate [xy-type-models](https://github.com/michaelfaulkner/xy-type-models) into super-aLby.
+
+All other figures are either TikZ-based or some heuristic curve made using matplotlib in a simple Python script.
+
+
+## *Sampling algorithms in statistical physics* [\[Faulkner2024a\]](https://doi.org/10.1214/23-STS893)
+
+This details how to make its Ising-related figures.
+
+To make Figures 2, 9, 10 and 11, first run each configuration file in [`config_files/sampling_algos_ising_figs`](
 src/config_files/sampling_algos_ising_figs) via the command `python run.py 
 config_files/sampling_algos_ising_figs/4x4_metropolis.ini`, etc.  
 
@@ -155,6 +186,8 @@ Then, once all simulations are complete, run the relevant sample-analysis script
 
 Each script also creates additional figures not presented in the paper.  These may also be useful to the user. 
 
-To make figure 12, go to [xy-type-models](https://github.com/michaelfaulkner/xy-type-models) and follow the instructions 
+To make Figure 12, go to [xy-type-models](https://github.com/michaelfaulkner/xy-type-models) and follow the instructions 
 in the [README](https://github.com/michaelfaulkner/xy-type-models/blob/main/README.md).  We aim to eventually integrate 
-xy-type-models into [super-aLby](https://github.com/michaelfaulkner/super-aLby).
+[xy-type-models](https://github.com/michaelfaulkner/xy-type-models) into super-aLby.
+
+All other figures are either TikZ-based or some heuristic curve made using matplotlib in a simple Python script.
