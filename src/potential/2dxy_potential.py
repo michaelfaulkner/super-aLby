@@ -1,0 +1,3 @@
+from .potential import Potential
+import numpy as np
+from model_settings import dimensionality_of_particle_space, number_of_particles, range_of_initial_particle_positions
