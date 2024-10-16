@@ -122,6 +122,17 @@ class XyPotential(ContinuousPotential):
         #                              positions[self._get_south_neighbour(active_particle_index)])
         # return self.potential_constant * sum_of_neighbouring_spins * (candidate_position -
         #                                                               positions[active_particle_index])
+        current_potential = -(np.cos(positions[self._get_north_neighbour(active_particle_index)] - positions[ active_particle_index]) +
+                                                   np.cos(positions[self._get_east_neighbour(active_particle_index)] - positions[active_particle_index]) +
+                                                   np.cos(positions[self._get_south_neighbour( active_particle_index)] - positions[active_particle_index]) +
+                                                   np.cos(positions[self._get_west_neighbour(active_particle_index)] - positions[active_particle_index]))
+        
+        candidate_potential = -(np.cos(positions[self._get_north_neighbour(active_particle_index)] - candidate_position) +
+                                                   np.cos(positions[self._get_east_neighbour(active_particle_index)] - candidate_position) +
+                                                   np.cos(positions[self._get_south_neighbour( active_particle_index)] - candidate_position) +
+                                                   np.cos(positions[self._get_west_neighbour(active_particle_index)] - candidate_position))
+        return self.potential_constant*(candidate_potential - current_potential)
+
 
 
 
