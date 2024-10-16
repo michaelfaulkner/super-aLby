@@ -20,6 +20,9 @@ class GaussianPotential(ContinuousPotential):
         ----------
         prefactor : float
             The prefactor k of the potential.
+            
+        Raises
+        ------
         base.exceptions.ConfigurationError
             If element is not None for element in size_of_particle_space.
         """
