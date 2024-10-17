@@ -57,6 +57,10 @@ def main(config_file_string):
         if not (len(samplers) == 1 and samplers[0] == "standard_position_sampler"):
             raise ValueError("Gaussian and exponential-power reference data only available for StandardPositionSampler."
                              "  Please give only this value for samplers in the Mediator section.")
+    elif potential == "xy_potential":
+        if not (len(samplers) == 1 and samplers[0] == "standard_mean_position_sampler"):
+            raise ValueError("XY model reference data only available for StandardMeanPositionSampler."
+                             "  Please give only this value for samplers in the Mediator section.")     
     else:
         raise ValueError("Reference data not provided for this potential.")
 
@@ -215,15 +219,19 @@ def main(config_file_string):
                              "lattice for which size_of_particle_space equals 2 and the product of "
                              "IsingPotential.prefactor and IsingPotential.exchange_constant is equal to 1.0 (n.b., "
                              "number_of_particles and size_of_particle_space are set in the ModelSettings section).")
-
+    elif "xy_potential" in potential:
+                    reference_sample = np.load('src/permanent_data/reference_data/'
+                                               'xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy')
     if potential != "ising_potential":
         reference_cdf = get_cumulative_distribution(reference_sample)
         if "coulomb" in potential or "lennard_jones" in potential:
-            sample = sample_getter.get_particle_separations(sample_directories[0], temperatures[0], 0, 
-                                                            number_of_particles, 
+            sample = sample_getter.get_particle_separations(sample_directories[0], temperatures[0], 0,
+                                                            number_of_particles,
                                                             number_of_equilibration_iterations).flatten()
+        elif "xy" in potential:
+            sample = sample_getter.get_mean_positions(sample_directories[0], temperatures[0], 0,
+                                                      number_of_particles).flatten()
         else:
-
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
         effective_sample_size = get_effective_sample_size(sample)

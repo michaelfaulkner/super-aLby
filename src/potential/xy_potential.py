@@ -12,7 +12,7 @@ class XyPotential(ContinuousPotential):
     This class implements the 2D XY model potential
     """
 
-    def __init__(self, prefactor: float = 1.0,  lattice_dimensionality: int = 2, **kwargs):
+    def __init__(self, prefactor: float = 1.0,  lattice_dimensionality: int = 2): # , **kwargs
         """
         The constructor of the XyPotential class.
 
