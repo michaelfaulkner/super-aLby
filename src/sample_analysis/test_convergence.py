@@ -248,7 +248,32 @@ def main(config_file_string):
         legend.get_frame().set_edgecolor('k')
         legend.get_frame().set_lw(1.5)
         plt.tight_layout()
-        plt.show()
+        #plt.show()
+        plt.savefig("output/convergence_test.png")
+
+        plt.clf()
+        plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
+        plt.xlabel(r"$x$", fontsize=15, labelpad=10)
+        plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)
+        plt.tick_params(axis='both', which='major', labelsize=14, pad=10)
+        legend = plt.legend(loc='lower right', fontsize=10)
+        legend.get_frame().set_edgecolor('k')
+        legend.get_frame().set_lw(1.5)
+        plt.tight_layout()
+        plt.savefig("output/reference_data.png")
+
+        plt.clf()
+        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-aLby data')
+        plt.xlabel(r"$x$", fontsize=15, labelpad=10)
+        plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)
+        plt.tick_params(axis='both', which='major', labelsize=14, pad=10)
+        legend = plt.legend(loc='lower right', fontsize=10)
+        legend.get_frame().set_edgecolor('k')
+        legend.get_frame().set_lw(1.5)
+        plt.tight_layout()
+        #plt.show()
+        plt.savefig("output/sample_data.png")
+
 
 
 if __name__ == '__main__':

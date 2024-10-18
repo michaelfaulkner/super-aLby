@@ -42,7 +42,9 @@ class XyPotential(ContinuousPotential):
     def get_value(self, positions):
 
         """
-        Returns the potential function for the given particle positions.
+        Returns the potential function for the given particle positions. Here, 'positions' is a misnomer, inherited from
+        the naming conventions of the parent ContinuousPotential class. A 'position' given here is actually a scalar value
+        corresponding to the phase/angle of the spin of the corresponding particle.
 
         Parameters
         ----------
@@ -131,6 +133,9 @@ class XyPotential(ContinuousPotential):
                                                    np.cos(positions[self._get_east_neighbour(active_particle_index)] - candidate_position) +
                                                    np.cos(positions[self._get_south_neighbour( active_particle_index)] - candidate_position) +
                                                    np.cos(positions[self._get_west_neighbour(active_particle_index)] - candidate_position))
+        
+        #print(f"for index {active_particle_index}: current potential: {self.potential_constant*current_potential}, candidate potential: {self.potential_constant*candidate_potential}, potential difference: {self.potential_constant*(candidate_potential - current_potential)}")
+
         return self.potential_constant*(candidate_potential - current_potential)
 
 
