@@ -1,6 +1,6 @@
 import numpy as np
 from .continuous_potential import ContinuousPotential
-from model_settings import dimensionality_of_particle_space, number_of_particles, range_of_initial_particle_positions
+from model_settings import number_of_particles
 from base.logging import log_init_arguments
 from base. exceptions import ConfigurationError
 import logging
@@ -16,7 +16,7 @@ class XyPotential(ContinuousPotential):
     def __init__(self, prefactor: float = 1.0,  lattice_dimensionality: int = 2): # , **kwargs
         """
         The constructor of the XyPotential class.
-
+        6 
         Parameters
         ----------
         prefactor : float

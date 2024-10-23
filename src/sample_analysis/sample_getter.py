@@ -279,12 +279,12 @@ def get_specific_heat(sample_directory, temperature, temperature_index, number_o
     Returns
     -------
     numpy.ndarray
-        The sample of the specific heat per particle.  A one-dimensional numpy array of length number_of_observations.
+        The sample of the specific heat.  A one-dimensional numpy array of length number_of_observations.
         The nth element is a float corresponding to the specific heat measured at observation n.
     """
     potential_sample = get_potential(sample_directory, temperature, temperature_index, number_of_particles,
                                      number_of_equilibration_iterations, thinning_level)
-    return (potential_sample - np.mean(potential_sample)) ** 2 / number_of_particles / temperature ** 2
+    return (potential_sample - np.mean(potential_sample)) ** 2 / temperature ** 2
 
 
 

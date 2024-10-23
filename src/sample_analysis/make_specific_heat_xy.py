@@ -55,8 +55,8 @@ def main(config_file_string):
                     number_of_equilibration_iterations, thinning_level))
 
                 
-                mean_arr_cv[temperature_index] = specific_heat_mean_and_error[0]
-                err_arr_cv[temperature_index] = specific_heat_mean_and_error[1]
+                mean_arr_cv[temperature_index] = specific_heat_mean_and_error[0]/number_of_particles
+                err_arr_cv[temperature_index] = specific_heat_mean_and_error[1]/number_of_particles
                 
                 
                 print(specific_heat_mean_and_error)
