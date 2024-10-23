@@ -24,6 +24,7 @@ def main(config_file_string):
     (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
      _, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
     
+    print(samplers)
     reference_cdf = np.load('src/permanent_data/reference_data/xy_reference_potential_8x8_0.8.npy')
     
     sample = sample_getter.get_potential(sample_directories[0], temperatures[0], 0,

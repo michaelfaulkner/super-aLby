@@ -71,9 +71,11 @@ class XyPotential(ContinuousPotential):
         # opposite for south and west
 
 
-        return self.potential_constant * np.sum([-(np.cos(positions[get_north_neighbour(index, self._lattice_length)]-positions[index]) +
-                                                   np.cos(positions[get_east_neighbour(index, self._lattice_length)]-positions[index]))
-                                                   for index in range(number_of_particles)])
+        # return self.potential_constant * np.sum([-(np.cos(positions[get_north_neighbour(index, self._lattice_length)]-positions[index]) +
+        #                                            np.cos(positions[get_east_neighbour(index, self._lattice_length)]-positions[index]))
+        #                                            for index in range(number_of_particles)])
+        return self.potential_constant * 0.5 * np.sum([self.sum_nearest_neighbours(index, positions[index], positions)
+                                                       for index in range(number_of_particles)])
 
 
     def get_gradient(self, positions):
