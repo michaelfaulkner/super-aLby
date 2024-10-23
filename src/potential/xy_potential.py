@@ -4,6 +4,7 @@ from model_settings import dimensionality_of_particle_space, number_of_particles
 from base.logging import log_init_arguments
 from base. exceptions import ConfigurationError
 import logging
+from helper_methods import get_east_neighbour, get_north_neighbour, get_west_neighbour, get_south_neighbour
 
 
 class XyPotential(ContinuousPotential):
@@ -65,11 +66,14 @@ class XyPotential(ContinuousPotential):
         # with j being nearest neighbours of index particle
         # add to running total
 
-        return self.potential_constant * np.sum([-(np.cos(positions[self._get_north_neighbour(index)]-positions[index]) +
-                                                   np.cos(positions[self._get_east_neighbour(index)]-positions[index]) +
-                                                   np.cos(positions[self._get_south_neighbour(index)]-positions[index]) +
-                                                   np.cos(positions[self._get_west_neighbour(index)]-positions[index]))
-                                                    for index in range(number_of_particles)])
+        # do east and north neighbours only - periodic BCs
+        # neighbour - self for these
+        # opposite for south and west
+
+
+        return self.potential_constant * np.sum([-(np.cos(positions[get_north_neighbour(index, self._lattice_length)]-positions[index]) +
+                                                   np.cos(positions[get_east_neighbour(index, self._lattice_length)]-positions[index]))
+                                                   for index in range(number_of_particles)])
 
 
     def get_gradient(self, positions):
@@ -91,7 +95,7 @@ class XyPotential(ContinuousPotential):
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
         """
-        Returns the potential difference resulting from moving the single active particle to candidate_position.
+        Returns the potential difference resulting from moving the single active particle's spin to candidate_position.
 
         Parameters
         ----------
@@ -109,62 +113,33 @@ class XyPotential(ContinuousPotential):
             The potential difference resulting from moving the single active particle to candidate_position.
         """
 
-
-        # potential difference = potential of proposed move - potential of current state
-        # get sum of -cos(\theta_j - \theta_candidate) + cos(\theta_j - \theta_i)
-        # where \theta_j are nearest neighbour spins
-        # \theta_i is the current spin: positions[active_particle_index]
-        # \theta_candidate is the proposed spin: candidate_position
-        # write/check for nearest neighbour finding function
-
-        # syntax from ising potential:
-        #        sum_of_neighbouring_spins = (positions[self._get_east_neighbour(active_particle_index)] +
-        #                              positions[self._get_north_neighbour(active_particle_index)] +
-        #                              positions[self._get_west_neighbour(active_particle_index)] +
-        #                              positions[self._get_south_neighbour(active_particle_index)])
-        # return self.potential_constant * sum_of_neighbouring_spins * (candidate_position -
-        #                                                               positions[active_particle_index])
-        current_potential = -(np.cos(positions[self._get_north_neighbour(active_particle_index)] - positions[ active_particle_index]) +
-                                                   np.cos(positions[self._get_east_neighbour(active_particle_index)] - positions[active_particle_index]) +
-                                                   np.cos(positions[self._get_south_neighbour( active_particle_index)] - positions[active_particle_index]) +
-                                                   np.cos(positions[self._get_west_neighbour(active_particle_index)] - positions[active_particle_index]))
-        
-        candidate_potential = -(np.cos(positions[self._get_north_neighbour(active_particle_index)] - candidate_position) +
-                                                   np.cos(positions[self._get_east_neighbour(active_particle_index)] - candidate_position) +
-                                                   np.cos(positions[self._get_south_neighbour( active_particle_index)] - candidate_position) +
-                                                   np.cos(positions[self._get_west_neighbour(active_particle_index)] - candidate_position))
-        
-        #print(f"for index {active_particle_index}: current potential: {self.potential_constant*current_potential}, candidate potential: {self.potential_constant*candidate_potential}, potential difference: {self.potential_constant*(candidate_potential - current_potential)}")
+        current_potential = self.sum_nearest_neighbours(active_particle_index, positions[active_particle_index], positions)
+        candidate_potential = self.sum_nearest_neighbours(active_particle_index, candidate_position, positions)
 
         return self.potential_constant*(candidate_potential - current_potential)
 
 
+    def sum_nearest_neighbours(self, active_particle_index, lattice_site_value, positions):
 
+        """
+        Returns the potential at lattice_site_index by performing a sum over nearest neighbours.
 
+        Parameters
+        ----------
+        lattice_site_index : int
+            The index of the lattice site.
+        lattice_site_value : float
+            The phase of the spin of the particle at lattice_site_index.
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the spin angle of its corresponding particle.
+        Returns
+        -------
+        float
+            The potential at lattice_site_index.
+        """
 
-    def get_neighbours(self, lattice_site_index):
-        """Returns a list of the four neighbours (on the 2D lattice) of lattice_site_index"""
-        return [self._get_east_neighbour(lattice_site_index), self._get_north_neighbour(lattice_site_index),
-                self._get_west_neighbour(lattice_site_index), self._get_south_neighbour(lattice_site_index)]
-
-    def _get_east_neighbour(self, lattice_site_index):
-        """Returns the eastwards neighbour (on the 2D lattice) of lattice_site_index"""
-        return lattice_site_index + (
-                lattice_site_index + 1) % self._lattice_length - lattice_site_index % self._lattice_length
-
-    def _get_north_neighbour(self, lattice_site_index):
-        """Returns the northwards neighbour (on the 2D lattice) of lattice_site_index"""
-        return lattice_site_index + self._lattice_length * (
-                (int(lattice_site_index / self._lattice_length) + 1) % self._lattice_length -
-                (int(lattice_site_index / self._lattice_length)) % self._lattice_length)
-
-    def _get_west_neighbour(self, lattice_site_index):
-        """Returns the westwards neighbour (on the 2D lattice) of lattice_site_index"""
-        return lattice_site_index + (lattice_site_index - 1 + self._lattice_length) % self._lattice_length - (
-                lattice_site_index + self._lattice_length) % self._lattice_length
-
-    def _get_south_neighbour(self, lattice_site_index):
-        """Returns the southwards neighbour (on the 2D lattice) of lattice_site_index"""
-        return lattice_site_index + self._lattice_length * (
-                (int(lattice_site_index / self._lattice_length) + self._lattice_length - 1) % self._lattice_length -
-                (int(lattice_site_index / self._lattice_length) + self._lattice_length) % self._lattice_length)
+        return  -(np.cos(positions[get_north_neighbour(active_particle_index, self._lattice_length)] - lattice_site_value) +
+                        np.cos(positions[get_east_neighbour(active_particle_index, self._lattice_length)] - lattice_site_value) +
+                        np.cos(lattice_site_value -positions[get_south_neighbour(active_particle_index, self._lattice_length)]) +
+                        np.cos(lattice_site_value - positions[get_west_neighbour(active_particle_index, self._lattice_length)]))

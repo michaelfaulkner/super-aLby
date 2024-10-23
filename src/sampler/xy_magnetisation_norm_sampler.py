@@ -1,11 +1,11 @@
-"""Module for the XyMagnetisationSampler class."""
+"""Module for the XyMagnetisationNormSampler class."""
 from .sampler import Sampler
 from base.logging import log_init_arguments
 from model_settings import dimensionality_of_particle_space
 import logging
 import numpy as np
 
-class XyMagnetisationSampler(Sampler):
+class XyMagnetisationNormSampler(Sampler):
     """
     Class for taking observations of magnetisation norm in XY model.
     """
@@ -63,14 +63,14 @@ class XyMagnetisationSampler(Sampler):
         numpy.ndarray
             The observation.
         """
-        # create array of vectors to take mean over, of size (positions, dimensionality_of_particle_space)
-        temp_arr = np.zeros((positions, dimensionality_of_particle_space))
+        # print(np.shape(positions))
+        temp_arr = np.zeros((np.shape(positions)[0],2))
 
         for index, phase in enumerate(positions):
             temp_arr[index,0] = np.cos(phase)
             temp_arr[index,1] = np.sin(phase)
         
-        mean_ij = np.mean(temp_arr, axis=1)
+        mean_ij = np.mean(temp_arr, axis=0)
         return np.linalg.norm(mean_ij)
     
     def output_sample(self, sample, temperature_index):
