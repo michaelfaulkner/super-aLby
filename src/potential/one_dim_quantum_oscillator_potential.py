@@ -3,7 +3,7 @@ from .potential import Potential
 from base.logging import log_init_arguments
 import logging
 import numpy as np
-from model_settings import number_of_particles
+from model_settings import number_of_particles, dimensionality_of_particle_space,  range_of_initial_particle_positions
 from base. exceptions import ConfigurationError
 
 class OneDimQuantumOscillatorPotential(Potential):
@@ -61,7 +61,7 @@ class OneDimQuantumOscillatorPotential(Potential):
         """
         dimensionless_positions = self.get_dimensionless_position(positions)
         S = 0
-        for i in range(0, number_of_particles): 
+        for i in range(0, number_of_particles):
             if i < number_of_particles-1: 
                 S += self.get_action_at_index(dimensionless_positions[i], dimensionless_positions[i+1])
             else: # impose periodic BCs
@@ -98,16 +98,31 @@ class OneDimQuantumOscillatorPotential(Potential):
 
     def initialised_position_array(self):
         """
-        Returns the initial positions array.
+        Returns the initial positions array. 
+        NOTE Currently only has functionality for initialising all positions as 0.0.
+
+        TODO add functionality to specify initial and final positions, calculate a simple
+        straight path between them and initilaise with this.
 
         Returns
         -------
         numpy.ndarray
             A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
             is a float and represents the position of the worldline at that time step.
-            """
-        # initialise positions to follow classical path?
-        # need to read in initial and final positions from config file
+        """
+        if dimensionality_of_particle_space != 1:
+            raise ConfigurationError(
+                f"Give a value of type None, float or int for size_of_particle_space in the ModelSettings"
+                f"section when using {self.__class__.__name__}")
+
+        if range_of_initial_particle_positions != 0.0:
+            raise ConfigurationError(
+                f"Give a value of 0.0 for range_of_initial_particle_positions in the ModelSettings"
+                f"section when using {self.__class__.__name__}. Functionality not yet provided for"
+                f"non-zero initial path.")
+
+        return np.zeros(number_of_particles)
+        
 
 
 
@@ -149,5 +164,4 @@ class OneDimQuantumOscillatorPotential(Potential):
         """
 
         return (0.5 * self.m * (position_at_next_index - position_at_index)**2 +
-                0.5 * self.m * self.dimensionless_omega**2 * position_at_index**2)
-    
+                0.5 * self.m * self.dimensionless_omega**2 * position_at_index**2)   
