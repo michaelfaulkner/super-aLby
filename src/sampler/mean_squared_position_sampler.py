@@ -44,4 +44,4 @@ class MeanSquaredPositionSampler(MeanPositionSampler):
         numpy.ndarray
             The observation of the positions.
         """
-        return np.mean(np.square(positions), axis=0)
+        return np.mean(np.square(positions))

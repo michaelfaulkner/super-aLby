@@ -14,7 +14,7 @@ class OneDimQuantumOscillatorPotential(Potential):
     with the name 'potential' being a misnomer that is an aterfact of the parent Potential class.
     
     """
-    def __init__(self, prefactor: float = 1.0, mass: float = 1.0, lattice_dimensionality: int = 1, timestep : float = 0.1):
+    def __init__(self, prefactor: float = 1.0, mass: float = 1.0, lattice_dimensionality: int = 1, timestep : float = 0.1, force_constant : float = 1.0):
         r"""
         The constructor of the  OneDimQuantumOscillatorPotential class
 
@@ -33,15 +33,15 @@ class OneDimQuantumOscillatorPotential(Potential):
         if lattice_dimensionality != 1:
             raise ConfigurationError(f"Give a value of 1 for lattice_dimensionality in {self.__class__.__name__} - "
                                      f"functionality for other dimensions not yet provided.")
-        self.k = prefactor
-        self.m = mass
+        self._k = force_constant
+        self._m = mass
         self._lattice_dimensionality = lattice_dimensionality
-        self.timestep = timestep
+        self._timestep = timestep
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            prefactor=prefactor, mass=mass, lattice_dimensionality=lattice_dimensionality, timestep=timestep)
-        self.omega = np.sqrt(self.k/self.m)
-        self.dimensionless_m = self.m * self.timestep
-        self.dimensionless_omega = self.omega * self.timestep
+        self._omega = np.sqrt(self._k/self._m)
+        self._dimensionless_m = self._m * self._timestep
+        self._dimensionless_omega = self._omega * self._timestep
 
         
     def get_value(self, positions):
@@ -59,13 +59,13 @@ class OneDimQuantumOscillatorPotential(Potential):
             The dimensionless action.
         """
         dimensionless_positions = self.get_dimensionless_position(positions)
-        S = 0
+        action = 0.0
         for i in range(0, number_of_particles):
             if i < number_of_particles-1: 
-                S += self.get_action_at_index(dimensionless_positions[i], dimensionless_positions[i+1])
+                action += self.get_action_at_index(dimensionless_positions[i], dimensionless_positions[i+1])
             else: # impose periodic BCs
-                S += self.get_action_at_index(dimensionless_positions[i], dimensionless_positions[0])
-        return S
+                action += self.get_action_at_index(dimensionless_positions[i], dimensionless_positions[0])
+        return action
 
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
@@ -88,12 +88,12 @@ class OneDimQuantumOscillatorPotential(Potential):
             The difference in dimensionless action resulting from moving the single active particle to candidate_position.
         """
 
-        current_S = self.get_value(positions)
+        current_action = self.get_value(positions)
         positions_with_candidate = positions
         positions_with_candidate[active_particle_index] = candidate_position
-        candidate_S = self.get_value(positions_with_candidate)
+        candidate_action = self.get_value(positions_with_candidate)
        
-        return candidate_S - current_S
+        return candidate_action - current_action
 
     def initialised_position_array(self):
         """
@@ -143,7 +143,7 @@ class OneDimQuantumOscillatorPotential(Potential):
 
         """
 
-        return positions/self.timestep
+        return positions/self._timestep
     
     def get_action_at_index(self, position_at_index, position_at_next_index):
         """
@@ -162,5 +162,5 @@ class OneDimQuantumOscillatorPotential(Potential):
             The contribution to the dimensionless action at the given index.
         """
 
-        return (0.5 * self.m * (position_at_next_index - position_at_index)**2 +
-                0.5 * self.m * self.dimensionless_omega**2 * position_at_index**2)   
+        return (0.5 * self._m * (position_at_next_index - position_at_index)**2 +
+                0.5 * self._m * self._dimensionless_omega**2 * position_at_index**2)   
