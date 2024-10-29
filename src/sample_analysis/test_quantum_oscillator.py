@@ -1,15 +1,31 @@
 import numpy as np
 import os
+import importlib
+import matplotlib
+import matplotlib.pyplot as plt
+import sample_getter
+import sys
+from configparser import NoOptionError
+from markov_chain_diagnostics import get_sample_mean_and_error
+
+this_directory = os.path.dirname(os.path.abspath(__file__))
+src_directory = os.path.abspath(this_directory + "/../")
+sys.path.insert(0, src_directory)
+helper_methods = importlib.import_module("helper_methods")
+parsing = importlib.import_module("base.parsing")
+strings = importlib.import_module("base.strings")
 
 # read in the k values from k_values.txt
 current_directory = os.path.dirname(__file__)
 k_values_filepath = os.path.join(os.path.split(current_directory)[0], "k_values.txt")
-f = open(k_values_filepath, "r")
-print(f.read()) 
-# for line in file, remove index, copy value to array
-f.close() 
-# calculate <x^2> from MC users guide paper for each k
+k_data = np.loadtxt(k_values_filepath, dtype='str')
+k_values = k_data[:,1]
+
+
 def get_analytical_x2(k, m, timestep, number_of_time_elements):
+    """
+    calculate <x^2> from MC users guide paper for given k
+    """
     dimensionless_omega = np.sqrt(k/m) * timestep
     dimensionless_m = m * timestep
     dimensionless_omega_squared = dimensionless_omega**2
@@ -19,8 +35,49 @@ def get_analytical_x2(k, m, timestep, number_of_time_elements):
     return (1 / (2 * dimensionless_m * dimensionless_omega * np.sqrt(1 + 0.25 * dimensionless_omega_squared)) *
             (1 + auxillary**number_of_time_elements) / (1 - auxillary**number_of_time_elements))
 
-# read in the x^2 values from the corresponding files
-# which are formatted ../metropolis_{k_read_in}/temperature_00_sample_of_mean_positions.npy
-# take the mean of these for each simulation?
+analytical_x2 = np.zeros(len(k_values))
+numerical_x2 = np.zeros(len(k_values))
+x2_err = np.zeros(len(k_values))
+k_arr = np.zeros(len(k_values))
+
+for index, string in enumerate(k_values):
+    config_file_string = f"src/config_files/convergence_tests/one_dim_quantum_oscillator_potential/metropolis_{string}.ini"
+    config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
+    (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
+     _, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
+    
+    mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
+    timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
+    k = parsing.get_value(config, strings.to_camel_case(potential), "force_constant")
+    number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles") # this is janky but model_settings.number_of_particles doesn't like that I need to access several config files
+    #print(mass, timestep, k)
+    analytical_x2[index] = get_analytical_x2(k, mass, timestep, number_of_particles)
+    
+    # read in the x^2 values from the corresponding files
+    # which are formatted ../metropolis_{k_read_in}/temperature_00_sample_of_mean_positions.npy
+    # take the mean of these for each simulation?
+    sample_directory = f"output/convergence_tests/one_dim_quantum_oscillator_potential/metropolis_{string}"
+    temperature_index = 0
+    x2_mean_and_error = get_sample_mean_and_error(sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
+                        temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=None))
+   
+    numerical_x2[index] = x2_mean_and_error[0]
+    x2_err[index] = x2_mean_and_error[1]
+    k_arr[index] = k
+
+fig, ax = plt.subplots(1,1)
+ax.plot(k_arr, analytical_x2, label="Analytical result", marker="x", color="red")
+ax.errorbar(k_arr, numerical_x2, x2_err, label="Numerical result",color="blue")
+ax.set_xlabel("k")
+ax.set_ylabel("<x^2>")
+plt.legend()
+#plt.show()
+print(numerical_x2)
+
+
+
+
+
+
 
 # plot the simulation values against the calculated values

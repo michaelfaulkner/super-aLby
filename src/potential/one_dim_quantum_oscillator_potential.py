@@ -3,7 +3,7 @@ from .potential import Potential
 from base.logging import log_init_arguments
 import logging
 import numpy as np
-from model_settings import number_of_particles, dimensionality_of_particle_space,  range_of_initial_particle_positions
+from model_settings import number_of_particles, dimensionality_of_particle_space, range_of_initial_particle_positions
 from base. exceptions import ConfigurationError
 
 class OneDimQuantumOscillatorPotential(Potential):
@@ -14,7 +14,7 @@ class OneDimQuantumOscillatorPotential(Potential):
     with the name 'potential' being a misnomer that is an aterfact of the parent Potential class.
     
     """
-    def __init__(self, prefactor: float = 1.0, mass: float = 1.0, lattice_dimensionality: int = 1, timestep : float = 0.1, force_constant : float = 1.0):
+    def __init__(self, prefactor: float = 1.0, mass: float = 1.0, lattice_dimensionality: int = 1, timestep : float = 0.1):
         r"""
         The constructor of the  OneDimQuantumOscillatorPotential class
 
@@ -33,15 +33,15 @@ class OneDimQuantumOscillatorPotential(Potential):
         if lattice_dimensionality != 1:
             raise ConfigurationError(f"Give a value of 1 for lattice_dimensionality in {self.__class__.__name__} - "
                                      f"functionality for other dimensions not yet provided.")
-        self._k = force_constant
         self._m = mass
+        self._omega = self._m
         self._lattice_dimensionality = lattice_dimensionality
         self._timestep = timestep
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            prefactor=prefactor, mass=mass, lattice_dimensionality=lattice_dimensionality, timestep=timestep)
-        self._omega = np.sqrt(self._k/self._m)
         self._dimensionless_m = self._m * self._timestep
         self._dimensionless_omega = self._omega * self._timestep
+        self._k = self._dimensionless_omega**2 * self._dimensionless_m / (self._timestep**3)
 
         
     def get_value(self, positions):
