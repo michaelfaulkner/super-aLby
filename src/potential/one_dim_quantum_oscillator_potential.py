@@ -33,10 +33,10 @@ class OneDimQuantumOscillatorPotential(Potential):
         if lattice_dimensionality != 1:
             raise ConfigurationError(f"Give a value of 1 for lattice_dimensionality in {self.__class__.__name__} - "
                                      f"functionality for other dimensions not yet provided.")
+        self._timestep = timestep
         self._m = mass
         self._dimensionless_m = self._m * self._timestep
         self._lattice_dimensionality = lattice_dimensionality
-        self._timestep = timestep
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            prefactor=prefactor, mass=mass, lattice_dimensionality=lattice_dimensionality, timestep=timestep)
         self._dimensionless_omega = self._dimensionless_m
