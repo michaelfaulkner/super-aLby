@@ -34,13 +34,12 @@ class OneDimQuantumOscillatorPotential(Potential):
             raise ConfigurationError(f"Give a value of 1 for lattice_dimensionality in {self.__class__.__name__} - "
                                      f"functionality for other dimensions not yet provided.")
         self._m = mass
-        self._omega = self._m
+        self._dimensionless_m = self._m * self._timestep
         self._lattice_dimensionality = lattice_dimensionality
         self._timestep = timestep
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            prefactor=prefactor, mass=mass, lattice_dimensionality=lattice_dimensionality, timestep=timestep)
-        self._dimensionless_m = self._m * self._timestep
-        self._dimensionless_omega = self._omega * self._timestep
+        self._dimensionless_omega = self._dimensionless_m
         self._k = self._dimensionless_omega**2 * self._dimensionless_m / (self._timestep**3)
 
         
@@ -61,7 +60,7 @@ class OneDimQuantumOscillatorPotential(Potential):
         dimensionless_positions = self.get_dimensionless_position(positions)
         action = 0.0
         for i in range(0, number_of_particles):
-            if i < number_of_particles-1: 
+            if i < number_of_particles-1:
                 action += self.get_action_at_index(dimensionless_positions[i], dimensionless_positions[i+1])
             else: # impose periodic BCs
                 action += self.get_action_at_index(dimensionless_positions[i], dimensionless_positions[0])
@@ -87,12 +86,18 @@ class OneDimQuantumOscillatorPotential(Potential):
         float
             The difference in dimensionless action resulting from moving the single active particle to candidate_position.
         """
+        # changed to only look at change in nearest neighbours terms
+        if active_particle_index < number_of_particles-1:
+            current_action = (self.get_action_at_index(positions[active_particle_index-1], positions[active_particle_index]) +
+                                self.get_action_at_index(positions[active_particle_index], positions[active_particle_index+1]))
+            candidate_action = (self.get_action_at_index(positions[active_particle_index-1], candidate_position) +
+                                self.get_action_at_index(candidate_position, positions[active_particle_index+1]))
+        else: # periodic BCs - note index=0 case is accounted for above as 0-1=-1 and array[-1] gives last element
+            current_action = (self.get_action_at_index(positions[active_particle_index-1], positions[active_particle_index]) +
+                                self.get_action_at_index(positions[active_particle_index], positions[0]))
+            candidate_action = (self.get_action_at_index(positions[active_particle_index-1], candidate_position) +
+                                self.get_action_at_index(candidate_position, positions[0]))
 
-        current_action = self.get_value(positions)
-        positions_with_candidate = positions
-        positions_with_candidate[active_particle_index] = candidate_position
-        candidate_action = self.get_value(positions_with_candidate)
-       
         return candidate_action - current_action
 
     def initialised_position_array(self):
@@ -143,7 +148,7 @@ class OneDimQuantumOscillatorPotential(Potential):
 
         """
 
-        return positions/self._timestep
+        return positions / self._timestep
     
     def get_action_at_index(self, position_at_index, position_at_next_index):
         """

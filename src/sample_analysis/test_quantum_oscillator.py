@@ -17,16 +17,17 @@ strings = importlib.import_module("base.strings")
 
 # read in the k values from k_values.txt
 current_directory = os.path.dirname(__file__)
-k_values_filepath = os.path.join(os.path.split(current_directory)[0], "k_values.txt")
+k_values_filepath = os.path.join(os.path.split(current_directory)[0], "m_values.txt")
 k_data = np.loadtxt(k_values_filepath, dtype='str')
 k_values = k_data[:,1]
 
 
-def get_analytical_x2(k, m, timestep, number_of_time_elements):
+def get_analytical_x2(m, timestep, number_of_time_elements):
     """
     calculate <x^2> from MC users guide paper for given k
     """
-    dimensionless_omega = np.sqrt(k/m) * timestep
+    dimensionless_m = m * timestep
+    dimensionless_omega = dimensionless_m
     dimensionless_m = m * timestep
     dimensionless_omega_squared = dimensionless_omega**2
     
@@ -48,22 +49,24 @@ for index, string in enumerate(k_values):
     
     mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
     timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
-    k = parsing.get_value(config, strings.to_camel_case(potential), "force_constant")
     number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles") # this is janky but model_settings.number_of_particles doesn't like that I need to access several config files
     #print(mass, timestep, k)
-    analytical_x2[index] = get_analytical_x2(k, mass, timestep, number_of_particles)
+    analytical_x2[index] = get_analytical_x2(mass, timestep, number_of_particles)
     
     # read in the x^2 values from the corresponding files
     # which are formatted ../metropolis_{k_read_in}/temperature_00_sample_of_mean_positions.npy
     # take the mean of these for each simulation?
     sample_directory = f"output/convergence_tests/one_dim_quantum_oscillator_potential/metropolis_{string}"
     temperature_index = 0
-    x2_mean_and_error = get_sample_mean_and_error(sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
+    try:
+        x2_mean_and_error = get_sample_mean_and_error(sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
                         temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=None))
+    except FileNotFoundError:
+        print("data not produced")
    
     numerical_x2[index] = x2_mean_and_error[0]
     x2_err[index] = x2_mean_and_error[1]
-    k_arr[index] = k
+    k_arr[index] = mass
 
 fig, ax = plt.subplots(1,1)
 ax.plot(k_arr, analytical_x2, label="Analytical result", marker="x", color="red")
@@ -71,7 +74,7 @@ ax.errorbar(k_arr, numerical_x2, x2_err, label="Numerical result",color="blue")
 ax.set_xlabel("k")
 ax.set_ylabel("<x^2>")
 plt.legend()
-#plt.show()
+plt.show()
 print(numerical_x2)
 
 
