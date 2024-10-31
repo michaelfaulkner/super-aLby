@@ -69,4 +69,5 @@
 
 ## venv directory for pip-environment management
 venv/
-alby_venv/
+super_alby_venv/
+output/
