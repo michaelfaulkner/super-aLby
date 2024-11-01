@@ -28,10 +28,11 @@ def get_analytical_x2(m, timestep, number_of_time_elements):
     """
     dimensionless_m = m * timestep
     dimensionless_omega = dimensionless_m
-    dimensionless_m = m * timestep
     dimensionless_omega_squared = dimensionless_omega**2
     
     auxillary = 1 + dimensionless_omega_squared / 2 - dimensionless_omega * np.sqrt(1 + dimensionless_omega_squared / 4)
+    print(dimensionless_omega_squared)
+    print(1 / (2 * dimensionless_m * dimensionless_omega * np.sqrt(1 + 0.25 * dimensionless_omega_squared)))
 
     return (1 / (2 * dimensionless_m * dimensionless_omega * np.sqrt(1 + 0.25 * dimensionless_omega_squared)) *
             (1 + auxillary**number_of_time_elements) / (1 - auxillary**number_of_time_elements))

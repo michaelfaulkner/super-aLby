@@ -97,7 +97,8 @@ class OneDimQuantumOscillatorPotential(Potential):
                                 self.get_action_at_index(positions[active_particle_index], positions[0]))
             candidate_action = (self.get_action_at_index(positions[active_particle_index-1], candidate_position) +
                                 self.get_action_at_index(candidate_position, positions[0]))
-
+        
+        # print(f"candidate position: {candidate_position}")
         return candidate_action - current_action
 
     def initialised_position_array(self):
@@ -125,7 +126,7 @@ class OneDimQuantumOscillatorPotential(Potential):
                 f"section when using {self.__class__.__name__}. Functionality not yet provided for"
                 f"non-zero initial path.")
 
-        return np.zeros(number_of_particles)
+        return np.zeros((number_of_particles,1))
         
 
 

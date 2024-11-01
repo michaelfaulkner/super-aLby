@@ -101,6 +101,10 @@ def run_single_simulation(config_file_location: str, job_number: Union[int, None
     number_of_jobs: int
         The total number of parallel jobs.
     """
+    #################
+    f = open("candidates.txt","w")
+    f.close()
+    #################
     args = parse_options([config_file_location])
     logger = set_up_logging(args)
 
