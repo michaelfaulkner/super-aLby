@@ -22,20 +22,18 @@ k_data = np.loadtxt(k_values_filepath, dtype='str')
 k_values = k_data[:,1]
 
 
-def get_analytical_x2(m, timestep, number_of_time_elements):
+def get_analytical_x2(dimensionless_m, timestep, number_of_time_elements):
     """
     calculate <x^2> from MC users guide paper for given k
     """
-    dimensionless_m = m * timestep
     dimensionless_omega = dimensionless_m
     dimensionless_omega_squared = dimensionless_omega**2
     
     auxillary = 1 + dimensionless_omega_squared / 2 - dimensionless_omega * np.sqrt(1 + dimensionless_omega_squared / 4)
-    print(dimensionless_omega_squared)
-    print(1 / (2 * dimensionless_m * dimensionless_omega * np.sqrt(1 + 0.25 * dimensionless_omega_squared)))
 
     return (1 / (2 * dimensionless_m * dimensionless_omega * np.sqrt(1 + 0.25 * dimensionless_omega_squared)) *
             (1 + auxillary**number_of_time_elements) / (1 - auxillary**number_of_time_elements))
+
 
 analytical_x2 = np.zeros(len(k_values))
 numerical_x2 = np.zeros(len(k_values))
@@ -48,11 +46,11 @@ for index, string in enumerate(k_values):
     (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
      _, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
     
-    mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
+    dimensionless_mass = parsing.get_value(config, strings.to_camel_case(potential), "dimensionless_mass")
     timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
     number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles") # this is janky but model_settings.number_of_particles doesn't like that I need to access several config files
     #print(mass, timestep, k)
-    analytical_x2[index] = get_analytical_x2(mass, timestep, number_of_particles)
+    analytical_x2[index] = get_analytical_x2(dimensionless_mass, timestep, number_of_particles)
     
     # read in the x^2 values from the corresponding files
     # which are formatted ../metropolis_{k_read_in}/temperature_00_sample_of_mean_positions.npy
@@ -67,16 +65,22 @@ for index, string in enumerate(k_values):
    
     numerical_x2[index] = x2_mean_and_error[0]
     x2_err[index] = x2_mean_and_error[1]
-    k_arr[index] = mass
+    k_arr[index] = dimensionless_mass
 
-fig, ax = plt.subplots(1,1)
-ax.plot(k_arr, analytical_x2, label="Analytical result", marker="x", color="red")
-ax.errorbar(k_arr, numerical_x2, x2_err, label="Numerical result",color="blue")
-ax.set_xlabel("k")
-ax.set_ylabel("<x^2>")
-plt.legend()
+fig, ax = plt.subplots(1,2)
+ax[0].scatter(k_arr, analytical_x2, label="Analytical result", marker="x", color="red")
+ax[0].errorbar(k_arr, numerical_x2, x2_err, label="Numerical result",color="orange", marker="x", linestyle="")
+ax[0].set_xlabel("dimentionless m")
+ax[0].set_ylabel("<x^2>")
+ax[0].legend()
+
+ax[1].scatter(k_arr, analytical_x2, label="Analytical result", marker="x", color="red")
+ax[1].errorbar(k_arr,150 * numerical_x2, 150 * x2_err, label="Numerical result * scaling factor",color="blue", marker="x", linestyle="")
+ax[1].set_xlabel("dimentionless m")
+ax[1].set_ylabel("<x^2>")
+ax[1].legend()
 plt.show()
-print(numerical_x2)
+
 
 
 
