@@ -67,18 +67,20 @@ for index, string in enumerate(k_values):
     x2_err[index] = x2_mean_and_error[1]
     k_arr[index] = dimensionless_mass
 
-fig, ax = plt.subplots(1,2)
-ax[0].scatter(k_arr, analytical_x2, label="Analytical result", marker="x", color="red")
-ax[0].errorbar(k_arr, numerical_x2, x2_err, label="Numerical result",color="orange", marker="x", linestyle="")
-ax[0].set_xlabel("dimentionless m")
-ax[0].set_ylabel("<x^2>")
-ax[0].legend()
+fig, ax = plt.subplots(1,1)
+ax.scatter(k_arr, analytical_x2, label="Analytical result", marker="x", color="red")
+ax.errorbar(k_arr, numerical_x2, x2_err, label="Numerical result", color="blue", marker="x", linestyle="")
+ax.set_xlabel("dimentionless m")
+ax.set_ylabel("<x^2> - with dimensionless positions")
+ax.legend()
 
-ax[1].scatter(k_arr, analytical_x2, label="Analytical result", marker="x", color="red")
-ax[1].errorbar(k_arr,150 * numerical_x2, 150 * x2_err, label="Numerical result * scaling factor",color="blue", marker="x", linestyle="")
-ax[1].set_xlabel("dimentionless m")
-ax[1].set_ylabel("<x^2>")
-ax[1].legend()
+# ax[1].scatter(k_arr, analytical_x2, label="Analytical result", marker="x", color="red")
+# ax[1].errorbar(k_arr, numerical_x2, x2_err, label="Numerical result * scaling factor", color="blue", marker="x", linestyle="")
+# ax[1].set_xlabel("dimentionless m")
+# ax[1].set_ylabel("<x^2>")
+# ax[1].legend()
+plt.tight_layout()
+plt.savefig("output/figs/analytical_numerical_x2.png")
 plt.show()
 
 

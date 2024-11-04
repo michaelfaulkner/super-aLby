@@ -39,20 +39,26 @@ def main():
         
         sample_directory = f"output/convergence_tests/one_dim_quantum_oscillator_potential/metropolis_{mass_as_string}"
         temperature_index = 0
-        thinning_level = 10
+        if number_of_observations < 10000:
+            thinning_level = 1
+        else:
+            thinning_level = 10
         mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
                             temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
+        if len(mean_sample) != int(number_of_observations/thinning_level):
+            mean_sample = mean_sample[int(number_of_equilibration_iterations/thinning_level):]
+
         position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
                             temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=300)
 
         position_sample_squared = np.square(position_sample)
         fig, ax = plt.subplots(1,1)
-        
-        ax.scatter(np.arange(0,number_of_observations,thinning_level), mean_sample)
+        ax.scatter(np.arange(0,number_of_observations,thinning_level), mean_sample * timestep**2)
         ax.set_title(f"expectation of {dimensionless_mass}")
         ax.set_xlabel("metropolis sweeps")
         ax.set_ylabel("<x^2>")
         fig.suptitle(f"dim_m = {dimensionless_mass}")
+        plt.savefig(f"output/figs/expectation_{mass_as_string}.png")
 
         fig1, ax1 = plt.subplots(1,1)
         for index in range(len(position_sample)):
@@ -74,9 +80,11 @@ def main():
             # ax2[2].set_xlabel("site")
             # ax2[0].set_ylabel("Position^2")
             # fig2.suptitle(f"dim_m = {dimensionless_mass}")
+        plt.legend()
+        plt.savefig(f"output/figs/positions_{mass_as_string}.png")
 
-    plt.legend()
-    plt.show()
+    
+    #plt.show()
 
 if __name__ == '__main__':
     main()

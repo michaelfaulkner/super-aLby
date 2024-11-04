@@ -10,7 +10,7 @@ class MeanSquaredPositionSampler(MeanPositionSampler):
     Class for taking observations of mean particle positions without correcting for periodic boundaries.
     """
 
-    def __init__(self, output_directory: str):
+    def __init__(self, output_directory: str, timestep: float = 0.1):
         """
         The constructor of the MeanSquaredPositionSampler class.
 
@@ -20,6 +20,7 @@ class MeanSquaredPositionSampler(MeanPositionSampler):
             The filename onto which the sample is written at the end of the run.
         """
         super().__init__(output_directory)
+        self._timestep = timestep
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            output_directory=output_directory)
 
@@ -46,4 +47,4 @@ class MeanSquaredPositionSampler(MeanPositionSampler):
         """
         # middle = int(len(positions) / 2)
         # print(positions[middle - 100], positions[middle], positions[middle + 100])
-        return np.mean(np.square(positions))
+        return np.mean(np.square(positions / self._timestep))

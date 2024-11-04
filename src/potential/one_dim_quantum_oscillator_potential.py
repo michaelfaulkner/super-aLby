@@ -14,7 +14,7 @@ class OneDimQuantumOscillatorPotential(Potential):
     with the name 'potential' being a misnomer that is an aterfact of the parent Potential class.
     
     """
-    def __init__(self, prefactor: float = 1.0, dimensionless_mass: float = 1.0, lattice_dimensionality: int = 1, timestep : float = 0.1):
+    def __init__(self, prefactor: float = 1.0, dimensionless_mass: float = 1.0, lattice_dimensionality: int = 1, timestep: float = 0.1):
         r"""
         The constructor of the  OneDimQuantumOscillatorPotential class
 
