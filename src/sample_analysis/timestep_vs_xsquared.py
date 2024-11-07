@@ -27,16 +27,17 @@ def main():
 
     # read in the k values from k_values.txt
     current_directory = os.path.dirname(__file__)
-    k_values_filepath = os.path.join(os.path.split(current_directory)[0], "timestep_values.txt")
+    k_values_filepath = os.path.join(os.path.split(current_directory)[0], "tau_values.txt")
     k_data = np.loadtxt(k_values_filepath, dtype='str')
     k_values = k_data[:,1]
 
+    analytical_x2_arr = np.zeros(len(k_values))
     numerical_x2 = np.zeros(len(k_values))
     timestep_arr = np.zeros(len(k_values))
     m_arr = np.zeros(len(k_values))
 
     for index, string in enumerate(k_values):
-        config_file_string = f"src/config_files/convergence_tests/one_dim_quantum_oscillator_potential/metropolis_01_{string}.ini"
+        config_file_string = f"src/config_files/convergence_tests/one_dim_quantum_oscillator_potential/metropolis_1_{string}.ini"
         config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
         (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
         number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
@@ -51,7 +52,7 @@ def main():
         for _ in mass_string_split:
             mass_as_string += _
         
-        sample_directory = f"output/timestep/metropolis_01_{string}"
+        sample_directory = f"output/timestep/metropolis_1_{string}"
         temperature_index = 0
         if number_of_observations < 10000:
             thinning_level = 1
@@ -66,26 +67,35 @@ def main():
         numerical_x2[index] = mean_sample_mean[0]
         timestep_arr[index] = timestep
         m_arr[index] = dimensionless_mass / timestep
+        analytical_x2_arr[index] = analytical_x2(dimensionless_mass)
+
+    #m_arr_loaded = np.load("src/m_arr.npy")
+    #numerical_x2_loaded = np.load("src/numerical_x2.npy")
+
+    # fig, ax = plt.subplots(1,1)
+    # ax.scatter(timestep_arr, numerical_x2, marker="x", color="red")
+    # ax.set_xlabel("timestep")
+    # ax.set_ylabel("<x^2>")
+
+    # fig1, ax1 = plt.subplots(1,1)
+    # ax1.scatter(m_arr, numerical_x2 * timestep**2, marker="x", color="purple", label="changing timestep")
+    # #ax1.scatter(m_arr_loaded, numerical_x2_loaded, marker="x", color="orange", label="changing dimensionless m")
+    # ax1.set_xlabel("m")
+    # ax1.set_ylabel("<x^2>")
+    # ax1.legend()  
 
 
-    fig, ax = plt.subplots(1,1)
-    ax.scatter(timestep_arr, numerical_x2, marker="x", color="red")
-    ax.set_xlabel("timestep")
-    ax.set_ylabel("<x^2>")
+    fig2, ax2 = plt.subplots(1,1)
+    ax2.scatter(timestep_arr, analytical_x2_arr, marker="x", color="red", label="analytical")
+    ax2.scatter(timestep_arr, numerical_x2, marker="x", color="blue", label="numerical")
+    ax2.set_xlabel("timestep")
+    ax2.set_ylabel("<x^2> - dimensionless")
+    ax2.legend()
 
-    fig1, ax1 = plt.subplots(1,1)
-    ax1.scatter(m_arr, numerical_x2 * timestep**2, marker="x", color="purple")
-    ax1.set_xlabel("m")
-    ax1.set_ylabel("<x^2>")
-
-    # ax[1].scatter(k_arr, analytical_x2, label="Analytical result", marker="x", color="red")
-    # ax[1].errorbar(k_arr, numerical_x2, x2_err, label="Numerical result * scaling factor", color="blue", marker="x", linestyle="")
-    # ax[1].set_xlabel("dimentionless m")
-    # ax[1].set_ylabel("<x^2>")
-    # ax[1].legend()
     plt.tight_layout()
 
     plt.show()
+    
 
 
 if __name__ == '__main__':

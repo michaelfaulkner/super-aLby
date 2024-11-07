@@ -37,6 +37,7 @@ def get_analytical_x2(dimensionless_m, timestep, number_of_time_elements):
 
 analytical_x2 = np.zeros(len(k_values))
 numerical_x2 = np.zeros(len(k_values))
+numerical_x2_dimensionless = np.zeros(len(k_values))
 x2_err = np.zeros(len(k_values))
 k_arr = np.zeros(len(k_values))
 m_arr = np.zeros(len(k_values))
@@ -64,22 +65,25 @@ for index, string in enumerate(k_values):
     except FileNotFoundError:
         print("data not produced")
    
-    numerical_x2[index] = x2_mean_and_error[0]
+    numerical_x2_dimensionless[index] = x2_mean_and_error[0]
+    numerical_x2[index] = x2_mean_and_error[0] * timestep**2
     x2_err[index] = x2_mean_and_error[1]
     k_arr[index] = dimensionless_mass
     m_arr[index] = dimensionless_mass / timestep
 
+np.save("src/m_arr", m_arr)
+np.save("src/numerical_x2", numerical_x2)
 fig, ax = plt.subplots(1,1)
 ax.scatter(k_arr, analytical_x2, label="Analytical result", marker="x", color="red")
-ax.errorbar(k_arr, numerical_x2, x2_err, label="Numerical result", color="blue", marker="x", linestyle="")
+ax.errorbar(k_arr, numerical_x2_dimensionless, x2_err, label="Numerical result", color="blue", marker="x", linestyle="")
 ax.set_xlabel("dimensionless m")
 ax.set_ylabel("<x^2> - with dimensionless positions")
 ax.legend()
 
-fig1, ax1 = plt.subplots(1,1)
-ax1.scatter(m_arr, numerical_x2 * timestep**2, marker="x", color="red")
-ax1.set_xlabel("m")
-ax1.set_ylabel("<x^2>")
+# fig1, ax1 = plt.subplots(1,1)
+# ax1.scatter(m_arr, numerical_x2 * timestep**2, marker="x", color="red")
+# ax1.set_xlabel("m")
+# ax1.set_ylabel("<x^2>")
 
 # ax[1].scatter(k_arr, analytical_x2, label="Analytical result", marker="x", color="red")
 # ax[1].errorbar(k_arr, numerical_x2, x2_err, label="Numerical result * scaling factor", color="blue", marker="x", linestyle="")
