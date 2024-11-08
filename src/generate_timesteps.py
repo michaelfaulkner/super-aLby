@@ -1,5 +1,5 @@
 import numpy as np
 
-timesteps = np.arange(0.001,0.5,0.01)
+arr = np.array(([1,2,3,4,5], [1,2,3,4,5]))
 
-np.savetxt("src/timestep_values_generated.txt", timesteps)
+print(np.mean(arr, axis=0))

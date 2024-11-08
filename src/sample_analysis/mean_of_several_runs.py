@@ -15,34 +15,26 @@ helper_methods = importlib.import_module("helper_methods")
 parsing = importlib.import_module("base.parsing")
 strings = importlib.import_module("base.strings")
 
-def analytical_x2(dim_m, N_tau):
-    dim_omega = dim_m
-    auxilliary = 1 + dim_omega**2 / 2 - dim_omega * np.sqrt(1 + dim_omega**2 / 4)
-
-    return (1 / (2 * dim_m * dim_omega * np.sqrt(1 + 0.25 * dim_omega**2))) * ((1 + auxilliary**N_tau) / (1 - auxilliary**N_tau))
-
 
 def main():
 
     # read in the k values from k_values.txt
     current_directory = os.path.dirname(__file__)
-    k_values_filepath = os.path.join(os.path.split(current_directory)[0], "tau_values.txt")
+    k_values_filepath = os.path.join(os.path.split(current_directory)[0], "N_values.txt")
     k_data = np.loadtxt(k_values_filepath, dtype='str')
     k_values = k_data[:,1]
 
     analytical_x2_arr = np.zeros(len(k_values))
     numerical_x2 = np.zeros(len(k_values))
-    timestep_arr = np.zeros(len(k_values))
-    m_arr = np.zeros(len(k_values))
+    N_arr = np.zeros(len(k_values))
 
     for index, string in enumerate(k_values):
-        config_file_string = f"src/config_files/convergence_tests/one_dim_quantum_oscillator_potential/metropolis_1_{string}.ini"
+        config_file_string = f"src/config_files/convergence_tests/one_dim_quantum_oscillator_potential/metropolis_01_{string}.ini"
         config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
         (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
         number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
         
         dimensionless_mass = parsing.get_value(config, strings.to_camel_case(potential), "dimensionless_mass")
-        timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
         number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
 
         mass_as_string = str(dimensionless_mass)
@@ -51,7 +43,7 @@ def main():
         for _ in mass_string_split:
             mass_as_string += _
         
-        sample_directory = f"output/timestep/metropolis_1_{string}"
+        sample_directory = f"output/N/metropolis_01_{string}"
         temperature_index = 0
         if number_of_observations < 10000:
             thinning_level = 1
@@ -61,41 +53,14 @@ def main():
                             temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
         if len(mean_sample) != int(number_of_observations/thinning_level):
             mean_sample = mean_sample[int(number_of_equilibration_iterations/thinning_level):]
-        
+
+                
         mean_sample_mean = get_sample_mean_and_error(mean_sample)
         numerical_x2[index] = mean_sample_mean[0]
-        timestep_arr[index] = timestep
-        m_arr[index] = dimensionless_mass / timestep
-        analytical_x2_arr[index] = analytical_x2(dimensionless_mass, number_of_particles)
+        N_arr[index] = number_of_particles
+        #print(f"done for {number_of_particles}")
 
-    #m_arr_loaded = np.load("src/m_arr.npy")
-    #numerical_x2_loaded = np.load("src/numerical_x2.npy")
-
-    # fig, ax = plt.subplots(1,1)
-    # ax.scatter(timestep_arr, numerical_x2, marker="x", color="red")
-    # ax.set_xlabel("timestep")
-    # ax.set_ylabel("<x^2>")
-
-    # fig1, ax1 = plt.subplots(1,1)
-    # ax1.scatter(m_arr, numerical_x2 * timestep**2, marker="x", color="purple", label="changing timestep")
-    # #ax1.scatter(m_arr_loaded, numerical_x2_loaded, marker="x", color="orange", label="changing dimensionless m")
-    # ax1.set_xlabel("m")
-    # ax1.set_ylabel("<x^2>")
-    # ax1.legend()  
-
-
-    fig2, ax2 = plt.subplots(1,1)
-    ax2.scatter(timestep_arr, analytical_x2_arr, marker="x", color="red", label="analytical")
-    ax2.scatter(timestep_arr, numerical_x2, marker="x", color="blue", label="numerical")
-    ax2.set_xlabel("timestep")
-    ax2.set_ylabel("<x^2> - dimensionless")
-    ax2.legend()
-
-    plt.tight_layout()
-
-    plt.show()
-    
-
+    np.save("output/N/x2_run2", numerical_x2)
 
 if __name__ == '__main__':
     main()
