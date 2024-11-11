@@ -24,19 +24,22 @@ def analytical_x2(dim_m, N_tau):
 
 def main():
 
-    # read in the k values from k_values.txt
+    # read in the N and tau values
     current_directory = os.path.dirname(__file__)
-    k_values_filepath = os.path.join(os.path.split(current_directory)[0], "tau_values.txt")
-    k_data = np.loadtxt(k_values_filepath, dtype='str')
-    k_values = k_data[:,1]
+    values_filepath = os.path.join(os.path.split(current_directory)[0], "N_tau_values.txt")
+    N_tau_data = np.loadtxt(values_filepath, dtype='str')
+    tau_values = N_tau_data[:,1]
+    N_values = N_tau_data[:,2]
 
-    analytical_x2_arr = np.zeros(len(k_values))
-    numerical_x2 = np.zeros(len(k_values))
-    timestep_arr = np.zeros(len(k_values))
-    m_arr = np.zeros(len(k_values))
+    analytical_x2_arr = np.zeros(len(tau_values))
+    numerical_x2 = np.zeros(len(tau_values))
+    timestep_arr = np.zeros(len(tau_values))
+    m_arr = np.zeros(len(tau_values))
+    N_arr = np.zeros(len(tau_values))
 
-    for index, string in enumerate(k_values):
-        config_file_string = f"src/config_files/convergence_tests/one_dim_quantum_oscillator_potential/metropolis_1_{string}.ini"
+    for index, string in enumerate(tau_values):
+        config_file_string = f"src/config_files/convergence_tests/one_dim_quantum_oscillator_potential/metropolis_{string}_{N_values[index]}.ini"
+        #config_file_string = f"src/config_files/convergence_tests/one_dim_quantum_oscillator_potential/metropolis_1_{string}.ini"
         config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
         (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
         number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
@@ -44,14 +47,9 @@ def main():
         dimensionless_mass = parsing.get_value(config, strings.to_camel_case(potential), "dimensionless_mass")
         timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
         number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
-
-        mass_as_string = str(dimensionless_mass)
-        mass_string_split = mass_as_string.split(".")
-        mass_as_string = ""
-        for _ in mass_string_split:
-            mass_as_string += _
         
-        sample_directory = f"output/timestep/metropolis_1_{string}"
+        sample_directory = f"output/N_tau/metropolis_{string}_{N_values[index]}"
+        #sample_directory =  f"output/timestep/metropolis_1_{string}"
         temperature_index = 0
         if number_of_observations < 10000:
             thinning_level = 1
@@ -67,32 +65,29 @@ def main():
         timestep_arr[index] = timestep
         m_arr[index] = dimensionless_mass / timestep
         analytical_x2_arr[index] = analytical_x2(dimensionless_mass, number_of_particles)
+        N_arr[index] = number_of_particles
 
-    #m_arr_loaded = np.load("src/m_arr.npy")
-    #numerical_x2_loaded = np.load("src/numerical_x2.npy")
 
-    # fig, ax = plt.subplots(1,1)
-    # ax.scatter(timestep_arr, numerical_x2, marker="x", color="red")
-    # ax.set_xlabel("timestep")
-    # ax.set_ylabel("<x^2>")
 
-    # fig1, ax1 = plt.subplots(1,1)
-    # ax1.scatter(m_arr, numerical_x2 * timestep**2, marker="x", color="purple", label="changing timestep")
-    # #ax1.scatter(m_arr_loaded, numerical_x2_loaded, marker="x", color="orange", label="changing dimensionless m")
-    # ax1.set_xlabel("m")
-    # ax1.set_ylabel("<x^2>")
-    # ax1.legend()  
-
+    fig1, ax1 = plt.subplots(1,1)
+    ax1.scatter(timestep_arr, analytical_x2_arr, marker="x", color="red", label="analytical")
+    ax1.scatter(timestep_arr, numerical_x2, marker="x", color="blue", label="numerical")
+    ax1.set_xlabel("timestep")
+    ax1.set_ylabel("<x^2> - dimensionless")
+    ax1.legend()
+    plt.tight_layout()
+    plt.savefig("output/figs/x2_timestep_prod100.pdf")
+    plt.savefig("output/figs/x2_timestep_prod100.png")
 
     fig2, ax2 = plt.subplots(1,1)
-    ax2.scatter(timestep_arr, analytical_x2_arr, marker="x", color="red", label="analytical")
-    ax2.scatter(timestep_arr, numerical_x2, marker="x", color="blue", label="numerical")
-    ax2.set_xlabel("timestep")
+    ax2.scatter(N_arr, analytical_x2_arr, marker="x", color="red", label="analytical")
+    ax2.scatter(N_arr, numerical_x2, marker="x", color="blue", label="numerical")
+    ax2.set_xlabel("N")
     ax2.set_ylabel("<x^2> - dimensionless")
     ax2.legend()
-
     plt.tight_layout()
-
+    plt.savefig("output/figs/N_timestep_prod100.pdf")
+    plt.savefig("output/figs/N_timestep_prod100.png")
     plt.show()
     
 

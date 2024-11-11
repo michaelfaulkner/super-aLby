@@ -151,13 +151,21 @@ def main():
     ax2.set_xlabel("N")
     ax2.set_ylabel("<x^2> - dimensionless")
     ax2.legend()
+    plt.tight_layout()
+    plt.savefig("output/figs/x2_N_unfixed.png")
+    plt.savefig("output/figs/x2_N_unfixed.pdf")
 
     n_runs = [numerical_x2[-3], numerical_x2[-2], numerical_x2[8]]
     fig, ax = plt.subplots(1,1)
-    ax.scatter(N_obsv, n_runs)
-    ax.hlines(analytical_x2_arr[8], color = "red", xmin=np.min(N_obsv), xmax = np.max(N_obsv))
+    ax.scatter(N_obsv, n_runs, label = "numerical value")
+    ax.hlines(analytical_x2_arr[8], color = "red", xmin=np.min(N_obsv), xmax = np.max(N_obsv), label="analytical value")
+    ax.set_xlabel("Number of observations")
+    ax.set_ylabel("<x^2> - dimensionless")
+    fig.suptitle("N=50, varying number of observations")
+    ax.legend()
     plt.tight_layout()
-
+    plt.savefig("output/figs/x2_nobsv_unfixed.png")
+    plt.savefig("output/figs/x2_nobsv_unfixed.pdf")
     plt.show()
     
 
