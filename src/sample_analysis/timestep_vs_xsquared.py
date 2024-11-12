@@ -26,7 +26,7 @@ def main():
 
     # read in the N and tau values
     current_directory = os.path.dirname(__file__)
-    values_filepath = os.path.join(os.path.split(current_directory)[0], "N_tau_values.txt")
+    values_filepath = os.path.join(os.path.split(current_directory)[0], "N_tau_values_50.txt")
     N_tau_data = np.loadtxt(values_filepath, dtype='str')
     tau_values = N_tau_data[:,1]
     N_values = N_tau_data[:,2]
@@ -38,7 +38,7 @@ def main():
     N_arr = np.zeros(len(tau_values))
 
     for index, string in enumerate(tau_values):
-        config_file_string = f"src/config_files/convergence_tests/one_dim_quantum_oscillator_potential/metropolis_{string}_{N_values[index]}.ini"
+        config_file_string = f"src/config_files/convergence_tests/one_dim_quantum_oscillator_potential/N_tau_50/metropolis_{string}_{N_values[index]}.ini"
         #config_file_string = f"src/config_files/convergence_tests/one_dim_quantum_oscillator_potential/metropolis_1_{string}.ini"
         config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
         (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
@@ -48,7 +48,7 @@ def main():
         timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
         number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
         
-        sample_directory = f"output/N_tau/metropolis_{string}_{N_values[index]}"
+        sample_directory = f"output/convergence_tests/one_dim_quantum_oscillator_potential/N_tau_50/metropolis_{string}_{N_values[index]}"
         #sample_directory =  f"output/timestep/metropolis_1_{string}"
         temperature_index = 0
         if number_of_observations < 10000:
@@ -76,8 +76,8 @@ def main():
     ax1.set_ylabel("<x^2> - dimensionless")
     ax1.legend()
     plt.tight_layout()
-    plt.savefig("output/figs/x2_timestep_prod100.pdf")
-    plt.savefig("output/figs/x2_timestep_prod100.png")
+    plt.savefig("output/figs/x2_timestep_prod50.pdf")
+    plt.savefig("output/figs/x2_timestep_prod50.png")
 
     fig2, ax2 = plt.subplots(1,1)
     ax2.scatter(N_arr, analytical_x2_arr, marker="x", color="red", label="analytical")
@@ -86,8 +86,8 @@ def main():
     ax2.set_ylabel("<x^2> - dimensionless")
     ax2.legend()
     plt.tight_layout()
-    plt.savefig("output/figs/N_timestep_prod100.pdf")
-    plt.savefig("output/figs/N_timestep_prod100.png")
+    plt.savefig("output/figs/N_timestep_prod50.pdf")
+    plt.savefig("output/figs/N_timestep_prod50.png")
     plt.show()
     
 
