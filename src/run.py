@@ -42,9 +42,6 @@ def main(argv: Sequence[str]) -> None:
         The argument strings.
     """
     base_config_file_location = argv[0]
-    ##########
-    print(base_config_file_location)
-    ##########
     number_of_jobs = get_value(read_config(base_config_file_location), "Run", "number_of_jobs")
     max_number_of_cpus = get_value(read_config(base_config_file_location), "Run", "max_number_of_cpus")
     if number_of_jobs < 1:
