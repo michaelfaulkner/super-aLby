@@ -220,8 +220,12 @@ def main(config_file_string):
                              "IsingPotential.prefactor and IsingPotential.exchange_constant is equal to 1.0 (n.b., "
                              "number_of_particles and size_of_particle_space are set in the ModelSettings section).")
     elif "xy_potential" in potential:
-                    reference_sample = np.load('src/permanent_data/reference_data/'
-                                               'xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy')
+        reference_sample = np.load("src/permanent_data/reference_data/"
+                                               "xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
+    elif "one_dim_quantum_oscillator_potential" in potential:
+        reference_sample = np.load("src/permanent_data/reference_data/"
+                                   "quantum_harmonic_oscillator_timestep1_N100_reference_sample.npy")
+
     if potential != "ising_potential":
         reference_cdf = get_cumulative_distribution(reference_sample)
         if "coulomb" in potential or "lennard_jones" in potential:
@@ -231,6 +235,10 @@ def main(config_file_string):
         elif "xy" in potential:
             sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperatures[0], 0,
                                                       number_of_particles).flatten()
+        elif "one_dim_quantum_oscillator_potential" in potential:
+            sample = sample_getter.get_mean_positions(sample_directories[0], temperatures[0], 0,
+                                                            number_of_particles,
+                                                            number_of_equilibration_iterations).flatten()
         else:
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
@@ -248,31 +256,7 @@ def main(config_file_string):
         legend.get_frame().set_edgecolor('k')
         legend.get_frame().set_lw(1.5)
         plt.tight_layout()
-        #plt.show()
-        plt.savefig("output/magnetisation_norm_convergence_test.png")
-
-        # plt.clf()
-        # plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
-        # plt.xlabel(r"$x$", fontsize=15, labelpad=10)
-        # plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)
-        # plt.tick_params(axis='both', which='major', labelsize=14, pad=10)
-        # legend = plt.legend(loc='lower right', fontsize=10)
-        # legend.get_frame().set_edgecolor('k')
-        # legend.get_frame().set_lw(1.5)
-        # plt.tight_layout()
-        # plt.savefig("output/reference_data.png")
-
-        # plt.clf()
-        # plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-aLby data')
-        # plt.xlabel(r"$x$", fontsize=15, labelpad=10)
-        # plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)
-        # plt.tick_params(axis='both', which='major', labelsize=14, pad=10)
-        # legend = plt.legend(loc='lower right', fontsize=10)
-        # legend.get_frame().set_edgecolor('k')
-        # legend.get_frame().set_lw(1.5)
-        # plt.tight_layout()
-        # #plt.show()
-        # plt.savefig("output/sample_data.png")
+        plt.show()
 
 
 
