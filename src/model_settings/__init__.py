@@ -52,3 +52,6 @@ else:
 size_of_particle_space_over_two.flags.writeable = False
 size_of_particle_space = np.atleast_1d(size_of_particle_space)
 size_of_particle_space.flags.writeable = False
+
+distance_between_measurements = get_value(config, "EventChainMediator", "distance_between_measurements")
+speed_of_chain = get_value(config, "EventChainMediator", "speed_of_chain") 

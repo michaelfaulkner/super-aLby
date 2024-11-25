@@ -10,7 +10,8 @@ from sampler.sampler import Sampler
 from typing import Sequence
 from noise_distribution.noise_distribution import NoiseDistribution
 from base.logging import log_init_arguments
-
+                        #NOTE this might not work?
+from model_settings import number_of_particles, distance_between_measurements, speed_of_chain
 
 class EventChainMediator():
     """
@@ -128,6 +129,9 @@ class EventChainMediator():
         self._samples = None
         self._number_of_accepted_trajectories = None
         self._noise_distribution = noise_distribution
+        self._dimensionless_positions = self._potential.get_dimensionless_position(self._positions)
+        self._dimensionless_omega = self._potential._dimensionless_omega #NOTE need to rename to be public
+        self._dimensionless_mass = self._potential._dimensionless_m
 
         if not isinstance(noise_distribution, NoiseDistribution):
             raise ConfigurationError(f"Give a noise_distribution class as the value for noise_distribution in "
@@ -142,14 +146,20 @@ class EventChainMediator():
                            number_of_observations=number_of_observations,
                            proposal_dynamics_adaptor_is_on=proposal_dynamics_adaptor_is_on)
 
+
+
     def generate_sample(self):
         """Runs the Markov chain in order to generate the sample."""
         for temperature_index, temperature in enumerate(self._temperatures):
             self._print_temperature_message(temperature, temperature_index)
             self._reset_arrays_and_counters(temperature)
-
-            movement_direction = # pick randomly positive or negative
-
+            
+            # pick randomly positive or negative
+            if np.random.uniform(0.0, 1.0) < 0.5:
+                movement_direction = -1
+            else:
+                movement_direction = 1
+            active_particle_index = None
             for markov_chain_index in range(self._total_number_of_iterations):
                 active_particle_index, movement_direction = self._generate_single_observation(markov_chain_index, temperature, movement_direction, active_particle_index)
 
@@ -167,8 +177,6 @@ class EventChainMediator():
 
 
 
-
-
     def _print_temperature_message(self, temperature, temperature_index):
         """Prints details of the current sampling temperature before each temperature iteration."""
 
@@ -177,46 +185,126 @@ class EventChainMediator():
         """Advances the Markov chain to the next sampling instance and adds a single observation to the sample."""
 
         # read in lambda from config file OR DO THIS IN INIT
-        distance = 0
-        if at_first_instance:
+        distance_travelled = 0
+        if markov_chain_index == 0:
             # randomly select the active particle index
+            active_particle_index = np.random.randint(0, number_of_particles)
 
-        while distance < self._lambda: # i.e. we will always start before we reach lambda
+
+        while distance_travelled < distance_between_measurements: # i.e. we will always start before we reach lambda
             #NOTE may have to think more about edge cases where this might not effectively catch the sampling moment.
-
-            active_particle_index, movement_direction, distance = self._generate_next_event(markov_chain_index, distance, active_particle_index, movement_direction)
+            active_particle_index, movement_direction, distance_travelled = self._generate_next_event(markov_chain_index, distance_travelled,
+                                                                                                       active_particle_index, movement_direction)
         
         return active_particle_index, movement_direction
         
 
 
 
-    def _generate_next_event(self, markov_chain_step_index, distance, active_particle_index, movement_direction):
+    def _generate_next_event(self, markov_chain_step_index, distance_travelled, active_particle_index, movement_direction):
         """Runs the Markov chain until the next event"""
         
-        # calculate eta (i.e. the distance that this markov chain would take us)
+        # start by checking max(x_a, (x_a+1 + x_a-1) / (2 + \omega ^2))
+        dimensionless_position_a = self._dimensionless_positions[active_particle_index]
+        dimensionless_position_a_plus_1 = self._dimensionless_positions[active_particle_index+1]
+        dimensionless_position_a_minus_1 = self._dimensionless_positions[active_particle_index-1]
         
-        # our proposed move may take us past lambda, at which point we should measure
-        if distance + eta > self._lambda: #TODO might need to make this >= lambda
 
-            # allowed_move = self._lambda - distance
-            # move the system to allowed_move
-            #update distance
-            # ensure we update position array/potential array
+        possible_move = ((dimensionless_position_a_plus_1 + dimensionless_position_a_minus_1)
+                            / (2 + self._dimensionless_omega**2))
+
+        if dimensionless_position_a < possible_move:
+        #   translate site a to (x_a+1 + x_a-1) / (2 + \omega ^2)
+            if distance_travelled + possible_move > distance_between_measurements: #TODO might need to make this >= lambda
+
+                allowed_move = distance_between_measurements - distance_travelled
+                dimensionless_position_a, distance_travelled = self.update_position(allowed_move, active_particle_index, distance_travelled)
+
+
+                for sampler_index, sampler in enumerate(self._samplers):
+                    self._samples[sampler_index][markov_chain_step_index + 1, :] = sampler.get_observation(
+                        None, self._positions, self._potential)
+                
+            else:
+                dimensionless_position_a, distance_travelled = self.update_position(possible_move, active_particle_index, distance_travelled)
+
+        # calculate eta (i.e. the distance that this markov chain would take us)
+        initial_action = (self._potential.get_action_at_index(dimensionless_position_a_minus_1, dimensionless_position_a)
+                          + self._potential.get_action_at_index(dimensionless_position_a, dimensionless_position_a_plus_1))
+                        #NOTE this might give errors due to pass by copy/reference?? check
+        random_value = np.random.uniform(0.0, 1.0)
+        a = self._dimensionless_mass * (1 + 0.5 * self._dimensionless_omega**2)
+        b = -1 * self._dimensionless_mass * (dimensionless_position_a_plus_1 + dimensionless_position_a_minus_1)
+        c = (0.5 * self._dimensionless_mass * (dimensionless_position_a_plus_1**2 
+                + dimensionless_position_a_minus_1**2 + self._dimensionless_omega**2 * 
+                dimensionless_position_a_minus_1**2) - initial_action * np.log(random_value))
+        # use quadratic eqn, take +ve root?
+        eta = np.roots([c,b,a]) - dimensionless_position_a
+        print(eta) #TODO pick one of the roots
+        eta = eta[0]
+
+        # our proposed move may take us past lambda, at which point we should measure
+        if distance_travelled + eta > distance_between_measurements: #TODO might need to make this >= lambda
+
+            allowed_move = distance_between_measurements - distance_travelled
+            dimensionless_position_a, distance_travelled = self.update_position(allowed_move, active_particle_index, distance_travelled)
 
             for sampler_index, sampler in enumerate(self._samplers):
                 self._samples[sampler_index][markov_chain_step_index + 1, :] = sampler.get_observation(
                     None, self._positions, self._potential)
         
-        else: 
-            # move active particle to eta
-            # update arrays
-            # update distance
+        else:
+            dimensionless_position_a, distance_travelled = self.update_position(eta, active_particle_index, distance_travelled)
+
             # choose our new active particle
             # and what direction it will move in
 
-        return active_particle_index, movement_direction, distance
+        return active_particle_index, movement_direction, distance_travelled
 
+
+
+    def update_position(self, move, active_particle_index, distance_travelled):
+        """ Updates position and distance travelled for the active particle"""
+        self._dimensionless_positions[active_particle_index] += move
+        dimensionless_position_a = self._dimensionless_positions[active_particle_index]
+        distance_travelled += move
+
+        return dimensionless_position_a, distance_travelled
+    
+    def choose_next_active_particle(self, active_particle_index, movement_direction):
+        """Chooses the index and direction for the next active particle in the markov chain"""
+        rand = np.random.uniform(0.0, 1.0)
+        site_a_gradient = self._potential.get_gradient_at_index(self._dimensionless_positions, active_particle_index)
+        site_a_minus_1_gradient = self._potential.get_gradient_at_index(self._dimensionless_positions, active_particle_index-1)
+        site_a_plus_1_gradient = self._potential.get_gradient_at_index(self._dimensionless_positions, active_particle_index)
+        total_action_gradients = site_a_minus_1_gradient + site_a_gradient + site_a_plus_1_gradient
+
+        prob_arr = np.zeros((6,2))
+        count = 0
+        for v in [movement_direction, movement_direction * -1]:
+            for grad in [site_a_minus_1_gradient, site_a_gradient, site_a_plus_1_gradient]:
+                probability = np.max([0,-grad * v /total_action_gradients])
+
+                prob_arr[count,0] = probability
+                prob_arr[count, 1] = v
+                count += 1
+
+        nonzero = np.nonzero(prob_arr[:,0])
+        for index, probability in enumerate(prob_arr[nonzero,0]):
+            if rand > prob_arr[index-1,0] and rand < probability: #TODO make this account for edge cases
+                active_particle_index = # this might not work tbh 
+                # think of another way of doing this?
+
+
+        # check current movement direction
+        # ignore the choice that corresponds to conitnuing in the direction and site we were just at
+        # 
+        if rand < -site_a_minus_1_gradient / total_action_gradients:
+            active_particle_index -= 1
+        elif (rand == -site_a_minus_1_gradient / total_action_gradients or rand > -site_a_minus_1_gradient / total_action_gradients) and rand < -site_a_gradient / total_action_gradients:
+            pass
+        elif (rand == -site_a_gradient / total_action_gradients or rand > -site_a_gradient / total_action_gradients):
+            active_particle_index += 1
 
 
 

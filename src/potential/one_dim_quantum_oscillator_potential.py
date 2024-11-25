@@ -129,7 +129,25 @@ class OneDimQuantumOscillatorPotential(Potential):
         return np.zeros((number_of_particles,1))
         
 
+    def get_gradient_at_index(self, positions, index):
+        """
+        Returns the action gradient at a given index
 
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
+            is a float and represents the position of the worldline at that time step.
+        index : int
+            The time index, i, of the position being considered.
+        Returns
+        -------
+        float
+            The dimensionless action gradient."""
+        
+        return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * positions[index]
+                                         - positions[index+1] - positions[index-1])
+    
 
     def get_dimensionless_position(self, positions):
         r"""
@@ -140,8 +158,6 @@ class OneDimQuantumOscillatorPotential(Potential):
         positions : numpy.ndarray
             A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
             is a float and represents the position of the worldline at that time step.
-        index : int
-            The time index, i, of the position being considered.
         Returns
         -------
         float
