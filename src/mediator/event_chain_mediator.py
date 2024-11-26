@@ -23,7 +23,7 @@ class EventChainMediator():
     def __init__(self, potential: Potential, samplers: Sequence[Sampler], noise_distribution: NoiseDistribution,
                 minimum_temperature: float = 1.0, maximum_temperature: float = 1.0, number_of_temperature_increments: int = 0,
                 number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
-                proposal_dynamics_adaptor_is_on: bool = True, **kwargs):
+                proposal_dynamics_adaptor_is_on: bool = True, distance_between_measurements : float = 1.0, speed_of_chain : float  = 1.0):
         r"""
         Constructor of the EventChainMediator class
 
@@ -80,7 +80,6 @@ class EventChainMediator():
             If type(proposal_dynamics_adaptor_is_on) is not bool.
         """
 
-        super().__init__(**kwargs)
         if not isinstance(potential, Potential):
             raise ConfigurationError(f"Give a potential class as the value for potential in {self.__class__.__name__}.")
         for sampler in samplers:
@@ -128,7 +127,7 @@ class EventChainMediator():
         self._samples = None
         self._number_of_accepted_trajectories = None
         self._noise_distribution = noise_distribution
-        self._dimensionless_positions = self._potential.get_dimensionless_position(self._positions)
+        self._dimensionless_positions = None
         self._dimensionless_omega = self._potential._dimensionless_omega #NOTE need to rename to be public
         self._dimensionless_mass = self._potential._dimensionless_m
 
@@ -219,11 +218,16 @@ class EventChainMediator():
                           + self._potential.get_action_at_index(dimensionless_position_a, dimensionless_position_a_plus_1))
                         #NOTE this might give errors due to pass by copy/reference?? check
         random_value = np.random.uniform(0.0, 1.0)
+        print(f"random val = {random_value}")
         a = self._dimensionless_mass * (1 + 0.5 * self._dimensionless_omega**2)
-        b = -1 * self._dimensionless_mass * (dimensionless_position_a_plus_1 + dimensionless_position_a_minus_1)
+        b = -1 * self._dimensionless_mass * (dimensionless_position_a_plus_1 + dimensionless_position_a_minus_1)[0]
         c = (0.5 * self._dimensionless_mass * (dimensionless_position_a_plus_1**2 
                 + dimensionless_position_a_minus_1**2 + self._dimensionless_omega**2 * 
-                dimensionless_position_a_minus_1**2) - initial_action * np.log(random_value))
+                dimensionless_position_a_minus_1**2) - initial_action * np.log(random_value))[0]
+        print(f"a = {a}")
+        print(f"b = {b}")
+        print(f"c = {c}")
+
         eta = np.roots([c,b,a]) - dimensionless_position_a
         print(eta) #TODO pick one of the roots
         eta = eta[0]
@@ -310,6 +314,7 @@ class EventChainMediator():
     def _reset_arrays_and_counters(self, temperature):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
         self._positions = self._potential.initialised_position_array()
+        self._dimensionless_positions = self._potential.get_dimensionless_position(self._positions)
         self._samples = [sampler.initialise_sample_array(self._total_number_of_iterations) for sampler in
                          self._samplers]
         self._number_of_accepted_trajectories = 0
