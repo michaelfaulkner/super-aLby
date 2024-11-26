@@ -1,7 +1,6 @@
 """Module for EventChainMediator class"""
 import logging
 import numpy as np
-import random
 from base.exceptions import ConfigurationError
 from helper_methods import get_temperatures
 from potential.potential import Potential
@@ -146,23 +145,20 @@ class EventChainMediator():
                            number_of_observations=number_of_observations,
                            proposal_dynamics_adaptor_is_on=proposal_dynamics_adaptor_is_on)
 
-
-
     def generate_sample(self):
         """Runs the Markov chain in order to generate the sample."""
         for temperature_index, temperature in enumerate(self._temperatures):
             self._print_temperature_message(temperature, temperature_index)
             self._reset_arrays_and_counters(temperature)
-            
-            # pick randomly positive or negative
             if np.random.uniform(0.0, 1.0) < 0.5:
                 movement_direction = -1
             else:
                 movement_direction = 1
             active_particle_index = None
             for markov_chain_index in range(self._total_number_of_iterations):
+                if markov_chain_index == 0:
+                    active_particle_index = np.random.randint(0, number_of_particles)
                 active_particle_index, movement_direction = self._generate_single_observation(markov_chain_index, temperature, movement_direction, active_particle_index)
-
                 if (markov_chain_index + 1) % self._number_of_observations_between_screen_prints_for_clock == 0:
                     current_sample_size = markov_chain_index + 1
                     print(f"{current_sample_size} observations drawn out of a total of "
@@ -173,62 +169,52 @@ class EventChainMediator():
             self._print_markov_chain_summary()
 
 
-
-
-
-
     def _print_temperature_message(self, temperature, temperature_index):
         """Prints details of the current sampling temperature before each temperature iteration."""
-
+        if len(self._temperatures) == 1:
+                    print("---------------------------------------------")
+                    print(f"Temperature = {temperature:.4f} (only temperature value)")
+                    print("---------------------------------------------")
+        else:
+            print("--------------------------------------------------")
+            print(f"Temperature = {temperature:.4f} ({get_ordinal(temperature_index + 1)} of {len(self._temperatures)} "
+                  f"temperature values)")
+            print("--------------------------------------------------")
     
+
     def _generate_single_observation(self, markov_chain_index, temperature, movement_direction, active_particle_index = None):
         """Advances the Markov chain to the next sampling instance and adds a single observation to the sample."""
-
-        # read in lambda from config file OR DO THIS IN INIT
         distance_travelled = 0
-        if markov_chain_index == 0:
-            # randomly select the active particle index
-            active_particle_index = np.random.randint(0, number_of_particles)
-
 
         while distance_travelled < distance_between_measurements: # i.e. we will always start before we reach lambda
             #NOTE may have to think more about edge cases where this might not effectively catch the sampling moment.
             active_particle_index, movement_direction, distance_travelled = self._generate_next_event(markov_chain_index, distance_travelled,
                                                                                                        active_particle_index, movement_direction)
+            #NOTE may need to consider if this always catches cases where we propose a move than exceeds lambda
+            # oes the simulation continue correctly after this case?
         
         return active_particle_index, movement_direction
         
 
-
-
-    def _generate_next_event(self, markov_chain_step_index, distance_travelled, active_particle_index, movement_direction):
+    def _generate_next_event(self, markov_chain_index, distance_travelled, active_particle_index, movement_direction):
         """Runs the Markov chain until the next event"""
-        
-        # start by checking max(x_a, (x_a+1 + x_a-1) / (2 + \omega ^2))
+        #TODO implement variable speed_of_chain
         dimensionless_position_a = self._dimensionless_positions[active_particle_index]
         dimensionless_position_a_plus_1 = self._dimensionless_positions[active_particle_index+1]
         dimensionless_position_a_minus_1 = self._dimensionless_positions[active_particle_index-1]
-        
-
         possible_move = ((dimensionless_position_a_plus_1 + dimensionless_position_a_minus_1)
                             / (2 + self._dimensionless_omega**2))
-
         if dimensionless_position_a < possible_move:
-        #   translate site a to (x_a+1 + x_a-1) / (2 + \omega ^2)
             if distance_travelled + possible_move > distance_between_measurements: #TODO might need to make this >= lambda
 
                 allowed_move = distance_between_measurements - distance_travelled
                 dimensionless_position_a, distance_travelled = self.update_position(allowed_move, active_particle_index, distance_travelled)
-
-
                 for sampler_index, sampler in enumerate(self._samplers):
-                    self._samples[sampler_index][markov_chain_step_index + 1, :] = sampler.get_observation(
+                    self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
                         None, self._positions, self._potential)
-                
             else:
                 dimensionless_position_a, distance_travelled = self.update_position(possible_move, active_particle_index, distance_travelled)
 
-        # calculate eta (i.e. the distance that this markov chain would take us)
         initial_action = (self._potential.get_action_at_index(dimensionless_position_a_minus_1, dimensionless_position_a)
                           + self._potential.get_action_at_index(dimensionless_position_a, dimensionless_position_a_plus_1))
                         #NOTE this might give errors due to pass by copy/reference?? check
@@ -238,29 +224,21 @@ class EventChainMediator():
         c = (0.5 * self._dimensionless_mass * (dimensionless_position_a_plus_1**2 
                 + dimensionless_position_a_minus_1**2 + self._dimensionless_omega**2 * 
                 dimensionless_position_a_minus_1**2) - initial_action * np.log(random_value))
-        # use quadratic eqn, take +ve root?
         eta = np.roots([c,b,a]) - dimensionless_position_a
         print(eta) #TODO pick one of the roots
         eta = eta[0]
-
-        # our proposed move may take us past lambda, at which point we should measure
         if distance_travelled + eta > distance_between_measurements: #TODO might need to make this >= lambda
 
             allowed_move = distance_between_measurements - distance_travelled
             dimensionless_position_a, distance_travelled = self.update_position(allowed_move, active_particle_index, distance_travelled)
-
             for sampler_index, sampler in enumerate(self._samplers):
-                self._samples[sampler_index][markov_chain_step_index + 1, :] = sampler.get_observation(
+                self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
                     None, self._positions, self._potential)
-        
         else:
             dimensionless_position_a, distance_travelled = self.update_position(eta, active_particle_index, distance_travelled)
-
-            # choose our new active particle
-            # and what direction it will move in
+            active_particle_index, movement_direction = self.choose_next_active_particle(active_particle_index, movement_direction)
 
         return active_particle_index, movement_direction, distance_travelled
-
 
 
     def update_position(self, move, active_particle_index, distance_travelled):
@@ -278,52 +256,56 @@ class EventChainMediator():
         site_a_minus_1_gradient = self._potential.get_gradient_at_index(self._dimensionless_positions, active_particle_index-1)
         site_a_plus_1_gradient = self._potential.get_gradient_at_index(self._dimensionless_positions, active_particle_index)
         total_action_gradients = site_a_minus_1_gradient + site_a_gradient + site_a_plus_1_gradient
-
-        prob_arr = np.zeros((6,2))
-        count = 0
-        for v in [movement_direction, movement_direction * -1]:
-            for grad in [site_a_minus_1_gradient, site_a_gradient, site_a_plus_1_gradient]:
+        prob_list =[]
+        direction_list =[]
+        index_list = []
+        for grad in [site_a_minus_1_gradient, site_a_gradient, site_a_plus_1_gradient]:
+            for v in [movement_direction, movement_direction * -1]:
                 probability = np.max([0,-grad * v /total_action_gradients])
+                if probability:
+                    prob_list.append(probability)
+                    direction_list.append(v)
+                    if grad == site_a_minus_1_gradient:
+                        index_list.append(-1)
+                    elif grad == site_a_gradient:
+                        index_list.append(0)
+                    elif grad == site_a_plus_1_gradient:
+                        index_list.append(1)
 
-                prob_arr[count,0] = probability
-                prob_arr[count, 1] = v
-                count += 1
+        zipped_list = zip(prob_list, direction_list, index_list)
+        sorted_list = sorted(zipped_list)
+        prob_list, direction_list, index_list = zip(*sorted_list)
 
-        nonzero = np.nonzero(prob_arr[:,0])
-        for index, probability in enumerate(prob_arr[nonzero,0]):
-            if rand > prob_arr[index-1,0] and rand < probability: #TODO make this account for edge cases
-                active_particle_index = # this might not work tbh 
-                # think of another way of doing this?
+        #NOTE this probably accounts for all cases/number of options, but this should be checked
+        for i, prob in enumerate(prob_list):
+            if i == 0:
+                if rand < prob / total_action_gradients:
+                    active_particle_index += index_list[i]
+                    movement_direction = direction_list[i]
+            else:
+                if rand == prob_list[i-1] or rand < prob:
+                    active_particle_index += index_list[i]
+                    movement_direction = direction_list[i]
+                elif i == len(prob_list) - 1:
+                    if rand == prob / total_action_gradients or rand > prob / total_action_gradients:
+                        active_particle_index += index_list[i]
+                        movement_direction = direction_list[i]
 
 
-        # check current movement direction
-        # ignore the choice that corresponds to conitnuing in the direction and site we were just at
-        # 
-        if rand < -site_a_minus_1_gradient / total_action_gradients:
-            active_particle_index -= 1
-        elif (rand == -site_a_minus_1_gradient / total_action_gradients or rand > -site_a_minus_1_gradient / total_action_gradients) and rand < -site_a_gradient / total_action_gradients:
-            pass
-        elif (rand == -site_a_gradient / total_action_gradients or rand > -site_a_gradient / total_action_gradients):
-            active_particle_index += 1
-
+        return active_particle_index, movement_direction
 
 
 
 
     def _proposal_dynamics_adaptor(self):
         """Tunes the size of either the numerical integration step (DeterministicMediator) or the width of the proposal
-            distribution (MetropolisMediator)."""
+            distribution (MetropolisMediator). In EventChainMediator this is a holdover only."""
+        pass
         
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
-
-
-
-
-
-
-
-
+        #TODO what should this print? acceptance rate and width of noise distribution not relevant
+        pass
 
     def _reset_arrays_and_counters(self, temperature):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
