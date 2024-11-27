@@ -125,8 +125,27 @@ class OneDimQuantumOscillatorPotential(Potential):
                 f"Give a value of 0.0 for range_of_initial_particle_positions in the ModelSettings"
                 f"section when using {self.__class__.__name__}. Functionality not yet provided for"
                 f"non-zero initial path.")
+        if not (range_of_initial_particle_positions is None or type(range_of_initial_particle_positions) == float or
+                    (type(range_of_initial_particle_positions) == list and
+                     len(range_of_initial_particle_positions) == 2 and
+                     [type(bound) == float for bound in range_of_initial_particle_positions])):
+            raise ConfigurationError(
+                f"Give either None (indicating that the initial position is drawn from the real line), a float "
+                f"(representing a precise initial position for each particle) or a list of two floats "
+                f"(representing the bounds of the interval from which each initial particle position is randomly "
+                f"chosen) for the value of range_of_initial_particle_positions in the ModelSettings section when "
+                f"using {self.__class__.__name__} (or any child class of ContinuousPotential) with a "
+                f"one-dimensional particle space.")
+        if range_of_initial_particle_positions is None:
+            return np.array([np.atleast_1d(np.random.normal()) for _ in range(number_of_particles)])
+        elif type(range_of_initial_particle_positions) == float:
+            return np.array(
+                [np.atleast_1d(range_of_initial_particle_positions) for _ in range(number_of_particles)])
+        else:
+            return np.array([np.atleast_1d(np.random.uniform(*range_of_initial_particle_positions))
+                                for _ in range(number_of_particles)])
 
-        return np.zeros((number_of_particles,1))
+        
         
 
     def get_gradient_at_index(self, positions, index):
