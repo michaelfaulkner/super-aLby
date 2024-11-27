@@ -125,6 +125,7 @@ class OneDimQuantumOscillatorPotential(Potential):
                 f"Give a value of 0.0 for range_of_initial_particle_positions in the ModelSettings"
                 f"section when using {self.__class__.__name__}. Functionality not yet provided for"
                 f"non-zero initial path.")
+        #NOTE repeated code here 
         if not (range_of_initial_particle_positions is None or type(range_of_initial_particle_positions) == float or
                     (type(range_of_initial_particle_positions) == list and
                      len(range_of_initial_particle_positions) == 2 and
