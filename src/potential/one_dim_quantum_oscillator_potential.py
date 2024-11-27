@@ -120,11 +120,6 @@ class OneDimQuantumOscillatorPotential(Potential):
                 f"Give a value of type None, float or int for size_of_particle_space in the ModelSettings"
                 f"section when using {self.__class__.__name__}")
 
-        if range_of_initial_particle_positions != 0.0:
-            raise ConfigurationError(
-                f"Give a value of 0.0 for range_of_initial_particle_positions in the ModelSettings"
-                f"section when using {self.__class__.__name__}. Functionality not yet provided for"
-                f"non-zero initial path.")
         #NOTE repeated code here 
         if not (range_of_initial_particle_positions is None or type(range_of_initial_particle_positions) == float or
                     (type(range_of_initial_particle_positions) == list and
@@ -165,7 +160,14 @@ class OneDimQuantumOscillatorPotential(Potential):
         float
             The dimensionless action gradient."""
         
-        return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * positions[index]
+        if index == 0:
+            return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * positions[index]
+                                         - positions[index+1] - positions[-1])
+        elif index == len(positions) - 1:
+            return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * positions[index]
+                                         - positions[0] - positions[index-1])
+        else:
+            return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * positions[index]
                                          - positions[index+1] - positions[index-1])
     
 
