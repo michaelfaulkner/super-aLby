@@ -219,18 +219,22 @@ class EventChainMediator():
                         #NOTE this might give errors due to pass by copy/reference?? check
         random_value = np.random.uniform(0.0, 1.0)
         print(f"random val = {random_value}")
-        a = self._dimensionless_mass * (1 + 0.5 * self._dimensionless_omega**2)
-        b = -1 * self._dimensionless_mass * (dimensionless_position_a_plus_1 + dimensionless_position_a_minus_1)[0]
-        c = (0.5 * self._dimensionless_mass * (dimensionless_position_a_plus_1**2 
-                + dimensionless_position_a_minus_1**2 + self._dimensionless_omega**2 * 
-                dimensionless_position_a_minus_1**2) - initial_action * np.log(random_value))[0]
+        # a = self._dimensionless_mass * (1 + 0.5 * self._dimensionless_omega**2)
+        # b = -1 * self._dimensionless_mass * (dimensionless_position_a_plus_1 + dimensionless_position_a_minus_1)[0]
+        # c = (0.5 * self._dimensionless_mass * (dimensionless_position_a_plus_1**2 
+        #         + dimensionless_position_a_minus_1**2 + self._dimensionless_omega**2 * 
+        #         dimensionless_position_a_minus_1**2) - initial_action * np.log(random_value))[0]
+        a = 2.0 + self._dimensionless_omega**2
+        b = 2.0 * ((2.0 + self._dimensionless_omega**2) * dimensionless_position_a - dimensionless_position_a_plus_1
+                   - dimensionless_position_a_minus_1)
+        c = 2.0 / self._dimensionless_mass * (1 - np.log(random_value)) * initial_action
+
         print(f"a = {a}")
         print(f"b = {b}")
         print(f"c = {c}")
 
-        eta = np.roots([c,b,a]) - dimensionless_position_a
+        eta = np.roots([c,b,a])[0]
         print(eta) #TODO pick one of the roots
-        eta = eta[0]
         if distance_travelled + eta > distance_between_measurements: #TODO might need to make this >= lambda
 
             allowed_move = distance_between_measurements - distance_travelled
