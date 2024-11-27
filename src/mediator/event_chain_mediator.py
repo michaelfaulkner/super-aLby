@@ -217,6 +217,13 @@ class EventChainMediator():
         initial_action = (self._potential.get_action_at_index(dimensionless_position_a_minus_1, dimensionless_position_a)
                           + self._potential.get_action_at_index(dimensionless_position_a, dimensionless_position_a_plus_1))
                         #NOTE this might give errors due to pass by copy/reference?? check
+        print(f"initial action = {initial_action}")
+        print(f"x_a = {dimensionless_position_a}")
+        print(f"x_a+1 = {dimensionless_position_a_plus_1}")
+        print(f"x_a-1 = {dimensionless_position_a_minus_1}")
+        
+        print(f"omega = {self._dimensionless_omega}")
+        print(f"m = {self._dimensionless_mass}")
         random_value = np.random.uniform(0.0, 1.0)
         print(f"random val = {random_value}")
         # a = self._dimensionless_mass * (1 + 0.5 * self._dimensionless_omega**2)
