@@ -163,7 +163,7 @@ class OneDimQuantumOscillatorPotential(Potential):
         if index == 0:
             return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * positions[index]
                                          - positions[index+1] - positions[-1])
-        elif index == len(positions) - 1:
+        elif index == (len(positions) - 1):
             return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * positions[index]
                                          - positions[0] - positions[index-1])
         else:
