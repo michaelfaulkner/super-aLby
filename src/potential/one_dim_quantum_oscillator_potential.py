@@ -160,15 +160,16 @@ class OneDimQuantumOscillatorPotential(Potential):
         float
             The dimensionless action gradient."""
         
+        dimensionless_positions = self.get_dimensionless_position(positions)
         if index == 0:
-            return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * positions[index]
-                                         - positions[index+1] - positions[-1])
+            return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * dimensionless_positions[index]
+                                         - dimensionless_positions[index+1] - dimensionless_positions[-1])
         elif index == (len(positions) - 1):
-            return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * positions[index]
-                                         - positions[0] - positions[index-1])
+            return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * dimensionless_positions[index]
+                                         - dimensionless_positions[0] - dimensionless_positions[index-1])
         else:
-            return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * positions[index]
-                                         - positions[index+1] - positions[index-1])
+            return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * dimensionless_positions[index]
+                                         - dimensionless_positions[index+1] - dimensionless_positions[index-1])
     
 
     def get_dimensionless_position(self, positions):

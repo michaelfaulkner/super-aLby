@@ -72,17 +72,22 @@ def main(values_filepath, config_folder):
         analytical_x2_arr[index] = analytical_x2(dimensionless_mass, number_of_particles)
         N_arr[index] = number_of_particles
         ######################################
-        print(position_sample[5])
-        print(position_sample[1])
         #print(np.shape(position_sample[0]))
         fig, ax = plt.subplots(1,1)
         ax.scatter(np.arange(0,len(position_sample[0])), position_sample[0])
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[6])
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[100])
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[700])
+        ax.set_xlabel("site index")
+        ax.set_ylabel("position")
+        
+        # ax.set_ylim(-2.5,2.5)
         plt.savefig("test.png")
         
         indices_sample = np.load("output/event_chain_mediator/temperature_00_sample_of_indices.npy")
         fig, ax = plt.subplots(1,1)
         ax.plot(np.arange(0,len(indices_sample)), indices_sample, marker="x")
+        ax.set_xlabel("nth choice")
+        ax.set_ylabel("chosen active particle index")
         plt.savefig("test1.png")
         ######################################
 
