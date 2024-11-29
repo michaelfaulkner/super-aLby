@@ -64,16 +64,28 @@ def main(values_filepath, config_folder):
 
         mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
                             temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
+        position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
+                            temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
         mean_sample_mean = get_sample_mean_and_error(mean_sample)
         numerical_x2[index] = mean_sample_mean[0]
         timestep_arr[index] = timestep
         analytical_x2_arr[index] = analytical_x2(dimensionless_mass, number_of_particles)
         N_arr[index] = number_of_particles
         ######################################
+        print(position_sample[5])
+        print(position_sample[1])
+        #print(np.shape(position_sample[0]))
         fig, ax = plt.subplots(1,1)
-        ax.scatter(np.arange(0,len(mean_sample)), mean_sample)
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[0])
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[6])
         plt.savefig("test.png")
+        
+        indices_sample = np.load("output/event_chain_mediator/temperature_00_sample_of_indices.npy")
+        fig, ax = plt.subplots(1,1)
+        ax.plot(np.arange(0,len(indices_sample)), indices_sample, marker="x")
+        plt.savefig("test1.png")
         ######################################
+
 
 
     fig1, ax1 = plt.subplots(1,1)
