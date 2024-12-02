@@ -42,7 +42,7 @@ def get_basic_config_data(config_file_string):
         config_file_string = [config_file_string]
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     possible_mediators = ["EuclideanLeapfrogMediator", "ToroidalLeapfrogMediator", "LazyToroidalLeapfrogMediator",
-                          "MetropolisMediator", "SwendsenWangMediator", "WolffMediator"]
+                          "MetropolisMediator", "SwendsenWangMediator", "WolffMediator", "EventChainMediator"]
     (config_file_mediator, potential, samplers, temperatures, number_of_equilibration_iterations,
      number_of_observations) = (None, None, None, None, None, None)
     for possible_mediator in possible_mediators:

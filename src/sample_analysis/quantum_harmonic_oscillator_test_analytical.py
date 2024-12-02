@@ -48,7 +48,8 @@ def main(values_filepath, config_folder):
     N_arr = np.zeros(len(tau_values))
 
     for index, string in enumerate(tau_values):
-        config_file_string = os.path.join(config_folder, f"metropolis_{string}_{N_values[index]}.ini")
+        #config_file_string = os.path.join(config_folder, f"metropolis_{string}_{N_values[index]}.ini")
+        config_file_string = config_folder
         config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
         (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
         number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
@@ -63,12 +64,48 @@ def main(values_filepath, config_folder):
 
         mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
                             temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
-        
+        position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
+                            temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
         mean_sample_mean = get_sample_mean_and_error(mean_sample)
         numerical_x2[index] = mean_sample_mean[0]
         timestep_arr[index] = timestep
         analytical_x2_arr[index] = analytical_x2(dimensionless_mass, number_of_particles)
         N_arr[index] = number_of_particles
+        ######################################
+        #print(np.shape(position_sample[0]))
+        fig, ax = plt.subplots(1,1)
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[0])
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[10])
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[20])
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[30])
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[40])
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[50])
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[60])
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[70])
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[80])
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90])
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[99])
+        ax.set_xlabel("site index")
+        ax.set_ylabel("position")
+        
+        # ax.set_ylim(-2.5,2.5)
+        plt.savefig("test.png")
+        
+        indices_movement_sample = np.load("output/event_chain_mediator/temperature_00_sample_of_indices.npy")
+        indices_sample = indices_movement_sample[:,0]
+        moves_sample = indices_movement_sample[:,1]
+        fig, ax = plt.subplots(1,1)
+        ax.plot(np.arange(0,len(indices_sample)), indices_sample, marker="x")
+        ax.set_xlabel("nth choice")
+        ax.set_ylabel("chosen active particle index")
+        plt.savefig("test1.png")
+        fig, ax = plt.subplots(1,1)
+        ax.scatter(indices_sample, moves_sample, marker="x")
+        ax.set_xlabel("index")
+        ax.set_ylabel("move made")
+        plt.savefig("test2.png")
+        ######################################
+
 
 
     fig1, ax1 = plt.subplots(1,1)
@@ -86,7 +123,7 @@ def main(values_filepath, config_folder):
     ax2.set_ylabel(r"$\langle x^2 \rangle$")
     ax2.legend()
     plt.tight_layout()
-    plt.show()
+    #plt.show()
     
 
 if __name__ == '__main__':
