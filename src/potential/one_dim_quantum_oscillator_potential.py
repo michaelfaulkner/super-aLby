@@ -208,4 +208,43 @@ class OneDimQuantumOscillatorPotential(Potential):
         """
 
         return (0.5 * self._dimensionless_m * (dimensionless_position_at_next_index - dimensionless_position_at_index)**2 +
-                0.5 * self._dimensionless_m * self._dimensionless_omega**2 * dimensionless_position_at_index**2)   
+                0.5 * self._dimensionless_m * self._dimensionless_omega**2 * dimensionless_position_at_index**2)  
+    
+
+    def get_distance_to_next_event(self, dimensionless_position_at_index, dimensionless_position_at_east_index,
+                                   dimensionless_position_at_west_index, movement_direction, move_num):
+        proposed_move_dimensionless = 0
+        possible_move_dimensionless = ((dimensionless_position_at_east_index + dimensionless_position_at_west_index)
+                            / (2 + self._dimensionless_omega**2))
+        B_move = False
+        if dimensionless_position_at_index < possible_move_dimensionless:
+            B_move = True
+            dimensionless_position_at_index += possible_move_dimensionless * movement_direction
+            proposed_move_dimensionless = possible_move_dimensionless
+
+        random_value = np.random.uniform(0.0, 1.0)
+        a = 0.5 * self._dimensionless_m * (2.0 + self._dimensionless_omega**2)
+        b = 0.5 * self._dimensionless_m * (4.0 * dimensionless_position_at_index 
+                                              + 2.0 * self._dimensionless_omega**2 * dimensionless_position_at_index
+                                              - 2.0 * dimensionless_position_at_east_index 
+                                              - 2.0 * dimensionless_position_at_west_index)
+        b = b[0]
+        c = np.log(random_value)
+
+        eta = np.roots([c,b,a])
+        if eta[0] > 0:
+            eta = eta[0]
+        else: 
+            eta = eta[1]
+        #TODO pick one of the roots
+        
+
+        proposed_move_dimensionless += eta * movement_direction
+        # if B_move:
+        #     print(f"proposed the {move_num}th move to eta + B")
+        # else:
+        #     print(f"proposed the {move_num}th move to eta")
+
+        move_num += 1
+
+        return proposed_move_dimensionless, move_num
