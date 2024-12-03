@@ -100,3 +100,12 @@ def get_south_neighbour(lattice_site_index, lattice_length):
     return lattice_site_index + lattice_length * (
             (int(lattice_site_index /lattice_length) + lattice_length - 1) % lattice_length -
             (int(lattice_site_index / lattice_length) + lattice_length) % lattice_length)
+
+def decimal_as_str(decimal):
+    string = str(decimal)
+    new_str = string.split(".")
+    return_str = ""
+    for _ in new_str:
+        return_str += _
+    
+    return return_str

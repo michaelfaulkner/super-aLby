@@ -134,7 +134,7 @@ class EventChainMediator():
         ########################
         self._move_num = None
         self._initial_index = None
-        self._indices = np.zeros((number_of_observations*100, 2))
+        self._indices = np.zeros((number_of_observations*100, 7))
         self._n_indices_chosen = 0
         ##########################
 
@@ -179,7 +179,9 @@ class EventChainMediator():
             # TODO read output folder from config file
             mode_index = np.bincount(self._indices[:self._n_indices_chosen,0].astype(int)).argmax()
             print(f"started at index {self._initial_index}, most visited index was {mode_index}")
-            np.save("output/event_chain_mediator/temperature_00_sample_of_indices.npy", self._indices[:self._n_indices_chosen])
+            #self._samplers[0].output_sample()
+            np.save("output/event_chain_mediator/l_200/temperature_00_sample_of_indices.npy", self._indices[:self._n_indices_chosen])
+            #print(f"Number of indices chosen: {self._n_indices_chosen}")
             self._print_markov_chain_summary()
             
 
@@ -225,8 +227,11 @@ class EventChainMediator():
         dimensionless_position_a_plus_1 = position_a_plus_1  / self._timestep
         position_a_minus_1 = self._positions[a_minus_one_index]
         dimensionless_position_a_minus_1 = position_a_minus_1 / self._timestep
-
-        proposed_move_dimensionless, self._move_num = self._potential.get_distance_to_next_event(dimensionless_position_a,
+        self._indices[self._n_indices_chosen,3] = dimensionless_position_a
+        self._indices[self._n_indices_chosen,4] = dimensionless_position_a_minus_1
+        self._indices[self._n_indices_chosen,5] = dimensionless_position_a_plus_1
+        self._indices[self._n_indices_chosen,6] = self._potential.get_action_at_index(dimensionless_position_a, dimensionless_position_a_plus_1)
+        proposed_move_dimensionless, self._move_num, self._indices[self._n_indices_chosen,2] = self._potential.get_distance_to_next_event(dimensionless_position_a,
                                                                     dimensionless_position_a_plus_1,
                                                                     dimensionless_position_a_minus_1,
                                                                     movement_direction, self._move_num)

@@ -247,4 +247,4 @@ class OneDimQuantumOscillatorPotential(Potential):
 
         move_num += 1
 
-        return proposed_move_dimensionless, move_num
+        return proposed_move_dimensionless, move_num, eta
