@@ -81,16 +81,19 @@ def main(values_filepath, config_folder):
         #print(np.shape(position_sample[0]))
         fig, ax = plt.subplots(1,1)
         ax.scatter(np.arange(0,len(position_sample[0])), position_sample[0], label = "0")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[100], label = "100")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[200], label = "200")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[30], label = "30")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[40], label = "40")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[5000], label = "5000")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[60], label = "60")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[70], label = "70")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[80], label = "80")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90], label = "90")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[9900], label = "9900")
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[10], label = "10")
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[50], label = "50")
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90], label = "90")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[100], label = "100")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[200], label = "200")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[30], label = "30")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[40], label = "40")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[5000], label = "5000")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[60], label = "60")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[70], label = "70")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[80], label = "80")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90], label = "90")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[9900], label = "9900")
         ax.set_xlabel("site index")
         ax.set_ylabel("position")
         plt.legend()
@@ -98,23 +101,26 @@ def main(values_filepath, config_folder):
 
         fig, ax = plt.subplots(1,1)
         ax.scatter(np.arange(0,len(position_sample[0])), position_sample[0], label = "0")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[100], label = "100")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[200], label = "200")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[30], label = "30")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[40], label = "40")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[5000], label = "5000")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[60], label = "60")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[70], label = "70")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[80], label = "80")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90], label = "90")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[9900], label = "9900")
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[10], label = "10")
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[50], label = "50")
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90], label = "90")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[100], label = "100")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[200], label = "200")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[30], label = "30")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[40], label = "40")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[5000], label = "5000")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[60], label = "60")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[70], label = "70")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[80], label = "80")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90], label = "90")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[9900], label = "9900")
         ax.set_xlabel("site index")
         ax.set_ylabel("position")
         ax.set_ylim(-1,1)
         plt.legend()
         plt.savefig(f"test_scaled_{lambda_str}.png")
         
-        indices_movement_sample = np.load("output/event_chain_mediator/l_200/temperature_00_sample_of_indices.npy")
+        indices_movement_sample = np.load("output/event_chain_mediator/l_100/temperature_00_sample_of_indices.npy")
         indices_sample = indices_movement_sample[:,0]
         moves_sample = indices_movement_sample[:,1]
         eta_sample = indices_movement_sample[:,2]
@@ -122,9 +128,11 @@ def main(values_filepath, config_folder):
         x_m1_sample = indices_movement_sample[:,4]
         x_p1_sample = indices_movement_sample[:,5]
         action_sample = indices_movement_sample[:,6]
-        i = np.nonzero(position_sample==np.max(position_sample))
-        indices_for_action = np.nonzero(indices_sample==i)[1]
-        subset_action = action_sample[indices_for_action]
+        # i = np.nonzero(position_sample==np.max(position_sample))
+        # print(np.shape(i))
+        # print(np.shape(indices_sample))
+        # indices_for_action = np.nonzero(indices_sample==i)[1]
+        # subset_action = action_sample[indices_for_action]
 
         fig, ax = plt.subplots(1,1)
         ax.plot(np.arange(0,len(indices_sample)), indices_sample, marker="x")
@@ -150,12 +158,12 @@ def main(values_filepath, config_folder):
         ax.set_ylabel("eta")
         plt.tight_layout()
         plt.savefig(f"test4_{lambda_str}.png")
-        fig, ax = plt.subplots(1,1)
-        ax.scatter(np.arange(0,len(subset_action)), subset_action, marker="x")
-        ax.set_xlabel("time in simulation  (no units)")
-        ax.set_ylabel("action at largest position particle")
-        plt.tight_layout()
-        plt.savefig(f"test5_{lambda_str}.png")
+        # fig, ax = plt.subplots(1,1)
+        # ax.scatter(np.arange(0,len(subset_action)), subset_action, marker="x")
+        # ax.set_xlabel("time in simulation  (no units)")
+        # ax.set_ylabel("action at largest position particle")
+        # plt.tight_layout()
+        # plt.savefig(f"test5_t{number_of_equilibration_iterations}.png")
         ######################################
 
 

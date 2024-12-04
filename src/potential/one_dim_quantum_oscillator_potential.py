@@ -88,6 +88,7 @@ class OneDimQuantumOscillatorPotential(Potential):
             The difference in dimensionless action resulting from moving the single active particle to candidate_position.
         """
         dimensionless_positions = self.get_dimensionless_position(positions)
+        #TODO change to use neighbour funcs in helper_methods
         if active_particle_index < number_of_particles-1:
             current_action = (self.get_action_at_index(dimensionless_positions[active_particle_index-1], dimensionless_positions[active_particle_index]) +
                                 self.get_action_at_index(dimensionless_positions[active_particle_index], dimensionless_positions[active_particle_index+1]))
@@ -163,13 +164,13 @@ class OneDimQuantumOscillatorPotential(Potential):
         dimensionless_positions = self.get_dimensionless_position(positions)
         if index == 0:
             return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * dimensionless_positions[index]
-                                         - dimensionless_positions[index+1] - dimensionless_positions[-1])
+                                         - dimensionless_positions[index+1] - dimensionless_positions[-1]).item()
         elif index == (len(positions) - 1):
             return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * dimensionless_positions[index]
-                                         - dimensionless_positions[0] - dimensionless_positions[index-1])
+                                         - dimensionless_positions[0] - dimensionless_positions[index-1]).item()
         else:
             return self._dimensionless_m * ((2 + self._dimensionless_omega**2) * dimensionless_positions[index]
-                                         - dimensionless_positions[index+1] - dimensionless_positions[index-1])
+                                         - dimensionless_positions[index+1] - dimensionless_positions[index-1]).item()
     
 
     def get_dimensionless_position(self, positions):
@@ -227,8 +228,7 @@ class OneDimQuantumOscillatorPotential(Potential):
         b = 0.5 * self._dimensionless_m * (4.0 * dimensionless_position_at_index 
                                               + 2.0 * self._dimensionless_omega**2 * dimensionless_position_at_index
                                               - 2.0 * dimensionless_position_at_east_index 
-                                              - 2.0 * dimensionless_position_at_west_index)
-        b = b[0]
+                                              - 2.0 * dimensionless_position_at_west_index).item()
         c = np.log(random_value)
 
         eta = np.roots([c,b,a])
@@ -240,10 +240,6 @@ class OneDimQuantumOscillatorPotential(Potential):
         
 
         proposed_move_dimensionless += eta * movement_direction
-        # if B_move:
-        #     print(f"proposed the {move_num}th move to eta + B")
-        # else:
-        #     print(f"proposed the {move_num}th move to eta")
 
         move_num += 1
 

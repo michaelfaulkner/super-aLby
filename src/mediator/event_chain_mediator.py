@@ -180,7 +180,7 @@ class EventChainMediator():
             mode_index = np.bincount(self._indices[:self._n_indices_chosen,0].astype(int)).argmax()
             print(f"started at index {self._initial_index}, most visited index was {mode_index}")
             #self._samplers[0].output_sample()
-            np.save("output/event_chain_mediator/l_200/temperature_00_sample_of_indices.npy", self._indices[:self._n_indices_chosen])
+            np.save("output/event_chain_mediator/temperature_00_sample_of_indices.npy", self._indices[:self._n_indices_chosen])
             #print(f"Number of indices chosen: {self._n_indices_chosen}")
             self._print_markov_chain_summary()
             
@@ -272,13 +272,10 @@ class EventChainMediator():
         initial_v = movement_direction
      
         site_a_gradient = self._potential.get_gradient_at_index(self._positions, active_particle_index)
-        site_a_gradient = site_a_gradient[0]
         site_a_minus_1_gradient = self._potential.get_gradient_at_index(self._positions,
                                                                         active_particle_minus_1_index)
-        site_a_minus_1_gradient = site_a_minus_1_gradient[0]
         site_a_plus_1_gradient = self._potential.get_gradient_at_index(self._positions,
                                                                         active_particle_plus_1_index)
-        site_a_plus_1_gradient = site_a_plus_1_gradient[0]
         total_action_gradients = np.abs(site_a_minus_1_gradient) + np.abs(site_a_gradient) + np.abs(site_a_plus_1_gradient)
         probabilities = np.zeros(3)
 
