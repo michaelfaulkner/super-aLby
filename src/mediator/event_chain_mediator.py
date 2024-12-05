@@ -128,7 +128,6 @@ class EventChainMediator():
         self._timestep = self._potential._timestep 
         self._dimensionless_omega = self._potential._dimensionless_omega #NOTE need to rename to be public
         self._dimensionless_mass = self._potential._dimensionless_m
-        self._output_directory = parsing.get_value()
         """The following objects are set in self._reset_arrays_and_counters()"""
         self._positions = None
         self._samples = None
@@ -204,7 +203,7 @@ class EventChainMediator():
 
     def _generate_single_observation(self, markov_chain_index, temperature, movement_direction, active_particle_index = None):
         """Advances the Markov chain to the next sampling instance and adds a single observation to the sample."""
-        distance_travelled = 0
+        distance_travelled = 0.0
 
         while distance_travelled < distance_between_measurements: # i.e. we will always start before we reach lambda
             #NOTE may have to think more about edge cases where this might not effectively catch the sampling moment.
@@ -243,7 +242,8 @@ class EventChainMediator():
 
         if distance_travelled + distance_travelled_in_move > distance_between_measurements or distance_travelled + distance_travelled_in_move == distance_between_measurements:
             allowed_move = distance_between_measurements - distance_travelled
-            distance_travelled = self.update_position(allowed_move, active_particle_index, distance_travelled, movement_direction)
+            distance_travelled += np.abs(allowed_move)
+            self.update_position(allowed_move, active_particle_index, distance_travelled, movement_direction)
             for sampler_index, sampler in enumerate(self._samplers):
                 self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
                     None, self._positions, self._potential)
