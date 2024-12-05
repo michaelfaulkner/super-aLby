@@ -13,8 +13,7 @@ class Mediator(metaclass=ABCMeta):
 
     def __init__(self, potential: Potential, samplers: Sequence[Sampler], minimum_temperature: float = 1.0,
                  maximum_temperature: float = 1.0, number_of_temperature_increments: int = 0,
-                 number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
-                 proposal_dynamics_adaptor_is_on: bool = True, **kwargs):
+                 number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000, **kwargs):
         r"""
         The constructor of the Mediator class.
 
@@ -40,9 +39,6 @@ class Mediator(metaclass=ABCMeta):
         number_of_observations : int, optional
             Number of sample observations, i.e., the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
-        proposal_dynamics_adaptor_is_on : bool, optional
-            When True, the size of either the numerical integration step (DeterministicMediator) or the width of the
-            proposal distribution (MetropolisMediator) is tuned during the equilibration process.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
 
@@ -66,8 +62,6 @@ class Mediator(metaclass=ABCMeta):
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
             If number_of_observations is not greater than 0.
-        base.exceptions.ConfigurationError
-            If type(proposal_dynamics_adaptor_is_on) is not bool.
         """
         super().__init__(**kwargs)
         if not isinstance(potential, Potential):
@@ -99,9 +93,6 @@ class Mediator(metaclass=ABCMeta):
         if number_of_observations <= 0:
             raise ConfigurationError(f"Give a value greater than 0 as number_of_observations in "
                                      f"{self.__class__.__name__}.")
-        if type(proposal_dynamics_adaptor_is_on) is not bool:
-            raise ConfigurationError(f"Give a value of type bool as proposal_dynamics_adaptor_is_on in "
-                                     f"{self.__class__.__name__}.")
         self._potential = potential
         self._samplers = samplers
         self._temperatures = get_temperatures(minimum_temperature, maximum_temperature,
@@ -110,37 +101,22 @@ class Mediator(metaclass=ABCMeta):
         self._number_of_observations = number_of_observations
         self._number_of_observations_between_screen_prints_for_clock = int(number_of_observations / 10)
         self._total_number_of_iterations = number_of_equilibration_iterations + number_of_observations
-        self._proposal_dynamics_adaptor_is_on = proposal_dynamics_adaptor_is_on
         """The following objects are set in self._reset_arrays_and_counters()"""
         self._positions = None
         self._samples = None
-        self._number_of_accepted_trajectories = None
 
     def generate_sample(self):
-        """Runs the Markov chain in order to generate the sample."""
+        """Iterates through temperatures, generating a sample at each."""
         for temperature_index, temperature in enumerate(self._temperatures):
             self._print_temperature_message(temperature, temperature_index)
             self._reset_arrays_and_counters(temperature)
-            for markov_chain_index in range(self._total_number_of_iterations):
-                if markov_chain_index == self._number_of_equilibration_iterations:
-                    self._number_of_accepted_trajectories = 0
-                self._generate_single_observation(markov_chain_index, temperature)
-                if (self._proposal_dynamics_adaptor_is_on and
-                        markov_chain_index < self._number_of_equilibration_iterations and
-                        (markov_chain_index + 1) % 100 == 0):
-                    self._proposal_dynamics_adaptor()
-                    self._number_of_accepted_trajectories = 0
-                if (markov_chain_index + 1) % self._number_of_observations_between_screen_prints_for_clock == 0:
-                    current_sample_size = markov_chain_index + 1
-                    print(f"{current_sample_size} observations drawn out of a total of "
-                          f"{self._total_number_of_iterations} (including {self._number_of_equilibration_iterations} "
-                          f"equilibration observations).")
+            self._generate_sample_at_current_temperature(temperature_index, temperature)
             [sampler.output_sample(self._samples[sampler_index], temperature_index) for sampler_index, sampler in
              enumerate(self._samplers)]
             self._print_markov_chain_summary()
 
     def _print_temperature_message(self, temperature, temperature_index):
-        """Prints details of the current sampling temperature before each temperature iteration."""
+        """Prints (to screen) details of the current sampling temperature before each temperature iteration."""
         if len(self._temperatures) == 1:
             print("---------------------------------------------")
             print(f"Temperature = {temperature:.4f} (only temperature value)")
@@ -151,23 +127,23 @@ class Mediator(metaclass=ABCMeta):
                   f"temperature values)")
             print("--------------------------------------------------")
 
+    def _print_sample_progress(self, markov_chain_index):
+        """Prints (to screen) details of the current sampling process."""
+        if (markov_chain_index + 1) % self._number_of_observations_between_screen_prints_for_clock == 0:
+            print(f"{markov_chain_index + 1} observations drawn out of a total of "
+                  f"{self._total_number_of_iterations} (including {self._number_of_equilibration_iterations} "
+                  f"equilibration observations).")
+
     @abstractmethod
     def _reset_arrays_and_counters(self, temperature):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
         self._positions = self._potential.initialised_position_array()
         self._samples = [sampler.initialise_sample_array(self._total_number_of_iterations) for sampler in
                          self._samplers]
-        self._number_of_accepted_trajectories = 0
 
     @abstractmethod
-    def _generate_single_observation(self, markov_chain_step_index, temperature):
-        """Advances the Markov chain by one step and adds a single observation to the sample."""
-        raise NotImplementedError
-
-    @abstractmethod
-    def _proposal_dynamics_adaptor(self):
-        """Tunes the size of either the numerical integration step (DeterministicMediator) or the width of the proposal
-            distribution (MetropolisMediator)."""
+    def _generate_sample_at_current_temperature(self, temperature_index, temperature):
+        """Runs the Markov process at temperature in order to generate the sample at temperature."""
         raise NotImplementedError
 
     @abstractmethod
