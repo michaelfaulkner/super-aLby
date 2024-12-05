@@ -32,7 +32,6 @@
 *.ps
 *.eps
 *.pdf
-*.png
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
