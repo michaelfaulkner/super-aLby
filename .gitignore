@@ -32,7 +32,6 @@
 *.ps
 *.eps
 *.pdf
-*.png
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
@@ -71,4 +70,4 @@
 venv/
 super_alby_venv/
 super-aLby_venv
-output/
+output/event_chain_mediator
