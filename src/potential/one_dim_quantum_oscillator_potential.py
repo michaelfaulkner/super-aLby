@@ -215,13 +215,13 @@ class OneDimQuantumOscillatorPotential(Potential):
     def get_distance_to_next_event(self, dimensionless_position_at_index, dimensionless_position_at_east_index,
                                    dimensionless_position_at_west_index, movement_direction, move_num):
         proposed_move_dimensionless = 0
+        distance_travelled_in_move = 0
         possible_move_dimensionless = ((dimensionless_position_at_east_index + dimensionless_position_at_west_index)
                             / (2 + self._dimensionless_omega**2))
-        B_move = False
         if dimensionless_position_at_index < possible_move_dimensionless:
-            B_move = True
             dimensionless_position_at_index += possible_move_dimensionless * movement_direction
-            proposed_move_dimensionless = possible_move_dimensionless
+            proposed_move_dimensionless += possible_move_dimensionless
+            distance_travelled_in_move += np.abs(possible_move_dimensionless)
 
         random_value = np.random.uniform(0.0, 1.0)
         a = 0.5 * self._dimensionless_m * (2.0 + self._dimensionless_omega**2)
@@ -240,7 +240,8 @@ class OneDimQuantumOscillatorPotential(Potential):
         
 
         proposed_move_dimensionless += eta * movement_direction
+        distance_travelled_in_move += np.abs(eta)
 
         move_num += 1
 
-        return proposed_move_dimensionless, move_num, eta
+        return proposed_move_dimensionless, move_num, eta, distance_travelled_in_move
