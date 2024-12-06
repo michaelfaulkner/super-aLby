@@ -61,11 +61,11 @@ def main(config_file_string):
         if not (len(samplers) == 1 and samplers[0] == "xy_magnetisation_norm_sampler"):
             raise ValueError("XY model reference data only available for XyMagnetisationNormSampler."
                              "  Please give only this value for samplers in the Mediator section.")     
-    elif potential == "one_dim_quantum_oscillator_potential":
+    elif potential == "quantum_harmonic_oscillator_potential":
         if not (len(samplers) == 1 and samplers[0] == "mean_squared_position_sampler"):
-            raise ValueError("1D Quantum Harmonic Oscillator model reference data only available for"
-                              "MeanSquaredPositionSampler. Please give only this value for samplers"
-                               " in the Mediator section.")     
+            raise ValueError("1D quantum harmonic oscillator model reference data only available for "
+                             "MeanSquaredPositionSampler. Please give only this value for samplers in the Mediator "
+                             "section.")
     else:
         raise ValueError("Reference data not provided for this potential.")
 
@@ -225,11 +225,11 @@ def main(config_file_string):
                              "IsingPotential.prefactor and IsingPotential.exchange_constant is equal to 1.0 (n.b., "
                              "number_of_particles and size_of_particle_space are set in the ModelSettings section).")
     elif "xy_potential" in potential:
-        reference_sample = np.load("src/permanent_data/reference_data/"
-                                               "xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
-    elif "one_dim_quantum_oscillator_potential" in potential:
-        reference_sample = np.load("src/permanent_data/reference_data/"
-                                   "quantum_harmonic_oscillator_timestep1_N100_reference_sample.npy").flatten()
+        reference_sample = np.load(
+            "permanent_data/reference_data/xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
+    elif "quantum_harmonic_oscillator_potential" in potential:
+        reference_sample = np.load(
+            "permanent_data/reference_data/quantum_harmonic_oscillator_timestep1_N100_reference_sample.npy").flatten()
         print(np.shape(reference_sample))
 
     if potential != "ising_potential":
@@ -240,11 +240,10 @@ def main(config_file_string):
                                                             number_of_equilibration_iterations).flatten()
         elif "xy" in potential:
             sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperatures[0], 0,
-                                                      number_of_particles).flatten()
-        elif "one_dim_quantum_oscillator_potential" in potential:
+                                                             number_of_particles).flatten()
+        elif "quantum_harmonic_oscillator_potential" in potential:
             sample = sample_getter.get_mean_positions(sample_directories[0], temperatures[0], 0,
-                                                            number_of_particles,
-                                                            number_of_equilibration_iterations).flatten()
+                                                      number_of_particles, number_of_equilibration_iterations).flatten()
         else:
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
@@ -264,7 +263,6 @@ def main(config_file_string):
         plt.tight_layout()
         plt.savefig("convergence.png")
         #plt.show()
-
 
 
 if __name__ == '__main__':
