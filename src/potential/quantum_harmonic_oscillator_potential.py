@@ -123,7 +123,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                     candidate_position, positions[get_east_neighbour(active_particle_index, number_of_particles)]))
         return candidate_dimensionless_action - current_dimensionless_action
 
-    def get_gradient_at_index(self, positions, particle_index):
+    def _get_gradient_at_index(self, positions, particle_index):
         """
         Returns the gradient of the dimensional action with respect to the particle position at particle_index.
 
@@ -162,36 +162,62 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         return 0.5 * self._mass * ((position_at_east_index - position_at_index) ** 2 / self._timestep +
                                    self._timestep * self._omega ** 2 * position_at_index ** 2)
 
-    def get_distance_to_next_event(self, dimensionless_position_at_index, dimensionless_position_at_east_index,
-                                   dimensionless_position_at_west_index, movement_direction, move_num):
-        proposed_move_dimensionless = 0
-        distance_travelled_in_move = 0
-        possible_move_dimensionless = ((dimensionless_position_at_east_index + dimensionless_position_at_west_index)
-                            / (2 + self._dimensionless_omega**2))
-        if dimensionless_position_at_index < possible_move_dimensionless:
-            dimensionless_position_at_index += possible_move_dimensionless * movement_direction
-            proposed_move_dimensionless += possible_move_dimensionless
-            distance_travelled_in_move += np.abs(possible_move_dimensionless)
+    def get_distance_to_next_event(self, position_at_index, position_at_east_index, position_at_west_index,
+                                   movement_direction, move_num):
+        distance_to_next_event = 0.0
+        bottom_of_well = ((position_at_east_index + position_at_west_index) / self._timestep /
+                          (2.0 + self._timestep ** 2 * self._omega ** 2))
+        if ((movement_direction > 0) and (position_at_index < bottom_of_well) or
+                (movement_direction < 0) and (position_at_index > bottom_of_well)):
+            """advance to the bottom of the well"""
+            distance_to_next_event += np.abs(bottom_of_well - position_at_index)
+            position_at_index = bottom_of_well
 
-        random_value = np.random.uniform(0.0, 1.0)
-        a = 0.5 * self._dimensionless_m * (2.0 + self._dimensionless_omega**2)
-        b = 0.5 * self._dimensionless_m * (4.0 * dimensionless_position_at_index 
-                                              + 2.0 * self._dimensionless_omega**2 * dimensionless_position_at_index
-                                              - 2.0 * dimensionless_position_at_east_index 
-                                              - 2.0 * dimensionless_position_at_west_index).item()
-        c = np.log(random_value)
-
-        eta = np.roots([c,b,a])
+        """compute coefficients of quadratic equation"""
+        a = 0.5 * self._mass * self._timestep * (2.0 + self._timestep ** 2 * self._omega ** 2)
+        b = self._mass * (2.0 * position_at_index + self._timestep ** 2 * self._omega ** 2 * position_at_index -
+                          position_at_east_index - position_at_west_index).item()
+        c = np.log(np.random.uniform(0.0, 1.0)) * np.sign(movement_direction)
+        """solve quadratic equation for remaining distance to next event"""
+        eta = np.roots([c, b, a]) / self._timestep
+        # TODO work out if/when we should take -ve root
         if eta[0] > 0:
             eta = eta[0]
         else: 
             eta = eta[1]
-        #TODO pick one of the roots
-        
-
-        proposed_move_dimensionless += eta * movement_direction
-        distance_travelled_in_move += np.abs(eta)
-
+        distance_to_next_event += np.abs(eta)
         move_num += 1
+        return distance_to_next_event, move_num
 
-        return proposed_move_dimensionless, move_num, eta, distance_travelled_in_move
+    def choose_next_active_particle(self, active_particle_index, east_particle_index, west_particle_index,
+                                    positions, movement_direction):
+        """Chooses the index and direction for the next active particle in the markov chain"""
+        initial_a = active_particle_index
+        initial_v = movement_direction
+
+        active_particle_gradient = self._get_gradient_at_index(positions, active_particle_index)
+        west_particle_gradient = self._get_gradient_at_index(positions, west_particle_index)
+        east_particle_gradient = self._get_gradient_at_index(positions, east_particle_index)
+        sum_of_abs_gradients = np.abs(west_particle_gradient) + np.abs(active_particle_gradient) + np.abs(
+            east_particle_gradient)
+
+        probabilities = np.zeros(3)
+        probabilities[0] = np.abs(west_particle_gradient) / sum_of_abs_gradients
+        probabilities[1] = probabilities[0] + np.abs(active_particle_gradient) / sum_of_abs_gradients
+        probabilities[2] = probabilities[1] + np.abs(east_particle_gradient) / sum_of_abs_gradients
+        rand = np.random.uniform(0.0, 1.0)
+        if rand < probabilities[0]:
+            active_particle_index = west_particle_index
+        elif rand < probabilities[1]:
+            movement_direction = - movement_direction
+        else:
+            active_particle_index = east_particle_index
+
+        if active_particle_index == initial_a and movement_direction == initial_v:
+            raise Exception("Chose the same index and direction twice in a row")
+        """
+        self._indices[self._n_indices_chosen, 0] = active_particle_index
+        self._n_indices_chosen += 1
+        """
+
+        return active_particle_index, movement_direction
