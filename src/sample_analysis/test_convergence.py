@@ -229,7 +229,7 @@ def main(config_file_string):
                                                "xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
     elif "one_dim_quantum_oscillator_potential" in potential:
         reference_sample = np.load("src/permanent_data/reference_data/"
-                                   "quantum_harmonic_oscillator_timestep1_N100_reference_sample.npy")
+                                   "quantum_harmonic_oscillator_timestep1_N100_reference_sample.npy").flatten()
         print(np.shape(reference_sample))
 
     if potential != "ising_potential":
@@ -262,7 +262,8 @@ def main(config_file_string):
         legend.get_frame().set_edgecolor('k')
         legend.get_frame().set_lw(1.5)
         plt.tight_layout()
-        plt.show()
+        plt.savefig("convergence.png")
+        #plt.show()
 
 
 

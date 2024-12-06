@@ -141,12 +141,10 @@ class EventChainMediator(Mediator):
         # TODO implement variable speed_of_chain (how would that work?)
         a_plus_one_index = get_east_neighbour(active_particle_index, number_of_particles)
         a_minus_one_index = get_west_neighbour(active_particle_index, number_of_particles)
-        position_a = self._positions[active_particle_index]
-        dimensionless_position_a = position_a / self._timestep
-        position_a_plus_1 = self._positions[a_plus_one_index]
-        dimensionless_position_a_plus_1 = position_a_plus_1 / self._timestep
-        position_a_minus_1 = self._positions[a_minus_one_index]
-        dimensionless_position_a_minus_1 = position_a_minus_1 / self._timestep
+        dimensionless_positions = self._potential.get_dimensionless_position(self._positions)
+        dimensionless_position_a = dimensionless_positions[active_particle_index]
+        dimensionless_position_a_plus_1 = dimensionless_positions[a_plus_one_index]
+        dimensionless_position_a_minus_1 = dimensionless_positions[a_minus_one_index]
         #############################################################
         # sample some more data for testing
         self._indices[self._n_indices_chosen, 3] = dimensionless_position_a
@@ -162,7 +160,8 @@ class EventChainMediator(Mediator):
             dimensionless_position_a_plus_1,
             dimensionless_position_a_minus_1,
             movement_direction, self._move_num)
-        proposed_move = proposed_move_dimensionless * self._timestep
+        #NOTE this is the only point where self._timestep is used here - posible to move to potential?
+        proposed_move = proposed_move_dimensionless * self._timestep 
 
         if distance_travelled + distance_travelled_in_move > self._distance_between_measurements or distance_travelled + distance_travelled_in_move == self._distance_between_measurements:
             allowed_move = self._distance_between_measurements - distance_travelled
