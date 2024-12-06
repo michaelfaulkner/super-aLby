@@ -60,7 +60,6 @@ def main(values_filepath, config_folder):
         timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
         number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
         lambda_value = parsing.get_value(config, "EventChainMediator", "distance_between_measurements")
-        lambda_str = helper_methods.decimal_as_str(lambda_value)
         sample_directory = sample_directories[0]
         temperature_index = 0
         thinning_level = None

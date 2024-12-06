@@ -61,6 +61,11 @@ def main(config_file_string):
         if not (len(samplers) == 1 and samplers[0] == "xy_magnetisation_norm_sampler"):
             raise ValueError("XY model reference data only available for XyMagnetisationNormSampler."
                              "  Please give only this value for samplers in the Mediator section.")     
+    elif potential == "one_dim_quantum_oscillator_potential":
+        if not (len(samplers) == 1 and samplers[0] == "mean_squared_position_sampler"):
+            raise ValueError("1D Quantum Harmonic Oscillator model reference data only available for"
+                              "MeanSquaredPositionSampler. Please give only this value for samplers"
+                               " in the Mediator section.")     
     else:
         raise ValueError("Reference data not provided for this potential.")
 
@@ -225,6 +230,7 @@ def main(config_file_string):
     elif "one_dim_quantum_oscillator_potential" in potential:
         reference_sample = np.load("src/permanent_data/reference_data/"
                                    "quantum_harmonic_oscillator_timestep1_N100_reference_sample.npy")
+        print(np.shape(reference_sample))
 
     if potential != "ising_potential":
         reference_cdf = get_cumulative_distribution(reference_sample)

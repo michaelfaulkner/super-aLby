@@ -21,7 +21,7 @@ class EventChainMediator(Mediator):
     def __init__(self, potential: Potential, samplers: Sequence[Sampler], minimum_temperature: float = 1.0,
                  maximum_temperature: float = 1.0, number_of_temperature_increments: int = 0,
                  number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
-                 distance_between_measurements: float = 1.0, **kwargs):
+                 distance_between_measurements: float = 1.0):
         r"""
         Constructor of the EventChainMediator class.
 
@@ -70,7 +70,7 @@ class EventChainMediator(Mediator):
         """
         super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
                          number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations,
-                         **kwargs)
+                         )
         if distance_between_measurements < 0.0:
             raise ConfigurationError(f"Give a value not less than 0.0 as distance_between_measurements in "
                                      f"{self.__class__.__name__}.")
@@ -78,6 +78,7 @@ class EventChainMediator(Mediator):
         self._timestep = self._potential._timestep
         self._dimensionless_omega = self._potential._dimensionless_omega  # NOTE need to rename to be public
         self._dimensionless_mass = self._potential._dimensionless_m
+        self._distance_between_measurements = distance_between_measurements
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            potential=potential, samplers=samplers, minimum_temperature=minimum_temperature,
                            maximum_temperature=maximum_temperature,
@@ -94,11 +95,11 @@ class EventChainMediator(Mediator):
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         self._total_number_of_events = 0
-        movement_direction = np.random.choice((-1.0, 1.0))
         active_particle_index = None
         for markov_chain_index in range(self._total_number_of_iterations):
+            active_particle_index = np.random.randint(0, number_of_particles)
+            movement_direction = np.random.choice((-1.0, 1.0))
             if markov_chain_index == 0:
-                active_particle_index = np.random.randint(0, number_of_particles)
                 self._initial_index = active_particle_index
                 print(f"started at index {active_particle_index}, direction {movement_direction}")
                 # store active particle
@@ -125,7 +126,7 @@ class EventChainMediator(Mediator):
         """Advances the Markov chain to the next sampling instance and adds a single observation to the sample."""
         distance_travelled = 0.0
 
-        while distance_travelled < distance_between_measurements:  # i.e. we will always start before we reach lambda
+        while distance_travelled < self._distance_between_measurements:  # i.e. we will always start before we reach lambda
             # NOTE may have to think more about edge cases where this might not effectively catch the sampling moment.
             active_particle_index, movement_direction, distance_travelled = self._generate_next_event(
                 markov_chain_index, distance_travelled,
@@ -163,8 +164,8 @@ class EventChainMediator(Mediator):
             movement_direction, self._move_num)
         proposed_move = proposed_move_dimensionless * self._timestep
 
-        if distance_travelled + distance_travelled_in_move > distance_between_measurements or distance_travelled + distance_travelled_in_move == distance_between_measurements:
-            allowed_move = distance_between_measurements - distance_travelled
+        if distance_travelled + distance_travelled_in_move > self._distance_between_measurements or distance_travelled + distance_travelled_in_move == self._distance_between_measurements:
+            allowed_move = self._distance_between_measurements - distance_travelled
             distance_travelled += np.abs(allowed_move)
             self.update_position(allowed_move, active_particle_index, distance_travelled, movement_direction)
             for sampler_index, sampler in enumerate(self._samplers):
