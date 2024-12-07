@@ -163,7 +163,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                                    self._timestep * self._omega ** 2 * position_at_index ** 2)
 
     def get_distance_to_next_event(self, position_at_index, position_at_east_index, position_at_west_index,
-                                   movement_direction, move_num):
+                                   movement_direction, temperature, move_num):
         distance_to_next_event = 0.0
         bottom_of_well = ((position_at_east_index + position_at_west_index) / self._timestep /
                           (2.0 + self._timestep ** 2 * self._omega ** 2))
@@ -177,15 +177,22 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         a = 0.5 * self._mass * self._timestep * (2.0 + self._timestep ** 2 * self._omega ** 2)
         b = self._mass * (2.0 * position_at_index + self._timestep ** 2 * self._omega ** 2 * position_at_index -
                           position_at_east_index - position_at_west_index).item()
+        # TODO might divide following line by temperature, as this is where it would appear if temperature != 1.0
         c = np.log(np.random.uniform(0.0, 1.0)) * np.sign(movement_direction)
         """solve quadratic equation for remaining distance to next event"""
-        eta = np.roots([c, b, a]) / self._timestep
-        # TODO work out if/when we should take -ve root
-        if eta[0] > 0:
-            eta = eta[0]
-        else: 
-            eta = eta[1]
-        distance_to_next_event += np.abs(eta)
+        roots = np.roots([c, b, a]) / self._timestep
+        # TODO MF thinks the +ve/-ve root might correspond to a +ve/-ve movement_direction - but need to CHECK!
+        if roots[0] > 0.0:
+            if movement_direction > 0:
+                remaining_displacement_to_event = roots[0]
+            else:
+                remaining_displacement_to_event = roots[1]
+        else:
+            if movement_direction > 0:
+                remaining_displacement_to_event = roots[1]
+            else:
+                remaining_displacement_to_event = roots[0]
+        distance_to_next_event += np.abs(remaining_displacement_to_event)
         move_num += 1
         return distance_to_next_event, move_num
 

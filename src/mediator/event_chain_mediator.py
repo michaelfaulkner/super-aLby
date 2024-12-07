@@ -115,7 +115,7 @@ class EventChainMediator(Mediator):
                                      active_particle_index=None):
         """Advances the Markov chain to the next sampling instance and adds a single observation to the sample."""
         distance_travelled = 0.0
-        while distance_travelled < self._distance_between_measurements:  # i.e. we will always start before we reach lambda
+        while distance_travelled < self._distance_between_measurements:
             east_particle_index = get_east_neighbour(active_particle_index, number_of_particles)
             west_particle_index = get_west_neighbour(active_particle_index, number_of_particles)
             active_particle_position = self._positions[active_particle_index]
@@ -130,9 +130,12 @@ class EventChainMediator(Mediator):
                 active_particle_position, east_particle_position)
             ##############################################################
 
+            # TODO to generalise, we should pass self._positions and relevant_particle_indices to
+            #  get_distance_to_next_event(); in QHO case, relevant_particle_indices = [east_particle_index,
+            #  active_particle_index, west_particle_index]
             distance_to_next_event, self._move_num = self._potential.get_distance_to_next_event(
                 active_particle_position, east_particle_position, west_particle_position, movement_direction,
-                self._move_num)
+                temperature, self._move_num)
 
             if distance_travelled + distance_to_next_event >= self._distance_between_measurements:
                 distance_to_measurement = self._distance_between_measurements - distance_travelled
@@ -141,6 +144,7 @@ class EventChainMediator(Mediator):
                 for sampler_index, sampler in enumerate(self._samplers):
                     self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
                         None, self._positions, self._potential)
+                self._total_number_of_events += 1
             else:
                 distance_travelled += distance_to_next_event
                 self._update_position(distance_to_next_event, active_particle_index,  movement_direction)
@@ -151,9 +155,9 @@ class EventChainMediator(Mediator):
                     active_particle_index, east_particle_index, west_particle_index, self._positions,
                     movement_direction)
 
-    def _update_position(self, move, active_particle_index, movement_direction):
+    def _update_position(self, displacement_distance, active_particle_index, movement_direction):
         """ Updates position of the active particle."""
-        self._positions[active_particle_index] += move * movement_direction
+        self._positions[active_particle_index] += displacement_distance * movement_direction
 
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
