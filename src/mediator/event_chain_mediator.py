@@ -95,11 +95,7 @@ class EventChainMediator(Mediator):
         for markov_chain_index in range(self._total_number_of_iterations):
             active_particle_index = np.random.randint(0, number_of_particles)
             movement_direction = np.random.choice((-1.0, 1.0))
-            # set up objects for testing for debugging
-            if markov_chain_index == 0:
-                # store active particle
-                self._indices[self._n_indices_chosen, 0] = active_particle_index
-                self._n_indices_chosen += 1
+
             self._generate_single_observation(markov_chain_index, temperature, movement_direction,
                                               active_particle_index)
             super()._print_sample_progress(markov_chain_index)
@@ -130,10 +126,11 @@ class EventChainMediator(Mediator):
                 active_particle_position, east_particle_position)
             ##############################################################
 
-            # TODO to generalise, we should pass self._positions and relevant_particle_indices to
-            #  get_distance_to_next_event(); in QHO case, relevant_particle_indices = [east_particle_index,
-            #  active_particle_index, west_particle_index]
-            distance_to_next_event, self._move_num = self._potential.get_distance_to_next_event(
+            # TODO to generalise, we should pass self._positions and active_particle_index to
+            #  get_distance_to_next_event() 
+            # sort out east/west in potential class
+            #############################################################
+            distance_to_next_event, self._move_num, eta = self._potential.get_distance_to_next_event(
                 active_particle_position, east_particle_position, west_particle_position, movement_direction,
                 temperature, self._move_num)
 
@@ -144,16 +141,20 @@ class EventChainMediator(Mediator):
                 for sampler_index, sampler in enumerate(self._samplers):
                     self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
                         None, self._positions, self._potential)
-                self._total_number_of_events += 1
+            
             else:
                 distance_travelled += distance_to_next_event
                 self._update_position(distance_to_next_event, active_particle_index,  movement_direction)
                 ###########################
+                self._indices[self._n_indices_chosen, 2] = eta
                 self._indices[self._n_indices_chosen, 1] = distance_to_next_event
+                self._indices[self._n_indices_chosen, 0] = active_particle_index
                 ############################
-                active_particle_index, movement_direction = self._potential.choose_next_active_particle(
+                active_particle_index, movement_direction, self._n_indices_chosen = self._potential.choose_next_active_particle(
                     active_particle_index, east_particle_index, west_particle_index, self._positions,
-                    movement_direction)
+                    movement_direction, self._n_indices_chosen)
+                
+                self._total_number_of_events += 1
 
     def _update_position(self, displacement_distance, active_particle_index, movement_direction):
         """ Updates position of the active particle."""

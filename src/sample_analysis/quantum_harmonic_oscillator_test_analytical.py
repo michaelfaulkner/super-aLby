@@ -56,7 +56,7 @@ def main(values_filepath, config_folder):
         (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
         number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
         
-        dimensionless_mass = parsing.get_value(config, strings.to_camel_case(potential), "dimensionless_mass")
+        mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
         timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
         number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
         lambda_value = parsing.get_value(config, "EventChainMediator", "distance_between_measurements")
@@ -71,11 +71,11 @@ def main(values_filepath, config_folder):
         mean_sample_mean = get_sample_mean_and_error(mean_sample)
         numerical_x2[index] = mean_sample_mean[0]
         timestep_arr[index] = timestep
-        analytical_x2_arr[index] = analytical_x2(dimensionless_mass, number_of_particles)
+        analytical_x2_arr[index] = analytical_x2(mass, number_of_particles)
         
         #print(f"analytical x^2 for m={dimensionless_mass}: {analytical_x2_arr[index]}")
         N_arr[index] = number_of_particles
-        m_arr[index] = dimensionless_mass
+        m_arr[index] = mass
         ######################################
         #print(np.shape(position_sample[0]))
         fig, ax = plt.subplots(1,1)
@@ -84,15 +84,15 @@ def main(values_filepath, config_folder):
         # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[50], label = "50")
         # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90], label = "90")
         ax.scatter(np.arange(0,len(position_sample[0])), position_sample[100], label = "100")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[200], label = "200")
-        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[30], label = "30")
-        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[40], label = "40")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[500], label = "500")
-        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[60], label = "60")
-        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[70], label = "70")
-        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[80], label = "80")
-        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90], label = "90")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[990], label = "990")
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[2000], label = "2000")
+        # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[30], label = "30")
+        # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[40], label = "40")
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[5000], label = "5000")
+        # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[60], label = "60")
+        # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[70], label = "70")
+        # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[80], label = "80")
+        # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90], label = "90")
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[9900], label = "9900")
         ax.set_xlabel("site index")
         ax.set_ylabel("position")
         plt.legend()
@@ -113,7 +113,7 @@ def main(values_filepath, config_folder):
         # subset_action = action_sample[indices_for_action]
 
         fig, ax = plt.subplots(1,1)
-        ax.plot(np.arange(0,len(indices_sample)), indices_sample, marker="x")
+        ax.plot(np.arange(0,len(indices_sample[:40])), indices_sample[:40], marker="x")
         ax.set_xlabel("nth choice")
         ax.set_ylabel("chosen active particle index")
         plt.tight_layout()
