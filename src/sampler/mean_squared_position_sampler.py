@@ -46,4 +46,4 @@ class MeanSquaredPositionSampler(MeanPositionSampler):
             The observation of the positions.
         """
 
-        return np.mean(np.square(positions / self._timestep))
+        return np.mean(np.square(positions))

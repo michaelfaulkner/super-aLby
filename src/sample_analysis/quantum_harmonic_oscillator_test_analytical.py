@@ -136,12 +136,13 @@ def main(values_filepath, config_folder):
         ax.set_ylabel("eta")
         plt.tight_layout()
         plt.savefig(f"output/figs/eta.png")
-        # fig, ax = plt.subplots(1,1)
-        # ax.scatter(np.arange(0,len(subset_action)), subset_action, marker="x")
-        # ax.set_xlabel("time in simulation  (no units)")
-        # ax.set_ylabel("action at largest position particle")
-        # plt.tight_layout()
-        # plt.savefig(f"test5_t{number_of_equilibration_iterations}.png")
+        fig, ax = plt.subplots(1,1)
+        ax.scatter(np.arange(0,len(mean_sample)), mean_sample)
+        ax.set_xlabel("time in simulation")
+        ax.set_ylabel("<x^2>")
+        plt.tight_layout()
+        plt.savefig(f"output/figs/x2_mean.png")
+
         ######################################
 
 
