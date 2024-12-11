@@ -58,22 +58,7 @@ class XyPotential(ContinuousPotential):
         float
             The potential.
         """
-        # for index in number of particles
-        # do the nearest neighbours sum:
-        # sum (-cos(\theta_j - \theta_index))
-        # \theta_index is positions[index]
-        # \theta_j is positions[self.get_jth_neighbour(index)] etc etc
-        # with j being nearest neighbours of index particle
-        # add to running total
 
-        # do east and north neighbours only - periodic BCs
-        # neighbour - self for these
-        # opposite for south and west
-
-
-        # return self.potential_constant * np.sum([-(np.cos(positions[get_north_neighbour(index, self._lattice_length)]-positions[index]) +
-        #                                            np.cos(positions[get_east_neighbour(index, self._lattice_length)]-positions[index]))
-        #                                            for index in range(number_of_particles)])
         return self.potential_constant * 0.5 * np.sum([self.sum_nearest_neighbours(index, positions[index], positions)
                                                        for index in range(number_of_particles)])
 

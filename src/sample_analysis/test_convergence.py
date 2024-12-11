@@ -262,6 +262,7 @@ def main(config_file_string):
         legend.get_frame().set_edgecolor('k')
         legend.get_frame().set_lw(1.5)
         plt.tight_layout()
+        plt.xlim((0,1.0))
         plt.savefig("convergence.png")
         #plt.show()
 

@@ -141,7 +141,8 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         """
         return self._mass * ((2.0 + self._timestep ** 2 * self._omega ** 2) * positions[particle_index] -
                              positions[get_west_neighbour(particle_index, number_of_particles)] -
-                             positions[get_east_neighbour(particle_index, number_of_particles)]).item() / self._timestep
+                             positions[get_east_neighbour(particle_index, number_of_particles)]).item()
+    # NOTE removed / self.timestep here
 
     def _get_pairwise_dimensionless_action(self, position_at_index, position_at_east_index):
         """
@@ -163,10 +164,27 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                                    self._timestep * self._omega ** 2 * position_at_index ** 2)
 
     def get_distance_to_next_event(self, position_at_index, position_at_east_index, position_at_west_index,
-                                   movement_direction, temperature, move_num):
+                                   movement_direction, move_num):
+        """
+        Returns the distamce to the next particle event for a given active particle index.
+
+        Parameters
+        ----------
+        position_at_index : float
+            The position of the particle at some particle index.
+        position_at_east_index : float
+            The position of the particle at the site east of the particle index.
+        position_at_west_index : float
+            The position of the particle at the site west of the particle index.
+        movement_direction : int
+            The direction of movement of the particle, either 1 or -1.
+        
+        Returns
+        """
         distance_to_next_event = 0.0
-        bottom_of_well = ((position_at_east_index + position_at_west_index) / self._timestep /
+        bottom_of_well = ((position_at_east_index + position_at_west_index) /
                           (2.0 + self._timestep ** 2 * self._omega ** 2))
+        # NOTE removed  / self._timestep ^^^^^
         if ((movement_direction > 0) and (position_at_index < bottom_of_well) or
                 (movement_direction < 0) and (position_at_index > bottom_of_well)):
             """advance to the bottom of the well"""
@@ -181,7 +199,6 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         c = np.log(np.random.uniform(0.0, 1.0))
         """solve quadratic equation for remaining distance to next event"""
         roots = np.roots([a,b,c]) * self._timestep
-        #print(roots)
         # TODO MF thinks the +ve/-ve root might correspond to a +ve/-ve movement_direction - but need to CHECK!
         if roots[0] > 0.0:
             if movement_direction > 0:
