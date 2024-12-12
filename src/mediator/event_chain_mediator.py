@@ -103,7 +103,7 @@ class EventChainMediator(Mediator):
                 self._indices[:self._n_indices_chosen])
 
     def _generate_single_observation(self, markov_chain_index, temperature, movement_direction,
-                                     active_particle_index=None):
+                                     active_particle_index):
         """Advances the Markov chain to the next sampling instance and adds a single observation to the sample."""
         distance_to_next_measurement = self._distance_between_measurements
         #while distance_travelled < self._distance_between_measurements:
@@ -111,6 +111,7 @@ class EventChainMediator(Mediator):
             #############################################################
             # sample some more data for testing
             self._indices[self._n_indices_chosen, 3] = self._positions[active_particle_index]
+            #############################################################
             distance_to_next_event, self._move_num, vetoing_index = self._potential.get_distance_to_next_event(
                 self._positions, active_particle_index, temperature, movement_direction, self._move_num)
 
