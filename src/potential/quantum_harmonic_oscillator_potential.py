@@ -184,6 +184,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
 
         position_at_east_index = positions[get_east_neighbour(active_particle_index, number_of_particles)]
         position_at_west_index = positions[get_west_neighbour(active_particle_index, number_of_particles)]
+        position_at_index = positions[active_particle_index]
         distance_to_next_event = 0.0
         bottom_of_well = ((position_at_east_index + position_at_west_index) /
                           (2.0 + self._timestep ** 2 * self._omega ** 2))

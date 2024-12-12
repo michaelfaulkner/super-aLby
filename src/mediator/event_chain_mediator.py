@@ -8,12 +8,9 @@ from potential.potential import Potential
 from sampler.sampler import Sampler
 from typing import Sequence
 import logging
-# NOTE this might not work?
 from model_settings import number_of_particles
-from helper_methods import get_east_neighbour, get_west_neighbour
 
 parsing = importlib.import_module("base.parsing")
-
 
 class EventChainMediator(Mediator):
     """The EventChainMediator class provides functionality for the event-chain Monte Carlo algorithm."""
@@ -108,25 +105,25 @@ class EventChainMediator(Mediator):
     def _generate_single_observation(self, markov_chain_index, temperature, movement_direction,
                                      active_particle_index=None):
         """Advances the Markov chain to the next sampling instance and adds a single observation to the sample."""
-        distance_travelled = 0.0
-        while distance_travelled < self._distance_between_measurements:
+        distance_to_next_measurement = self._distance_between_measurements
+        #while distance_travelled < self._distance_between_measurements:
+        while distance_to_next_measurement > 0.0:
             #############################################################
             # sample some more data for testing
             self._indices[self._n_indices_chosen, 3] = self._positions[active_particle_index]
             distance_to_next_event, self._move_num, vetoing_index = self._potential.get_distance_to_next_event(
                 self._positions, active_particle_index, temperature, movement_direction, self._move_num)
 
-            if distance_travelled + distance_to_next_event >= self._distance_between_measurements:
-                distance_to_measurement = self._distance_between_measurements - distance_travelled
-                distance_travelled += np.abs(distance_to_measurement)
-                self._potential.update_position(self._positions, distance_to_measurement, active_particle_index, movement_direction)
+            if distance_to_next_measurement < distance_to_next_event:
+                distance_to_next_measurement -= distance_to_next_event
+                self._potential.update_position(self._positions, distance_to_next_measurement, active_particle_index, movement_direction)
                 for sampler_index, sampler in enumerate(self._samplers):
                     self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
                         None, self._positions, self._potential)
        
             else:
-                distance_travelled += distance_to_next_event
-                self._potential.update_position(self._positions,distance_to_next_event, active_particle_index,  movement_direction)
+                distance_to_next_measurement -= distance_to_next_event
+                self._potential.update_position(self._positions, distance_to_next_event, active_particle_index,  movement_direction)
                 ###########################
                 self._indices[self._n_indices_chosen, 1] = distance_to_next_event
                 self._indices[self._n_indices_chosen, 0] = active_particle_index
