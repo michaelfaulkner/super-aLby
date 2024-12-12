@@ -226,7 +226,7 @@ def main(config_file_string):
                              "number_of_particles and size_of_particle_space are set in the ModelSettings section).")
     elif "xy_potential" in potential:
         reference_sample = np.load(
-            "permanent_data/reference_data/xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
+            "src/permanent_data/reference_data/xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
     elif "quantum_harmonic_oscillator_potential" in potential:
         reference_sample = np.load(
             "src/permanent_data/reference_data/quantum_harmonic_oscillator_timestep1_N100_reference_sample.npy").flatten()
@@ -262,7 +262,6 @@ def main(config_file_string):
         legend.get_frame().set_edgecolor('k')
         legend.get_frame().set_lw(1.5)
         plt.tight_layout()
-        plt.xlim((0,1.0))
         plt.savefig("convergence.png")
         #plt.show()
 

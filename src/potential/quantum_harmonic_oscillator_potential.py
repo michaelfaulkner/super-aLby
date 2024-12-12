@@ -163,24 +163,27 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         return 0.5 * self._mass * ((position_at_east_index - position_at_index) ** 2 / self._timestep +
                                    self._timestep * self._omega ** 2 * position_at_index ** 2)
 
-    def get_distance_to_next_event(self, position_at_index, position_at_east_index, position_at_west_index,
-                                   movement_direction, move_num):
+    def get_distance_to_next_event(self, positions, active_particle_index, temperature, movement_direction, move_num):
         """
         Returns the distamce to the next particle event for a given active particle index.
 
         Parameters
         ----------
-        position_at_index : float
-            The position of the particle at some particle index.
-        position_at_east_index : float
-            The position of the particle at the site east of the particle index.
-        position_at_west_index : float
-            The position of the particle at the site west of the particle index.
+        positions : numpy.ndarray
+            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
+            is a float and represents the position of the worldline at that time step.
+        active_particle_index : int
+            The active particle index (i.e., the discretised-time index).
         movement_direction : int
             The direction of movement of the particle, either 1 or -1.
         
         Returns
+        distance_to_next_event : float
+            The distance to the next particle event
         """
+
+        position_at_east_index = positions[get_east_neighbour(active_particle_index, number_of_particles)]
+        position_at_west_index = positions[get_west_neighbour(active_particle_index, number_of_particles)]
         distance_to_next_event = 0.0
         bottom_of_well = ((position_at_east_index + position_at_west_index) /
                           (2.0 + self._timestep ** 2 * self._omega ** 2))
@@ -212,14 +215,17 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                 remaining_displacement_to_event = roots[0]
         distance_to_next_event += np.abs(remaining_displacement_to_event)
         move_num += 1
-        return distance_to_next_event, move_num, remaining_displacement_to_event
+        vetoing_index = 0
+        return distance_to_next_event, move_num, vetoing_index
 
-    def choose_next_active_particle(self, active_particle_index, east_particle_index, west_particle_index,
-                                    positions, movement_direction, n_indices_chosen):
+    def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
+                                     n_indices_chosen, vetoing_index):
         """Chooses the index and direction for the next active particle in the markov chain"""
         initial_a = active_particle_index
         initial_v = movement_direction
 
+        west_particle_index = get_west_neighbour(active_particle_index, number_of_particles)
+        east_particle_index = get_east_neighbour(active_particle_index, number_of_particles)
         active_particle_gradient = self._get_gradient_at_index(positions, active_particle_index)
         west_particle_gradient = self._get_gradient_at_index(positions, west_particle_index)
         east_particle_gradient = self._get_gradient_at_index(positions, east_particle_index)
@@ -247,3 +253,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         
 
         return active_particle_index, movement_direction, n_indices_chosen
+
+    def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
+        """ Updates position of the active particle."""
+        positions[active_particle_index] += displacement_distance * movement_direction
