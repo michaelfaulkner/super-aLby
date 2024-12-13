@@ -94,19 +94,19 @@ class EventChainMediator(Mediator):
                 active_particle_index = np.random.randint(0, number_of_particles)
                 movement_direction = np.random.choice((-1.0, 1.0))
 
-            active_particle_index, movement_direction = self._generate_single_observation(markov_chain_index, temperature, movement_direction,
-                                              active_particle_index)
+            active_particle_index, movement_direction = self._generate_single_observation(markov_chain_index, temperature,
+                                                        movement_direction, active_particle_index)
             super()._print_sample_progress(markov_chain_index)
-
-        # TODO read output folder from config file
+        ####################################
+        # for testing 
         np.save("output/event_chain_mediator/temperature_00_sample_of_indices.npy",
                 self._indices[:self._n_indices_chosen])
+        ####################################
 
     def _generate_single_observation(self, markov_chain_index, temperature, movement_direction,
                                      active_particle_index):
         """Advances the Markov chain to the next sampling instance and adds a single observation to the sample."""
         distance_to_next_measurement = self._distance_between_measurements
-        #while distance_travelled < self._distance_between_measurements:
         while distance_to_next_measurement > 0.0:
             #############################################################
             # sample some more data for testing

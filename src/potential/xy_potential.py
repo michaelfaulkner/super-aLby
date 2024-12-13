@@ -13,7 +13,7 @@ class XyPotential(ContinuousPotential):
     This class implements the 2D XY model potential
     """
 
-    def __init__(self, prefactor: float = 1.0,  lattice_dimensionality: int = 2): # , **kwargs
+    def __init__(self, prefactor: float = 1.0,  lattice_dimensionality: int = 2): 
         """
         The constructor of the XyPotential class.
         6 
@@ -103,7 +103,7 @@ class XyPotential(ContinuousPotential):
         current_potential = self.sum_nearest_neighbours(active_particle_index, positions[active_particle_index], positions)
         candidate_potential = self.sum_nearest_neighbours(active_particle_index, candidate_position, positions)
 
-        return self.potential_constant*(candidate_potential - current_potential)
+        return self.potential_constant * (candidate_potential - current_potential)
 
 
     def sum_nearest_neighbours(self, active_particle_index, active_site_position, positions):
