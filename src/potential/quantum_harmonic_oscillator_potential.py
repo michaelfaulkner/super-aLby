@@ -165,7 +165,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
 
     def get_distance_to_next_event(self, positions, active_particle_index, temperature, movement_direction, move_num):
         """
-        Returns the distamce to the next particle event for a given active particle index.
+        Returns the distance to the next particle event for a given active particle index.
 
         Parameters
         ----------
@@ -178,6 +178,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             The direction of movement of the particle, either 1 or -1.
         
         Returns
+        ----------
         distance_to_next_event : float
             The distance to the next particle event
         """
@@ -202,7 +203,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         # TODO might divide following line by temperature, as this is where it would appear if temperature != 1.0
         c = np.log(np.random.uniform(0.0, 1.0))
         """solve quadratic equation for remaining distance to next event"""
-        roots = np.roots([a,b,c]) * self._timestep
+        roots = np.roots([a, b, c]) * self._timestep
         # TODO MF thinks the +ve/-ve root might correspond to a +ve/-ve movement_direction - but need to CHECK!
         if roots[0] > 0.0:
             if movement_direction > 0:
@@ -216,8 +217,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                 remaining_displacement_to_event = roots[0]
         distance_to_next_event += np.abs(remaining_displacement_to_event)
         move_num += 1
-        vetoing_index = 0
-        return distance_to_next_event, move_num, vetoing_index
+        return distance_to_next_event, move_num, None
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
                                      n_indices_chosen, vetoing_index):
@@ -249,9 +249,6 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             raise Exception("Chose the same index and direction twice in a row")
         
         n_indices_chosen += 1
-        
-        
-        
 
         return active_particle_index, movement_direction, n_indices_chosen
 
