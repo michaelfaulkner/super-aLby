@@ -119,7 +119,7 @@ def main(values_filepath, config_folder):
         # # subset_action = action_sample[indices_for_action]
 
         fig, ax = plt.subplots(1,1)
-        ax.plot(np.arange(0,len(indices_sample[:80])), indices_sample[:80], marker="x")
+        ax.plot(np.arange(0,len(indices_sample[500:800])), indices_sample[500:800], marker="x")
         ax.set_xlabel("nth choice")
         ax.set_ylabel("chosen active particle index")
         plt.tight_layout()
