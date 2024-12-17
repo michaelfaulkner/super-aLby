@@ -163,7 +163,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         return 0.5 * self._mass * ((position_at_east_index - position_at_index) ** 2 / self._timestep +
                                    self._timestep * self._omega ** 2 * position_at_index ** 2)
 
-    def get_distance_to_next_event(self, positions, active_particle_index, temperature, movement_direction, move_num):
+    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event for a given active particle index.
 
@@ -216,11 +216,10 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             else:
                 remaining_displacement_to_event = roots[0]
         distance_to_next_event += np.abs(remaining_displacement_to_event)
-        move_num += 1
-        return distance_to_next_event, move_num, None
+        return distance_to_next_event, None
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
-                                     n_indices_chosen, vetoing_index):
+                                     n_indices_chosen, veto_index):
         """Chooses the index and direction for the next active particle in the markov chain"""
         initial_a = active_particle_index
         initial_v = movement_direction

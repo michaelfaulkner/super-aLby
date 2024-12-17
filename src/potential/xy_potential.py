@@ -57,7 +57,7 @@ class XyPotential(ContinuousPotential):
             The potential.
         """
 
-        return self.potential_constant * 0.5 * np.sum([self.sum_nearest_neighbours(index, positions[index].item(),
+        return self.potential_constant * 0.5 * np.sum([self._sum_nearest_neighbours(index, positions[index].item(),
                                                                                    positions)
                                                        for index in range(number_of_particles)])
 
@@ -97,14 +97,14 @@ class XyPotential(ContinuousPotential):
         float
             The potential difference resulting from moving the single active particle to candidate_position.
         """
-        current_potential = self.sum_nearest_neighbours(active_particle_index, positions[active_particle_index].item(),
+        current_potential = self._sum_nearest_neighbours(active_particle_index, positions[active_particle_index].item(),
                                                         positions)
-        candidate_potential = self.sum_nearest_neighbours(active_particle_index, candidate_position, positions)
+        candidate_potential = self._sum_nearest_neighbours(active_particle_index, candidate_position, positions)
 
         return self.potential_constant * (candidate_potential - current_potential)
 
 
-    def _sum_nearest_neighbours(self, active_particle_index, active_site_position, positions):
+    def _sum_nearest_neighbours(self, active_particle_index, active_particle_position, positions):
 
         """
         Returns the potential at lattice_site_index by performing a sum over nearest neighbours.
@@ -113,7 +113,7 @@ class XyPotential(ContinuousPotential):
         ----------
         active_particle_index : int
             The index of the active_particle.
-        active_position : float
+        active_particle_position : float
             The phase of the spin of the particle at active_particle_index.
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
@@ -123,14 +123,15 @@ class XyPotential(ContinuousPotential):
         float
             The potential at lattice_site_index.
         """
-        return -(np.cos(positions[get_north_neighbour(active_particle_index, self._lattice_length)] - active_position) +
-                 np.cos(positions[get_east_neighbour(active_particle_index, self._lattice_length)] - active_position) +
-                 np.cos(active_position - positions[get_south_neighbour(active_particle_index, self._lattice_length)]) +
-                 np.cos(active_position - positions[get_west_neighbour(active_particle_index, self._lattice_length)]))
+        return -(np.cos(positions[get_north_neighbour(active_particle_index, self._lattice_length)] - active_particle_position) +
+                 np.cos(positions[get_east_neighbour(active_particle_index, self._lattice_length)] - active_particle_position) +
+                 np.cos(active_particle_position - positions[get_south_neighbour(active_particle_index, self._lattice_length)]) +
+                 np.cos(active_particle_position - positions[get_west_neighbour(active_particle_index, self._lattice_length)]))
 
-    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature, movement_direction, move_num):
+    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature, movement_direction):
         """
-        Returns the distance to the next particle event for a given active particle index.
+        Returns the distance to the next particle event for a given active particle index,
+        as well as the particle index responsible for that event.  Used for ECMC.
 
         Parameters
         ----------
@@ -148,6 +149,8 @@ class XyPotential(ContinuousPotential):
         ----------
         distance_to_next_event : float
             The distance to the next particle event
+        veto_index : int
+            The particle index responsible for the event.
         """
         shortest_distance_to_next_factor_event = 1.0e10
         active_spin_value = positions[active_particle_index]
@@ -183,13 +186,26 @@ class XyPotential(ContinuousPotential):
                 shortest_distance_to_next_factor_event = distance_to_next_factor_event
                 vetoing_spin_index = neighbouring_spin_indices[i]
                 
-        return shortest_distance_to_next_factor_event, move_num, vetoing_spin_index
+        return shortest_distance_to_next_factor_event, vetoing_spin_index
 
-    @staticmethod
-    def choose_next_active_particle(positions, active_particle_index, movement_direction, n_indices_chosen,
-                                    vetoing_index):
-        """Chooses the index and direction for the next active particle in the markov chain"""
-        return vetoing_index, movement_direction, n_indices_chosen
+
+    def choose_next_active_particle(self, positions, active_particle_index, movement_direction, n_indices_chosen,
+                                    veto_index):
+        """
+        Chooses the index and direction for the next active particle in the markov chain for ECMC.
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the spin angle of its corresponding particle.
+        active_particle_index : int
+            The active particle index
+        movement_direction : int
+            The direction of movement of the particle, either 1 or -1.
+        veto_index : int
+            The particle index responsible for the event. 
+        """
+        return veto_index, movement_direction, n_indices_chosen
 
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
