@@ -22,7 +22,6 @@ class XyPotential(ContinuousPotential):
         prefactor : float
             The prefactor k of the potential.
         """
-
         super().__init__(prefactor=prefactor)
         if lattice_dimensionality != 2:
             raise ConfigurationError(f"Give a value of 2 for lattice_dimensionality in {self.__class__.__name__} - "
@@ -36,9 +35,8 @@ class XyPotential(ContinuousPotential):
         self._lattice_dimensionality = lattice_dimensionality
         self._lattice_length = int(lattice_length)
         self.potential_constant = prefactor
-        
-
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor,
+                           lattice_dimensionality=lattice_dimensionality)
 
     def get_value(self, positions):
 
@@ -59,9 +57,9 @@ class XyPotential(ContinuousPotential):
             The potential.
         """
 
-        return self.potential_constant * 0.5 * np.sum([self._sum_nearest_neighbours(index, positions[index], positions)
+        return self.potential_constant * 0.5 * np.sum([self.sum_nearest_neighbours(index, positions[index].item(),
+                                                                                   positions)
                                                        for index in range(number_of_particles)])
-
 
     def get_gradient(self, positions):
 
@@ -88,7 +86,7 @@ class XyPotential(ContinuousPotential):
         ----------
         active_particle_index : int
             The index of the active particle.
-        candidate_position : numpy.ndarray
+        candidate_position : float
             A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
             represents the spin angle of the proposed spin of the active particle.
         positions : numpy.ndarray
@@ -99,9 +97,9 @@ class XyPotential(ContinuousPotential):
         float
             The potential difference resulting from moving the single active particle to candidate_position.
         """
-
-        current_potential = self._sum_nearest_neighbours(active_particle_index, positions[active_particle_index], positions)
-        candidate_potential = self._sum_nearest_neighbours(active_particle_index, candidate_position, positions)
+        current_potential = self.sum_nearest_neighbours(active_particle_index, positions[active_particle_index].item(),
+                                                        positions)
+        candidate_potential = self.sum_nearest_neighbours(active_particle_index, candidate_position, positions)
 
         return self.potential_constant * (candidate_potential - current_potential)
 
@@ -113,9 +111,9 @@ class XyPotential(ContinuousPotential):
 
         Parameters
         ----------
-        active_site_index : int
+        active_particle_index : int
             The index of the active_particle.
-        active_site_position : float
+        active_position : float
             The phase of the spin of the particle at active_particle_index.
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
@@ -125,15 +123,14 @@ class XyPotential(ContinuousPotential):
         float
             The potential at lattice_site_index.
         """
-
-        return  -(np.cos(positions[get_north_neighbour(active_particle_index, self._lattice_length)] - active_site_position) +
-                        np.cos(positions[get_east_neighbour(active_particle_index, self._lattice_length)] - active_site_position) +
-                        np.cos(active_site_position -positions[get_south_neighbour(active_particle_index, self._lattice_length)]) +
-                        np.cos(active_site_position - positions[get_west_neighbour(active_particle_index, self._lattice_length)]))
+        return -(np.cos(positions[get_north_neighbour(active_particle_index, self._lattice_length)] - active_position) +
+                 np.cos(positions[get_east_neighbour(active_particle_index, self._lattice_length)] - active_position) +
+                 np.cos(active_position - positions[get_south_neighbour(active_particle_index, self._lattice_length)]) +
+                 np.cos(active_position - positions[get_west_neighbour(active_particle_index, self._lattice_length)]))
 
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature, movement_direction, move_num):
         """
-        Returns the distamce to the next particle event for a given active particle index.
+        Returns the distance to the next particle event for a given active particle index.
 
         Parameters
         ----------
@@ -142,10 +139,13 @@ class XyPotential(ContinuousPotential):
             is a float and represents the spin angle of its corresponding particle.
         active_particle_index : int
             The active particle index
+        temperature : float
+            The sampling temperature.
         movement_direction : int
             The direction of movement of the particle, either 1 or -1.
         
         Returns
+        ----------
         distance_to_next_event : float
             The distance to the next particle event
         """
@@ -156,49 +156,47 @@ class XyPotential(ContinuousPotential):
         neighbouring_spin_indices[1] = get_south_neighbour(active_particle_index, self._lattice_length)
         neighbouring_spin_indices[2] = get_east_neighbour(active_particle_index, self._lattice_length)
         neighbouring_spin_indices[3] = get_west_neighbour(active_particle_index, self._lattice_length)
-        
+        vetoing_spin_index = None
 
         for i in range(4):
             non_active_spin_value = positions[neighbouring_spin_indices[i]]
             initial_spin_value_difference = self._get_spin_difference(active_spin_value, non_active_spin_value)
-            uphill_distance_through_potential_space_before_next_event = - temperature * np.log(1.0 - np.random.rand())
+            uphill_energy = - temperature * np.log(1.0 - np.random.rand())
 
             if initial_spin_value_difference > 0.0:
                 initial_two_spin_potential = 1.0 - np.cos(initial_spin_value_difference)
-                no_of_complete_spin_rotations = int(0.5 * (initial_two_spin_potential +
-                                                                uphill_distance_through_potential_space_before_next_event))
+                no_of_complete_spin_rotations = int(0.5 * (initial_two_spin_potential + uphill_energy))
                 final_two_spin_potential = ((no_of_complete_spin_rotations + 1.0) * 2.0 - initial_two_spin_potential -
-                                                uphill_distance_through_potential_space_before_next_event).item()
+                                            uphill_energy).item()
                 final_spin_value_difference = np.arccos(1.0 - final_two_spin_potential)
                 distance_to_next_factor_event = ((no_of_complete_spin_rotations + 0.5) * 2.0 * np.pi -
-                                                    initial_spin_value_difference - final_spin_value_difference).item()
+                                                 initial_spin_value_difference - final_spin_value_difference).item()
            
             else:
-                no_of_complete_spin_rotations = int(0.5 * uphill_distance_through_potential_space_before_next_event)
-                final_two_spin_potential = ((no_of_complete_spin_rotations + 1.0) * 2.0 -
-                                                uphill_distance_through_potential_space_before_next_event).item()
+                no_of_complete_spin_rotations = int(0.5 * uphill_energy)
+                final_two_spin_potential = ((no_of_complete_spin_rotations + 1.0) * 2.0 - uphill_energy).item()
                 final_spin_value_difference = np.arccos(1.0 - final_two_spin_potential)
                 distance_to_next_factor_event = ((no_of_complete_spin_rotations + 0.5) * 2.0 * np.pi -
-                                                    initial_spin_value_difference - final_spin_value_difference).item()
-            # to stop it from throwing a used before assignment error based on the if statement....
-            vetoing_spin_index = 0
+                                                 initial_spin_value_difference - final_spin_value_difference).item()
+
             if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
                 shortest_distance_to_next_factor_event = distance_to_next_factor_event
                 vetoing_spin_index = neighbouring_spin_indices[i]
                 
         return shortest_distance_to_next_factor_event, move_num, vetoing_spin_index
 
-    def _get_spin_difference(self, spin_value_one, spin_value_two):
-        """ returns the difference between two spin angles"""
-        return ((spin_value_one - spin_value_two + np.pi) % 2.0 * np.pi) - np.pi
-
-    def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
-        """ Updates position of the active particle."""
-        positions[active_particle_index] = (positions[active_particle_index] + displacement_distance) % 2.0 * np.pi
-    
-    def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
-                                    n_indices_chosen, vetoing_index):
+    @staticmethod
+    def choose_next_active_particle(positions, active_particle_index, movement_direction, n_indices_chosen,
+                                    vetoing_index):
         """Chooses the index and direction for the next active particle in the markov chain"""
-        active_particle_index = vetoing_index
-        #TODO implement no_of_events_per_unit_spin_space_distance tracking
-        return  active_particle_index, movement_direction, n_indices_chosen
+        return vetoing_index, movement_direction, n_indices_chosen
+
+    @staticmethod
+    def update_position(positions, displacement_distance, active_particle_index, movement_direction):
+        """ Updates position of the active particle."""
+        positions[active_particle_index] = (positions[active_particle_index] + displacement_distance) % (2.0 * np.pi)
+
+    @staticmethod
+    def _get_spin_difference(spin_value_one, spin_value_two):
+        """ returns the difference between two spin angles"""
+        return (spin_value_one - spin_value_two + np.pi) % (2.0 * np.pi) - np.pi

@@ -12,6 +12,7 @@ from model_settings import number_of_particles
 
 parsing = importlib.import_module("base.parsing")
 
+
 class EventChainMediator(Mediator):
     """The EventChainMediator class provides functionality for the event-chain Monte Carlo algorithm."""
 
@@ -90,50 +91,45 @@ class EventChainMediator(Mediator):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         self._total_number_of_events = 0
         for markov_chain_index in range(self._total_number_of_iterations):
-            if markov_chain_index == 0:
-                active_particle_index = np.random.randint(0, number_of_particles)
-                movement_direction = np.random.choice((-1.0, 1.0))
+            active_particle_index = np.random.randint(0, number_of_particles)
+            movement_direction = np.random.choice((-1.0, 1.0))
+            distance_to_next_measurement = self._distance_between_measurements
 
-            active_particle_index, movement_direction = self._generate_single_observation(markov_chain_index, temperature,
-                                                        movement_direction, active_particle_index)
+            while True:
+                #############################################################
+                # sample some more data for testing
+                self._indices[self._n_indices_chosen, 3] = self._positions[active_particle_index]
+                #############################################################
+                distance_to_next_event, self._move_num, vetoing_index = self._potential.get_distance_to_next_event(
+                    self._positions, active_particle_index, temperature, movement_direction, self._move_num)
+
+                if distance_to_next_measurement < distance_to_next_event:
+                    self._potential.update_position(self._positions, distance_to_next_measurement,
+                                                    active_particle_index, movement_direction)
+                    for sampler_index, sampler in enumerate(self._samplers):
+                        self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
+                            None, self._positions, self._potential)
+                    break
+
+                else:
+                    distance_to_next_measurement -= distance_to_next_event
+                    self._potential.update_position(self._positions, distance_to_next_event, active_particle_index,
+                                                    movement_direction)
+                    ###########################
+                    self._indices[self._n_indices_chosen, 1] = distance_to_next_event
+                    self._indices[self._n_indices_chosen, 0] = active_particle_index
+                    ############################
+                    active_particle_index, movement_direction, self._n_indices_chosen = self._potential.choose_next_active_particle(
+                        self._positions, active_particle_index, movement_direction, self._n_indices_chosen,
+                        vetoing_index)
+                    self._total_number_of_events += 1
+
             super()._print_sample_progress(markov_chain_index)
         ####################################
         # for testing 
         np.save("output/event_chain_mediator/temperature_00_sample_of_indices.npy",
                 self._indices[:self._n_indices_chosen])
         ####################################
-
-    def _generate_single_observation(self, markov_chain_index, temperature, movement_direction,
-                                     active_particle_index):
-        """Advances the Markov chain to the next sampling instance and adds a single observation to the sample."""
-        distance_to_next_measurement = self._distance_between_measurements
-        while distance_to_next_measurement > 0.0:
-            #############################################################
-            # sample some more data for testing
-            self._indices[self._n_indices_chosen, 3] = self._positions[active_particle_index]
-            #############################################################
-            distance_to_next_event, self._move_num, vetoing_index = self._potential.get_distance_to_next_event_and_veto_index(
-                self._positions, active_particle_index, temperature, movement_direction, self._move_num)
-
-            if distance_to_next_measurement < distance_to_next_event:
-                distance_to_next_measurement -= distance_to_next_event
-                self._potential.update_position(self._positions, distance_to_next_measurement, active_particle_index, movement_direction)
-                for sampler_index, sampler in enumerate(self._samplers):
-                    self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
-                        None, self._positions, self._potential)
-       
-            else:
-                distance_to_next_measurement -= distance_to_next_event
-                self._potential.update_position(self._positions, distance_to_next_event, active_particle_index,  movement_direction)
-                ###########################
-                self._indices[self._n_indices_chosen, 1] = distance_to_next_event
-                self._indices[self._n_indices_chosen, 0] = active_particle_index
-                ############################
-                active_particle_index, movement_direction, self._n_indices_chosen = self._potential.choose_next_active_particle(
-                    self._positions, active_particle_index, movement_direction, self._n_indices_chosen, vetoing_index)
-                
-                self._total_number_of_events += 1
-        return active_particle_index, movement_direction
 
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
