@@ -112,7 +112,7 @@ class EventChainMediator(Mediator):
             # sample some more data for testing
             self._indices[self._n_indices_chosen, 3] = self._positions[active_particle_index]
             #############################################################
-            distance_to_next_event, self._move_num, vetoing_index = self._potential.get_distance_to_next_event(
+            distance_to_next_event, self._move_num, vetoing_index = self._potential.get_distance_to_next_event_and_veto_index(
                 self._positions, active_particle_index, temperature, movement_direction, self._move_num)
 
             if distance_to_next_measurement < distance_to_next_event:

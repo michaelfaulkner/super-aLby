@@ -104,8 +104,8 @@ def main(values_filepath, config_folder):
         ax.set_ylabel("<x^2>")
         plt.savefig(f"output/figs/mean_positions_squared_resampled.png")
         
-        # indices_movement_sample = np.load("output/event_chain_mediator/temperature_00_sample_of_indices.npy")
-        # indices_sample = indices_movement_sample[:,0]
+        indices_movement_sample = np.load("output/event_chain_mediator/temperature_00_sample_of_indices.npy")
+        indices_sample = indices_movement_sample[:,0]
         # moves_sample = indices_movement_sample[:,1]
         # eta_sample = indices_movement_sample[:,2]
         # x_sample = indices_movement_sample[:,3]
@@ -118,12 +118,12 @@ def main(values_filepath, config_folder):
         # # indices_for_action = np.nonzero(indices_sample==i)[1]
         # # subset_action = action_sample[indices_for_action]
 
-        # fig, ax = plt.subplots(1,1)
-        # ax.plot(np.arange(0,len(indices_sample[:40])), indices_sample[:40], marker="x")
-        # ax.set_xlabel("nth choice")
-        # ax.set_ylabel("chosen active particle index")
-        # plt.tight_layout()
-        # plt.savefig(f"output/figs/active_particle.png")
+        fig, ax = plt.subplots(1,1)
+        ax.plot(np.arange(0,len(indices_sample[:80])), indices_sample[:80], marker="x")
+        ax.set_xlabel("nth choice")
+        ax.set_ylabel("chosen active particle index")
+        plt.tight_layout()
+        plt.savefig(f"output/figs/active_particle.png")
         # fig, ax = plt.subplots(1,1)
         # ax.scatter(indices_sample, moves_sample, marker="x")
         # ax.set_xlabel("active_particle_index")

@@ -59,7 +59,7 @@ class XyPotential(ContinuousPotential):
             The potential.
         """
 
-        return self.potential_constant * 0.5 * np.sum([self.sum_nearest_neighbours(index, positions[index], positions)
+        return self.potential_constant * 0.5 * np.sum([self._sum_nearest_neighbours(index, positions[index], positions)
                                                        for index in range(number_of_particles)])
 
 
@@ -100,13 +100,13 @@ class XyPotential(ContinuousPotential):
             The potential difference resulting from moving the single active particle to candidate_position.
         """
 
-        current_potential = self.sum_nearest_neighbours(active_particle_index, positions[active_particle_index], positions)
-        candidate_potential = self.sum_nearest_neighbours(active_particle_index, candidate_position, positions)
+        current_potential = self._sum_nearest_neighbours(active_particle_index, positions[active_particle_index], positions)
+        candidate_potential = self._sum_nearest_neighbours(active_particle_index, candidate_position, positions)
 
         return self.potential_constant * (candidate_potential - current_potential)
 
 
-    def sum_nearest_neighbours(self, active_particle_index, active_site_position, positions):
+    def _sum_nearest_neighbours(self, active_particle_index, active_site_position, positions):
 
         """
         Returns the potential at lattice_site_index by performing a sum over nearest neighbours.
@@ -131,7 +131,7 @@ class XyPotential(ContinuousPotential):
                         np.cos(active_site_position -positions[get_south_neighbour(active_particle_index, self._lattice_length)]) +
                         np.cos(active_site_position - positions[get_west_neighbour(active_particle_index, self._lattice_length)]))
 
-    def get_distance_to_next_event(self, positions, active_particle_index, temperature, movement_direction, move_num):
+    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature, movement_direction, move_num):
         """
         Returns the distamce to the next particle event for a given active particle index.
 
@@ -160,7 +160,7 @@ class XyPotential(ContinuousPotential):
 
         for i in range(4):
             non_active_spin_value = positions[neighbouring_spin_indices[i]]
-            initial_spin_value_difference = self.get_spin_difference(active_spin_value, non_active_spin_value)
+            initial_spin_value_difference = self._get_spin_difference(active_spin_value, non_active_spin_value)
             uphill_distance_through_potential_space_before_next_event = - temperature * np.log(1.0 - np.random.rand())
 
             if initial_spin_value_difference > 0.0:
@@ -188,7 +188,7 @@ class XyPotential(ContinuousPotential):
                 
         return shortest_distance_to_next_factor_event, move_num, vetoing_spin_index
 
-    def get_spin_difference(self, spin_value_one, spin_value_two):
+    def _get_spin_difference(self, spin_value_one, spin_value_two):
         """ returns the difference between two spin angles"""
         return ((spin_value_one - spin_value_two + np.pi) % 2.0 * np.pi) - np.pi
 

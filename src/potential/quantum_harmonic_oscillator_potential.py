@@ -202,7 +202,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         # TODO might divide following line by temperature, as this is where it would appear if temperature != 1.0
         c = np.log(np.random.uniform(0.0, 1.0))
         """solve quadratic equation for remaining distance to next event"""
-        roots = np.roots([a,b,c]) * self._timestep
+        roots = np.roots([a, b, c]) * self._timestep
         # TODO MF thinks the +ve/-ve root might correspond to a +ve/-ve movement_direction - but need to CHECK!
         if roots[0] > 0.0:
             if movement_direction > 0:
