@@ -7,6 +7,7 @@ import logging
 from model_settings import number_of_particles
 from helper_methods import get_east_neighbour, get_west_neighbour
 
+
 class QuantumHarmonicOscillatorPotential(ContinuousPotential):
     r"""
     This class implements the (currently one-dimensional) potential for the quantum harmonic oscillator resulting
@@ -43,7 +44,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         self._omega = self._mass
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor,
                            lattice_dimensionality=lattice_dimensionality, mass=mass, timestep=timestep)
-        
+
     def get_value(self, positions):
         """
         Returns the dimensionless action for the given particle positions.  Note that the dimensional action
@@ -65,7 +66,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             dimensionless_action += self._get_pairwise_dimensionless_action(
                 positions[particle_index], positions[get_east_neighbour(particle_index, number_of_particles)])
         return dimensionless_action
-    
+
     def get_gradient(self, positions):
         """
         Returns the gradient of the dimensionless action for the given particle positions.
@@ -121,7 +122,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                 self._get_pairwise_dimensionless_action(
                     candidate_position, positions[get_east_neighbour(active_particle_index, number_of_particles)]))
         return candidate_dimensionless_action - current_dimensionless_action
-    
+
     def _get_gradient_at_index(self, positions, particle_index):
         """
         Returns the gradient of the dimensionless action with respect to the particle position at particle_index.
@@ -138,9 +139,10 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         float
             The dimensionless-action gradient at particle_index.
         """
-        return (self._mass / self._timestep) * ((2.0 + self._omega ** 2 * self._timestep ** 2) * positions[particle_index]
-                                                - positions[get_west_neighbour(particle_index, number_of_particles)]
-                                                - positions[get_east_neighbour(particle_index, number_of_particles)])
+        return self._mass / self._timestep * ((2.0 + self._timestep ** 2 * self._omega ** 2) * positions[particle_index] -
+                             positions[get_west_neighbour(particle_index, number_of_particles)] -
+                             positions[get_east_neighbour(particle_index, number_of_particles)]).item()
+        # NOTE do we need dimensionless action (which it currently is) or normal?
 
     def _get_pairwise_dimensionless_action(self, position_at_index, position_at_east_index):
         """
@@ -180,19 +182,20 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         distance_to_next_event : float
             The distance to the next particle event
         """
+
         position_at_east_index = positions[get_east_neighbour(active_particle_index, number_of_particles)]
         position_at_west_index = positions[get_west_neighbour(active_particle_index, number_of_particles)]
         position_at_index = positions[active_particle_index]
         distance_to_next_event = 0.0
-        bottom_of_well = (position_at_east_index + position_at_west_index) / (2.0 + self._omega ** 2 * self._timestep ** 2)
-
+        bottom_of_well = ((position_at_east_index + position_at_west_index) /
+                          (2.0 + self._timestep ** 2 * self._omega ** 2))
+       
         if ((movement_direction > 0) and (position_at_index < bottom_of_well) or
                 (movement_direction < 0) and (position_at_index > bottom_of_well)):
             """advance to the bottom of the well"""
             distance_to_next_event += np.abs(bottom_of_well - position_at_index)
             position_at_index = bottom_of_well
-        ############################################################################
-        # not checked
+
         """compute coefficients of quadratic equation"""
         a = 0.5 * self._mass * self._timestep * (2.0 + self._timestep ** 2 * self._omega ** 2)
         b = self._mass * (2.0 * position_at_index + self._timestep ** 2 * self._omega ** 2 * position_at_index -
@@ -200,8 +203,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         # TODO might divide following line by temperature, as this is where it would appear if temperature != 1.0
         c = np.log(np.random.uniform(0.0, 1.0))
         """solve quadratic equation for remaining distance to next event"""
-        roots = np.roots([a, b, c]) * self._timestep        
-        ##########################################################################
+        roots = np.roots([a, b, c]) * self._timestep
         if roots[0] > 0:
             if movement_direction > 0:
                 remaining_displacement_to_event = roots[0]
@@ -215,13 +217,13 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         distance_to_next_event += np.abs(remaining_displacement_to_event)
 
         return distance_to_next_event, None
-    
+
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
                                      n_indices_chosen, veto_index):
         """Chooses the index and direction for the next active particle in the markov chain"""
         initial_a = active_particle_index
         initial_v = movement_direction
-    
+
         west_particle_index = get_west_neighbour(active_particle_index, number_of_particles)
         east_particle_index = get_east_neighbour(active_particle_index, number_of_particles)
         active_particle_gradient = self._get_gradient_at_index(positions, active_particle_index)
@@ -229,7 +231,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         east_particle_gradient = self._get_gradient_at_index(positions, east_particle_index)
         sum_of_abs_gradients = np.abs(west_particle_gradient) + np.abs(active_particle_gradient) + np.abs(
             east_particle_gradient)
-    
+
         probabilities = np.zeros(2)
         probabilities[0] = np.abs(west_particle_gradient) / sum_of_abs_gradients
         probabilities[1] = probabilities[0] + np.abs(active_particle_gradient) / sum_of_abs_gradients
@@ -247,7 +249,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         n_indices_chosen += 1
 
         return active_particle_index, movement_direction, n_indices_chosen
-    
+
     def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
         """ Updates position of the active particle."""
         positions[active_particle_index] += displacement_distance * movement_direction
