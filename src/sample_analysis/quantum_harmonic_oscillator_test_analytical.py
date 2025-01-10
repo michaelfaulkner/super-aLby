@@ -50,8 +50,8 @@ def main(values_filepath, config_folder):
     m_arr = np.zeros(len(tau_values))
 
     for index, string in enumerate(tau_values):
-        #config_file_string = os.path.join(config_folder, f"event_chain_{N_values[index]}.ini")
-        config_file_string = config_folder
+
+        config_file_string = os.path.join(config_folder, f"event_chain_{string}.ini")
         config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
         (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
         number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
@@ -66,65 +66,65 @@ def main(values_filepath, config_folder):
 
         mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
                             temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
-        position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
-                            temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
+        # position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
+        #                     temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
         mean_sample_mean = get_sample_mean_and_error(mean_sample)
         numerical_x2[index] = mean_sample_mean[0]
         timestep_arr[index] = timestep
         analytical_x2_arr[index] = analytical_x2(mass, number_of_particles)
         
-        #print(f"analytical x^2 for m={dimensionless_mass}: {analytical_x2_arr[index]}")
-        N_arr[index] = number_of_particles
-        m_arr[index] = mass
-        ######################################
-        #print(np.shape(position_sample[0]))
-        fig, ax = plt.subplots(1,1)
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[0], label = "0")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[10], label = "10")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[50], label = "50")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90], label = "90")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[1000], label = "1000")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[10000], label = "10000")
-        # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[30], label = "30")
-        # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[40], label = "40")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[50000], label = "50000")
-        # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[60], label = "60")
-        # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[70], label = "70")
-        # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[80], label = "80")
-        # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90], label = "90")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[79000], label = "79000")
-        ax.set_xlabel("site index")
-        ax.set_ylabel("position")
-        plt.legend()
-        plt.savefig(f"output/figs/positions_resampled.png")
-
-        fig, ax = plt.subplots(1,1)
-        ax.scatter(np.arange(0,len(mean_sample)), mean_sample)
-        ax.set_xlabel("simulation progress/time")
-        ax.set_ylabel("<x^2>")
-        plt.savefig(f"output/figs/mean_positions_squared_resampled.png")
-        
-        indices_movement_sample = np.load("output/event_chain_mediator/temperature_00_sample_of_indices.npy")
-        indices_sample = indices_movement_sample[:,0]
-        # moves_sample = indices_movement_sample[:,1]
-        # eta_sample = indices_movement_sample[:,2]
-        # x_sample = indices_movement_sample[:,3]
-        # x_m1_sample = indices_movement_sample[:,4]
-        # x_p1_sample = indices_movement_sample[:,5]
-        # action_sample = indices_movement_sample[:,6]
-        # # i = np.nonzero(position_sample==np.max(position_sample))
-        # # print(np.shape(i))
-        # # print(np.shape(indices_sample))
-        # # indices_for_action = np.nonzero(indices_sample==i)[1]
-        # # subset_action = action_sample[indices_for_action]
-
-        fig, ax = plt.subplots(1,1)
-        ax.plot(np.arange(0,len(indices_sample[500:800])), indices_sample[500:800], marker="x")
-        ax.set_xlabel("nth choice")
-        ax.set_ylabel("chosen active particle index")
-        plt.tight_layout()
-        plt.savefig(f"output/figs/active_particle.png")
+        # #print(f"analytical x^2 for m={dimensionless_mass}: {analytical_x2_arr[index]}")
+        # N_arr[index] = number_of_particles
+        # m_arr[index] = mass
+        # ######################################
+        # #print(np.shape(position_sample[0]))
         # fig, ax = plt.subplots(1,1)
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[0], label = "0")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[10], label = "10")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[50], label = "50")
+        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90], label = "90")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[1000], label = "1000")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[10000], label = "10000")
+        # # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[30], label = "30")
+        # # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[40], label = "40")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[50000], label = "50000")
+        # # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[60], label = "60")
+        # # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[70], label = "70")
+        # # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[80], label = "80")
+        # # # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[90], label = "90")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[79000], label = "79000")
+        # ax.set_xlabel("site index")
+        # ax.set_ylabel("position")
+        # plt.legend()
+        # plt.savefig(f"output/figs/positions_resampled.png")
+
+        # fig, ax = plt.subplots(1,1)
+        # ax.scatter(np.arange(0,len(mean_sample)), mean_sample)
+        # ax.set_xlabel("simulation progress/time")
+        # ax.set_ylabel("<x^2>")
+        # plt.savefig(f"output/figs/mean_positions_squared_resampled.png")
+        
+        # indices_movement_sample = np.load("output/event_chain_mediator/temperature_00_sample_of_indices.npy")
+        # indices_sample = indices_movement_sample[:,0]
+        # # moves_sample = indices_movement_sample[:,1]
+        # # eta_sample = indices_movement_sample[:,2]
+        # # x_sample = indices_movement_sample[:,3]
+        # # x_m1_sample = indices_movement_sample[:,4]
+        # # x_p1_sample = indices_movement_sample[:,5]
+        # # action_sample = indices_movement_sample[:,6]
+        # # # i = np.nonzero(position_sample==np.max(position_sample))
+        # # # print(np.shape(i))
+        # # # print(np.shape(indices_sample))
+        # # # indices_for_action = np.nonzero(indices_sample==i)[1]
+        # # # subset_action = action_sample[indices_for_action]
+
+        # fig, ax = plt.subplots(1,1)
+        # ax.plot(np.arange(0,len(indices_sample[500:800])), indices_sample[500:800], marker="x")
+        # ax.set_xlabel("nth choice")
+        # ax.set_ylabel("chosen active particle index")
+        # plt.tight_layout()
+        # plt.savefig(f"output/figs/active_particle.png")
+        # # fig, ax = plt.subplots(1,1)
         # ax.scatter(indices_sample, moves_sample, marker="x")
         # ax.set_xlabel("active_particle_index")
         # ax.set_ylabel("move made")
@@ -153,13 +153,14 @@ def main(values_filepath, config_folder):
 
 
 
-    # fig1, ax1 = plt.subplots(1,1)
-    # ax1.scatter(timestep_arr, analytical_x2_arr, marker="x", color="red", label="analytical")
-    # ax1.scatter(timestep_arr, numerical_x2, marker="x", color="blue", label="numerical")
-    # ax1.set_xlabel(r"$\delta \tau$")
-    # ax1.set_ylabel(r"$\langle x^2 \rangle$")
-    # ax1.legend()
-    # plt.tight_layout()
+    fig1, ax1 = plt.subplots(1,1)
+    ax1.scatter(timestep_arr, analytical_x2_arr, marker="x", color="red", label="analytical")
+    ax1.scatter(timestep_arr, numerical_x2, marker="x", color="blue", label="numerical")
+    ax1.set_xlabel(r"$\delta \tau$")
+    ax1.set_ylabel(r"$\langle x^2 \rangle$")
+    ax1.legend()
+    plt.tight_layout()
+    plt.savefig("tau_arr.png")
    
 
     # fig2, ax2 = plt.subplots(1,1)
