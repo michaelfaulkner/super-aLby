@@ -91,9 +91,6 @@ class MetropolisMediator(DiffusiveMediator):
 
     def _advance_markov_chain(self, markov_chain_step_index, temperature):
         """Advances the Markov chain by one step."""
-        # TESTING
-        distance_between_samples = 0.0
-        ############
         particles_to_update = [index for index in range(number_of_particles)]
     
         random.shuffle(particles_to_update)  # randomises order of elements in particles_to_update
@@ -102,12 +99,8 @@ class MetropolisMediator(DiffusiveMediator):
             potential_difference = self._potential.get_potential_difference(active_particle_index, candidate_position,
                                                                             self._positions)
             if potential_difference < 0.0 or np.random.uniform(0.0, 1.0) < np.exp(- potential_difference / temperature):
-                # TESTING
-                distance_between_samples += np.abs(candidate_position - self._positions[active_particle_index])
-                ###############
                 self._positions[active_particle_index] = candidate_position
                 self._number_of_accepted_trajectories += 1
-        print(f"distance_between_samples: {distance_between_samples}")
 
 
     def _proposal_dynamics_adaptor(self):
