@@ -181,11 +181,16 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         distance_to_next_event : float
             The distance to the next particle event
         """
-
+        shortest_distance_to_next_factor_event = 1.0e10
         position_at_east_index = positions[get_east_neighbour(active_particle_index, number_of_particles)]
         position_at_west_index = positions[get_west_neighbour(active_particle_index, number_of_particles)]
         position_at_index = positions[active_particle_index]
+        neighbouring_spin_indices = np.zeros(3, dtype=np.int8)
+        neighbouring_spin_indices[0] = position_at_east_index
+        neighbouring_spin_indices[1] = position_at_index
+        neighbouring_spin_indices[2] = position_at_west_index
         distance_to_next_event = 0.0
+        vetoing_spin_index = None
         bottom_of_well = ((position_at_east_index + position_at_west_index) /
                           (2.0 + self._timestep ** 2 * self._omega ** 2))
        
@@ -194,27 +199,21 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             """advance to the bottom of the well"""
             distance_to_next_event += np.abs(bottom_of_well - position_at_index)
             position_at_index = bottom_of_well
-
-        """compute coefficients of quadratic equation"""
-        a = 0.5 * self._mass / self._timestep * (2.0 + self._timestep ** 2 * self._omega ** 2)
-        b = self._mass / self._timestep * (2.0 * position_at_index + self._timestep ** 2 * self._omega ** 2 * position_at_index -
-                          position_at_east_index - position_at_west_index).item()
-        # TODO might divide following line by temperature, as this is where it would appear if temperature != 1.0
-        c = np.log(np.random.uniform(0.0, 1.0))
-        """solve quadratic equation for remaining distance to next event"""
-        roots = np.roots([a, b, c]) * self._timestep
-        if roots[0] > 0:
-            if movement_direction > 0:
-                remaining_displacement_to_event = roots[0]
+        for i in range(3):
+            uphill_energy = - np.log(np.random.uniform(0,1))
+            if i != 1:
+                # compare with ds/dxi = m/delta t (x_i - neighbour_value)
+                # i.e. work out the point at which this pair potential would
+                # run us out of uphill energy
             else:
-                remaining_displacement_to_event = roots[1]
-        else:
-            if movement_direction > 0:
-                remaining_displacement_to_event = roots[1]
-            else:
-                remaining_displacement_to_event = roots[0]
-        distance_to_next_event += np.abs(remaining_displacement_to_event)
+                # compare with m/delta t * delta t **2 * omega**2 x_i
+                # "    "
+            
+            # then, find the distance moved for that move
+            # if its shorter than shortest_distance_to_next_factor_event 
+            # set it as the veto index
 
+        
         return distance_to_next_event, None
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
