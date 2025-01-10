@@ -67,7 +67,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                 positions[particle_index], positions[get_east_neighbour(particle_index, number_of_particles)])
         return dimensionless_action
 
-    def get_gradient(self, positions):
+    def get_gradient(self, positions): #TODO implement get_gradient() function in this class
         """
         Returns the gradient of the dimensionless action for the given particle positions.
 
@@ -218,7 +218,8 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         return distance_to_next_event, None
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
-                                     n_indices_chosen, veto_index):
+                                    veto_index):
+        #TODO implement ECMC for quantum harmonic oscillator
         """Chooses the index and direction for the next active particle in the markov chain"""
         initial_a = active_particle_index
         initial_v = movement_direction
@@ -244,10 +245,8 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
 
         if active_particle_index == initial_a and movement_direction == initial_v:
             raise Exception("Chose the same index and direction twice in a row")
-        
-        n_indices_chosen += 1
 
-        return active_particle_index, movement_direction, n_indices_chosen
+        return active_particle_index, movement_direction
 
     def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
         """ Updates position of the active particle."""

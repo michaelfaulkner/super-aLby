@@ -129,7 +129,7 @@ class ContinuousPotential(Potential, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def choose_next_active_particle(self, positions, active_particle_index, movement_direction, n_indices_chosen,
+    def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
                                     veto_index):
         """
         Chooses the index and direction for the next active particle in the markov chain for ECMC.

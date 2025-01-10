@@ -189,7 +189,7 @@ class XyPotential(ContinuousPotential):
         return shortest_distance_to_next_factor_event, vetoing_spin_index
 
 
-    def choose_next_active_particle(self, positions, active_particle_index, movement_direction, n_indices_chosen,
+    def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
                                     veto_index):
         """
         Chooses the index and direction for the next active particle in the markov chain for ECMC.
@@ -205,7 +205,7 @@ class XyPotential(ContinuousPotential):
         veto_index : int
             The particle index responsible for the event. 
         """
-        return veto_index, movement_direction, n_indices_chosen
+        return veto_index, movement_direction
 
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
