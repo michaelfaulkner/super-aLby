@@ -1,5 +1,5 @@
 """Module for the DeterministicMediator class."""
-from .mediator import Mediator
+from .reversible_mediator import ReversibleMediator
 from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
 from kinetic_energy.kinetic_energy import KineticEnergy
@@ -10,7 +10,7 @@ from typing import Sequence
 import numpy as np
 
 
-class DeterministicMediator(Mediator, metaclass=ABCMeta):
+class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
     """Abstract DeterministicMediator class.  This is the parent class for all mediators that use Newtonian,
         relativistic or super-relativistic dynamics."""
 

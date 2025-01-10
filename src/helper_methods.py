@@ -42,7 +42,7 @@ def get_basic_config_data(config_file_string):
         config_file_string = [config_file_string]
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     possible_mediators = ["EuclideanLeapfrogMediator", "ToroidalLeapfrogMediator", "LazyToroidalLeapfrogMediator",
-                          "MetropolisMediator", "SwendsenWangMediator", "WolffMediator"]
+                          "MetropolisMediator", "SwendsenWangMediator", "WolffMediator", "EventChainMediator"]
     (config_file_mediator, potential, samplers, temperatures, number_of_equilibration_iterations,
      number_of_observations) = (None, None, None, None, None, None)
     for possible_mediator in possible_mediators:
@@ -71,3 +71,37 @@ def get_basic_config_data(config_file_string):
             parsing.get_value(config, "ModelSettings", "size_of_particle_space"),
             parsing.get_value(config, "Run", "number_of_jobs"),
             parsing.get_value(config, "Run", "max_number_of_cpus"))
+
+
+def get_neighbours(lattice_site_index, lattice_length):
+    """Returns a list of the four neighbours (on the 2D lattice) of lattice_site_index"""
+    return [get_east_neighbour(lattice_site_index, lattice_length),
+            get_north_neighbour(lattice_site_index, lattice_length),
+            get_west_neighbour(lattice_site_index, lattice_length),
+            get_south_neighbour(lattice_site_index, lattice_length)]
+
+
+def get_east_neighbour(lattice_site_index, lattice_length):
+    """Returns the eastwards neighbour (on the 2D lattice) of lattice_site_index"""
+    return lattice_site_index + (
+            lattice_site_index + 1) % lattice_length - lattice_site_index % lattice_length
+
+
+def get_north_neighbour(lattice_site_index, lattice_length):
+    """Returns the northwards neighbour (on the 2D lattice) of lattice_site_index"""
+    return lattice_site_index + lattice_length * (
+            (int(lattice_site_index / lattice_length) + 1) % lattice_length -
+            (int(lattice_site_index / lattice_length)) % lattice_length)
+
+
+def get_west_neighbour(lattice_site_index, lattice_length):
+    """Returns the westwards neighbour (on the 2D lattice) of lattice_site_index"""
+    return lattice_site_index + (lattice_site_index - 1 + lattice_length) % lattice_length - (
+            lattice_site_index + lattice_length) % lattice_length
+
+
+def get_south_neighbour(lattice_site_index, lattice_length):
+    """Returns the southwards neighbour (on the 2D lattice) of lattice_site_index"""
+    return lattice_site_index + lattice_length * (
+            (int(lattice_site_index / lattice_length) + lattice_length - 1) % lattice_length -
+            (int(lattice_site_index / lattice_length) + lattice_length) % lattice_length)

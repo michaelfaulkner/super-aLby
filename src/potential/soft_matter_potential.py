@@ -137,3 +137,4 @@ class SoftMatterPotential(ContinuousPotential, metaclass=ABCMeta):
             The potential difference resulting from moving the single active particle to candidate_position.
         """
         raise NotImplementedError
+    

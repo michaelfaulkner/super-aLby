@@ -6,3 +6,5 @@ https://www.ucl.ac.uk/statistics/department-information/staff/dr-samuel-livingst
 All additional contributing authors will be listed in this file below in chronological order.
 
 ## Chronological list of additional contributors
+
+[Rachel Kane](https://github.com/raichkel)

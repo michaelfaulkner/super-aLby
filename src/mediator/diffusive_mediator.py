@@ -1,12 +1,12 @@
 """Module for the DiffusiveMediator class."""
-from .mediator import Mediator
+from .reversible_mediator import ReversibleMediator
 from abc import ABCMeta, abstractmethod
 from potential.potential import Potential
 from sampler.sampler import Sampler
 from typing import Sequence
 
 
-class DiffusiveMediator(Mediator, metaclass=ABCMeta):
+class DiffusiveMediator(ReversibleMediator, metaclass=ABCMeta):
     """Abstract DiffusiveMediator class.  This is the parent class for all mediators that use diffusive dynamics."""
 
     def __init__(self, potential: Potential, samplers: Sequence[Sampler], minimum_temperature: float = 1.0,

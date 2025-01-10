@@ -1,0 +1,66 @@
+"""Module for the IndexSampler class."""
+from .sampler import Sampler
+from base.logging import log_init_arguments
+import logging
+import numpy as np
+
+class IndexSampler(Sampler):
+    """
+    Class for taking observations of chosen particle index in EventChainMediator simulations
+    """
+    def __init__(self, output_directory: str):
+        """
+        The constructor of the IndexSampler class.
+
+        Parameters
+        ----------
+        output_directory : str
+            The filename onto which the sample is written at the end of the run.
+        """
+        super().__init__(output_directory)
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
+                           output_directory=output_directory)
+        
+    def initialise_sample_array(self, total_number_of_iterations):
+        """
+        Generate array that stores the sample.
+
+        Parameters
+        ----------
+        total_number_of_iterations : int
+            The total number of iterations of the Markov chain.
+
+        Returns
+        -------
+        numpy.ndarray
+            Numpy array of zeros of the required structure.
+        """
+        # just guessing, this amount will vary a lot and we just need it to be big enough
+        #TODO find a more elegant way of doing this
+        return np.zeros((total_number_of_iterations * 4, 1))
+    
+    def get_observation(self, momenta, positions, potential):
+        """
+        Returns an observation of the system for the given particle momenta and positions.
+
+        Parameters
+        ----------
+        momenta : None or numpy.ndarray
+            None or a two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each
+            element is a float and represents one Cartesian component of the momentum of a single particle.
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
+            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
+            lattice, the entire positions array corresponds to the entire array of superconducting phase.
+        potential : float or potential.potential.Potential
+            If a float, the current value of the potential; otherwise, an instance of the chosen child class of
+            potential.potential.Potential.
+
+        Returns
+        -------
+        float
+            The observation of the particle index.
+        """
+
+        
