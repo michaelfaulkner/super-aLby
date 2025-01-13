@@ -182,15 +182,16 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             The distance to the next particle event
         """
         shortest_distance_to_next_factor_event = 1.0e10
-        position_at_east_index = positions[get_east_neighbour(active_particle_index, number_of_particles)]
-        position_at_west_index = positions[get_west_neighbour(active_particle_index, number_of_particles)]
-        position_at_index = positions[active_particle_index]
-        neighbouring_spin_indices = np.zeros(3, dtype=np.int8)
-        neighbouring_spin_indices[0] = position_at_east_index
-        neighbouring_spin_indices[1] = position_at_index
-        neighbouring_spin_indices[2] = position_at_west_index
+        neighbouring_spin_indices = np.zeros(3, dtype=np.int32)
+        neighbouring_spin_indices[0] = get_west_neighbour(active_particle_index, number_of_particles)
+        neighbouring_spin_indices[1] = active_particle_index
+        neighbouring_spin_indices[2] = get_east_neighbour(active_particle_index, number_of_particles)
+  
         distance_to_next_event = 0.0
-        vetoing_spin_index = None
+        vetoing_index = None
+        position_at_index = positions[active_particle_index]
+        position_at_east_index = positions[neighbouring_spin_indices[2]]
+        position_at_west_index = positions[neighbouring_spin_indices[0]]
         bottom_of_well = ((position_at_east_index + position_at_west_index) /
                           (2.0 + self._timestep ** 2 * self._omega ** 2))
        
@@ -199,52 +200,54 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             """advance to the bottom of the well"""
             distance_to_next_event += np.abs(bottom_of_well - position_at_index)
             position_at_index = bottom_of_well
-        for i in range(3):
+        for i in range(3): #TODO account for movement direction here
             uphill_energy = - np.log(np.random.uniform(0,1))
+            initial_position = position_at_index
             if i != 1:
                 # compare with ds/dxi = m/delta t (x_i - neighbour_value)
+                initial_energy = self._mass / self._timestep * (initial_position -
+                                                                positions[neighbouring_spin_indices[i]])
+                if movement_direction > 0:
+                    final_energy = uphill_energy + initial_energy
+                else:
+                    final_energy = -uphill_energy + initial_energy
                 # i.e. work out the point at which this pair potential would
                 # run us out of uphill energy
+                final_position = final_energy * self._timestep / self._mass + positions[neighbouring_spin_indices[i]]
+
             else:
                 # compare with m/delta t * delta t **2 * omega**2 x_i
-                # "    "
-            
-            # then, find the distance moved for that move
-            # if its shorter than shortest_distance_to_next_factor_event 
-            # set it as the veto index
+                initial_energy = self._mass * self._timestep * self._omega **2 * initial_position
+                if movement_direction > 0:
+                    final_energy = uphill_energy + initial_energy
+                else:
+                    final_energy = -uphill_energy + initial_energy
+                final_position = final_energy * 1 / (self._mass * self._timestep * self._omega **2) 
 
-        
-        return distance_to_next_event, None
+            distance_to_next_factor_event = np.abs(final_position - initial_position) ### NOTE do we need an abs() here
+
+            if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
+                shortest_distance_to_next_factor_event = distance_to_next_factor_event
+                vetoing_index = neighbouring_spin_indices[i]
+        #print(f"shortest dist to next factor event: {shortest_distance_to_next_factor_event}")
+        return shortest_distance_to_next_factor_event, vetoing_index
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
                                     veto_index):
-        #TODO implement ECMC for quantum harmonic oscillator
         """Chooses the index and direction for the next active particle in the markov chain"""
         initial_a = active_particle_index
         initial_v = movement_direction
-
-        west_particle_index = get_west_neighbour(active_particle_index, number_of_particles)
-        east_particle_index = get_east_neighbour(active_particle_index, number_of_particles)
-        active_particle_gradient = self._get_gradient_at_index(positions, active_particle_index)
-        west_particle_gradient = self._get_gradient_at_index(positions, west_particle_index)
-        east_particle_gradient = self._get_gradient_at_index(positions, east_particle_index)
-        sum_of_abs_gradients = np.abs(west_particle_gradient) + np.abs(active_particle_gradient) + np.abs(
-            east_particle_gradient)
-
-        probabilities = np.zeros(2)
-        probabilities[0] = np.abs(west_particle_gradient) / sum_of_abs_gradients
-        probabilities[1] = probabilities[0] + np.abs(active_particle_gradient) / sum_of_abs_gradients
-        rand = np.random.uniform(0.0, 1.0)
-        if rand < probabilities[0]:
-            active_particle_index = west_particle_index
-        elif rand < probabilities[1]:
-            movement_direction = - movement_direction
+  
+        if veto_index == active_particle_index:
+            # stay at current site and swap movement direction
+            movement_direction = movement_direction * -1
         else:
-            active_particle_index = east_particle_index
+            active_particle_index = veto_index
 
         if active_particle_index == initial_a and movement_direction == initial_v:
             raise Exception("Chose the same index and direction twice in a row")
-
+        
+        
         return active_particle_index, movement_direction
 
     def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
