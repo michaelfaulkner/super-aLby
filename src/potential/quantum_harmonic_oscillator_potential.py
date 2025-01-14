@@ -220,7 +220,6 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                 else:
                     final_energy = -uphill_energy + initial_energy
                 final_position = final_energy / (self._mass * self._timestep * self._omega **2)
-
             distance_to_next_factor_event = np.abs(final_position - initial_position)
 
             if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
