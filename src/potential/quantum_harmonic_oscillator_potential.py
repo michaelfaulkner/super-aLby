@@ -203,23 +203,21 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         for i in range(3):
             uphill_energy = - np.log(np.random.uniform(0,1))
             initial_position = position_at_index
+            
             if i != 1:
                 neighbour_position = positions[neighbouring_indices[i]]
-                initial_energy = self._mass / self._timestep * (initial_position -
+                initial_energy = movement_direction * self._mass / self._timestep * (initial_position -
                                                                 neighbour_position)
-                if movement_direction > 0:
-                    final_energy = uphill_energy + initial_energy
-                else:
-                    final_energy = -uphill_energy + initial_energy
-                final_position = final_energy * self._timestep / self._mass + neighbour_position
+                final_energy = uphill_energy + initial_energy
+                final_position = final_energy * self._timestep / (self._mass * movement_direction) + neighbour_position
 
             else:
-                initial_energy = self._mass * self._timestep * self._omega **2 * initial_position
+                initial_energy = movement_direction * self._mass * self._timestep * self._omega **2 * initial_position
                 if movement_direction > 0:
                     final_energy = uphill_energy + initial_energy
                 else:
                     final_energy = -uphill_energy + initial_energy
-                final_position = final_energy / (self._mass * self._timestep * self._omega **2)
+                final_position = final_energy / (self._mass * self._timestep * self._omega **2 * movement_direction)
             distance_to_next_factor_event = np.abs(final_position - initial_position)
 
             if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
