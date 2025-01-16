@@ -190,36 +190,47 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         distance_to_next_event = 0.0
         vetoing_index = None
         position_at_index = positions[active_particle_index]
-        position_at_east_index = positions[neighbouring_indices[2]]
-        position_at_west_index = positions[neighbouring_indices[0]]
-        bottom_of_well = ((position_at_east_index + position_at_west_index) /
-                          (2.0 + self._timestep ** 2 * self._omega ** 2))
-       
-        if ((movement_direction > 0) and (position_at_index < bottom_of_well) or
-                (movement_direction < 0) and (position_at_index > bottom_of_well)):
-            """advance to the bottom of the well"""
-            distance_to_next_event += np.abs(bottom_of_well - position_at_index)
-            position_at_index = bottom_of_well
+
         for i in range(3):
             uphill_energy = - np.log(np.random.uniform(0,1))
-            initial_position = position_at_index
             
-            if i != 1:
-                neighbour_position = positions[neighbouring_indices[i]]
-                initial_energy = movement_direction * self._mass / self._timestep * (initial_position -
-                                                                neighbour_position)
-                final_energy = uphill_energy + initial_energy
-                final_position = final_energy * self._timestep / (self._mass * movement_direction) + neighbour_position
-
-            else:
-                initial_energy = movement_direction * self._mass * self._timestep * self._omega **2 * initial_position
-                if movement_direction > 0:
-                    final_energy = uphill_energy + initial_energy
+            if i != 1: # considering the neighbour terms
+                neighbour_position = positions[neighbouring_indices[i]].item()
+                bottom_of_well = neighbour_position
+                if ((movement_direction > 0) and (position_at_index < bottom_of_well) or
+                (movement_direction < 0) and (position_at_index > bottom_of_well)):
+                    """advance to the bottom of the well"""
+                    distance_to_next_event += np.abs(bottom_of_well - position_at_index)
+                    initial_position = bottom_of_well
                 else:
-                    final_energy = -uphill_energy + initial_energy
-                final_position = final_energy / (self._mass * self._timestep * self._omega **2 * movement_direction)
-            distance_to_next_factor_event = np.abs(final_position - initial_position)
+                    initial_position = position_at_index
+                initial_action = 0.5 * self._mass / self._timestep * (initial_position - neighbour_position)**2
+                final_action = (uphill_energy + initial_action).item()
+                roots = np.roots([0.5 * self._mass / self._timestep, -self._mass / self._timestep * neighbour_position, 0.5 * self._mass / self._timestep * neighbour_position **2 - final_action])
+                if (movement_direction > 0) and (roots[0] > 0):
+                    final_position = initial_position + roots[0]
+                else:
+                    final_position = initial_position + roots[1]
+                if (movement_direction < 0) and (roots[0] < 0):
+                    final_position = initial_position + roots[0]
+                else:
+                    final_position = initial_position + roots[1]
+                    
+            else: # consider x^2 term
+                bottom_of_well = 0.0
+                if ((movement_direction > 0) and (position_at_index < bottom_of_well) or
+                (movement_direction < 0) and (position_at_index > bottom_of_well)):
+                    """advance to the bottom of the well"""
+                    distance_to_next_event += np.abs(bottom_of_well - position_at_index)
+                    initial_position = bottom_of_well 
+                else:
+                    initial_position = position_at_index
+                initial_action = 0.5 * self._mass * self._timestep * self._omega**2 * initial_position**2
+                final_action = uphill_energy + initial_action
+                final_position = movement_direction * np.sqrt(2.0 / (self._mass * self._timestep * self._omega**2) * final_action)
 
+            distance_to_next_factor_event = np.abs(final_position - initial_position)
+    
             if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
                 shortest_distance_to_next_factor_event = distance_to_next_factor_event
                 vetoing_index = neighbouring_indices[i]
