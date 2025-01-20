@@ -75,6 +75,11 @@ class EventChainMediator(Mediator):
                                      f"{self.__class__.__name__}.")
         self._distance_between_measurements = distance_between_measurements
         self._total_number_of_events = 0
+        ############
+        #testing
+        self._number_of_bounces = 0
+        self._number_of_continuations = 0
+        ###############
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            potential=potential, samplers=samplers, minimum_temperature=minimum_temperature,
                            maximum_temperature=maximum_temperature,
@@ -105,11 +110,12 @@ class EventChainMediator(Mediator):
                     distance_to_next_measurement -= distance_to_next_event
                     self._potential.update_position(self._positions, distance_to_next_event, active_particle_index,
                                                     movement_direction)
-                    active_particle_index, movement_direction= self._potential.choose_next_active_particle(
+                    active_particle_index, movement_direction,  self._number_of_bounces, self._number_of_continuations= self._potential.choose_next_active_particle(
                         self._positions, active_particle_index, movement_direction,
-                        vetoing_index)
+                        vetoing_index,  self._number_of_bounces, self._number_of_continuations)
                     self._total_number_of_events += 1
             super()._print_sample_progress(markov_chain_index)
+        print(f"number of bounces: {self._number_of_bounces}, number of continuations: {self._number_of_continuations}")
 
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""

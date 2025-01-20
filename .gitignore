@@ -73,3 +73,5 @@ super_alby_venv/
 super-aLby_venv
 output/
 env/
+vals.txt
+src/config_files/event_chain/event_chain_*.ini

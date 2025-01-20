@@ -204,6 +204,8 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                     initial_position = bottom_of_well
                 else:
                     initial_position = position_at_index
+                    
+
                 initial_action = 0.5 * self._mass / self._timestep * (initial_position - neighbour_position)**2
                 final_action = (uphill_energy + initial_action).item()
                 roots = np.roots([0.5 * self._mass / self._timestep, -self._mass / self._timestep * neighbour_position, 0.5 * self._mass / self._timestep * neighbour_position **2 - final_action])
@@ -239,19 +241,21 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         return distance_to_next_event, vetoing_index
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
-                                    veto_index):
+                                    veto_index, number_of_bounces, number_of_continuations):
         """Chooses the index and direction for the next active particle in the markov chain"""
         initial_a = active_particle_index
         initial_v = movement_direction
   
         if veto_index == active_particle_index:
             movement_direction = movement_direction * -1
+            number_of_bounces += 1
         else:
             active_particle_index = veto_index
+            number_of_continuations += 1
 
         if active_particle_index == initial_a and movement_direction == initial_v:
             raise Exception("Chose the same index and direction twice in a row")
-        return active_particle_index, movement_direction
+        return active_particle_index, movement_direction, number_of_bounces, number_of_continuations
 
     def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
         """ Updates position of the active particle."""
