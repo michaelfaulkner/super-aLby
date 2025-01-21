@@ -287,7 +287,6 @@ def get_specific_heat(sample_directory, temperature, temperature_index, number_o
     return (potential_sample - np.mean(potential_sample)) ** 2 / temperature ** 2
 
 
-
 def get_magnetic_density(sample_directory, temperature, temperature_index, number_of_particles,
                          number_of_equilibration_iterations=None, thinning_level=None):
     """
@@ -430,8 +429,9 @@ def get_magnetic_norm_susceptibility(sample_directory, temperature, temperature_
     return number_of_particles * (
             magnetic_norm_density_sample - np.mean(magnetic_norm_density_sample)) ** 2 / temperature
 
+
 def get_xy_magnetisation_norm(sample_directory, temperature, temperature_index, number_of_particles,
-                       number_of_equilibration_iterations=None, thinning_level=None):
+                              number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the magnetisation norm.
 
@@ -460,8 +460,6 @@ def get_xy_magnetisation_norm(sample_directory, temperature, temperature_index, 
     return get_reduced_sample(
         np.load(f"{sample_directory}/temperature_{temperature_index:02d}_sample_of_magnetisation_norm.npy"),
         number_of_equilibration_iterations, thinning_level)
-
-    
 
 
 """helper methods"""
