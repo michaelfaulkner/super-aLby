@@ -189,7 +189,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
   
         distance_to_next_event = 0.0
         vetoing_index = None
-        position_at_index = positions[active_particle_index]
+        position_at_index = positions[active_particle_index].item()
 
         for i in range(3):
             uphill_energy = - np.log(np.random.uniform(0,1))
@@ -197,45 +197,57 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             if i != 1: # considering the neighbour terms
                 neighbour_position = positions[neighbouring_indices[i]].item()
                 bottom_of_well = neighbour_position
-                if ((movement_direction > 0) and (position_at_index < bottom_of_well) or
-                (movement_direction < 0) and (position_at_index > bottom_of_well)):
+                if (((movement_direction > 0) and (position_at_index < bottom_of_well)) or
+                ((movement_direction < 0) and (position_at_index > bottom_of_well))):
                     """advance to the bottom of the well"""
                     distance_to_next_event += np.abs(bottom_of_well - position_at_index)
                     initial_position = bottom_of_well
                 else:
                     initial_position = position_at_index
-                    
-
+                position_at_index = initial_position
+            
                 initial_action = 0.5 * self._mass / self._timestep * (initial_position - neighbour_position)**2
                 final_action = (uphill_energy + initial_action).item()
                 roots = np.roots([0.5 * self._mass / self._timestep, -self._mass / self._timestep * neighbour_position, 0.5 * self._mass / self._timestep * neighbour_position **2 - final_action])
                 if (movement_direction > 0) and (roots[0] > 0):
-                    final_position = initial_position + roots[0]
+                    final_position = roots[0]
                 else:
-                    final_position = initial_position + roots[1]
+                    final_position = roots[1]
                 if (movement_direction < 0) and (roots[0] < 0):
-                    final_position = initial_position + roots[0]
+                    final_position = roots[0]
                 else:
-                    final_position = initial_position + roots[1]
+                    final_position = roots[1]
+
                     
             else: # consider x^2 term
                 bottom_of_well = 0.0
-                if ((movement_direction > 0) and (position_at_index < bottom_of_well) or
-                (movement_direction < 0) and (position_at_index > bottom_of_well)):
+                if (((movement_direction > 0) and (position_at_index < bottom_of_well)) or
+                ((movement_direction < 0) and (position_at_index > bottom_of_well))):
                     """advance to the bottom of the well"""
                     distance_to_next_event += np.abs(bottom_of_well - position_at_index)
-                    initial_position = bottom_of_well 
+                    initial_position = bottom_of_well
                 else:
                     initial_position = position_at_index
+                position_at_index = initial_position
                 initial_action = 0.5 * self._mass * self._timestep * self._omega**2 * initial_position**2
                 final_action = uphill_energy + initial_action
-                final_position = movement_direction * np.sqrt(2.0 / (self._mass * self._timestep * self._omega**2) * final_action)
+                roots = np.roots([0.5 * self._mass * self._timestep * self._omega**2, 0.0, -final_action])
+                if (movement_direction > 0) and (roots[0] > 0):
+                    final_position = roots[0]
+                else:
+                    final_position = roots[1]
+                if (movement_direction < 0) and (roots[0] < 0):
+                    final_position = roots[0]
+                else:
+                    final_position = roots[1]
 
-            distance_to_next_factor_event = np.abs(final_position - initial_position)
-    
+            distance_to_next_factor_event = np.abs(final_position - initial_position).item()
+            #print(f"neighbour: {i} distance to next factor event: {distance_to_next_factor_event}")
             if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
                 shortest_distance_to_next_factor_event = distance_to_next_factor_event
                 vetoing_index = neighbouring_indices[i]
+                
+        #print(f"neighboring indices: {neighbouring_indices}")
 
         distance_to_next_event += shortest_distance_to_next_factor_event
         return distance_to_next_event, vetoing_index
@@ -255,6 +267,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
 
         if active_particle_index == initial_a and movement_direction == initial_v:
             raise Exception("Chose the same index and direction twice in a row")
+        #print(f"next active particle was chosen: {active_particle_index}")
         return active_particle_index, movement_direction, number_of_bounces, number_of_continuations
 
     def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
