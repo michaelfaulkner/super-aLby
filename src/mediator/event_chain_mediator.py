@@ -108,6 +108,7 @@ class EventChainMediator(Mediator):
                     for sampler_index, sampler in enumerate(self._samplers):
                         self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
                             None, self._positions, self._potential)
+                    #print(f"moved {distance_to_next_measurement}, took a measurement, resampled active particle index")
                     break
                 else:
                     distance_to_next_measurement -= distance_to_next_event

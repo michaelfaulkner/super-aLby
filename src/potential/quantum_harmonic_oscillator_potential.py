@@ -204,6 +204,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                     initial_position = bottom_of_well
                 else:
                     initial_position = position_at_index
+                print(f"position at index: {position_at_index}, bottom of well: {bottom_of_well}, initial position: {initial_position}, v: {movement_direction}")
             
                 initial_action = 0.5 * self._mass / self._timestep * (initial_position - neighbour_position)**2
                 final_action = uphill_energy + initial_action
@@ -228,7 +229,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                     initial_position = bottom_of_well
                 else:
                     initial_position = position_at_index
-      
+                print(f"position at index: {position_at_index}, bottom of well: {bottom_of_well}, initial position: {initial_position}, v: {movement_direction}")
                 initial_action = 0.5 * self._mass * self._timestep * self._omega**2 * initial_position**2
                 final_action = uphill_energy + initial_action
                 roots = np.roots([0.5 * self._mass * self._timestep * self._omega**2, 0.0, -final_action])
@@ -243,7 +244,6 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                     final_position = roots[1]
 
             distance_to_next_factor_event = np.abs(final_position - initial_position) + distance_to_bottom_of_well
-            #print(f"neighbour: {i}, roots: {roots}, v: {movement_direction}, picked root: {final_position}")
 
             if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
                 shortest_distance_to_next_factor_event = distance_to_next_factor_event
@@ -263,6 +263,8 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         else:
             active_particle_index = veto_index
             number_of_continuations += 1
+
+        #print(f"initial index: {initial_a}, initial direction: {initial_v}. Chose {active_particle_index} and {movement_direction}")
 
         if active_particle_index == initial_a and movement_direction == initial_v:
             raise Exception("Chose the same index and direction twice in a row")

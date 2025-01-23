@@ -51,7 +51,7 @@ def main(values_filepath, config_folder):
 
     for index, string in enumerate(tau_values):
         # config_file_string = os.path.join(config_folder, f"event_chain_{N_values[index]}.ini")
-        config_file_string = config_folder
+        # config_file_string = config_folder
         # config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
         # (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
         # number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
@@ -73,7 +73,7 @@ def main(values_filepath, config_folder):
         # timestep_arr[index] = timestep
         # analytical_x2_arr[index] = analytical_x2(mass, number_of_particles)
 
-        # config_file_string = os.path.join(config_folder, f"event_chain_{string}.ini")
+        config_file_string = os.path.join(config_folder, f"event_chain_{string}.ini")
         config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
         (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
         number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
