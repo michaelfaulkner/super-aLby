@@ -206,7 +206,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                     initial_position = position_at_index
                 print(f"position at index: {position_at_index}, bottom of well: {bottom_of_well}, initial position: {initial_position}, v: {movement_direction}")
             
-                initial_action = 0.5 * self._mass / self._timestep * (initial_position - neighbour_position)**2
+                initial_action = 0.5 * (self._mass / self._timestep) * (initial_position - neighbour_position)**2
                 final_action = uphill_energy + initial_action
                 roots = np.roots([0.5 * self._mass / self._timestep, -self._mass / self._timestep * neighbour_position,
                                   0.5 * self._mass / self._timestep * neighbour_position **2 - final_action])
