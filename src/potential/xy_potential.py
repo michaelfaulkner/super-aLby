@@ -165,6 +165,7 @@ class XyPotential(ContinuousPotential):
             non_active_spin_value = positions[neighbouring_spin_indices[i]]
             initial_spin_value_difference = self._get_spin_difference(active_spin_value, non_active_spin_value)
             uphill_energy = - temperature * np.log(1.0 - np.random.rand())
+            print(f"uphill E: {uphill_energy}")
 
             if initial_spin_value_difference > 0.0:
                 initial_two_spin_potential = 1.0 - np.cos(initial_spin_value_difference)

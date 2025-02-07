@@ -51,7 +51,7 @@ def main(values_filepath, config_folder):
 
     for index, string in enumerate(tau_values):
         # config_file_string = os.path.join(config_folder, f"event_chain_{N_values[index]}.ini")
-        # config_file_string = config_folder
+        config_file_string = config_folder
         # config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
         # (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
         # number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
@@ -73,7 +73,7 @@ def main(values_filepath, config_folder):
         # timestep_arr[index] = timestep
         # analytical_x2_arr[index] = analytical_x2(mass, number_of_particles)
 
-        config_file_string = os.path.join(config_folder, f"event_chain_{string}.ini")
+        # config_file_string = os.path.join(config_folder, f"event_chain_{string}.ini")
         config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
         (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
         number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
@@ -126,29 +126,32 @@ def main(values_filepath, config_folder):
         # ax.set_ylabel("chosen active particle index")
         # plt.tight_layout()
         # plt.savefig(f"output/figs/active_particle.png")
-        
+        ######################################################
+        print(np.shape(mean_sample))
+        #get_autocorrelation(mean_sample[])
       
 
-        # ######################################
+        ########################################
 
 
 
-    fig1, ax1 = plt.subplots(1,1)
-    ax1.scatter(timestep_arr[:-1], analytical_x2_arr[:-1], marker="x", color="red", label="analytical")
-    ax1.scatter(timestep_arr[:-1], numerical_x2[:-1], marker="x", color="blue", label="numerical")
-    ax1.set_xlabel(r"$\delta \tau$")
-    ax1.set_ylabel(r"$\langle x^2 \rangle$")
-    ax1.legend()
-    plt.tight_layout()
-    plt.savefig("tau_arr.png")
+    # fig1, ax1 = plt.subplots(1,1)
+    # ax1.scatter(timestep_arr[:-1], analytical_x2_arr[:-1], marker="x", color="red", label="analytical")
+    # ax1.scatter(timestep_arr[:-1], numerical_x2[:-1], marker="x", color="blue", label="numerical")
+    # ax1.set_xlabel(r"$\delta \tau$")
+    # ax1.set_ylabel(r"$\langle x^2 \rangle$")
+    # ax1.legend()
+    # plt.tight_layout()
+    # plt.savefig("tau_arr.png")
+    # print(f"numerical: {numerical_x2}, analytical: {analytical_x2_arr}")
 
-    fig1, ax1 = plt.subplots(1,1)
-    ax1.scatter(timestep_arr, analytical_x2_arr, marker="x", color="red", label="analytical")
-    ax1.set_xlabel(r"$\delta \tau$")
-    ax1.set_ylabel(r"$\langle x^2 \rangle$")
-    ax1.legend()
-    plt.tight_layout()
-    plt.savefig("analytical.png")
+    # fig1, ax1 = plt.subplots(1,1)
+    # ax1.scatter(timestep_arr, analytical_x2_arr, marker="x", color="red", label="analytical")
+    # ax1.set_xlabel(r"$\delta \tau$")
+    # ax1.set_ylabel(r"$\langle x^2 \rangle$")
+    # ax1.legend()
+    # plt.tight_layout()
+    # plt.savefig("analytical.png")
    
 
 if __name__ == '__main__':
