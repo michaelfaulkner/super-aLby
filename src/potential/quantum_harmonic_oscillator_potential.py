@@ -65,6 +65,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         for particle_index in range(0, number_of_particles):
             dimensionless_action += self._get_pairwise_dimensionless_action(
                 positions[particle_index], positions[get_east_neighbour(particle_index, number_of_particles)])
+            
         return dimensionless_action
 
     def get_gradient(self, positions): #TODO implement get_gradient() function in this class
@@ -112,15 +113,17 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         current_dimensionless_action = (
                 self._get_pairwise_dimensionless_action(
                     positions[get_west_neighbour(active_particle_index, number_of_particles)],
-                    positions[active_particle_index]) +
-                self._get_pairwise_dimensionless_action(
+                    positions[active_particle_index])
+                    + self._get_pairwise_dimensionless_action(
                     positions[active_particle_index],
                     positions[get_east_neighbour(active_particle_index, number_of_particles)]))
+        
         candidate_dimensionless_action = (
                 self._get_pairwise_dimensionless_action(
-                    positions[get_west_neighbour(active_particle_index, number_of_particles)], candidate_position) +
-                self._get_pairwise_dimensionless_action(
+                    positions[get_west_neighbour(active_particle_index, number_of_particles)], candidate_position)
+                    + self._get_pairwise_dimensionless_action(
                     candidate_position, positions[get_east_neighbour(active_particle_index, number_of_particles)]))
+        
         return candidate_dimensionless_action - current_dimensionless_action
 
     def _get_gradient_at_index(self, positions, particle_index):
@@ -139,9 +142,10 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         float
             The dimensionless-action gradient at particle_index.
         """
-        return self._mass / self._timestep * ((2.0 + self._timestep ** 2 * self._omega ** 2) * positions[particle_index] -
-                             positions[get_west_neighbour(particle_index, number_of_particles)] -
-                             positions[get_east_neighbour(particle_index, number_of_particles)]).item()
+        return self._mass / self._timestep * ((2.0 + self._timestep ** 2 * self._omega ** 2) * positions[particle_index]
+                                              - positions[get_west_neighbour(particle_index, number_of_particles)]
+                                              - positions[get_east_neighbour(particle_index, number_of_particles)]
+                                              ).item()
 
     def _get_pairwise_dimensionless_action(self, position_at_index, position_at_east_index):
         """
@@ -159,10 +163,11 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             The pairwise contribution to the dimensionless action.
         """
 
-        return 0.5 * self._mass * ((position_at_east_index - position_at_index) ** 2 / self._timestep +
-                                   self._timestep * self._omega ** 2 * position_at_index ** 2)
+        return 0.5 * self._mass * ((position_at_east_index - position_at_index) ** 2 / self._timestep
+                                   + self._timestep * self._omega ** 2 * position_at_index ** 2)
 
-    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature, movement_direction):
+    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
+                                                  movement_direction):
         """
         Returns the distance to the next particle event for a given active particle index.
 
@@ -192,14 +197,13 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         initial_position = positions[active_particle_index].item()
 
         for i in range(3):
-            uphill_energy = - np.log(np.random.uniform(0,1))
+            uphill_energy = - np.log(np.random.uniform(0, 1))
             if i != 1: # considering the neighbour terms
                 neighbour_position = positions[neighbouring_indices[i]].item()
                 bottom_of_well = neighbour_position
                 if ((movement_direction > 0 and initial_position < bottom_of_well) or
                 (movement_direction < 0 and initial_position > bottom_of_well)):
                     """advance to the bottom of the well"""
-                    distance_to_bottom_of_well = np.abs(bottom_of_well - initial_position)
                     intermediate_position = bottom_of_well
                 else:
                     intermediate_position = initial_position
@@ -208,8 +212,9 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                 initial_action = 0.5 * (self._mass / self._timestep) * (intermediate_position - neighbour_position)**2
                 final_action = uphill_energy + initial_action
     
-                roots = np.roots([0.5 * self._mass / self._timestep, -(self._mass / self._timestep) * neighbour_position,
-                                  (0.5 * self._mass / self._timestep) * neighbour_position **2 - final_action])
+                roots = np.roots([0.5 * self._mass / self._timestep, -(self._mass / self._timestep)
+                                  * neighbour_position, (0.5 * self._mass / self._timestep) * neighbour_position**2
+                                  - final_action])
                 
                 if (movement_direction > 0) and (roots[0] > roots[1]):
                     final_position = roots[0]
@@ -225,7 +230,6 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
                 if (((movement_direction > 0) and (initial_position < bottom_of_well)) or
                 ((movement_direction < 0) and (initial_position > bottom_of_well))):
                     """advance to the bottom of the well"""
-                    distance_to_bottom_of_well = np.abs(bottom_of_well - initial_position)
                     intermediate_position = bottom_of_well
                 else:
                     intermediate_position = initial_position
@@ -252,31 +256,19 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         
         return shortest_distance_to_next_factor_event, vetoing_index
 
-    def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
-                                    veto_index, number_of_bounces, number_of_continuations, east, west):
+    def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """Chooses the index and direction for the next active particle in the markov chain"""
         initial_a = active_particle_index
         initial_v = movement_direction
   
         if veto_index == active_particle_index:
             movement_direction = movement_direction * -1
-            number_of_bounces += 1
-            #print(f"veto index was active particle, swapped direction of motion")
         else:
             active_particle_index = veto_index
-            number_of_continuations += 1
-            if get_east_neighbour(initial_a, number_of_particles) == active_particle_index:
-                east += 1
-            elif get_west_neighbour(initial_a, number_of_particles) == active_particle_index:
-                west += 1
-            #print(f"veto index was {active_particle_index}, changed active particle to this")
-
-        #print(f"initial index: {initial_a}, initial direction: {initial_v}. Chose {active_particle_index} and {movement_direction}")
-
         if active_particle_index == initial_a and movement_direction == initial_v:
             raise Exception("Chose the same index and direction twice in a row")
 
-        return active_particle_index, movement_direction, number_of_bounces, number_of_continuations, east, west
+        return active_particle_index, movement_direction
 
     def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
         """ Updates position of the active particle."""

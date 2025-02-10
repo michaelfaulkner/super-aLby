@@ -67,7 +67,6 @@ class EventChainMediator(Mediator):
         base.exceptions.ConfigurationError
             If distance_between_measurements is not greater than 0.0.
         """
-        #NOTE quantum harmonic oscillator model is not yet fully implemented for ECMC
         super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
                          number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations)
         if distance_between_measurements <= 0.0:
@@ -75,14 +74,6 @@ class EventChainMediator(Mediator):
                                      f"{self.__class__.__name__}.")
         self._distance_between_measurements = distance_between_measurements
         self._total_number_of_events = 0
-        ############
-        #testing
-        self._number_of_bounces = 0
-        self._number_of_continuations = 0
-        self._east = 0
-        self._west = 0
-        self._indices = np.zeros(number_of_observations*100)
-        ###############
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            potential=potential, samplers=samplers, minimum_temperature=minimum_temperature,
                            maximum_temperature=maximum_temperature,
@@ -94,40 +85,28 @@ class EventChainMediator(Mediator):
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         self._total_number_of_events = 0
-        index_of_arr = 0
-        n_complete_moves_in_markov_chain = 0
         for markov_chain_index in range(self._total_number_of_iterations):
-            #print(f"markov chain index: {markov_chain_index}")
             active_particle_index = np.random.randint(0, number_of_particles)
             movement_direction = np.random.choice((-1.0, 1.0))
             distance_to_next_measurement = self._distance_between_measurements
-            n_complete_moves_in_markov_chain = 0
             while True:
                 distance_to_next_event, vetoing_index = self._potential.get_distance_to_next_event_and_veto_index(
                     self._positions, active_particle_index, temperature, movement_direction)
-                index_of_arr += 1
                 if distance_to_next_measurement < distance_to_next_event:
                     self._potential.update_position(self._positions, distance_to_next_measurement,
                                                     active_particle_index, movement_direction)
                     for sampler_index, sampler in enumerate(self._samplers):
                         self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
                             None, self._positions, self._potential)
-                    #print(f"moved {distance_to_next_measurement}, took a measurement, resampled active particle index")
                     break
                 else:
                     distance_to_next_measurement -= distance_to_next_event
                     self._potential.update_position(self._positions, distance_to_next_event, active_particle_index,
                                                     movement_direction)
-                    n_complete_moves_in_markov_chain += 1
-                    active_particle_index, movement_direction, self._number_of_bounces, self._number_of_continuations, self._east, self._west = self._potential.choose_next_active_particle(
-                        self._positions, active_particle_index, movement_direction,
-                        vetoing_index,  self._number_of_bounces, self._number_of_continuations, self._east, self._west)
+                    active_particle_index, movement_direction = self._potential.choose_next_active_particle(
+                        self._positions, active_particle_index, movement_direction, vetoing_index)
                     self._total_number_of_events += 1
-            #print(f"number of complete moves to eta in chain: {n_complete_moves_in_markov_chain}")
             super()._print_sample_progress(markov_chain_index)
-        print(f"number of bounces: {self._number_of_bounces}, number of continuations: {self._number_of_continuations}, east: {self._east}, west: {self._west}")
-        self._indices = np.trim_zeros(self._indices)
-        np.save("output/event_chain_mediator/temperature_00_sample_of_indices.npy", self._indices)
 
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""

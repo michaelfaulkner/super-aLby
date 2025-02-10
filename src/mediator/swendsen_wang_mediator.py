@@ -3,7 +3,7 @@ from .ising_cluster_mediator import IsingClusterMediator
 from base.logging import log_init_arguments
 from model_settings import number_of_particles
 from potential.ising_potential import IsingPotential
-from helper_methods import get_neighbours, get_east_neighbour, get_north_neighbour, get_west_neighbour, get_south_neighbour
+from helper_methods import get_neighbours
 from sampler.sampler import Sampler
 from typing import Sequence
 import logging
@@ -95,7 +95,6 @@ class SwendsenWangMediator(IsingClusterMediator):
             while extremity_sites_of_cluster:
                 current_lattice_site = extremity_sites_of_cluster.pop()
                 for neighbouring_lattice_site in get_neighbours(current_lattice_site, self._potential.lattice_length):
-                    ################ check that this is actually going to access self.lattice_length for ising potential
                     if (neighbouring_lattice_site in remaining_particles and
                             self._positions[neighbouring_lattice_site] == self._positions[base_lattice_site] and
                             np.random.rand() < prob_of_adding_neighbour_to_cluster):

@@ -88,70 +88,38 @@ def main(values_filepath, config_folder):
 
         mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
                             temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
-        # position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
-        #                     temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
+        position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
+                            temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
         mean_sample_mean = get_sample_mean_and_error(mean_sample)
         numerical_x2[index] = mean_sample_mean[0]
         timestep_arr[index] = timestep
         mass = timestep * mass
         analytical_x2_arr[index] = analytical_x2(mass, number_of_particles)
         
-        # N_arr[index] = number_of_particles
-        # m_arr[index] = mass
-        # ######################################
+  
        
-        # fig, ax = plt.subplots(1,1)
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[0], label = "0")
-        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[10], label = "10")
-        # # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[50], label = "50")
-        # ax.set_xlabel("site index")
-        # ax.set_ylabel("position")
-        # plt.legend()
-        # plt.savefig(f"output/figs/positions_resampled.png")
+        fig, ax = plt.subplots(1,1)
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[0], label = "0")
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[10], label = "10")
+        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[50], label = "50")
+        ax.set_xlabel("site index")
+        ax.set_ylabel("position")
+        plt.legend()
+        plt.savefig(f"output/figs/positions.png")
 
-        # fig, ax = plt.subplots(1,1)
-        # ax.scatter(np.arange(0,len(mean_sample[:]))*thinning_level, mean_sample[:])
-        # ax.set_xlabel("simulation progress/time")
-        # ax.set_ylabel("<x^2>")
-        # plt.savefig(f"mean_positions_squared.png")
-        
-        # indices_sample = np.load("output/event_chain_mediator/temperature_00_sample_of_indices.npy")
-        # indices_sample = indices_sample[60000:60100:]
-        # print(len(indices_sample))
-       
-
-        # fig, ax = plt.subplots(1,1)
-        # ax.plot(np.arange(0,len(indices_sample)), indices_sample, marker="x")
-        # ax.set_xlabel("nth choice")
-        # ax.set_ylabel("chosen active particle index")
-        # plt.tight_layout()
-        # plt.savefig(f"output/figs/active_particle.png")
-        ######################################################
-        print(np.shape(mean_sample))
-        #get_autocorrelation(mean_sample[])
-      
-
-        ########################################
+   
 
 
 
-    # fig1, ax1 = plt.subplots(1,1)
-    # ax1.scatter(timestep_arr[:-1], analytical_x2_arr[:-1], marker="x", color="red", label="analytical")
-    # ax1.scatter(timestep_arr[:-1], numerical_x2[:-1], marker="x", color="blue", label="numerical")
-    # ax1.set_xlabel(r"$\delta \tau$")
-    # ax1.set_ylabel(r"$\langle x^2 \rangle$")
-    # ax1.legend()
-    # plt.tight_layout()
-    # plt.savefig("tau_arr.png")
-    # print(f"numerical: {numerical_x2}, analytical: {analytical_x2_arr}")
+    fig1, ax1 = plt.subplots(1,1)
+    ax1.scatter(timestep_arr[:-1], analytical_x2_arr[:-1], marker="x", color="red", label="analytical")
+    ax1.scatter(timestep_arr[:-1], numerical_x2[:-1], marker="x", color="blue", label="numerical")
+    ax1.set_xlabel(r"$\delta \tau$")
+    ax1.set_ylabel(r"$\langle x^2 \rangle$")
+    ax1.legend()
+    plt.tight_layout()
+    plt.savefig("tau_arr.png")
 
-    # fig1, ax1 = plt.subplots(1,1)
-    # ax1.scatter(timestep_arr, analytical_x2_arr, marker="x", color="red", label="analytical")
-    # ax1.set_xlabel(r"$\delta \tau$")
-    # ax1.set_ylabel(r"$\langle x^2 \rangle$")
-    # ax1.legend()
-    # plt.tight_layout()
-    # plt.savefig("analytical.png")
    
 
 if __name__ == '__main__':

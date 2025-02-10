@@ -3,6 +3,7 @@ from .ising_cluster_mediator import IsingClusterMediator
 from base.logging import log_init_arguments
 from model_settings import number_of_particles
 from potential.ising_potential import IsingPotential
+from helper_methods import get_neighbours
 from sampler.sampler import Sampler
 from typing import Sequence
 import logging
@@ -87,7 +88,7 @@ class WolffMediator(IsingClusterMediator):
         self._positions[base_lattice_site] *= -1
         while extremity_sites_of_cluster:
             current_lattice_site = extremity_sites_of_cluster.pop()
-            for neighbouring_lattice_site in self._potential.get_neighbours(current_lattice_site):
+            for neighbouring_lattice_site in get_neighbours(current_lattice_site, self._potential.lattice_length):
                 if (self._positions[neighbouring_lattice_site] == -self._positions[base_lattice_site] and
                         np.random.rand() < prob_of_adding_neighbour_to_cluster):
                     self._positions[neighbouring_lattice_site] *= -1
