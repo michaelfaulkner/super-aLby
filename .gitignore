@@ -76,3 +76,6 @@ env/
 vals.txt
 vals1.txt
 src/config_files/event_chain/event_chain_*.ini
+src/sample_analysis/test_convergence_copy.py
+src/sample_analysis/quantum_harmonic_oscillator_analysis.py
+src/vals_0.txt

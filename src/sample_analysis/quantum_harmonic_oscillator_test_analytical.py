@@ -50,33 +50,54 @@ def main(values_filepath, config_folder):
     m_arr = np.zeros(len(tau_values))
 
     for index, string in enumerate(tau_values):
-        # config_file_string = os.path.join(config_folder, f"event_chain_{N_values[index]}.ini")
-        config_file_string = config_folder
-        # config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-        # (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
-        # number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
-        
-        # mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
-        # timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
-        # number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
-        # lambda_value = parsing.get_value(config, "EventChainMediator", "distance_between_measurements")
-        # sample_directory = sample_directories[0]
-        # temperature_index = 0
-        # thinning_level = 1
 
-        # mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
-        #                     temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
+        config_file_string = os.path.join(config_folder, f"metropolis_{string}.ini")
+        config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
+        (config_file_mediator, potential, samplers, sample_directories, temperatures,
+        number_of_equilibration_iterations, number_of_observations, number_of_particles,
+        _, _, _) = helper_methods.get_basic_config_data(config_file_string)
+        
+        mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
+        timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
+        number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
+        #lambda_value = parsing.get_value(config, "EventChainMediator", "distance_between_measurements")
+        sample_directory = sample_directories[0]
+        temperature_index = 0
+        thinning_level = None
+        if string == "001":
+            mean_sample = np.load("output/convergence_tests/quantum_harmonic_oscillator/001/temperature_00_sample_of_mean_positions_001_2.npy")
+        else:
+            mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
+                                temperature_index, number_of_particles, number_of_equilibration_iterations,
+                                thinning_level=thinning_level)
         # position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
         #                     temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
-        # mean_sample_mean = get_sample_mean_and_error(mean_sample)
-        # numerical_x2[index] = mean_sample_mean[0]
-        # timestep_arr[index] = timestep
-        # analytical_x2_arr[index] = analytical_x2(mass, number_of_particles)
+        mean_sample_mean = get_sample_mean_and_error(mean_sample)
+        numerical_x2[index] = mean_sample_mean[0] / timestep **2
+        if string == "001":
+            print(f"<x2> = {mean_sample_mean[0] / timestep **2}")
+        timestep_arr[index] = timestep
+        analytical_x2_arr[index] = analytical_x2(mass * timestep, number_of_particles)
+        
+  
+       
+        # fig, ax = plt.subplots(1,1)
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[0], label = "0")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[100000], label = "100000")
+        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[499999], label = "499999")
+        # ax.set_xlabel("site index")
+        # ax.set_ylabel("position")
+        # plt.legend()
+        # plt.savefig(f"output/figs/positions_{string}.png")
 
-        # config_file_string = os.path.join(config_folder, f"event_chain_{string}.ini")
+    numerical_x2_e = np.zeros(len(tau_values))
+    for index, string in enumerate(tau_values):
+
+        config_file_string = os.path.join(config_folder, f"event_chain_{string}.ini")
         config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-        (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
-        number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
+        (config_file_mediator, potential, samplers, sample_directories, temperatures,
+        number_of_equilibration_iterations, number_of_observations, number_of_particles,
+        _, _, _) = helper_methods.get_basic_config_data(config_file_string)
         
         mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
         timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
@@ -87,38 +108,39 @@ def main(values_filepath, config_folder):
         thinning_level = None
 
         mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
-                            temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
-        position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
-                            temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
+                            temperature_index, number_of_particles, number_of_equilibration_iterations,
+                            thinning_level=thinning_level)
+        # position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
+        #                     temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
         mean_sample_mean = get_sample_mean_and_error(mean_sample)
-        numerical_x2[index] = mean_sample_mean[0]
+        numerical_x2_e[index] = mean_sample_mean[0] / timestep **2
         timestep_arr[index] = timestep
-        mass = timestep * mass
-        analytical_x2_arr[index] = analytical_x2(mass, number_of_particles)
+        analytical_x2_arr[index] = analytical_x2(mass * timestep, number_of_particles)
         
   
        
-        fig, ax = plt.subplots(1,1)
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[0], label = "0")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[10], label = "10")
-        ax.scatter(np.arange(0,len(position_sample[0])), position_sample[50], label = "50")
-        ax.set_xlabel("site index")
-        ax.set_ylabel("position")
-        plt.legend()
-        plt.savefig(f"output/figs/positions.png")
-
-   
 
 
+    fig1, ax1 = plt.subplots(1,2, sharey = True)
+    ax1[0].set_title("Metropolis")
+    ax1[0].scatter(timestep_arr[:], analytical_x2_arr[:], marker="x", color="red", label="analytical")
+    ax1[0].scatter(timestep_arr[:], numerical_x2[:], marker="x", color="blue", label="numerical")
+    ax1[1].set_title("ECMC")
+    ax1[1].scatter(timestep_arr[:], analytical_x2_arr[:], marker="x", color="red", label="analytical")
+    ax1[1].scatter(timestep_arr[:], numerical_x2_e[:], marker="x", color="blue", label="numerical")
+    ax1[0].set_yscale('log')
+    ax1[1].set_yscale('log')
 
-    fig1, ax1 = plt.subplots(1,1)
-    ax1.scatter(timestep_arr[:-1], analytical_x2_arr[:-1], marker="x", color="red", label="analytical")
-    ax1.scatter(timestep_arr[:-1], numerical_x2[:-1], marker="x", color="blue", label="numerical")
-    ax1.set_xlabel(r"$\delta \tau$")
-    ax1.set_ylabel(r"$\langle x^2 \rangle$")
-    ax1.legend()
+    ax1[0].set_xlabel(r"$\delta \tau$")
+    ax1[1].set_xlabel(r"$\delta \tau$")
+
+    ax1[0].set_ylabel(r"$\langle x^2 \rangle$")
+    ax1[0].legend()
+    ax1[1].legend()
+
     plt.tight_layout()
     plt.savefig("tau_arr.png")
+  
 
    
 
