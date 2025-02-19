@@ -72,7 +72,7 @@ class MeanPositionSampler(Sampler, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def output_sample(self, sample, temperature_index):
+    def output_sample(self, sample, temperature_index, run_index):
         """
         Following completion of the Markov chain, print the sample to the output file.
 
@@ -83,7 +83,8 @@ class MeanPositionSampler(Sampler, metaclass=ABCMeta):
         temperature_index : int
             The index of the iteration through the list sampling temperatures.
         """
-        self._write_sample_to_file(sample, f"temperature_{temperature_index:02d}_sample_of_mean_positions.npy")
+        self._write_sample_to_file(sample,
+                        f"temperature_{temperature_index:02d}_run_{run_index:02d}_sample_of_mean_positions.npy")
 
     def get_sample(self, temperature_index):
         """

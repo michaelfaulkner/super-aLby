@@ -79,7 +79,7 @@ class Sampler(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def output_sample(self, sample, temperature_index):
+    def output_sample(self, sample, temperature_index, run_index):
         """
         Following completion of the Markov chain, print the sample to the output file.
 

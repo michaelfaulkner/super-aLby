@@ -112,6 +112,7 @@ def run_single_simulation(config_file_location: str, job_number: Union[int, None
                               f"configuration file {args.config_file}.")
     config = read_config(args.config_file)
     mediator = factory.build_from_config(config, to_camel_case(config.get("Run", "mediator")), "mediator")
+    restart_flag = os.path.isfile(os.path.join(os.getcwd(), mediator._samplers[0]._output_directory, "run_index.txt"))
 
     used_sections = factory.used_sections
     for section in config.sections():
@@ -129,7 +130,7 @@ def run_single_simulation(config_file_location: str, job_number: Union[int, None
     else:
         print_and_log(logger, f"Running the {get_ordinal(job_number + 1)} of {number_of_jobs} Monte Carlo simulations.")
     start_time = time.time()
-    mediator.generate_sample()
+    mediator.generate_sample(restart_flag)
     end_time = time.time()
     print("-----------------------------------------------------------------------------------------")
     if job_number is None:

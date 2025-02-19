@@ -73,7 +73,7 @@ class XyMagnetisationNormSampler(Sampler):
         mean_ij = np.mean(temp_arr, axis=0)
         return np.linalg.norm(mean_ij)
     
-    def output_sample(self, sample, temperature_index):
+    def output_sample(self, sample, temperature_index, run_index):
         """
         Following completion of the Markov chain, print the sample to the output file.
 
@@ -84,7 +84,8 @@ class XyMagnetisationNormSampler(Sampler):
         temperature_index : int
             The index of the iteration through the list sampling temperatures.
         """
-        self._write_sample_to_file(sample, f"temperature_{temperature_index:02d}_sample_of_magnetisation_norm.npy")
+        self._write_sample_to_file(sample,
+            f"temperature_{temperature_index:02d}_run_{run_index:02d}_sample_of_magnetisation_norm.npy")
 
     def get_sample(self, temperature_index):
         """
