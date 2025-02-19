@@ -65,7 +65,7 @@ def main(values_filepath, config_folder):
         temperature_index = 0
         thinning_level = None
         if string == "001":
-            mean_sample = np.load("output/convergence_tests/quantum_harmonic_oscillator/001/temperature_00_sample_of_mean_positions_001_2.npy")
+            mean_sample = np.load("output/metropolis/mean_squared_positions/31000/temperature_00_sample_of_mean_positions_001_0.npy")
         else:
             mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
                                 temperature_index, number_of_particles, number_of_equilibration_iterations,
@@ -73,11 +73,10 @@ def main(values_filepath, config_folder):
         # position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
         #                     temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
         mean_sample_mean = get_sample_mean_and_error(mean_sample)
-        numerical_x2[index] = mean_sample_mean[0] / timestep **2
-        if string == "001":
-            print(f"<x2> = {mean_sample_mean[0] / timestep **2}")
+        numerical_x2[index] = mean_sample_mean[0] / timestep**2
+   
         timestep_arr[index] = timestep
-        analytical_x2_arr[index] = analytical_x2(mass * timestep, number_of_particles)
+        # print(f"timestep was {timestep_arr[index]}, mean {numerical_x2[index]}")
         
   
        
@@ -106,28 +105,58 @@ def main(values_filepath, config_folder):
         sample_directory = sample_directories[0]
         temperature_index = 0
         thinning_level = None
+        if string == "001":
+            mean_sample = np.load(
+                "output/event_chain_mediator/001/100k/temperature_00_sample_of_mean_positions.npy")
+            mean_sample = mean_sample[number_of_equilibration_iterations + 1:]
+   
+        else:
+            mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
+                                temperature_index, number_of_particles, number_of_equilibration_iterations,
+                                thinning_level=thinning_level)
 
-        mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
-                            temperature_index, number_of_particles, number_of_equilibration_iterations,
-                            thinning_level=thinning_level)
-        # position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
-        #                     temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
         mean_sample_mean = get_sample_mean_and_error(mean_sample)
         numerical_x2_e[index] = mean_sample_mean[0] / timestep **2
         timestep_arr[index] = timestep
         analytical_x2_arr[index] = analytical_x2(mass * timestep, number_of_particles)
         
-  
-       
+        
+    timestep = 0.01
+    number_of_equilibration_iterations = 1000
+    metropolis_001_31k = np.load("output/metropolis/mean_squared_positions/31000/temperature_00_sample_of_mean_positions_001_0.npy")
+    metropolis_001_31k =metropolis_001_31k[number_of_equilibration_iterations + 1:]
+    metropolis_001_31k = get_sample_mean_and_error(metropolis_001_31k)
+    metropolis_001_31k = metropolis_001_31k[0] / timestep **2
+
+    metropolis_001_51k = np.load("output/metropolis/mean_squared_positions/51000/temperature_00_sample_of_mean_positions_001_0.npy")
+    metropolis_001_51k =metropolis_001_51k[number_of_equilibration_iterations + 1:]
+    metropolis_001_51k = get_sample_mean_and_error(metropolis_001_51k)
+    metropolis_001_51k = metropolis_001_51k[0] / timestep**2
+
+    metropolis_001_81k = np.load("output/metropolis/mean_squared_positions/81000/temperature_00_sample_of_mean_positions_001_0.npy")
+    metropolis_001_81k =metropolis_001_81k[number_of_equilibration_iterations + 1:]
+    metropolis_001_81k = get_sample_mean_and_error(metropolis_001_81k)
+    metropolis_001_81k = metropolis_001_81k[0] / timestep**2
+
+    metropolis_001_101k = np.load("output/metropolis/mean_squared_positions/101000/temperature_00_sample_of_mean_positions_001_0.npy")
+    metropolis_001_101k =metropolis_001_101k[number_of_equilibration_iterations + 1:]
+    metropolis_001_101k = get_sample_mean_and_error(metropolis_001_101k)
+    metropolis_001_101k = metropolis_001_101k[0] / timestep**2
 
 
     fig1, ax1 = plt.subplots(1,2, sharey = True)
     ax1[0].set_title("Metropolis")
-    ax1[0].scatter(timestep_arr[:], analytical_x2_arr[:], marker="x", color="red", label="analytical")
-    ax1[0].scatter(timestep_arr[:], numerical_x2[:], marker="x", color="blue", label="numerical")
+    ax1[0].scatter(timestep_arr[:], analytical_x2_arr[:], marker="x", color="purple", label="analytical")
+    ax1[0].scatter(timestep_arr[:], numerical_x2[:], marker="x", color="#f974ef", label="numerical")
+
+    ax1[0].scatter(timestep, metropolis_001_31k,  marker="x", color="#edf974", label="31000")
+    ax1[0].scatter(timestep, metropolis_001_51k,  marker="x", color="#fab44a", label="51000")
+    ax1[0].scatter(timestep, metropolis_001_81k,  marker="x", color="#fa5f4a", label="81000")
+    ax1[0].scatter(timestep, metropolis_001_101k,  marker="x", color="#fa5f4a", label="101000")
+
     ax1[1].set_title("ECMC")
-    ax1[1].scatter(timestep_arr[:], analytical_x2_arr[:], marker="x", color="red", label="analytical")
-    ax1[1].scatter(timestep_arr[:], numerical_x2_e[:], marker="x", color="blue", label="numerical")
+    ax1[1].scatter(timestep_arr[:], analytical_x2_arr[:], marker="x", color="purple", label="analytical")
+    ax1[1].scatter(timestep_arr[:], numerical_x2_e[:], marker="x", color="#f974ef", label="numerical")
     ax1[0].set_yscale('log')
     ax1[1].set_yscale('log')
 
@@ -141,7 +170,7 @@ def main(values_filepath, config_folder):
     plt.tight_layout()
     plt.savefig("tau_arr.png")
   
-
+    print(f"analytical 0.01: {analytical_x2_arr[-1]}, ecmc: {numerical_x2_e[-1]}")
    
 
 if __name__ == '__main__':
