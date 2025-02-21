@@ -112,11 +112,10 @@ class Mediator(metaclass=ABCMeta):
         """Iterates through temperatures, generating a sample at each."""
         for temperature_index, temperature in enumerate(self._temperatures):
             self._print_temperature_message(temperature, temperature_index)
+            self._reset_arrays_and_counters(temperature)
             if restart_flag:
                 self._reload_configuration_from_file_and_reset()
                 self._get_run_index()
-            else:
-                self._reset_arrays_and_counters(temperature)
             self._generate_sample_at_current_temperature(temperature_index, temperature)
             [sampler.output_sample(self._samples[sampler_index], temperature_index, self._run_index)
              for sampler_index, sampler in enumerate(self._samplers)]
@@ -157,7 +156,7 @@ class Mediator(metaclass=ABCMeta):
         
     def _write_run_index_and_configuration(self):
         """Saves current run index and final position state of system"""
-        np.savetxt(os.path.join(os.getcwd(),  self._samplers[0]._output_directory, "run_index.txt"), self._run_index)
+        np.savetxt(os.path.join(os.getcwd(),  self._samplers[0]._output_directory, "run_index.txt"), [self._run_index], fmt = "%02d")
         np.save(os.path.join(os.getcwd(),  self._samplers[0]._output_directory, "final_configuration_at_end_of_run.npy"),
                 self._positions)
 
