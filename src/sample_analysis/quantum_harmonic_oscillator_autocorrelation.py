@@ -48,6 +48,8 @@ def main(config_folder):
 
         acf = get_autocorrelation(mean_sample[:,0])
 
+        
+
         # plt.plot(np.arange(0, len(mean_sample)), acf)
         # plt.xlabel("sample index")
         # plt.ylabel("autocorrelation function")
@@ -62,7 +64,7 @@ def main(config_folder):
     save_arr[:, 0] = iact_arr
     save_arr[:, 1] = timestep_arr
 
-    np.save("output/iact_metropolis.npy", save_arr)
+    np.save("output/iact_ecmc.npy", save_arr)
     
     # fig, ax = plt.subplots(1, 1)
     # ax.scatter(timestep_arr, iact_arr)
