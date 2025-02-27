@@ -17,7 +17,7 @@ def main(iact_data_path, acf_data_path):
     ax.set_ylabel("iact")
     ax.set_xscale("log")
     ax.set_yscale("log")
-    plt.savefig("iact_ecmc_20.png")
+    plt.savefig("iact_metropolis.png")
     plt.clf()
 
     for index, timestep in enumerate(timestep_data):
@@ -29,9 +29,9 @@ def main(iact_data_path, acf_data_path):
         plt.plot(np.arange(0, len(acf_data)), acf_data)
         plt.xlabel("sample index")
         plt.ylabel("autocorrelation function")
-        plt.title(f"Autocorrelation Function for ECMC, delta tau = {timestep}, lambda = 20.0")
+        plt.title(f"Autocorrelation Function for Metropolis MC, delta tau = {timestep}")
         timestep_str = str(timestep).replace(".", "")
-        plt.savefig(f"acf_ecmc_20_{timestep_str}.png")
+        plt.savefig(f"acf_metropolis_{timestep_str}.png")
         plt.clf()
 
 
