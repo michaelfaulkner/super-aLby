@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-def main(iact_data_path, acf_data_path):
+def main(iact_data_path, acf_data_path, ecmc=True, distance_between_measurements=1):
 
     iact_timestep = np.load(iact_data_path)
     acf = np.load(acf_data_path)
@@ -17,7 +17,12 @@ def main(iact_data_path, acf_data_path):
     ax.set_ylabel("iact")
     ax.set_xscale("log")
     ax.set_yscale("log")
-    plt.savefig("iact_metropolis.png")
+    if ecmc:
+        plt.title(f"Integrated Autocorrelation Time for ECMC, lambda = {distance_between_measurements}")
+        plt.savefig(f"iact_ecmc_{distance_between_measurements}.png")
+    else:
+        plt.title(f"Integrated Autocorrelation Time for Metropolis MC")
+        plt.savefig("iact_metropolis.png")
     plt.clf()
 
     for index, timestep in enumerate(timestep_data):
@@ -29,12 +34,16 @@ def main(iact_data_path, acf_data_path):
         plt.plot(np.arange(0, len(acf_data)), acf_data)
         plt.xlabel("sample index")
         plt.ylabel("autocorrelation function")
-        plt.title(f"Autocorrelation Function for Metropolis MC, delta tau = {timestep}")
         timestep_str = str(timestep).replace(".", "")
-        plt.savefig(f"acf_metropolis_{timestep_str}.png")
+        if ecmc:
+            plt.title(f"Autocorrelation Function for ECMC, delta tau = {timestep}, lambda = {distance_between_measurements}")
+            plt.savefig(f"acf_ecmc_{timestep_str}_{distance_between_measurements}.png")
+        else:
+            plt.title(f"Autocorrelation Function for Metropolis MC, delta tau = {timestep}")
+            plt.savefig(f"acf_metropolis_{timestep_str}.png")
         plt.clf()
 
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
