@@ -68,6 +68,7 @@ def main(config_folder):
     
     # fig, ax = plt.subplots(1, 1)
     # ax.scatter(timestep_arr, iact_arr)
+    # ax.scatter(timestep_arr, iact_arr)
     # ax.set_xlabel("delta tau")
     # ax.set_ylabel("iact")
     # plt.savefig("iact.png")
