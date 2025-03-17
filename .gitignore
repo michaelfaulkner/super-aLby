@@ -38,6 +38,7 @@ src/vals_0.txt
 *.eps
 *.pdf
 *.png
+*.mp4
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl

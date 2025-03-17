@@ -29,31 +29,31 @@ def main(config_file_string):
     temperature_index = 0
     thinning_level = None
     number_of_equilibration_iterations = None
-    mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
-                        temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
+    # mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
+    #                     temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
 
     timestep_str = str(timestep).replace(".", "")
-    print(timestep_str)
+    # print(timestep_str)
     
-    # sub_arr_len = 51000
-    # num_sub_arrs = 20
-    # mean_sample = np.zeros(sub_arr_len * num_sub_arrs)
-    # for i in range(num_sub_arrs):
-    #     mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = np.load(
-    #     f"output/metropolis_hot_start/001/temperature_00_run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
+    sub_arr_len = 11000
+    num_sub_arrs = 50
+    mean_sample = np.zeros(sub_arr_len * num_sub_arrs)
+    for i in range(num_sub_arrs):
+        mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = np.load(
+        f"output/positions_001_hot_start/temperature_00_run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
     
     mean = np.mean(mean_sample)
     std = np.std(mean_sample)
     plt.plot(np.arange(np.shape(mean_sample)[0]), mean_sample)
     plt.xlabel("sample index")
     plt.ylabel("mean of x^2")
-    plt.title(f"ECMC, lambda = 50, timestep = {timestep}")
+    plt.title(f"metropolis, hot start, positions data, timestep = {timestep}")
     #plt.ylim((-1, 0.75))
     #plt.xlim((-1, 0.1e6))
 
-    plt.savefig(f"{timestep_str}_ECMC.png")
+    plt.savefig(f"{timestep_str}_metropolis_w_positions.png")
     plt.xlim((-1000, 10000))
-    plt.savefig(f"{timestep_str}_ECMC_zoomed.png")
+    plt.savefig(f"{timestep_str}_metropolis_w_positions_zoomed.png")
     
     
     # plt.savefig("zoomed_metropolis_10e6_mean_squared_positions.png")
