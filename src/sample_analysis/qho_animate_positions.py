@@ -38,20 +38,20 @@ def main(config_file_string):
     num_sub_arrs = 14
     mean_sample = np.zeros(sub_arr_len * num_sub_arrs)
 
-    position_sample_0 = np.zeros(sub_arr_len, number_of_particles)
-    position_sample_1 = np.zeros(sub_arr_len, number_of_particles)
-    position_sample_2 = np.zeros(sub_arr_len, number_of_particles)
-    position_sample_3 = np.zeros(sub_arr_len, number_of_particles)
-    position_sample_4 = np.zeros(sub_arr_len, number_of_particles)
-    position_sample_5 = np.zeros(sub_arr_len, number_of_particles)
-    position_sample_6 = np.zeros(sub_arr_len, number_of_particles)
-    position_sample_7 = np.zeros(sub_arr_len, number_of_particles)
-    position_sample_8 = np.zeros(sub_arr_len, number_of_particles)
-    position_sample_9 = np.zeros(sub_arr_len, number_of_particles)
-    position_sample_10 = np.zeros(sub_arr_len, number_of_particles)
-    position_sample_11 = np.zeros(sub_arr_len, number_of_particles)
-    position_sample_12 = np.zeros(sub_arr_len, number_of_particles)
-    position_sample_13 = np.zeros(sub_arr_len, number_of_particles)
+    position_sample_0 = np.zeros((sub_arr_len, number_of_particles))
+    position_sample_1 = np.zeros((sub_arr_len, number_of_particles))
+    position_sample_2 = np.zeros((sub_arr_len, number_of_particles))
+    position_sample_3 = np.zeros((sub_arr_len, number_of_particles))
+    position_sample_4 = np.zeros((sub_arr_len, number_of_particles))
+    position_sample_5 = np.zeros((sub_arr_len, number_of_particles))
+    position_sample_6 = np.zeros((sub_arr_len, number_of_particles))
+    position_sample_7 = np.zeros((sub_arr_len, number_of_particles))
+    position_sample_8 = np.zeros((sub_arr_len, number_of_particles))
+    position_sample_9 = np.zeros((sub_arr_len, number_of_particles))
+    position_sample_10 = np.zeros((sub_arr_len, number_of_particles))
+    position_sample_11 = np.zeros((sub_arr_len, number_of_particles))
+    position_sample_12 = np.zeros((sub_arr_len, number_of_particles))
+    position_sample_13 = np.zeros((sub_arr_len, number_of_particles))
     
 
     # for i in range(num_sub_arrs):
@@ -70,30 +70,30 @@ def main(config_file_string):
     #     position_sample_1[(i- int(num_sub_arrs/divisor)) * sub_arr_len  : (i+1- int(num_sub_arrs/divisor)) * sub_arr_len, :] = np.load(
     #     f"output/positions_001_hot_start/temperature_00_run_{i:02d}_sample_of_positions.npy")[1:, :]
     #     print(f"sample file {i}, indices {(i- int(num_sub_arrs/divisor)) * sub_arr_len} : {(i+1- int(num_sub_arrs/divisor)) * sub_arr_len}")
-    position_sample_0[: sub_arr_len, :] = np.load(
-        f"output/positions_001_hot_start/temperature_00_run_00_sample_of_positions.npy")[1:, :]
-    position_sample_1[: sub_arr_len, :] = np.load(
-        f"output/positions_001_hot_start/temperature_00_run_01_sample_of_positions.npy")[1:, :]
-    position_sample_2[: sub_arr_len, :] = np.load(
-        f"output/positions_001_hot_start/temperature_00_run_02_sample_of_positions.npy")[1:, :]
-    position_sample_3[: sub_arr_len, :] = np.load(
-        f"output/positions_001_hot_start/temperature_00_run_03_sample_of_positions.npy")[1:, :]
-    position_sample_4[: sub_arr_len, :] = np.load(
-        f"output/positions_001_hot_start/temperature_00_run_04_sample_of_positions.npy")[1:, :]
-    position_sample_5[: sub_arr_len, :] = np.load(
-        f"output/positions_001_hot_start/temperature_00_run_05_sample_of_positions.npy")[1:, :]
-    position_sample_6[: sub_arr_len, :] = np.load(
-        f"output/positions_001_hot_start/temperature_00_run_06_sample_of_positions.npy")[1:, :]
-    position_sample_7[: sub_arr_len, :] = np.load(
-        f"output/positions_001_hot_start/temperature_00_run_07_sample_of_positions.npy")[1:, :]
-    position_sample_8[: sub_arr_len, :] = np.load(
-        f"output/positions_001_hot_start/temperature_00_run_08_sample_of_positions.npy")[1:, :]
-    position_sample_9[: sub_arr_len, :] = np.load(
-        f"output/positions_001_hot_start/temperature_00_run_09_sample_of_positions.npy")[1:, :]
-    position_sample_10[: sub_arr_len, :] = np.load(
-        f"output/positions_001_hot_start/temperature_00_run_10_sample_of_positions.npy")[1:, :]
-    position_sample_11[: sub_arr_len, :] = np.load(
-        f"output/positions_001_hot_start/temperature_00_run_11_sample_of_positions.npy")[1:, :]
+    # position_sample_0[: sub_arr_len, :] = np.load(
+    #     f"output/positions_001_hot_start/temperature_00_run_00_sample_of_positions.npy")[1:, :]
+    # position_sample_1[: sub_arr_len, :] = np.load(
+    #     f"output/positions_001_hot_start/temperature_00_run_01_sample_of_positions.npy")[1:, :]
+    # position_sample_2[: sub_arr_len, :] = np.load(
+    #     f"output/positions_001_hot_start/temperature_00_run_02_sample_of_positions.npy")[1:, :]
+    # position_sample_3[: sub_arr_len, :] = np.load(
+    #     f"output/positions_001_hot_start/temperature_00_run_03_sample_of_positions.npy")[1:, :]
+    # position_sample_4[: sub_arr_len, :] = np.load(
+    #     f"output/positions_001_hot_start/temperature_00_run_04_sample_of_positions.npy")[1:, :]
+    # position_sample_5[: sub_arr_len, :] = np.load(
+    #     f"output/positions_001_hot_start/temperature_00_run_05_sample_of_positions.npy")[1:, :]
+    # position_sample_6[: sub_arr_len, :] = np.load(
+    #     f"output/positions_001_hot_start/temperature_00_run_06_sample_of_positions.npy")[1:, :]
+    # position_sample_7[: sub_arr_len, :] = np.load(
+    #     f"output/positions_001_hot_start/temperature_00_run_07_sample_of_positions.npy")[1:, :]
+    # position_sample_8[: sub_arr_len, :] = np.load(
+    #     f"output/positions_001_hot_start/temperature_00_run_08_sample_of_positions.npy")[1:, :]
+    # position_sample_9[: sub_arr_len, :] = np.load(
+    #     f"output/positions_001_hot_start/temperature_00_run_09_sample_of_positions.npy")[1:, :]
+    # position_sample_10[: sub_arr_len, :] = np.load(
+    #     f"output/positions_001_hot_start/temperature_00_run_10_sample_of_positions.npy")[1:, :]
+    # position_sample_11[: sub_arr_len, :] = np.load(
+    #     f"output/positions_001_hot_start/temperature_00_run_11_sample_of_positions.npy")[1:, :]
     position_sample_12[: sub_arr_len, :] = np.load(
         f"output/positions_001_hot_start/temperature_00_run_12_sample_of_positions.npy")[1:, :]
     position_sample_13[: sub_arr_len, :] = np.load(
@@ -105,92 +105,95 @@ def main(config_file_string):
     ax.set_ylim(-3,3)
     artists =[]
 
-    for i in range(0, 154000):
+    for i in range(132000, 154000):
+
+        if i % 1000 == 0:
+            print(f"getting plot number {i}")
         # if i < 11000:
         #     container = ax.scatter(np.arange(0, number_of_particles), position_sample_0[i, :], color = "purple")
         # else: 
         #     container = ax.scatter(np.arange(0, number_of_particles), position_sample_1[i - sub_arr_len, :], color = "purple")
         # artists.append([container])
         if i < 11000:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_0[i, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()
            
         elif i < 22000:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_1[i - sub_arr_len, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()
         
         elif i < 33000:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_2[i - 2 *sub_arr_len, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()
 
         elif i < 44000:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_3[i - 3 *sub_arr_len, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()
 
         elif i < 55000:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_4[i - 4 * sub_arr_len, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()
 
         elif i < 66000:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_5[i - 5 * sub_arr_len, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()
         
         elif i < 77000:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_6[i - 6 * sub_arr_len, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()
         
         elif i < 88000:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_7[i - 7 * sub_arr_len, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()
         
         elif i < 99000:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_8[i - 8 * sub_arr_len, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()
         
         elif i < 110000:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_9[i - 9 * sub_arr_len, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()
         
         elif i < 121000:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_10[i - 10 * sub_arr_len, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()
         
         elif i < 132000:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_11[i - 11 * sub_arr_len, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()
         
         elif i < 143000:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_12[i - 12 * sub_arr_len, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()
         
         else:
-            ax.set_ylim(-3,3)
+            ax.set_ylim(-4,4)
             ax.scatter(np.arange(0, number_of_particles), position_sample_13[i - 13 * sub_arr_len, :], color = "purple")
             plt.savefig(f"test_figs/{i}_positions.png")
             plt.cla()

@@ -77,17 +77,7 @@ def main(values_filepath, config_folder):
    
         timestep_arr[index] = timestep
         # print(f"timestep was {timestep_arr[index]}, mean {numerical_x2[index]}")
-        
-  
-       
-        # fig, ax = plt.subplots(1,1)
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[0], label = "0")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[100000], label = "100000")
-        # ax.scatter(np.arange(0,len(position_sample[0])), position_sample[499999], label = "499999")
-        # ax.set_xlabel("site index")
-        # ax.set_ylabel("position")
-        # plt.legend()
-        # plt.savefig(f"output/figs/positions_{string}.png")
+
 
     numerical_x2_e = np.zeros(len(tau_values))
     for index, string in enumerate(tau_values):
@@ -106,15 +96,11 @@ def main(values_filepath, config_folder):
         sample_directory = sample_directories[0]
         temperature_index = 0
         thinning_level = None
-        if string == "001":
-            mean_sample = np.load(
-                "output/event_chain_mediator/001/100k/temperature_00_sample_of_mean_positions.npy")
-            mean_sample = mean_sample[number_of_equilibration_iterations + 1:]
-   
-        else:
-            mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
-                                temperature_index, number_of_particles, number_of_equilibration_iterations,
-                                thinning_level=thinning_level)
+ 
+        mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
+                            temperature_index, number_of_particles, number_of_equilibration_iterations,
+                            thinning_level=thinning_level)
+        mean_sample = mean_sample[:30000]
 
         mean_sample_mean = get_sample_mean_and_error(mean_sample)
         numerical_x2_e[index] = mean_sample_mean[0] / timestep **2
@@ -158,34 +144,34 @@ def main(values_filepath, config_folder):
 
 
     fig1, ax1 = plt.subplots(1,2, sharey = True, figsize = (10.0, 7.0))
-    ax1[0].set_title("Metropolis")
-    ax1[0].scatter(timestep_arr[:], analytical_x2_arr[:], marker=".", s = 50.0, color="purple", label="analytical")
-    ax1[0].scatter(timestep_arr[:], numerical_x2[:], marker="x", color="#f974ef", label="numerical")
+    ax1[0].set_title(r"Metropolis with $3\times 10^4$ samples",  fontsize=15)
+    ax1[0].scatter(timestep_arr[:], analytical_x2_arr[:], marker=".", s = 200.0, color="purple", label="analytical")
+    ax1[0].scatter(timestep_arr[:], numerical_x2[:], marker="x", s = 200.0, color="#f974ef", label="numerical")
 
-    ax1[0].scatter(timestep, metropolis_001_31k,  marker="x", color="#edf974", label="30000")
-    ax1[0].scatter(timestep, metropolis_001_51k,  marker="x", color="#fab44a", label="50000")
-    ax1[0].scatter(timestep, metropolis_001_81k,  marker="x", color="#fa5f4a", label="80000")
-    ax1[0].scatter(timestep, metropolis_001_101k,  marker="x", color="#fa5f4a", label="100000")
-    ax1[0].scatter(timestep, metropolis_001_10e6,  marker="x", color="#fc0a26", label="1000000")
+    ax1[0].scatter(timestep, metropolis_001_31k,  marker="x", s = 200.0, color="#f974ef", label=r"$3\times 10^4$ ")
+    ax1[0].scatter(timestep, metropolis_001_51k,  marker="v", s = 200.0, color="#bd178b", label=r"$5\times 10^4$ ")
+    ax1[0].scatter(timestep, metropolis_001_81k,  marker="s", s = 200.0, color="#eb102e", label=r"$8\times 10^4$ ")
+    ax1[0].scatter(timestep, metropolis_001_101k,  marker="p", s = 200.0, color="#f0601d", label=r"$1\times 10^5$ ")
+    ax1[0].scatter(timestep, metropolis_001_10e6,  marker="*", s = 200.0, color="#f5d20f", label=r"$1\times 10^6$ ")
 
 
-    ax1[1].set_title("ECMC, with lambda = 50.0 and 100,000 samples")
-    ax1[1].scatter(timestep_arr[:], analytical_x2_arr[:], marker=".", s = 50.0, color="purple", label="analytical")
-    ax1[1].scatter(timestep_arr[:], numerical_x2_e[:], marker="x", color="#f974ef", label="numerical")
+    ax1[1].set_title(r"ECMC, with $\lambda = 50.0$ and $3\times 10^4$  samples",  fontsize=15)
+    ax1[1].scatter(timestep_arr[:], analytical_x2_arr[:], marker=".", s = 200.0, color="purple", label="analytical")
+    ax1[1].scatter(timestep_arr[:], numerical_x2_e[:], marker="x", s = 200.0, color="#f974ef", label="numerical")
     ax1[0].set_yscale('log')
     ax1[1].set_yscale('log')
     ax1[0].set_xscale('log')
     ax1[1].set_xscale('log')
 
-    ax1[0].set_xlabel(r"$\delta \tau$")
-    ax1[1].set_xlabel(r"$\delta \tau$")
+    ax1[0].set_xlabel(r"$\delta \tau$",  fontsize=20)
+    ax1[1].set_xlabel(r"$\delta \tau$",  fontsize=20)
 
-    ax1[0].set_ylabel(r"$\langle x^2 \rangle$")
+    ax1[0].set_ylabel(r"$\langle x^2 \rangle$",  fontsize=20)
     ax1[0].legend()
     ax1[1].legend()
 
     plt.tight_layout()
-    plt.savefig("tau_arr.png")
+    plt.savefig("tau_arr.pdf")
   
     print(f"analytical 0.01: {analytical_x2_arr[-1]}, ecmc: {numerical_x2_e[-1]}")
    
