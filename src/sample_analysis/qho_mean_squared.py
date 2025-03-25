@@ -43,23 +43,32 @@ def main(config_file_string):
         f"output/metropolis_001_checkpoints/temperature_00_run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
 
     fig, ax = plt.subplots(2, 1, sharex=True)
-    ax[0].plot(np.arange(np.shape(mean_sample_m)[0]), mean_sample_m, label =rf"Metropolis, $\delta \tau = 0.01$", color = "purple")
-    ax[1].plot(np.arange(np.shape(mean_sample)[0]), mean_sample, label =rf"ECMC, $\lambda = 50.0$, $\delta \tau = 0.01$", color="#f974ef")
+    ax[0].plot(np.arange(np.shape(mean_sample_m)[0]), mean_sample_m, color = "purple")
+    ax[1].plot(np.arange(np.shape(mean_sample)[0]), mean_sample, color="#d11596")
+
+    ax[0].set_title(rf"Metropolis, $\delta \tau = 0.01$", fontsize=12)
+    ax[1].set_title(rf"ECMC, $\lambda = 50.0$, $\delta \tau = 0.01$", fontsize=12)
     
-    ax[1].set_xlabel("sample index", fontsize=20)
-    ax[0].set_ylabel(r"$\langle x^2 \rangle$",  fontsize=20)
-    ax[1].set_ylabel(r"$\langle x^2 \rangle$",  fontsize=20)
-    ax[0].legend()
-    ax[1].legend()
+    ax[1].set_xlabel("sample index", fontsize=15)
+    ax[0].set_ylabel(r"$\langle x^2 \rangle$",  fontsize=15)
+    ax[1].set_ylabel(r"$\langle x^2 \rangle$",  fontsize=15)
+
 
     #plt.ylim((-1, 0.75))
     #plt.xlim((-1, 0.1e6))
 
     #plt.savefig(f"{timestep_str}_metropolis_w_positions.png")
-    plt.xlim((-1000, 10000))
+    plt.xlim((-1000, 50000))
     plt.tight_layout()
-    plt.savefig(f"trace.pdf")
+    plt.savefig(f"trace.png", transparent = True)
     
+    fig, ax = plt.subplots(1,1)
+    ax.plot(np.arange(np.shape(mean_sample_m)[0]), mean_sample_m, color="purple")
+    ax.set_xlabel("sample index", fontsize=15)
+    ax.set_ylabel(r"$\langle x^2 \rangle$",  fontsize=15)
+    ax.set_title(rf"Metropolis, $\delta \tau = 0.01$", fontsize=15)
+    plt.xlim((-1000, 50000))
+    plt.savefig("test.png")
     
     # plt.savefig("zoomed_metropolis_10e6_mean_squared_positions.png")
     #print(f"mean: {mean}, std: {std}")

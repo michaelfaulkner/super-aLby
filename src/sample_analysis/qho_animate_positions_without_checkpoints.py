@@ -48,9 +48,9 @@ def main(config_file_string):
     for i in range(10000, 10501, 500):
         
         if purple == True:
-            colour = "#d60d78"
+            colour = "#59029F"
         else:
-            colour = "#7c49ba"
+            colour = "#e3a710"
         ax[1].plot(np.arange(0, number_of_particles), position_sample[i, :], color = colour)
         ax[1].set_title("ECMC Trajectories", fontsize = 20)
         ax[1].set_xlabel(r"$\tau$", fontsize = 40)
@@ -75,9 +75,9 @@ def main(config_file_string):
     for i in range(5000, 5501, 500):
         
         if purple == True:
-            colour = "#d60d78"
+            colour = "#59029F"
         else:
-            colour = "#7c49ba"
+            colour = "#e3a710"
         ax[0].plot(np.arange(0, number_of_particles), position_sample[i, :], color = colour)
         ax[0].set_title("Metropolis Trajectories", fontsize = 20)
         ax[0].set_ylabel(r"$x$", fontsize = 40)
@@ -87,7 +87,7 @@ def main(config_file_string):
         purple = False
     
     plt.tight_layout()
-    plt.savefig("trajectories.pdf")
+    plt.savefig("trajectories.png")
     # ani = animation.ArtistAnimation(fig=fig, artists=artists, interval=20)
 
     # ani.save(filename="positions_metropolis.mp4", writer="ffmpeg")
