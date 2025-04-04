@@ -34,15 +34,23 @@ def main(config_file_string):
     temperature_index = 0
     thinning_level = None
     
-    mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
-                    temperature_index, number_of_particles, number_of_equilibration_iterations,
-                    thinning_level=thinning_level)
+    # mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
+    #                 temperature_index, number_of_particles, number_of_equilibration_iterations,
+    #                 thinning_level=thinning_level)
     
-    acf = get_autocorrelation(mean_sample[:,0])
+    sub_arr_len = 51000
+    num_sub_arrs = 20
+    mean_sample = np.zeros(sub_arr_len * num_sub_arrs)
+    for i in range(num_sub_arrs):
+        mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = np.load(
+        f"output/metropolis_001_checkpoints/temperature_00_run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
+    mean_sample = mean_sample[50000:]
+ 
+    acf = get_autocorrelation(mean_sample[:])
 
     iact = get_integrated_autocorrelation_time(acf)
 
-    np.save("acf_001_ecmc.npy", acf)
+    np.save("acf_001_metropolis_thermalised.npy", acf)
     print(iact)
 
 

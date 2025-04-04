@@ -38,24 +38,33 @@ def main(config_folder):
         thinning_level = None
     
         timestep_arr[index] = timestep
-        print(f"current timestep = {timestep}, getting acf")
+        
 
         
-        mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
+        if timestep == 0.01:
+            print(f"Timestep = {timestep}, getting files from checkpoints")
+
+            sub_arr_len = 51000
+            num_sub_arrs = 20
+            mean_sample = np.zeros(sub_arr_len * num_sub_arrs)
+            for i in range(num_sub_arrs):
+                mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = np.load(
+                f"output/metropolis_001_checkpoints/temperature_00_run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
+            mean_sample = mean_sample[50000:]
+            acf = get_autocorrelation(mean_sample[:])
+        
+        else:
+            print(f"current timestep = {timestep}, getting acf")
+            mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
                             temperature_index, number_of_particles, number_of_equilibration_iterations,
                             thinning_level=thinning_level)
-        #mean_sample = mean_sample[:]
+            mean_sample = mean_sample[:80000]
+            acf = get_autocorrelation(mean_sample[:,0])
 
-        acf = get_autocorrelation(mean_sample[:,0])
+            
 
         
 
-        # plt.plot(np.arange(0, len(mean_sample)), acf)
-        # plt.xlabel("sample index")
-        # plt.ylabel("autocorrelation function")
-        # plt.title("Autocorrelation Function for delta tau = 0.01")
-        # plt.savefig("acf_qho_001.png")
-        # plt.clf()
 
         iact = get_integrated_autocorrelation_time(acf)
         iact_arr[index] = iact
@@ -64,7 +73,7 @@ def main(config_folder):
     save_arr[:, 0] = iact_arr
     save_arr[:, 1] = timestep_arr
 
-    np.save("output/iact_ecmc.npy", save_arr)
+    np.save("output/iact_metropolis.npy", save_arr)
     
     # fig, ax = plt.subplots(1, 1)
     # ax.scatter(timestep_arr, iact_arr)
