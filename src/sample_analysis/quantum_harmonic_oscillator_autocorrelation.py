@@ -40,17 +40,16 @@ def main(config_folder):
         timestep_arr[index] = timestep
         
 
-        
         if timestep == 0.01:
             print(f"Timestep = {timestep}, getting files from checkpoints")
 
-            sub_arr_len = 51000
-            num_sub_arrs = 20
+            sub_arr_len = 10000
+            num_sub_arrs = 13
             mean_sample = np.zeros(sub_arr_len * num_sub_arrs)
             for i in range(num_sub_arrs):
                 mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = np.load(
                 f"output/metropolis_001_checkpoints/temperature_00_run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
-            mean_sample = mean_sample[50000:]
+            mean_sample = mean_sample[50000:129]
             acf = get_autocorrelation(mean_sample[:])
         
         else:
@@ -62,9 +61,6 @@ def main(config_folder):
             acf = get_autocorrelation(mean_sample[:,0])
 
             
-
-        
-
 
         iact = get_integrated_autocorrelation_time(acf)
         iact_arr[index] = iact

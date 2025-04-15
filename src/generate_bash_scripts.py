@@ -32,7 +32,7 @@ def main(timestep, N):
                 f'python src/run.py src/config_files/qho/iact_data/metropolis/2/{i}.ini \n' \
                 '\n' \
                 'printf "\n\n" \n' \
-                'echo "Ended on: $(date)") \n')
+                'echo "Ended on: $(date)" \n')
         
         f.close()
 
