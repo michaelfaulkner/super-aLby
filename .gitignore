@@ -7,6 +7,7 @@
 *.npy
 !*reference_sample.npy
 !src/permanent_data/*.npy
+!src/permanent_data/reference_data/*.npy
 src/event_chain_mediator_constant_lambda/
 src/config_files/event_chain/event_chain_*.ini
 src/sample_analysis/test_convergence_copy.py

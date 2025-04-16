@@ -229,7 +229,7 @@ def main(config_file_string):
             "permanent_data/reference_data/xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
     elif "quantum_harmonic_oscillator_potential" in potential:
         reference_sample = np.load(
-            "permanent_data/reference_data/quantum_harmonic_oscillator_timestep1_N100_reference_sample.npy").flatten()
+            "output/convergence_tests/quantum_harmonic_oscillator/metropolis/temperature_00_sample_of_mean_positions.npy").flatten()
     
 
     if potential != "ising_potential":
