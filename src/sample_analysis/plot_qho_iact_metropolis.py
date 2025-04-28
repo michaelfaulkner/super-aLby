@@ -6,12 +6,12 @@ import os
 def main(iact_data_path, N):
 
     N = int(N)
-    timestep_data = np.load(os.path.join(iact_data_path, "iact_ecmc_0.npy"))[:, 1]
+    timestep_data = np.load(os.path.join(iact_data_path, "iact_metropolis_0.npy"))[:, 1]
     storage_arr = np.zeros((len(timestep_data), N))
     sorted_timestep = timestep_data[np.argsort(timestep_data)]
 
     for index in range(N):
-        iact_timestep =  np.load(os.path.join(iact_data_path, f"iact_ecmc_{index}.npy"))
+        iact_timestep =  np.load(os.path.join(iact_data_path, f"iact_metropolis_{index}.npy"))
         iact_data = iact_timestep[:, 0] 
         timestep_data = iact_timestep[:, 1] 
         argsorted_data = np.argsort(timestep_data)
@@ -32,11 +32,10 @@ def main(iact_data_path, N):
     ax.set_xscale("log")
     ax.set_yscale("log")
    
-    # # plt.title(f"Integrated Autocorrelation Time for ECMC, lambda = {distance_between_measurements}")
-    # # plt.savefig(f"iact_ecmc_{distance_between_measurements}.png")
 
-    plt.title(f"Integrated Autocorrelation Time for ECMC, with {N} samples")
-    plt.savefig("iact_ecmc.png")
+
+    plt.title(f"Integrated Autocorrelation Time for Metropolis MC, with {N} samples")
+    plt.savefig("iact_metropolis.png")
     plt.clf()
 
 

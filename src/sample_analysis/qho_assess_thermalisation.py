@@ -46,6 +46,7 @@ def main(config_file_string):
     std = np.std(mean_sample)
 
     analytical_value = analytical_x2(mass * timestep, number_of_particles)
+    print(analytical_value)
 
     print(f"mean: {mean}, std: {std}")
 
@@ -55,17 +56,17 @@ def main(config_file_string):
     for i in range(num_sub_arrs):
         mean_sample_m[i * sub_arr_len : (i+1) * sub_arr_len] = np.load(
         f"output/metropolis_001_checkpoints/temperature_00_run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
-    mean_sample_m = mean_sample_m[50000:300000]
+    mean_sample_m = mean_sample_m[:]
  
     scaled_sample = np.zeros(sub_arr_len * num_sub_arrs)
     for index in range(1, len(mean_sample_m)):
-        scaled_sample[index] = np.sqrt(index) * (mean_sample_m[index] - analytical_value) / std
+        scaled_sample[index] = np.sqrt(len(mean_sample_m)) * (mean_sample_m[index] - analytical_value) / std
     
 
 
     scaled_cdf = get_cumulative_distribution(scaled_sample)
     plt.plot(scaled_cdf[0], scaled_cdf[1])
-    plt.xlim(-3, 3)
+    #plt.xlim(-3, 3)
     plt.savefig("test.png")
     plt.clf()
 
@@ -75,12 +76,12 @@ def main(config_file_string):
     plt.savefig("test0.png")
     plt.clf()
 
-    normal = np.random.normal(0, 1, 1000)
-    cumulative = get_cumulative_distribution(normal)
-    plt.xlim(-3, 3)
-    plt.plot(cumulative[0], cumulative[1])
+    # normal = np.random.normal(0, 1, 1000)
+    # cumulative = get_cumulative_distribution(normal)
+    # plt.xlim(-3, 3)
+    # plt.plot(cumulative[0], cumulative[1])
  
-    plt.savefig("cdf_test.png")
+    # plt.savefig("cdf_test.png")
 
 
 if __name__ == '__main__':
