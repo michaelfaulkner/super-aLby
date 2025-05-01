@@ -70,9 +70,10 @@ class IsingPotential(Potential):
         float
             The potential.
         """
-        return self.potential_constant * np.sum([positions[index] * positions[get_east_neighbour(index, self.lattice_length)] +
-                                                 positions[index] * positions[get_north_neighbour(index, self.lattice_length)]
-                                                 for index in range(number_of_particles)])
+        return self.potential_constant * np.sum(
+            [positions[index] * positions[get_east_neighbour(index, self.lattice_length)] +
+             positions[index] * positions[get_north_neighbour(index, self.lattice_length)]
+             for index in range(number_of_particles)])
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
         """
@@ -112,15 +113,15 @@ class IsingPotential(Potential):
             A one-dimensional numpy array of length number_of_particles; each element is 1 or -1 and represents the
             position (or, equivalently, spin value) of a single particle (or, equivalently, spin).
         """
-        if not (type(range_of_initial_particle_positions) == int or
-                (type(range_of_initial_particle_positions) == list and len(range_of_initial_particle_positions) == 2 and
-                 [type(bound) == int for bound in range_of_initial_particle_positions])):
+        if not (type(range_of_initial_particle_positions) is int or
+                (type(range_of_initial_particle_positions) is list and len(range_of_initial_particle_positions) == 2 and
+                 [type(bound) is int for bound in range_of_initial_particle_positions])):
             raise ConfigurationError(
                 f"Give either an integer (representing a precise initial position for each particle) or a list of two "
                 f"integers (representing the inclusive bounds of the set from which each initial particle position is "
                 f"randomly chosen) for the value of range_of_initial_particle_positions in the ModelSettings section "
                 f"when using {self.__class__.__name__}.")
-        if type(range_of_initial_particle_positions) == int:
+        if type(range_of_initial_particle_positions) is int:
             return np.array([np.atleast_1d(range_of_initial_particle_positions) for _ in range(number_of_particles)])
         else:
             return np.array([np.atleast_1d(

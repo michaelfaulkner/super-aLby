@@ -65,10 +65,10 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         for particle_index in range(0, number_of_particles):
             dimensionless_action += self._get_pairwise_dimensionless_action(
                 positions[particle_index], positions[get_east_neighbour(particle_index, number_of_particles)])
-            
         return dimensionless_action
 
-    def get_gradient(self, positions): #TODO implement get_gradient() function in this class
+    def get_gradient(self, positions):
+        # TODO implement get_gradient() function in this class
         """
         Returns the gradient of the dimensionless action for the given particle positions.
 
@@ -86,7 +86,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
-        pass
+        raise SystemError(f"The get_gradient method of {self.__class__.__name__} has not been written.")
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
         """
@@ -113,17 +113,16 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         current_dimensionless_action = (
                 self._get_pairwise_dimensionless_action(
                     positions[get_west_neighbour(active_particle_index, number_of_particles)],
-                    positions[active_particle_index])
-                    + self._get_pairwise_dimensionless_action(
+                    positions[active_particle_index]) +
+                self._get_pairwise_dimensionless_action(
                     positions[active_particle_index],
                     positions[get_east_neighbour(active_particle_index, number_of_particles)]))
         
         candidate_dimensionless_action = (
                 self._get_pairwise_dimensionless_action(
-                    positions[get_west_neighbour(active_particle_index, number_of_particles)], candidate_position)
-                    + self._get_pairwise_dimensionless_action(
+                    positions[get_west_neighbour(active_particle_index, number_of_particles)], candidate_position) +
+                self._get_pairwise_dimensionless_action(
                     candidate_position, positions[get_east_neighbour(active_particle_index, number_of_particles)]))
-        
         return candidate_dimensionless_action - current_dimensionless_action
 
     def _get_gradient_at_index(self, positions, particle_index):
@@ -142,10 +141,10 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         float
             The dimensionless-action gradient at particle_index.
         """
-        return self._mass / self._timestep * ((2.0 + self._timestep ** 2 * self._omega ** 2) * positions[particle_index]
-                                              - positions[get_west_neighbour(particle_index, number_of_particles)]
-                                              - positions[get_east_neighbour(particle_index, number_of_particles)]
-                                              ).item()
+        return self._mass / self._timestep * (
+                (2.0 + self._timestep ** 2 * self._omega ** 2) * positions[particle_index] -
+                positions[get_west_neighbour(particle_index, number_of_particles)] -
+                positions[get_east_neighbour(particle_index, number_of_particles)]).item()
 
     def _get_pairwise_dimensionless_action(self, position_at_index, position_at_east_index):
         """
@@ -163,8 +162,8 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             The pairwise contribution to the dimensionless action.
         """
 
-        return 0.5 * self._mass * ((position_at_east_index - position_at_index) ** 2 / self._timestep
-                                   + self._timestep * self._omega ** 2 * position_at_index ** 2)
+        return 0.5 * self._mass * ((position_at_east_index - position_at_index) ** 2 / self._timestep +
+                                   self._timestep * self._omega ** 2 * position_at_index ** 2)
 
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
                                                   movement_direction):
@@ -178,6 +177,8 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             is a float and represents the position of the worldline at that time step.
         active_particle_index : int
             The active particle index (i.e., the discretised-time index).
+        temperature : float
+            The sampling temperature.  NB, we set temperature = 1.0 (for QHO) as this quantity is for stat-phys models.
         movement_direction : int
             The direction of movement of the particle, either 1 or -1.
         
@@ -192,63 +193,43 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         neighbouring_indices[1] = active_particle_index
         neighbouring_indices[2] = get_east_neighbour(active_particle_index, number_of_particles)
 
-        distance_to_bottom_of_well = 0.0
         vetoing_index = None
         initial_position = positions[active_particle_index].item()
 
         for i in range(3):
             uphill_energy = - np.log(np.random.uniform(0, 1))
-            if i != 1: # considering the neighbour terms
+            if i != 1:  # considering the neighbour terms
                 neighbour_position = positions[neighbouring_indices[i]].item()
                 bottom_of_well = neighbour_position
                 if ((movement_direction > 0 and initial_position < bottom_of_well) or
-                (movement_direction < 0 and initial_position > bottom_of_well)):
+                        (movement_direction < 0 and initial_position > bottom_of_well)):
                     """advance to the bottom of the well"""
                     intermediate_position = bottom_of_well
                 else:
                     intermediate_position = initial_position
-                
-            
-                initial_action = 0.5 * (self._mass / self._timestep) * (intermediate_position - neighbour_position)**2
+
+                initial_action = 0.5 * (self._mass / self._timestep) * (intermediate_position - neighbour_position) ** 2
                 final_action = uphill_energy + initial_action
-    
                 roots = np.roots([0.5 * self._mass / self._timestep, -(self._mass / self._timestep)
-                                  * neighbour_position, (0.5 * self._mass / self._timestep) * neighbour_position**2
+                                  * neighbour_position, (0.5 * self._mass / self._timestep) * neighbour_position ** 2
                                   - final_action])
-                
-                if (movement_direction > 0) and (roots[0] > roots[1]):
-                    final_position = roots[0]
-                elif (movement_direction > 0) and (roots[0] < roots[1]):
-                    final_position = roots[1]
-                elif (movement_direction < 0) and (roots[0] < roots[1]):
-                    final_position = roots[0]
-                else:
-                    final_position = roots[1]
+                final_position_wrt_factor_event = self.get_final_position_wrt_factor_event(movement_direction, roots)
                     
-            else: # consider x^2 term
+            else:  # consider x^2 term
                 bottom_of_well = 0.0
                 if (((movement_direction > 0) and (initial_position < bottom_of_well)) or
-                ((movement_direction < 0) and (initial_position > bottom_of_well))):
+                        ((movement_direction < 0) and (initial_position > bottom_of_well))):
                     """advance to the bottom of the well"""
                     intermediate_position = bottom_of_well
                 else:
                     intermediate_position = initial_position
                 
-                initial_action = 0.5 * self._mass * self._timestep * self._omega**2 * intermediate_position**2
+                initial_action = 0.5 * self._mass * self._timestep * self._omega ** 2 * intermediate_position ** 2
                 final_action = uphill_energy + initial_action
+                roots = np.roots([0.5 * self._mass * self._timestep * self._omega ** 2, 0.0, -final_action])
+                final_position_wrt_factor_event = self.get_final_position_wrt_factor_event(movement_direction, roots)
 
-                roots = np.roots([0.5 * self._mass * self._timestep * self._omega**2, 0.0, -final_action])
-            
-                if (movement_direction > 0) and (roots[0] > roots[1]):
-                    final_position = roots[0]
-                elif (movement_direction > 0) and (roots[0] < roots[1]):
-                    final_position = roots[1]
-                elif (movement_direction < 0) and (roots[0] < roots[1]):
-                    final_position = roots[0]
-                else:
-                    final_position = roots[1]
-
-            distance_to_next_factor_event = np.abs(final_position - initial_position)
+            distance_to_next_factor_event = np.abs(final_position_wrt_factor_event - initial_position)
 
             if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
                 shortest_distance_to_next_factor_event = distance_to_next_factor_event
@@ -267,9 +248,20 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             active_particle_index = veto_index
         if active_particle_index == initial_a and movement_direction == initial_v:
             raise Exception("Chose the same index and direction twice in a row")
-
         return active_particle_index, movement_direction
 
-    def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
+    @staticmethod
+    def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """ Updates position of the active particle."""
         positions[active_particle_index] += displacement_distance * movement_direction
+
+    @staticmethod
+    def get_final_position_wrt_factor_event(movement_direction, roots):
+        if (movement_direction > 0) and (roots[0] > roots[1]):
+            return roots[0]
+        elif (movement_direction > 0) and (roots[0] < roots[1]):
+            return roots[1]
+        elif (movement_direction < 0) and (roots[0] < roots[1]):
+            return roots[0]
+        else:
+            return roots[1]

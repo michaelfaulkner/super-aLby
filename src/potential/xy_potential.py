@@ -62,7 +62,7 @@ class XyPotential(ContinuousPotential):
                                                        for index in range(number_of_particles)])
 
     def get_gradient(self, positions):
-
+        # TODO implement get_gradient() function in this class
         """
         Returns the gradient of the potential function for the given particle positions.
 
@@ -75,8 +75,7 @@ class XyPotential(ContinuousPotential):
         -------
         nothing.
         """
-
-        pass
+        raise SystemError(f"The get_gradient method of {self.__class__.__name__} has not been written.")
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
         """
@@ -103,7 +102,6 @@ class XyPotential(ContinuousPotential):
 
         return self.potential_constant * (candidate_potential - current_potential)
 
-
     def _sum_nearest_neighbours(self, active_particle_index, active_particle_position, positions):
 
         """
@@ -123,16 +121,17 @@ class XyPotential(ContinuousPotential):
         float
             The potential at lattice_site_index.
         """
-        return -(np.cos(
-                positions[get_north_neighbour(active_particle_index, self._lattice_length)] - active_particle_position)
-                + np.cos(positions[get_east_neighbour(active_particle_index, self._lattice_length)]
-                - active_particle_position) + np.cos(active_particle_position 
-                - positions[get_south_neighbour(active_particle_index, self._lattice_length)])
-                + np.cos(active_particle_position
-                - positions[get_west_neighbour(active_particle_index, self._lattice_length)]))
+        return -(np.cos(positions[get_north_neighbour(active_particle_index, self._lattice_length)] -
+                        active_particle_position) +
+                 np.cos(positions[get_east_neighbour(active_particle_index, self._lattice_length)] -
+                        active_particle_position) +
+                 np.cos(active_particle_position -
+                        positions[get_south_neighbour(active_particle_index, self._lattice_length)]) +
+                 np.cos(active_particle_position -
+                        positions[get_west_neighbour(active_particle_index, self._lattice_length)]))
 
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
-                                                   movement_direction):
+                                                  movement_direction):
         """
         Returns the distance to the next particle event for a given active particle index,
         as well as the particle index responsible for that event.  Used for ECMC.
@@ -191,7 +190,6 @@ class XyPotential(ContinuousPotential):
                 vetoing_spin_index = neighbouring_spin_indices[i]
                 
         return shortest_distance_to_next_factor_event, vetoing_spin_index
-
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
                                     veto_index):
