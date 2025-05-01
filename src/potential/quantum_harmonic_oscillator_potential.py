@@ -65,6 +65,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         for particle_index in range(0, number_of_particles):
             dimensionless_action += self._get_pairwise_dimensionless_action(
                 positions[particle_index], positions[get_east_neighbour(particle_index, number_of_particles)])
+            
         return dimensionless_action
 
     def get_gradient(self, positions): #TODO implement get_gradient() function in this class
@@ -112,15 +113,17 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         current_dimensionless_action = (
                 self._get_pairwise_dimensionless_action(
                     positions[get_west_neighbour(active_particle_index, number_of_particles)],
-                    positions[active_particle_index]) +
-                self._get_pairwise_dimensionless_action(
+                    positions[active_particle_index])
+                    + self._get_pairwise_dimensionless_action(
                     positions[active_particle_index],
                     positions[get_east_neighbour(active_particle_index, number_of_particles)]))
+        
         candidate_dimensionless_action = (
                 self._get_pairwise_dimensionless_action(
-                    positions[get_west_neighbour(active_particle_index, number_of_particles)], candidate_position) +
-                self._get_pairwise_dimensionless_action(
+                    positions[get_west_neighbour(active_particle_index, number_of_particles)], candidate_position)
+                    + self._get_pairwise_dimensionless_action(
                     candidate_position, positions[get_east_neighbour(active_particle_index, number_of_particles)]))
+        
         return candidate_dimensionless_action - current_dimensionless_action
 
     def _get_gradient_at_index(self, positions, particle_index):
@@ -139,9 +142,10 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         float
             The dimensionless-action gradient at particle_index.
         """
-        return self._mass / self._timestep * ((2.0 + self._timestep ** 2 * self._omega ** 2) * positions[particle_index] -
-                             positions[get_west_neighbour(particle_index, number_of_particles)] -
-                             positions[get_east_neighbour(particle_index, number_of_particles)]).item()
+        return self._mass / self._timestep * ((2.0 + self._timestep ** 2 * self._omega ** 2) * positions[particle_index]
+                                              - positions[get_west_neighbour(particle_index, number_of_particles)]
+                                              - positions[get_east_neighbour(particle_index, number_of_particles)]
+                                              ).item()
 
     def _get_pairwise_dimensionless_action(self, position_at_index, position_at_east_index):
         """
@@ -159,10 +163,11 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
             The pairwise contribution to the dimensionless action.
         """
 
-        return 0.5 * self._mass * ((position_at_east_index - position_at_index) ** 2 / self._timestep +
-                                   self._timestep * self._omega ** 2 * position_at_index ** 2)
+        return 0.5 * self._mass * ((position_at_east_index - position_at_index) ** 2 / self._timestep
+                                   + self._timestep * self._omega ** 2 * position_at_index ** 2)
 
-    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature, movement_direction):
+    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
+                                                  movement_direction):
         """
         Returns the distance to the next particle event for a given active particle index.
 
@@ -181,68 +186,85 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         distance_to_next_event : float
             The distance to the next particle event
         """
+        shortest_distance_to_next_factor_event = 1.0e10
+        neighbouring_indices = np.zeros(3, dtype=np.int32)
+        neighbouring_indices[0] = get_west_neighbour(active_particle_index, number_of_particles)
+        neighbouring_indices[1] = active_particle_index
+        neighbouring_indices[2] = get_east_neighbour(active_particle_index, number_of_particles)
 
-        position_at_east_index = positions[get_east_neighbour(active_particle_index, number_of_particles)]
-        position_at_west_index = positions[get_west_neighbour(active_particle_index, number_of_particles)]
-        position_at_index = positions[active_particle_index]
-        distance_to_next_event = 0.0
-        bottom_of_well = ((position_at_east_index + position_at_west_index) /
-                          (2.0 + self._timestep ** 2 * self._omega ** 2))
-       
-        if ((movement_direction > 0) and (position_at_index < bottom_of_well) or
-                (movement_direction < 0) and (position_at_index > bottom_of_well)):
-            """advance to the bottom of the well"""
-            distance_to_next_event += np.abs(bottom_of_well - position_at_index)
-            position_at_index = bottom_of_well
+        distance_to_bottom_of_well = 0.0
+        vetoing_index = None
+        initial_position = positions[active_particle_index].item()
 
-        """compute coefficients of quadratic equation"""
-        a = 0.5 * self._mass / self._timestep * (2.0 + self._timestep ** 2 * self._omega ** 2)
-        b = self._mass / self._timestep * (2.0 * position_at_index + self._timestep ** 2 * self._omega ** 2 * position_at_index -
-                          position_at_east_index - position_at_west_index).item()
-        # TODO might divide following line by temperature, as this is where it would appear if temperature != 1.0
-        c = np.log(np.random.uniform(0.0, 1.0))
-        """solve quadratic equation for remaining distance to next event"""
-        roots = np.roots([a, b, c]) * self._timestep
-        if roots[0] > 0:
-            if movement_direction > 0:
-                remaining_displacement_to_event = roots[0]
-            else:
-                remaining_displacement_to_event = roots[1]
-        else:
-            if movement_direction > 0:
-                remaining_displacement_to_event = roots[1]
-            else:
-                remaining_displacement_to_event = roots[0]
-        distance_to_next_event += np.abs(remaining_displacement_to_event)
+        for i in range(3):
+            uphill_energy = - np.log(np.random.uniform(0, 1))
+            if i != 1: # considering the neighbour terms
+                neighbour_position = positions[neighbouring_indices[i]].item()
+                bottom_of_well = neighbour_position
+                if ((movement_direction > 0 and initial_position < bottom_of_well) or
+                (movement_direction < 0 and initial_position > bottom_of_well)):
+                    """advance to the bottom of the well"""
+                    intermediate_position = bottom_of_well
+                else:
+                    intermediate_position = initial_position
+                
+            
+                initial_action = 0.5 * (self._mass / self._timestep) * (intermediate_position - neighbour_position)**2
+                final_action = uphill_energy + initial_action
+    
+                roots = np.roots([0.5 * self._mass / self._timestep, -(self._mass / self._timestep)
+                                  * neighbour_position, (0.5 * self._mass / self._timestep) * neighbour_position**2
+                                  - final_action])
+                
+                if (movement_direction > 0) and (roots[0] > roots[1]):
+                    final_position = roots[0]
+                elif (movement_direction > 0) and (roots[0] < roots[1]):
+                    final_position = roots[1]
+                elif (movement_direction < 0) and (roots[0] < roots[1]):
+                    final_position = roots[0]
+                else:
+                    final_position = roots[1]
+                    
+            else: # consider x^2 term
+                bottom_of_well = 0.0
+                if (((movement_direction > 0) and (initial_position < bottom_of_well)) or
+                ((movement_direction < 0) and (initial_position > bottom_of_well))):
+                    """advance to the bottom of the well"""
+                    intermediate_position = bottom_of_well
+                else:
+                    intermediate_position = initial_position
+                
+                initial_action = 0.5 * self._mass * self._timestep * self._omega**2 * intermediate_position**2
+                final_action = uphill_energy + initial_action
 
-        return distance_to_next_event, None
+                roots = np.roots([0.5 * self._mass * self._timestep * self._omega**2, 0.0, -final_action])
+            
+                if (movement_direction > 0) and (roots[0] > roots[1]):
+                    final_position = roots[0]
+                elif (movement_direction > 0) and (roots[0] < roots[1]):
+                    final_position = roots[1]
+                elif (movement_direction < 0) and (roots[0] < roots[1]):
+                    final_position = roots[0]
+                else:
+                    final_position = roots[1]
 
-    def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
-                                    veto_index):
-        #TODO implement ECMC for quantum harmonic oscillator
+            distance_to_next_factor_event = np.abs(final_position - initial_position)
+
+            if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
+                shortest_distance_to_next_factor_event = distance_to_next_factor_event
+                vetoing_index = neighbouring_indices[i]
+        
+        return shortest_distance_to_next_factor_event, vetoing_index
+
+    def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """Chooses the index and direction for the next active particle in the markov chain"""
         initial_a = active_particle_index
         initial_v = movement_direction
-
-        west_particle_index = get_west_neighbour(active_particle_index, number_of_particles)
-        east_particle_index = get_east_neighbour(active_particle_index, number_of_particles)
-        active_particle_gradient = self._get_gradient_at_index(positions, active_particle_index)
-        west_particle_gradient = self._get_gradient_at_index(positions, west_particle_index)
-        east_particle_gradient = self._get_gradient_at_index(positions, east_particle_index)
-        sum_of_abs_gradients = np.abs(west_particle_gradient) + np.abs(active_particle_gradient) + np.abs(
-            east_particle_gradient)
-
-        probabilities = np.zeros(2)
-        probabilities[0] = np.abs(west_particle_gradient) / sum_of_abs_gradients
-        probabilities[1] = probabilities[0] + np.abs(active_particle_gradient) / sum_of_abs_gradients
-        rand = np.random.uniform(0.0, 1.0)
-        if rand < probabilities[0]:
-            active_particle_index = west_particle_index
-        elif rand < probabilities[1]:
-            movement_direction = - movement_direction
+  
+        if veto_index == active_particle_index:
+            movement_direction = movement_direction * -1
         else:
-            active_particle_index = east_particle_index
-
+            active_particle_index = veto_index
         if active_particle_index == initial_a and movement_direction == initial_v:
             raise Exception("Chose the same index and direction twice in a row")
 

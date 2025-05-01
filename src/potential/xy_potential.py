@@ -42,8 +42,8 @@ class XyPotential(ContinuousPotential):
 
         """
         Returns the potential function for the given particle positions. Here, 'positions' is a misnomer, inherited from
-        the naming conventions of the parent ContinuousPotential class. A 'position' given here is actually a scalar value
-        corresponding to the phase/angle of the spin of the corresponding particle.
+        the naming conventions of the parent ContinuousPotential class. A 'position' given here is actually a scalar
+        value corresponding to the phase/angle of the spin of the corresponding particle.
 
         Parameters
         ----------
@@ -123,12 +123,16 @@ class XyPotential(ContinuousPotential):
         float
             The potential at lattice_site_index.
         """
-        return -(np.cos(positions[get_north_neighbour(active_particle_index, self._lattice_length)] - active_particle_position) +
-                 np.cos(positions[get_east_neighbour(active_particle_index, self._lattice_length)] - active_particle_position) +
-                 np.cos(active_particle_position - positions[get_south_neighbour(active_particle_index, self._lattice_length)]) +
-                 np.cos(active_particle_position - positions[get_west_neighbour(active_particle_index, self._lattice_length)]))
+        return -(np.cos(
+                positions[get_north_neighbour(active_particle_index, self._lattice_length)] - active_particle_position)
+                + np.cos(positions[get_east_neighbour(active_particle_index, self._lattice_length)]
+                - active_particle_position) + np.cos(active_particle_position 
+                - positions[get_south_neighbour(active_particle_index, self._lattice_length)])
+                + np.cos(active_particle_position
+                - positions[get_west_neighbour(active_particle_index, self._lattice_length)]))
 
-    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature, movement_direction):
+    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
+                                                   movement_direction):
         """
         Returns the distance to the next particle event for a given active particle index,
         as well as the particle index responsible for that event.  Used for ECMC.
@@ -169,18 +173,18 @@ class XyPotential(ContinuousPotential):
             if initial_spin_value_difference > 0.0:
                 initial_two_spin_potential = 1.0 - np.cos(initial_spin_value_difference)
                 no_of_complete_spin_rotations = int(0.5 * (initial_two_spin_potential + uphill_energy))
-                final_two_spin_potential = ((no_of_complete_spin_rotations + 1.0) * 2.0 - initial_two_spin_potential -
-                                            uphill_energy).item()
+                final_two_spin_potential = ((no_of_complete_spin_rotations + 1.0) * 2.0 - initial_two_spin_potential
+                                            - uphill_energy).item()
                 final_spin_value_difference = np.arccos(1.0 - final_two_spin_potential)
-                distance_to_next_factor_event = ((no_of_complete_spin_rotations + 0.5) * 2.0 * np.pi -
-                                                 initial_spin_value_difference - final_spin_value_difference).item()
+                distance_to_next_factor_event = ((no_of_complete_spin_rotations + 0.5) * 2.0 * np.pi
+                                                - initial_spin_value_difference - final_spin_value_difference).item()
            
             else:
                 no_of_complete_spin_rotations = int(0.5 * uphill_energy)
                 final_two_spin_potential = ((no_of_complete_spin_rotations + 1.0) * 2.0 - uphill_energy).item()
                 final_spin_value_difference = np.arccos(1.0 - final_two_spin_potential)
-                distance_to_next_factor_event = ((no_of_complete_spin_rotations + 0.5) * 2.0 * np.pi -
-                                                 initial_spin_value_difference - final_spin_value_difference).item()
+                distance_to_next_factor_event = ((no_of_complete_spin_rotations + 0.5) * 2.0 * np.pi
+                                                - initial_spin_value_difference - final_spin_value_difference).item()
 
             if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
                 shortest_distance_to_next_factor_event = distance_to_next_factor_event

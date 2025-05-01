@@ -67,7 +67,6 @@ class EventChainMediator(Mediator):
         base.exceptions.ConfigurationError
             If distance_between_measurements is not greater than 0.0.
         """
-        #NOTE quantum harmonic oscillator model is not yet fully implemented for ECMC
         super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
                          number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations)
         if distance_between_measurements <= 0.0:
@@ -93,7 +92,6 @@ class EventChainMediator(Mediator):
             while True:
                 distance_to_next_event, vetoing_index = self._potential.get_distance_to_next_event_and_veto_index(
                     self._positions, active_particle_index, temperature, movement_direction)
-
                 if distance_to_next_measurement < distance_to_next_event:
                     self._potential.update_position(self._positions, distance_to_next_measurement,
                                                     active_particle_index, movement_direction)
@@ -105,9 +103,8 @@ class EventChainMediator(Mediator):
                     distance_to_next_measurement -= distance_to_next_event
                     self._potential.update_position(self._positions, distance_to_next_event, active_particle_index,
                                                     movement_direction)
-                    active_particle_index, movement_direction= self._potential.choose_next_active_particle(
-                        self._positions, active_particle_index, movement_direction,
-                        vetoing_index)
+                    active_particle_index, movement_direction = self._potential.choose_next_active_particle(
+                        self._positions, active_particle_index, movement_direction, vetoing_index)
                     self._total_number_of_events += 1
             super()._print_sample_progress(markov_chain_index)
 
