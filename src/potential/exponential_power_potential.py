@@ -106,6 +106,11 @@ class ExponentialPowerPotential(ContinuousPotential):
         return self._potential_constant * (abs(candidate_position) ** self._power -
                                            abs(positions[active_particle_index]) ** self._power)
 
+    @staticmethod
+    def get_random_event_chain_velocity():
+        """Uniformly samples a direction of motion for the active particle from chosen velocity distribution"""
+        raise SystemError(f"The get_random_event_chain_velocity method has not been written.")
+
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
                                                   movement_direction):
         """
@@ -154,4 +159,4 @@ class ExponentialPowerPotential(ContinuousPotential):
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """ Updates position of the active particle following an event."""
-        raise SystemError(f"The update_position method of {self.__class__.__name__} has not been written.")
+        raise SystemError(f"The update_position method has not been written.")

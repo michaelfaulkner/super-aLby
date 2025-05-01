@@ -165,6 +165,11 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         return 0.5 * self._mass * ((position_at_east_index - position_at_index) ** 2 / self._timestep +
                                    self._timestep * self._omega ** 2 * position_at_index ** 2)
 
+    @staticmethod
+    def get_random_event_chain_velocity():
+        """Uniformly samples a direction of motion for the active particle from chosen velocity distribution"""
+        return np.random.choice((-1.0, 1.0))
+
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
                                                   movement_direction):
         """

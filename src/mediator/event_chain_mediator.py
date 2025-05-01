@@ -89,7 +89,7 @@ class EventChainMediator(Mediator):
         self._total_number_of_events = 0
         for markov_chain_index in range(self._total_number_of_iterations):
             active_particle_index = np.random.randint(0, number_of_particles)
-            movement_direction = np.random.choice((-1.0, 1.0))
+            movement_direction = self._potential.get_random_event_chain_velocity()
             distance_to_next_measurement = self._distance_between_measurements
             while True:
                 distance_to_next_event, vetoing_index = self._potential.get_distance_to_next_event_and_veto_index(
