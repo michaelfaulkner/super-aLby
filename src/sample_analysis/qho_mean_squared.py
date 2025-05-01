@@ -16,7 +16,7 @@ helper_methods = importlib.import_module("helper_methods")
 parsing = importlib.import_module("base.parsing")
 strings = importlib.import_module("base.strings")
 
-def main(config_file_string):
+def main(config_file_string, data_path):
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
     number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
@@ -26,6 +26,7 @@ def main(config_file_string):
     number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
     
     sample_directory = sample_directories[0]
+    sample_directory = data_path
     temperature_index = 0
     thinning_level = None
     number_of_equilibration_iterations = None
@@ -64,6 +65,7 @@ def main(config_file_string):
     print(len(mean_sample))
     fig, ax = plt.subplots(1,1)
     ax.plot(np.arange(np.shape(mean_sample)[0]), mean_sample, color="purple")
+    ax.set_xlim(0, 50000)
     # ax.set_xlabel("sample index", fontsize=15)
     # ax.set_ylabel(r"$\langle x^2 \rangle$",  fontsize=15)
     # ax.set_title(rf"Metropolis, $\delta \tau = 0.01$", fontsize=15)
@@ -74,4 +76,4 @@ def main(config_file_string):
     #print(f"mean: {mean}, std: {std}")
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2])

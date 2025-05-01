@@ -26,15 +26,16 @@ def main(iact_data_path, N):
 
     fig, ax = plt.subplots(1, 1)
     #ax.scatter(timestep_data_0, iact_mean_arr)
-    ax.errorbar(sorted_timestep, iact_mean_arr, err, fmt='o', capsize=3)
-    ax.set_xlabel("delta tau")
-    ax.set_ylabel("iact")
+    ax.errorbar(sorted_timestep, iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="orange")
+    ax.set_xlabel(r"$\delta \tau$", fontsize=16, labelpad=-10)
+    ax.set_ylabel("IACT", fontsize=15, labelpad=0)
     ax.set_xscale("log")
     ax.set_yscale("log")
+    ax.set_ylim(1e3, 1e7)
    
 
 
-    plt.title(f"Integrated Autocorrelation Time for Metropolis MC, with {N} samples")
+    plt.title(f"Integrated Autocorrelation Time for Metropolis MC, with {N} Repeats")
     plt.savefig("iact_metropolis.png")
     plt.clf()
 

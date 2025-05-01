@@ -42,18 +42,20 @@ def main(config_folder, N):
             thinning_level = None
         
             timestep_arr[index] = timestep
-            
+            checkpointing_indices = sample_getter.get_checkpointing_indices(sample_directory)
 
-            # if timestep == 0.01:
-
-            #     sub_arr_len = 10000
-            #     num_sub_arrs = 13
-            #     mean_sample = np.zeros(sub_arr_len * num_sub_arrs)
-            #     for i in range(num_sub_arrs):
-            #         mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = np.load(
-            #             os.path.join(sample_directory, f"temperature_00_run_{i:02d}_sample_of_mean_positions.npy"))[1:, 0]
-            #     mean_sample = mean_sample[50000:129999]
-            #     acf = get_autocorrelation(mean_sample[:])
+            if checkpointing_indices != 0:
+                sub_arr_len = number_of_equilibration_iterations + number_of_observations
+                mean_sample = np.zeros(sub_arr_len * (checkpointing_indices + 1))
+                for i in range(checkpointing_indices + 1):
+                    mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = sample_getter.get_mean_positions(
+                        sample_directory, temperatures[temperature_index], temperature_index, number_of_particles, 
+                        None, thinning_level=thinning_level)[1:, 0]
+                    
+                    # np.load(
+                    #     os.path.join(sample_directory, f"temperature_00_run_{i:02d}_sample_of_mean_positions.npy"))[1:, 0]
+                mean_sample = mean_sample[50000:129999]
+                acf = get_autocorrelation(mean_sample[:])
             
             # else:
             mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],

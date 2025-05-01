@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import os
+import matplotlib
+matplotlib.rcParams['mathtext.fontset'] = 'cm'
 
 def main(iact_data_path, N):
 
@@ -26,15 +28,17 @@ def main(iact_data_path, N):
 
     fig, ax = plt.subplots(1, 1)
     #ax.scatter(timestep_data_0, iact_mean_arr)
-    ax.errorbar(sorted_timestep, iact_mean_arr, err, fmt='o', capsize=3)
-    ax.set_xlabel("delta tau")
-    ax.set_ylabel("iact")
+    ax.errorbar(sorted_timestep, iact_mean_arr, err, fmt='o', capsize=3, markersize=3, color="purple")
+    ax.set_xlabel(r"$\delta \tau$", fontsize=20, labelpad=-10)
+    ax.set_ylabel("IACT", fontsize=15, labelpad=0)
     ax.set_xscale("log")
     ax.set_yscale("log")
+    ax.set_ylim(1e3, 1e7)
    
 
 
-    plt.title(f"Integrated Autocorrelation Time for ECMC, with {N} samples")
+    plt.title(f"Integrated Autocorrelation Time for ECMC, with {N} Repeats")
+    plt.tight_layout()
     plt.savefig("iact_ecmc.png")
     plt.clf()
 
