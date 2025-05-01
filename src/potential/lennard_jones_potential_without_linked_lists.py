@@ -142,7 +142,8 @@ class LennardJonesPotentialWithoutLinkedLists(LennardJonesPotentialsWithCutoff):
         """
         raise SystemError(f"The get_potential_difference method of {self.__class__.__name__} has not been written.")
     
-    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature, movement_direction):
+    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
+                                                  movement_direction):
         """
         Returns the distance to the next particle event for a given active particle index,
         as well as the particle index responsible for that event. Used for ECMC.
@@ -157,7 +158,7 @@ class LennardJonesPotentialWithoutLinkedLists(LennardJonesPotentialsWithCutoff):
         temperature : float
             The sampling temperature.
         movement_direction : int
-            The direction of movement of the particle, either 1 or -1.
+            The direction of movement of the active particle.
         
         Returns
         ----------
@@ -166,12 +167,10 @@ class LennardJonesPotentialWithoutLinkedLists(LennardJonesPotentialsWithCutoff):
         veto_index : int
             The particle index responsible for the event.
         """
-        raise SystemError(f"The get_distance_to_next_event_and_veto_index method of {self.__class__.__name__} has not been written."
-                          "Functionality of ECMC for {self.__class__.__name__} is not currently provided.")
-
+        raise SystemError(f"The get_distance_to_next_event_and_veto_index method of {self.__class__.__name__} has not "
+                          f"been written.  Functionality of ECMC for {self.__class__.__name__} is not yet provided.")
     
-    def choose_next_active_particle(self, positions, active_particle_index, movement_direction, n_indices_chosen,
-                                    veto_index):
+    def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """
         Chooses the index and direction for the next active particle in the markov chain for ECMC.
         Parameters
@@ -182,9 +181,13 @@ class LennardJonesPotentialWithoutLinkedLists(LennardJonesPotentialsWithCutoff):
         active_particle_index : int
             The active particle index
         movement_direction : int
-            The direction of movement of the particle, either 1 or -1.
+            The direction of movement of the active particle.
         veto_index : int
             The particle index responsible for the event. 
         """
         raise SystemError(f"The choose_next_active_particle method of {self.__class__.__name__} has not been written.")
-        
+
+    @staticmethod
+    def update_position(positions, displacement_distance, active_particle_index, movement_direction):
+        """ Updates position of the active particle following an event."""
+        raise SystemError(f"The update_position method of {self.__class__.__name__} has not been written.")

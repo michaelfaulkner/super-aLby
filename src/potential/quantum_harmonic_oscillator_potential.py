@@ -180,7 +180,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         temperature : float
             The sampling temperature.  NB, we set temperature = 1.0 (for QHO) as this quantity is for stat-phys models.
         movement_direction : int
-            The direction of movement of the particle, either 1 or -1.
+            The direction of movement of the active particle.
         
         Returns
         ----------

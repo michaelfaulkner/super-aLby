@@ -146,7 +146,7 @@ class XyPotential(ContinuousPotential):
         temperature : float
             The sampling temperature.
         movement_direction : int
-            The direction of movement of the particle, either 1 or -1.
+            The direction of movement of the active particle.
         
         Returns
         ----------
@@ -203,7 +203,7 @@ class XyPotential(ContinuousPotential):
         active_particle_index : int
             The active particle index
         movement_direction : int
-            The direction of movement of the particle, either 1 or -1.
+            The direction of movement of the active particle.
         veto_index : int
             The particle index responsible for the event. 
         """
