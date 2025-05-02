@@ -490,7 +490,6 @@ def get_xy_magnetisation_norm(sample_directory, temperature, temperature_index, 
 
     
 
-
 """helper methods"""
 
 def get_checkpointing_indices(sample_directory):

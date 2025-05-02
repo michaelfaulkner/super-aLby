@@ -57,12 +57,12 @@ def main(config_folder, N):
                 mean_sample = mean_sample[50000:129999]
                 acf = get_autocorrelation(mean_sample[:])
             
-            # else:
-            mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
-                            temperature_index, number_of_particles, number_of_equilibration_iterations,
-                            thinning_level=thinning_level)
-            mean_sample = mean_sample[:80000]
-            acf = get_autocorrelation(mean_sample[:,0])
+            else:
+                mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
+                                temperature_index, number_of_particles, number_of_equilibration_iterations,
+                                thinning_level=thinning_level)
+                mean_sample = mean_sample[:80000]
+                acf = get_autocorrelation(mean_sample[:,0])
 
                 
 
