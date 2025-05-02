@@ -2,7 +2,7 @@
 from .lennard_jones_potentials_with_cutoff import LennardJonesPotentialsWithCutoff
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
-from linked_lists.linked_lists import LinkedLists
+from linked_lists.three_dimensional_linked_lists import ThreeDimensionalLinkedLists
 from model_settings import dimensionality_of_particle_space, number_of_particles, size_of_particle_space
 import itertools
 import logging
@@ -76,7 +76,7 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
                                      f"dimensionality of particle space must be 3 when using the linked-lists "
                                      f"algorithm in {self.__class__.__name__}.")
         number_of_cells_in_each_direction = np.int_(size_of_particle_space / self._cutoff_length)
-        self._linked_lists = LinkedLists(number_of_cells_in_each_direction)
+        self._linked_lists = ThreeDimensionalLinkedLists(number_of_cells_in_each_direction)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            characteristic_length=characteristic_length, well_depth=well_depth,
                            cutoff_length=cutoff_length, prefactor=prefactor)

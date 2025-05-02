@@ -1,13 +1,16 @@
 """Module for the LinkedLists class."""
 from model_settings import number_of_particles, size_of_particle_space
+from abc import ABCMeta, abstractmethod
 from typing import Sequence
 import numpy as np
 
 
-class LinkedLists:
+class LinkedLists(metaclass=ABCMeta):
     r"""
-    For models of particles existing on a shared compact manifold, this class implements the functionality required for
-    linked (particle) lists between neighbouring cells, where these cells are cubic and tessellate the manifold.
+    The abstract LinkedLists class.  For models of particles existing on a shared compact manifold, this class
+    implements the functionality required for linked (particle) lists between neighbouring cells, where these cells are
+    hypercubic and tessellate the manifold.  Different child classes correspond to different dimensionality of the
+    compact manifold.
     """
 
     def __init__(self, number_of_cells_in_each_direction: Sequence[int]) -> None:
@@ -52,6 +55,7 @@ class LinkedLists:
             self.next_particle_in_same_cell[index] = self.leading_particle_of_cell[cell_index]
             self.leading_particle_of_cell[cell_index] = index
 
+    @abstractmethod
     def get_cell_index(self, cell):
         """
         Gets the cell index for some given cell coordinates.
@@ -59,8 +63,7 @@ class LinkedLists:
         Parameters
         ----------
         cell : Sequence[int]
-            A one-dimensional Python list of size 3; each element is an int and represents one Cartesian component of
-            the cell coordinates.
+            A one-dimensional Python list of size dimensionality_of_particle_space; each element is an int and
+            represents one Cartesian component of the cell coordinates.
         """
-        return (cell[0] + self.number_of_cells_in_each_direction[0] * cell[1] +
-                self.number_of_cells_in_each_direction[0] * self.number_of_cells_in_each_direction[1] * cell[2])
+        raise NotImplementedError
