@@ -102,7 +102,6 @@ class MetropolisMediator(DiffusiveMediator):
                 self._positions[active_particle_index] = candidate_position
                 self._number_of_accepted_trajectories += 1
 
-
     def _proposal_dynamics_adaptor(self):
         """Tunes the size of either the numerical integration step or the width of the proposal distribution."""
         acceptance_rate = self._number_of_accepted_trajectories / 100.0 / number_of_particles

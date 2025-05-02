@@ -36,26 +36,6 @@ class ContinuousPotential(Potential, metaclass=ABCMeta):
         super().__init__(prefactor, **kwargs)
 
     @abstractmethod
-    def get_value(self, positions):
-        """
-        Returns the potential function for the given particle positions.
-
-        Parameters
-        ----------
-        positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
-            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
-            lattice, the entire positions array corresponds to the entire array of superconducting phase.
-
-        Returns
-        -------
-        float
-            The potential function.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def get_gradient(self, positions):
         """
         Returns the gradient of the potential function for the given particle positions.
@@ -73,31 +53,6 @@ class ContinuousPotential(Potential, metaclass=ABCMeta):
         numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the gradient of the potential of a single particle.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_potential_difference(self, active_particle_index, candidate_position, positions):
-        """
-        Returns the potential difference resulting from moving the single active particle to candidate_position.
-
-        Parameters
-        ----------
-        active_particle_index : int
-            The index of the active particle.
-        candidate_position : numpy.ndarray
-            A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
-            represents one Cartesian component of the proposed position of the active particle.
-        positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
-            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
-            lattice, the entire positions array corresponds to the entire array of superconducting phase.
-
-        Returns
-        -------
-        float
-            The potential difference resulting from moving the single active particle to candidate_position.
         """
         raise NotImplementedError
 
@@ -174,10 +129,10 @@ class ContinuousPotential(Potential, metaclass=ABCMeta):
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
         if dimensionality_of_particle_space == 1:
-            if not (range_of_initial_particle_positions is None or type(range_of_initial_particle_positions) == float or
-                    (type(range_of_initial_particle_positions) == list and
+            if not (range_of_initial_particle_positions is None or type(range_of_initial_particle_positions) is float or
+                    (type(range_of_initial_particle_positions) is list and
                      len(range_of_initial_particle_positions) == 2 and
-                     [type(bound) == float for bound in range_of_initial_particle_positions])):
+                     [type(bound) is float for bound in range_of_initial_particle_positions])):
                 raise ConfigurationError(
                     f"Give either None (indicating that the initial position is drawn from the real line), a float "
                     f"(representing a precise initial position for each particle) or a list of two floats "
@@ -187,18 +142,18 @@ class ContinuousPotential(Potential, metaclass=ABCMeta):
                     f"one-dimensional particle space.")
             if range_of_initial_particle_positions is None:
                 return np.array([np.atleast_1d(np.random.normal()) for _ in range(number_of_particles)])
-            elif type(range_of_initial_particle_positions) == float:
+            elif type(range_of_initial_particle_positions) is float:
                 return np.array(
                     [np.atleast_1d(range_of_initial_particle_positions) for _ in range(number_of_particles)])
             else:
                 return np.array([np.atleast_1d(np.random.uniform(*range_of_initial_particle_positions))
                                  for _ in range(number_of_particles)])
         else:
-            if not (type(range_of_initial_particle_positions) == list and
+            if not (type(range_of_initial_particle_positions) is list and
                     len(range_of_initial_particle_positions) == dimensionality_of_particle_space and
                     ([component is None for component in range_of_initial_particle_positions] or
-                     [type(component) == float for component in range_of_initial_particle_positions] or
-                     [type(component) == list and len(component) == 2 and type(bound) == float
+                     [type(component) is float for component in range_of_initial_particle_positions] or
+                     [type(component) is list and len(component) == 2 and type(bound) is float
                       for component in range_of_initial_particle_positions for bound in component])):
                 raise ConfigurationError(
                     f"Give a list of length dimensionality_of_particle_space for range_of_initial_particle_positions "
@@ -211,7 +166,7 @@ class ContinuousPotential(Potential, metaclass=ABCMeta):
             if range_of_initial_particle_positions[0] is None:
                 return np.array([np.random.normal(size=dimensionality_of_particle_space)
                                  for _ in range(number_of_particles)])
-            elif type(range_of_initial_particle_positions[0]) == float:
+            elif type(range_of_initial_particle_positions[0]) is float:
                 return np.array([range_of_initial_particle_positions for _ in range(number_of_particles)])
             else:
                 return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]
