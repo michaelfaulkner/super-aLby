@@ -2,8 +2,8 @@
 from .lennard_jones_potentials_with_cutoff import LennardJonesPotentialsWithCutoff
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
+from linked_lists.linked_lists import LinkedLists
 from model_settings import dimensionality_of_particle_space, number_of_particles, size_of_particle_space
-from typing import Sequence
 import itertools
 import logging
 import numpy as np
@@ -75,11 +75,8 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
                                      f"composed of floats) in {self.__class__.__name__}. This is because the "
                                      f"dimensionality of particle space must be 3 when using the linked-lists "
                                      f"algorithm in {self.__class__.__name__}.")
-        self._number_of_cells_in_each_direction = np.int_(size_of_particle_space / self._cutoff_length)
-        self._total_number_of_cells = int(np.prod(self._number_of_cells_in_each_direction))
-        self._cell_size = size_of_particle_space / self._number_of_cells_in_each_direction
-        self._leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
-        self._next_particle_in_same_cell = [None for _ in range(number_of_particles)]
+        number_of_cells_in_each_direction = np.int_(size_of_particle_space / self._cutoff_length)
+        self._linked_lists = LinkedLists(number_of_cells_in_each_direction)
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            characteristic_length=characteristic_length, well_depth=well_depth,
                            cutoff_length=cutoff_length, prefactor=prefactor)
@@ -100,27 +97,28 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
             The potential.
         """
         potential = 0.0
-        self._reset_linked_lists(positions)
-        for cell_one in itertools.product(range(self._number_of_cells_in_each_direction[0]),
-                                          range(self._number_of_cells_in_each_direction[1]),
-                                          range(self._number_of_cells_in_each_direction[2])):
-            cell_one_index = self._get_cell_index(cell_one)
+        self._linked_lists.reset_linked_lists(positions)
+        for cell_one in itertools.product(range(self._linked_lists.number_of_cells_in_each_direction[0]),
+                                          range(self._linked_lists.number_of_cells_in_each_direction[1]),
+                                          range(self._linked_lists.number_of_cells_in_each_direction[2])):
+            cell_one_index = self._linked_lists.get_cell_index(cell_one)
             for cell_two in itertools.product(range(cell_one[0] - 1, cell_one[0] + 1),
                                               range(cell_one[1] - 1, cell_one[1] + 1),
                                               range(cell_one[2] - 1, cell_one[2] + 1)):
-                cell_two_index = self._get_cell_index([int((element + self._number_of_cells_in_each_direction[index] /
-                                                            2) % self._number_of_cells_in_each_direction[index] -
-                                                           self._number_of_cells_in_each_direction[index] / 2)
-                                                       for index, element in enumerate(cell_two)])
-                particle_one_index = self._leading_particle_of_cell[cell_one_index]
+                cell_two_index = self._linked_lists.get_cell_index([
+                    int((element + self._linked_lists.number_of_cells_in_each_direction[index] / 2) %
+                        self._linked_lists.number_of_cells_in_each_direction[index] -
+                        self._linked_lists.number_of_cells_in_each_direction[index] / 2)
+                    for index, element in enumerate(cell_two)])
+                particle_one_index = self._linked_lists.leading_particle_of_cell[cell_one_index]
                 while particle_one_index is not None:
-                    particle_two_index = self._leading_particle_of_cell[cell_two_index]
+                    particle_two_index = self._linked_lists.leading_particle_of_cell[cell_two_index]
                     while particle_two_index is not None:
                         if particle_one_index > particle_two_index:
                             potential += self._get_two_particle_potential(positions[particle_one_index],
                                                                           positions[particle_two_index])
-                        particle_two_index = self._next_particle_in_same_cell[particle_two_index]
-                    particle_one_index = self._next_particle_in_same_cell[particle_one_index]
+                        particle_two_index = self._linked_lists.next_particle_in_same_cell[particle_two_index]
+                    particle_one_index = self._linked_lists.next_particle_in_same_cell[particle_one_index]
         return potential
 
     def get_gradient(self, positions):
@@ -140,29 +138,30 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
             is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
         gradient = np.zeros((number_of_particles, dimensionality_of_particle_space))
-        self._reset_linked_lists(positions)
-        for cell_one in itertools.product(range(self._number_of_cells_in_each_direction[0]),
-                                          range(self._number_of_cells_in_each_direction[1]),
-                                          range(self._number_of_cells_in_each_direction[2])):
-            cell_one_index = self._get_cell_index(cell_one)
+        self._linked_lists.reset_linked_lists(positions)
+        for cell_one in itertools.product(range(self._linked_lists.number_of_cells_in_each_direction[0]),
+                                          range(self._linked_lists.number_of_cells_in_each_direction[1]),
+                                          range(self._linked_lists.number_of_cells_in_each_direction[2])):
+            cell_one_index = self._linked_lists.get_cell_index(cell_one)
             for cell_two in itertools.product(range(cell_one[0] - 1, cell_one[0] + 1),
                                               range(cell_one[1] - 1, cell_one[1] + 1),
                                               range(cell_one[2] - 1, cell_one[2] + 1)):
-                cell_two_index = self._get_cell_index([int((element + self._number_of_cells_in_each_direction[index] /
-                                                            2) % self._number_of_cells_in_each_direction[index] -
-                                                           self._number_of_cells_in_each_direction[index] / 2)
-                                                       for index, element in enumerate(cell_two)])
-                particle_one_index = self._leading_particle_of_cell[cell_one_index]
+                cell_two_index = self._linked_lists.get_cell_index([
+                    int((element + self._linked_lists.number_of_cells_in_each_direction[index] / 2) %
+                        self._linked_lists.number_of_cells_in_each_direction[index] -
+                        self._linked_lists.number_of_cells_in_each_direction[index] / 2)
+                    for index, element in enumerate(cell_two)])
+                particle_one_index = self._linked_lists.leading_particle_of_cell[cell_one_index]
                 while particle_one_index is not None:
-                    particle_two_index = self._leading_particle_of_cell[cell_two_index]
+                    particle_two_index = self._linked_lists.leading_particle_of_cell[cell_two_index]
                     while particle_two_index is not None:
                         if particle_one_index > particle_two_index:
                             two_particle_gradient = self._get_two_particle_gradient(positions[particle_one_index],
                                                                                     positions[particle_two_index])
                             gradient[particle_one_index] += two_particle_gradient
                             gradient[particle_two_index] -= two_particle_gradient
-                        particle_two_index = self._next_particle_in_same_cell[particle_two_index]
-                    particle_one_index = self._next_particle_in_same_cell[particle_one_index]
+                        particle_two_index = self._linked_lists.next_particle_in_same_cell[particle_two_index]
+                    particle_one_index = self._linked_lists.next_particle_in_same_cell[particle_one_index]
         return gradient
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
@@ -244,36 +243,3 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """ Updates position of the active particle following an event."""
         raise SystemError(f"The update_position method has not been written.")
-        
-    def _reset_linked_lists(self, positions):
-        """
-        Resets the linked lists (self._leading_particle_of_cell and self._next_particle_in_same_cell) that allow us to
-        avoid computing the bare two-particle potential and two-particle gradient for two particles whose cells are
-        separated by at least one other cell in any Cartesian direction (since the length of each dimension of each
-        cell is not less than self._cutoff_length).
-
-        Parameters
-        ----------
-        positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle.
-        """
-        self._leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
-        for index, position in enumerate(positions):
-            cell = np.int_(position // self._cell_size)
-            cell_index = self._get_cell_index(cell)
-            self._next_particle_in_same_cell[index] = self._leading_particle_of_cell[cell_index]
-            self._leading_particle_of_cell[cell_index] = index
-
-    def _get_cell_index(self, cell):
-        """
-        Gets the cell index for some given cell coordinates.
-
-        Parameters
-        ----------
-        cell : Sequence[int]
-            A one-dimensional Python list of size 3; each element is an int and represents one Cartesian component of
-            the cell coordinates.
-        """
-        return (cell[0] + self._number_of_cells_in_each_direction[0] * cell[1] +
-                self._number_of_cells_in_each_direction[0] * self._number_of_cells_in_each_direction[1] * cell[2])
