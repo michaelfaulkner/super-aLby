@@ -1,18 +1,18 @@
-"""Module for the ThreeDimensionalLinkedLists class."""
+"""Module for the TwoDimensionalLinkedLists class."""
 from typing import Sequence
 from linked_lists.linked_lists import LinkedLists
 
 
-class ThreeDimensionalLinkedLists(LinkedLists):
+class TwoDimensionalLinkedLists(LinkedLists):
     r"""
-    The ThreeDimensionalLinkedLists class.  For models of particles existing on a shared compact 3D manifold, this
+    The TwoDimensionalLinkedLists class.  For models of particles existing on a shared compact 2D manifold, this
     class implements the functionality required for linked (particle) lists between neighbouring cells, where these
     cells are cubic and tessellate the manifold.
     """
 
     def __init__(self, number_of_cells_in_each_direction: Sequence[int]) -> None:
         """
-        The constructor of the ThreeDimensionalLinkedLists class.
+        The constructor of the TwoDimensionalLinkedLists class.
 
         Parameters
         ----------
@@ -34,8 +34,7 @@ class ThreeDimensionalLinkedLists(LinkedLists):
         Parameters
         ----------
         cell : Sequence[int]
-            A one-dimensional Python list of size 3; each element is an int and represents one Cartesian component of
+            A one-dimensional Python list of size 2; each element is an int and represents one Cartesian component of
             the cell coordinates.
         """
-        return (cell[0] + self.number_of_cells_in_each_direction[0] * cell[1] +
-                self.number_of_cells_in_each_direction[0] * self.number_of_cells_in_each_direction[1] * cell[2])
+        return cell[0] + self.number_of_cells_in_each_direction[0] * cell[1]
