@@ -125,5 +125,6 @@ class HardDiskPotential(SoftMatterPotential):
 
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
+        # todo check this - copied from copied from QuantumHarmonic Oscillator but don't think it traslates!!!
         """ Updates position of the active particle."""
         positions[active_particle_index] += displacement_distance * movement_direction
