@@ -13,8 +13,7 @@ src/config_files/event_chain/event_chain_*.ini
 src/sample_analysis/test_convergence_copy.py
 src/sample_analysis/quantum_harmonic_oscillator_analysis.py
 src/vals_0.txt
-src/generate_bash_scripts.py
-src/generate_configs.py
+
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
@@ -85,3 +84,6 @@ env/
 vals.txt
 vals1.txt
 
+# helper filesfor HPC
+src/generate_bash_scripts.py
+src/generate_configs.py
