@@ -241,9 +241,9 @@ def main(config_file_string):
             sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperatures[0], 0,
                                                              number_of_particles).flatten()
         elif "quantum_harmonic_oscillator_potential" in potential:
-            sample = sample_getter.get_mean_positions(sample_directories[0], temperatures[0], 0,
-                                                      number_of_particles, number_of_equilibration_iterations).flatten()
-        
+            sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperatures[0], 0,
+                                                              number_of_particles, number_of_equilibration_iterations
+                                                              ).flatten()
         else:
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
