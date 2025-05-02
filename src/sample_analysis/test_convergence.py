@@ -230,7 +230,6 @@ def main(config_file_string):
     elif "quantum_harmonic_oscillator_potential" in potential:
         reference_sample = np.load(
             "permanent_data/reference_data/quantum_harmonic_oscillator_timestep1_N100_reference_sample.npy").flatten()
-    
 
     if potential != "ising_potential":
         reference_cdf = get_cumulative_distribution(reference_sample)
@@ -242,9 +241,9 @@ def main(config_file_string):
             sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperatures[0], 0,
                                                              number_of_particles).flatten()
         elif "quantum_harmonic_oscillator_potential" in potential:
-            sample = sample_getter.get_mean_positions(sample_directories[0], temperatures[0], 0,
-                                                      number_of_particles, number_of_equilibration_iterations).flatten()
-        
+            sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperatures[0], 0,
+                                                              number_of_particles, number_of_equilibration_iterations
+                                                              ).flatten()
         else:
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
@@ -262,8 +261,8 @@ def main(config_file_string):
         legend.get_frame().set_edgecolor('k')
         legend.get_frame().set_lw(1.5)
         plt.tight_layout()
-        plt.savefig("convergence.png")
-        #plt.show()
+        plt.show()
+        # plt.savefig("convergence.png")
 
 
 if __name__ == '__main__':

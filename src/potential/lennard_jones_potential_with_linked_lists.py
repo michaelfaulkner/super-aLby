@@ -190,6 +190,11 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
         """
         raise SystemError(f"The get_potential_difference method of {self.__class__.__name__} has not been written.")
 
+    @staticmethod
+    def get_random_event_chain_velocity():
+        """Uniformly samples a direction of motion for the active particle from chosen velocity distribution"""
+        raise SystemError(f"The get_random_event_chain_velocity method has not been written.")
+
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
                                                   movement_direction):
         """
@@ -238,7 +243,7 @@ class LennardJonesPotentialWithLinkedLists(LennardJonesPotentialsWithCutoff):
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """ Updates position of the active particle following an event."""
-        raise SystemError(f"The update_position method of {self.__class__.__name__} has not been written.")
+        raise SystemError(f"The update_position method has not been written.")
         
     def _reset_linked_lists(self, positions):
         """

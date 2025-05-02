@@ -100,6 +100,12 @@ class ContinuousPotential(Potential, metaclass=ABCMeta):
             The potential difference resulting from moving the single active particle to candidate_position.
         """
         raise NotImplementedError
+
+    @staticmethod
+    @abstractmethod
+    def get_random_event_chain_velocity():
+        """Uniformly samples a direction of motion for the active particle from chosen velocity distribution"""
+        raise NotImplementedError
     
     @abstractmethod
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,

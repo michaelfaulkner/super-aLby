@@ -42,7 +42,7 @@ class EventChainMediator(Mediator):
             Number of sample observations, i.e., the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
         distance_between_measurements : float, optional
-            Total distance through state space between samples.
+            Total distance through state space between samples (normalised by number_of_particles).
 
         Raises
         ------
@@ -74,7 +74,7 @@ class EventChainMediator(Mediator):
         if distance_between_measurements <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 as distance_between_measurements in "
                                      f"{self.__class__.__name__}.")
-        self._distance_between_measurements = distance_between_measurements
+        self._distance_between_measurements = distance_between_measurements * number_of_particles
         self._total_number_of_events = 0
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            potential=potential, samplers=samplers, minimum_temperature=minimum_temperature,
@@ -89,7 +89,7 @@ class EventChainMediator(Mediator):
         self._total_number_of_events = 0
         for markov_chain_index in range(self._total_number_of_iterations):
             active_particle_index = np.random.randint(0, number_of_particles)
-            movement_direction = np.random.choice((-1.0, 1.0))
+            movement_direction = self._potential.get_random_event_chain_velocity()
             distance_to_next_measurement = self._distance_between_measurements
             while True:
                 distance_to_next_event, vetoing_index = self._potential.get_distance_to_next_event_and_veto_index(
