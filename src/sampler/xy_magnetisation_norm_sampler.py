@@ -1,9 +1,9 @@
 """Module for the XyMagnetisationNormSampler class."""
 from .sampler import Sampler
 from base.logging import log_init_arguments
-from model_settings import dimensionality_of_particle_space
 import logging
 import numpy as np
+
 
 class XyMagnetisationNormSampler(Sampler):
     """
@@ -39,7 +39,6 @@ class XyMagnetisationNormSampler(Sampler):
         """
         return np.zeros((total_number_of_iterations + 1, 1))
 
-    
     def get_observation(self, momenta, positions, potential):
         """
         Returns an observation of the system for the given particle momenta and positions.
@@ -63,14 +62,11 @@ class XyMagnetisationNormSampler(Sampler):
         numpy.ndarray
             The observation.
         """
-        # print(np.shape(positions))
-        temp_arr = np.zeros((np.shape(positions)[0],2))
-
+        spin_vectors = np.zeros((np.shape(positions)[0], 2))
         for index, phase in enumerate(positions):
-            temp_arr[index,0] = np.cos(phase)
-            temp_arr[index,1] = np.sin(phase)
-        
-        mean_ij = np.mean(temp_arr, axis=0)
+            spin_vectors[index, 0] = np.cos(phase)
+            spin_vectors[index, 1] = np.sin(phase)
+        mean_ij = np.mean(spin_vectors, axis=0)
         return np.linalg.norm(mean_ij)
     
     def output_sample(self, sample, temperature_index):
