@@ -131,7 +131,7 @@ class XyPotential(ContinuousPotential):
     @staticmethod
     def get_random_event_chain_velocity():
         """Uniformly samples a direction of motion for the active particle from chosen velocity distribution"""
-        return 1.0
+        return 1
 
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
                                                   movement_direction):
