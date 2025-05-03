@@ -2,7 +2,7 @@
 from .continuous_potential import ContinuousPotential
 from base.exceptions import ConfigurationError
 from model_settings import dimensionality_of_particle_space, size_of_particle_space
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 import numpy as np
 
 
@@ -47,68 +47,6 @@ class NonCompactOneDimParticleSpacePotential(ContinuousPotential, metaclass=ABCM
             raise ConfigurationError(f"Give either None or a list of two float values for size_of_particle_space when "
                                      f"using {self.__class__.__name__} as {self.__class__.__name__} is restricted to "
                                      f"one-dimensional particle space.")
-
-    @abstractmethod
-    def get_value(self, positions):
-        """
-        Returns the potential function for the given particle positions.
-
-        Parameters
-        ----------
-        positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle.
-
-        Returns
-        -------
-        float
-            The potential function.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_gradient(self, positions):
-        """
-        Returns the gradient of the potential function for the given particle positions.
-
-        Parameters
-        ----------
-        positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle.
-
-        Returns
-        -------
-        numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the gradient of the potential of a single particle.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_potential_difference(self, active_particle_index, candidate_position, positions):
-        """
-        Returns the potential difference resulting from moving the single active particle to candidate_position.
-
-        Parameters
-        ----------
-        active_particle_index : int
-            The index of the active particle.
-        candidate_position : numpy.ndarray
-            A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
-            represents one Cartesian component of the proposed position of the active particle.
-        positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
-            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
-            lattice, the entire positions array corresponds to the entire array of superconducting phase.
-
-        Returns
-        -------
-        float
-            The potential difference resulting from moving the single active particle to candidate_position.
-        """
-        raise NotImplementedError
 
     @staticmethod
     def _get_higher_dimension_array(array):

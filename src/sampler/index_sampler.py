@@ -4,6 +4,7 @@ from base.logging import log_init_arguments
 import logging
 import numpy as np
 
+
 class IndexSampler(Sampler):
     """
     Class for taking observations of chosen particle index in EventChainMediator simulations
@@ -36,7 +37,7 @@ class IndexSampler(Sampler):
             Numpy array of zeros of the required structure.
         """
         # just guessing, this amount will vary a lot and we just need it to be big enough
-        #TODO find a more elegant way of doing this
+        # TODO find a more elegant way of doing this
         return np.zeros((total_number_of_iterations * 4, 1))
     
     def get_observation(self, momenta, positions, potential):
@@ -62,5 +63,6 @@ class IndexSampler(Sampler):
         float
             The observation of the particle index.
         """
+        pass
 
         

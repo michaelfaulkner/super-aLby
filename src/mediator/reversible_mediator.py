@@ -107,8 +107,3 @@ class ReversibleMediator(Mediator, metaclass=ABCMeta):
         """Tunes the size of either the numerical integration step (DeterministicMediator) or the width of the proposal
             distribution (MetropolisMediator)."""
         raise NotImplementedError
-
-    @abstractmethod
-    def _print_markov_chain_summary(self):
-        """Prints a summary of the completed Markov process to the screen."""
-        raise NotImplementedError
