@@ -24,9 +24,9 @@ class HardDiskPotential(SoftMatterPotential):
         super().__init__(prefactor=prefactor)
 
     def get_value(self, positions):
-        # todo work out how to account for this not being a relevant method
         """
-        Returns the potential function for the given particle positions.
+        This is a dummy method as it is not relevant to hard-sphere models.  For a smooth potential function, the
+            functionality provides Mediator with the current value of the potential.
 
         Parameters
         ----------
@@ -44,10 +44,10 @@ class HardDiskPotential(SoftMatterPotential):
         pass
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
-        # todo work out how to account for this not being a relevant method (you'd probably create a special
-        #  HardDiskMetropolisMediator class)
         """
-        Returns the potential difference resulting from moving the single active particle to candidate_position.
+        This is a dummy method as it is not relevant to hard-sphere models.  For some candidate configuration and
+            smooth potential function, the functionality provides MetropolisMediator with the increase in the value of
+            the potential function (relative to the current configuration).
 
         Parameters
         ----------
@@ -70,9 +70,9 @@ class HardDiskPotential(SoftMatterPotential):
         pass
 
     def get_gradient(self, positions):
-        # todo work out how to account for this not being a relevant method
         """
-        Returns the gradient of the potential function for the given particle positions.
+        This is a dummy method as it is not relevant to hard-sphere models.  For a smooth potential function, the
+            functionality provides all leapfrog-based mediators with the current value of the gradient of the potential..
 
         Parameters
         ----------
@@ -92,11 +92,13 @@ class HardDiskPotential(SoftMatterPotential):
 
     @staticmethod
     def get_random_event_chain_velocity():
+        # todo write method
         """Uniformly samples a direction of motion for the active particle from chosen velocity distribution"""
         pass
 
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
                                                   movement_direction):
+        # todo write method
         """
         Returns the distance to the next particle event for a given active particle index.
 
@@ -120,6 +122,7 @@ class HardDiskPotential(SoftMatterPotential):
         pass
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
+        # todo write method
         """Chooses the index and direction for the next active particle in the markov chain"""
         pass
 
