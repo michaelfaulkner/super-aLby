@@ -1,18 +1,19 @@
 """Module for the HardDiskPotential class"""
+import itertools
 import numpy as np
 from .soft_matter_potential import SoftMatterPotential
-from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
-import logging
-from model_settings import number_of_particles
+from linked_lists.two_dimensional_linked_lists import TwoDimensionalLinkedLists
+from model_settings import size_of_particle_space
 
 
 class HardDiskPotential(SoftMatterPotential):
     r"""
-    This class implements the potential for the hard-disk model...
+    This class implements the potential functionality for event-chain simulation of the hard-disk model.  Some abstract
+        methods from SoftMatterPotential are not relevant due to the non-smooth nature of the 'potential' function.
+        We include these methods as dummy methods.
     """
 
-    def __init__(self, prefactor: float = 1.0):
+    def __init__(self, prefactor: float = 1.0, particle_radius: float = 1.0):
         r"""
         The constructor of the HardDiskPotential class
 
@@ -22,6 +23,9 @@ class HardDiskPotential(SoftMatterPotential):
             The prefactor k of the potential.
         """
         super().__init__(prefactor=prefactor)
+        self._particle_radius = particle_radius
+        number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * self._particle_radius))
+        self._linked_lists = TwoDimensionalLinkedLists(number_of_cells_in_each_direction)
 
     def get_value(self, positions):
         """
@@ -32,9 +36,7 @@ class HardDiskPotential(SoftMatterPotential):
         ----------
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
-            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
-            lattice, the entire positions array corresponds to the entire array of superconducting phase.
+            is a float and represents one Cartesian component of the position of a single particle.
 
         Returns
         -------
@@ -58,9 +60,7 @@ class HardDiskPotential(SoftMatterPotential):
             represents one Cartesian component of the proposed position of the active particle.
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
-            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
-            lattice, the entire positions array corresponds to the entire array of superconducting phase.
+            is a float and represents one Cartesian component of the position of a single particle.
 
         Returns
         -------
@@ -78,9 +78,7 @@ class HardDiskPotential(SoftMatterPotential):
         ----------
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
-            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
-            lattice, the entire positions array corresponds to the entire array of superconducting phase.
+            is a float and represents one Cartesian component of the position of a single particle.
 
         Returns
         -------
@@ -92,39 +90,82 @@ class HardDiskPotential(SoftMatterPotential):
 
     @staticmethod
     def get_random_event_chain_velocity():
-        # todo write method
+        # todo MUST adapt EventChainMediator, XyPotential and QuantumHarmonicOscillatorPotential to allow for
+        #  the event-chain velocity to be a numpy array
         """Uniformly samples a direction of motion for the active particle from chosen velocity distribution"""
-        pass
+        if np.random.uniform() < 0.5:
+            return np.array([1, 0])
+        return np.array([0, 1])
 
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
                                                   movement_direction):
-        # todo write method
         """
         Returns the distance to the next particle event for a given active particle index.
 
         Parameters
         ----------
         positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the position of the corresponding particle.
         active_particle_index : int
-            The active particle index (i.e., the discretised-time index).
+            The active particle index.
         temperature : float
-            The sampling temperature.  NB, we set temperature = 1.0 (for QHO) as this quantity is for stat-phys models.
-        movement_direction : int
-            The direction of movement of the active particle.
+            The sampling temperature.  NB, we will map this to the packing fraction for hard spheres.
+        movement_direction : numpy.ndarray
+            A one-dimensional numpy array of size 2; the element first/second element is 0 or 1 and represents the
+            direction of motion along the x/y direction.
 
         Returns
         ----------
         distance_to_next_event : float
             The distance to the next particle event
         """
-        pass
+        # todo can we perform the following line once, then perform an O(1) update of linked lists at each event?
+        self._linked_lists.reset_linked_lists(positions)
+        shortest_distance_to_next_collision = 1.0e10
+        active_particle_position = positions[active_particle_index]
+        active_cell = np.int_(active_particle_position // self._linked_lists.cell_size)
+        vetoing_particle_index = None
+        # todo can probably reduce range of this iteration by accounting for direction of motion
+        for candidate_cell in itertools.product(range(active_cell[0] - 1, active_cell[0] + 1),
+                                                range(active_cell[1] - 1, active_cell[1] + 1)):
+            # todo extract (as method) following repeated code
+            candidate_cell_index = self._linked_lists.get_cell_index([
+                int((element + self._linked_lists.number_of_cells_in_each_direction[index] / 2) %
+                    self._linked_lists.number_of_cells_in_each_direction[index] -
+                    self._linked_lists.number_of_cells_in_each_direction[index] / 2)
+                for index, element in enumerate(candidate_cell)])
+            candidate_particle_index = self._linked_lists.leading_particle_of_cell[candidate_cell_index]
+            while candidate_particle_index is not None:
+                candidate_particle_position = positions[candidate_particle_index]
+                displacement_to_candidate_particle = candidate_particle_position - active_particle_position
+                distance_to_possible_collision = 2.0e10  # set even bigger than shortest_distance_to_next_collision
+                # todo can probably simplify these if statements by swapping components of
+                #  displacement_to_candidate_particle if movement_direction[0] == 0 (or similar)
+                if movement_direction[1] == 0:
+                    # particle is advancing in x direction
+                    if (displacement_to_candidate_particle[0] > 0.0 and
+                            np.abs(displacement_to_candidate_particle[1]) < 2.0 * self._particle_radius):
+                        # collision possible
+                        distance_to_possible_collision = displacement_to_candidate_particle[0] - (
+                                4.0 * self._particle_radius ** 2 - displacement_to_candidate_particle[1] ** 2) ** 0.5
+                else:
+                    # particle is advancing in y direction
+                    if (displacement_to_candidate_particle[1] > 0.0 and
+                            np.abs(displacement_to_candidate_particle[0]) < 2.0 * self._particle_radius):
+                        # collision possible
+                        distance_to_possible_collision = displacement_to_candidate_particle[1] - (
+                                4.0 * self._particle_radius ** 2 - displacement_to_candidate_particle[0] ** 2) ** 0.5
+                if distance_to_possible_collision < shortest_distance_to_next_collision:
+                    shortest_distance_to_next_collision = distance_to_possible_collision
+                    vetoing_particle_index = candidate_particle_index
+                candidate_particle_index = self._linked_lists.next_particle_in_same_cell[candidate_particle_index]
+
+        return shortest_distance_to_next_collision, vetoing_particle_index
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
-        # todo write method
         """Chooses the index and direction for the next active particle in the markov chain"""
-        pass
+        return veto_index, movement_direction
 
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):

@@ -8,9 +8,9 @@ import numpy as np
 class LinkedLists(metaclass=ABCMeta):
     r"""
     The abstract LinkedLists class.  For models of particles existing on a shared compact manifold, this class
-    implements the functionality required for linked (particle) lists between neighbouring cells, where these cells are
-    hypercubic and tessellate the manifold.  Different child classes correspond to different dimensionality of the
-    compact manifold.
+        implements the functionality required for linked (particle) lists between neighbouring cells, where these cells
+        are hypercubic and tessellate the manifold.  Different child classes correspond to different dimensionality of
+        the compact manifold.
     """
 
     def __init__(self, number_of_cells_in_each_direction: Sequence[int]) -> None:
@@ -34,7 +34,7 @@ class LinkedLists(metaclass=ABCMeta):
                                  f"list composed of integers, each greater than 0.")
         self.number_of_cells_in_each_direction = number_of_cells_in_each_direction
         self._total_number_of_cells = int(np.prod(self.number_of_cells_in_each_direction))
-        self._cell_size = size_of_particle_space / self.number_of_cells_in_each_direction
+        self.cell_size = size_of_particle_space / self.number_of_cells_in_each_direction
         self.leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
         self.next_particle_in_same_cell = [None for _ in range(number_of_particles)]
 
@@ -50,7 +50,7 @@ class LinkedLists(metaclass=ABCMeta):
         """
         self.leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
         for index, position in enumerate(positions):
-            cell = np.int_(position // self._cell_size)
+            cell = np.int_(position // self.cell_size)
             cell_index = self.get_cell_index(cell)
             self.next_particle_in_same_cell[index] = self.leading_particle_of_cell[cell_index]
             self.leading_particle_of_cell[cell_index] = index
