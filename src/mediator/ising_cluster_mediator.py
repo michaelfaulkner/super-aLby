@@ -82,11 +82,6 @@ class IsingClusterMediator(DiffusiveMediator, metaclass=ABCMeta):
             raise ConfigurationError(f"Give a value of False for proposal_dynamics_adaptor_is_on in "
                                      f"{self.__class__.__name__}.")
 
-    @abstractmethod
-    def _advance_markov_chain(self, markov_chain_step_index, temperature):
-        """Advances the Markov chain by one step."""
-        raise NotImplementedError
-
     def _proposal_dynamics_adaptor(self):
         """Proposal dynamics cannot be adapted in the Swendsen-Wang of Wolff algorithms."""
         pass

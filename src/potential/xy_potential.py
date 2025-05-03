@@ -57,9 +57,8 @@ class XyPotential(ContinuousPotential):
             The potential.
         """
 
-        return self.potential_constant * 0.5 * np.sum([self._sum_nearest_neighbours(index, positions[index].item(),
-                                                                                   positions)
-                                                       for index in range(number_of_particles)])
+        return self.potential_constant * 0.5 * np.sum([self._sum_nearest_neighbours(
+            index, positions[index].item(), positions) for index in range(number_of_particles)])
 
     def get_gradient(self, positions):
         # TODO implement get_gradient() function in this class
@@ -99,7 +98,6 @@ class XyPotential(ContinuousPotential):
         current_potential = self._sum_nearest_neighbours(active_particle_index, positions[active_particle_index].item(),
                                                          positions)
         candidate_potential = self._sum_nearest_neighbours(active_particle_index, candidate_position, positions)
-
         return self.potential_constant * (candidate_potential - current_potential)
 
     def _sum_nearest_neighbours(self, active_particle_index, active_particle_position, positions):

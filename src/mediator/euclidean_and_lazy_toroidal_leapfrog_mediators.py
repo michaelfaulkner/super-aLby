@@ -96,32 +96,6 @@ class EuclideanAndLazyToroidalLeapfrogMediators(DeterministicMediator, metaclass
                          proposal_dynamics_adaptor_is_on, initial_step_size, max_number_of_integration_steps,
                          randomise_number_of_integration_steps, use_metropolis_accept_reject, **kwargs)
 
-    @abstractmethod
-    def _get_candidate_configuration(self, temperature):
-        """
-        Returns the candidate momenta, positions and potential after self._number_of_integration_steps integration
-        steps.
-
-        Parameters
-        ----------
-        temperature : float
-            The sampling temperature.
-
-        Returns
-        -------
-        numpy.ndarray
-            The candidate momenta. A two-dimensional numpy array of size (number_of_particles,
-            dimensionality_of_particle_space); each element is a float and represents one Cartesian component of the
-            candidate momentum of a single particle.
-        numpy.ndarray
-            The candidate positions. A two-dimensional numpy array of size (number_of_particles,
-            dimensionality_of_particle_space); each element is a float and represents one Cartesian component of the
-            candidate position of a single particle.
-        float
-            The potential of the candidate configuration.
-        """
-        raise NotImplementedError
-
     def _get_candidate_configuration_without_toroidal_corrections(self, temperature):
         """
         Returns the candidate momenta, positions and potential after self._number_of_integration_steps integration
