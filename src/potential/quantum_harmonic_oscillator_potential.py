@@ -173,7 +173,7 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
                                                   movement_direction):
         """
-        Returns the distance to the next particle event for a given active particle index.
+        Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
         Parameters
         ----------
@@ -191,6 +191,8 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         ----------
         distance_to_next_event : float
             The distance to the next particle event
+        vetoing_particle_index : int
+            The index of the particle that triggers the event.
         """
         shortest_distance_to_next_factor_event = 1.0e10
         neighbouring_indices = np.zeros(3, dtype=np.int32)

@@ -102,8 +102,7 @@ class GaussianPotential(ContinuousPotential):
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
                                                   movement_direction):
         """
-        Returns the distance to the next particle event for a given active particle index,
-        as well as the particle index responsible for that event. Used for ECMC.
+        Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
         Parameters
         ----------
@@ -121,8 +120,8 @@ class GaussianPotential(ContinuousPotential):
         ----------
         distance_to_next_event : float
             The distance to the next particle event
-        veto_index : int
-            The particle index responsible for the event.
+        vetoing_particle_index : int
+            The index of the particle that triggers the event.
         """
         raise SystemError(f"The get_distance_to_next_event_and_veto_index method of {self.__class__.__name__} has not "
                           f"been written.  Functionality of ECMC for {self.__class__.__name__} is not yet provided.")

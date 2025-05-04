@@ -117,7 +117,7 @@ class HardDiskPotential(SoftMatterPotential):
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
                                                   movement_direction):
         """
-        Returns the distance to the next particle event and the index of the particle that triggers the event.
+        Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
         Parameters
         ----------
