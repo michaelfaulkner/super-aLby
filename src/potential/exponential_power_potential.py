@@ -108,7 +108,17 @@ class ExponentialPowerPotential(ContinuousPotential):
 
     @staticmethod
     def get_random_event_chain_velocity():
-        """Uniformly samples a direction of motion for the active particle from chosen velocity distribution"""
+        """
+        Uniformly samples a direction of motion for the active particle from chosen velocity distribution.
+
+        Returns
+        ----------
+        random_event_chain_velocity : int or numpy.ndarray
+            The uniformly sampled event-chain velocity of the active particle.  If the state space of each particle is
+            a subset of the real line, the method should output an integer; otherwise it should output a one-dimensional
+            numpy array (of integers) of length dimensionality_of_particle_space, where the nth component represents the
+            velocity of the active particle along the nth Cartesian direction.
+        """
         raise SystemError(f"The get_random_event_chain_velocity method has not been written.")
 
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,

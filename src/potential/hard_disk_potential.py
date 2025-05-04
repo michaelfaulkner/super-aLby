@@ -107,9 +107,17 @@ class HardDiskPotential(SoftMatterPotential):
 
     @staticmethod
     def get_random_event_chain_velocity():
-        # todo MUST adapt EventChainMediator, XyPotential and QuantumHarmonicOscillatorPotential to allow for
-        #  the event-chain velocity to be a numpy array
-        """Uniformly samples a direction of motion for the active particle from chosen velocity distribution"""
+        """
+        Uniformly samples a direction of motion for the active particle from chosen velocity distribution.
+
+        Returns
+        ----------
+        random_event_chain_velocity : int or numpy.ndarray
+            The uniformly sampled event-chain velocity of the active particle.  If the state space of each particle is
+            a subset of the real line, the method should output an integer; otherwise it should output a one-dimensional
+            numpy array (of integers) of length dimensionality_of_particle_space, where the nth component represents the
+            velocity of the active particle along the nth Cartesian direction.
+        """
         if np.random.uniform() < 0.5:
             return np.array([1, 0])
         return np.array([0, 1])
