@@ -23,7 +23,7 @@ class ToroidalPositionSampler(PositionSampler):
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            output_directory=output_directory)
 
-    def get_observation(self, momenta, positions, potential):
+    def get_observation(self, momenta, positions, potential, active_particle_index=None):
         """
         Returns an observation of the system for the given particle momenta and positions.
 
@@ -40,6 +40,8 @@ class ToroidalPositionSampler(PositionSampler):
         potential : float or potential.potential.Potential
             If a float, the current value of the potential; otherwise, an instance of the chosen child class of
             potential.potential.Potential.
+        active_particle_index : None or int
+            The index of the active particle.
 
         Returns
         -------

@@ -53,7 +53,7 @@ class Sampler(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def get_observation(self, momenta, positions, potential):
+    def get_observation(self, momenta, positions, potential, active_particle_index=None):
         """
         Returns an observation of the system for the given particle momenta and positions.
 
@@ -70,6 +70,8 @@ class Sampler(metaclass=ABCMeta):
         potential : float or potential.potential.Potential
             If a float, the current value of the potential; otherwise, an instance of the chosen child class of
             potential.potential.Potential.
+        active_particle_index : None or int
+            The index of the active particle.
 
         Returns
         -------

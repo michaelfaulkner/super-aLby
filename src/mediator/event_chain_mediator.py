@@ -75,6 +75,9 @@ class EventChainMediator(Mediator):
             raise ConfigurationError(f"Give a value greater than 0.0 as distance_between_measurements in "
                                      f"{self.__class__.__name__}.")
         self._distance_between_measurements = distance_between_measurements * number_of_particles
+        for sampler_index, sampler in enumerate(self._samplers):
+            if "PressureSampler" in str(sampler):
+                sampler.distance_between_measurements = self._distance_between_measurements
         self._total_number_of_events = 0
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            potential=potential, samplers=samplers, minimum_temperature=minimum_temperature,
@@ -91,6 +94,9 @@ class EventChainMediator(Mediator):
             active_particle_index = np.random.randint(0, number_of_particles)
             movement_direction = self._potential.get_random_event_chain_velocity()
             distance_to_next_measurement = self._distance_between_measurements
+            for sampler_index, sampler in enumerate(self._samplers):
+                if "PressureSampler" in str(sampler):
+                    sampler.initial_active_particle_position = self._positions[active_particle_index]
             while True:
                 distance_to_next_event, vetoing_index = self._potential.get_distance_to_next_event_and_veto_index(
                     self._positions, active_particle_index, temperature, movement_direction)
@@ -99,7 +105,7 @@ class EventChainMediator(Mediator):
                                                     active_particle_index, movement_direction)
                     for sampler_index, sampler in enumerate(self._samplers):
                         self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
-                            None, self._positions, self._potential)
+                            None, self._positions, self._potential, active_particle_index)
                     break
                 else:
                     distance_to_next_measurement -= distance_to_next_event

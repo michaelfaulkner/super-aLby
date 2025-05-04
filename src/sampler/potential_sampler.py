@@ -39,7 +39,7 @@ class PotentialSampler(Sampler):
         """
         return np.zeros((total_number_of_iterations + 1, 1))
 
-    def get_observation(self, momenta, positions, potential):
+    def get_observation(self, momenta, positions, potential, active_particle_index=None):
         """
         Returns an observation of the system for the given particle momenta and positions.
 
@@ -56,13 +56,15 @@ class PotentialSampler(Sampler):
         potential : float or potential.potential.Potential
             If a float, the current value of the potential; otherwise, an instance of the chosen child class of
             potential.potential.Potential.
+        active_particle_index : None or int
+            The index of the active particle.
 
         Returns
         -------
         float
             The observation of the potential.
         """
-        if type(potential) == np.float64:
+        if type(potential) is np.float64:
             return potential
         return potential.get_value(positions)
 
