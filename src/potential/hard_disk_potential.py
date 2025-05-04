@@ -69,6 +69,23 @@ class HardDiskPotential(SoftMatterPotential):
         """
         pass
 
+    def initialised_position_array(self):
+        """
+        Returns the initial positions array.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle, e.g., two particles
+            (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
+            particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
+            represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
+        """
+        positions = super().initialised_position_array()
+        self._linked_lists.reset_linked_lists(positions)
+        return positions
+
     def get_gradient(self, positions):
         """
         This is a dummy method as it is not relevant to hard-sphere models.  For a smooth potential function, the
@@ -100,7 +117,7 @@ class HardDiskPotential(SoftMatterPotential):
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
                                                   movement_direction):
         """
-        Returns the distance to the next particle event for a given active particle index.
+        Returns the distance to the next particle event and the index of the particle that triggers the event.
 
         Parameters
         ----------
@@ -119,13 +136,25 @@ class HardDiskPotential(SoftMatterPotential):
         ----------
         distance_to_next_event : float
             The distance to the next particle event
+        vetoing_particle_index : int
+            The index of the particle that triggers the event.
         """
-        # todo can we perform the following line once, then perform an O(1) update of linked lists at each event?
+        # todo adapt EventChainMediator._generate_sample_at_current_temperature() to remove following line (since we
+        #  perform its operation in initialised_position_array())
         self._linked_lists.reset_linked_lists(positions)
-        shortest_distance_to_next_collision = 1.0e10
         active_particle_position = positions[active_particle_index]
         active_cell = np.int_(active_particle_position // self._linked_lists.cell_size)
-        vetoing_particle_index = None
+        # todo can probably simplify these if statements
+        if movement_direction[1] == 0:
+            # active particle is advancing in x direction
+            distance_to_edge_of_active_cell = self._linked_lists.cell_size[0] - (
+                    active_particle_position[0] - active_cell[0] * self._linked_lists.cell_size[0])
+        else:
+            # active particle is advancing in y direction
+            distance_to_edge_of_active_cell = self._linked_lists.cell_size[1] - (
+                    active_particle_position[1] - active_cell[1] * self._linked_lists.cell_size[1])
+        shortest_distance_to_next_event = distance_to_edge_of_active_cell
+        vetoing_particle_index = active_particle_index
         # todo can probably reduce range of this iteration by accounting for direction of motion
         for candidate_cell in itertools.product(range(active_cell[0] - 1, active_cell[0] + 1),
                                                 range(active_cell[1] - 1, active_cell[1] + 1)):
@@ -139,29 +168,27 @@ class HardDiskPotential(SoftMatterPotential):
             while candidate_particle_index is not None:
                 candidate_particle_position = positions[candidate_particle_index]
                 displacement_to_candidate_particle = candidate_particle_position - active_particle_position
-                distance_to_possible_collision = 2.0e10  # set even bigger than shortest_distance_to_next_collision
-                # todo can probably simplify these if statements by swapping components of
-                #  displacement_to_candidate_particle if movement_direction[0] == 0 (or similar)
+                distance_to_possible_collision = 1.0e10
+                # todo can probably simplify these if statements
                 if movement_direction[1] == 0:
-                    # particle is advancing in x direction
+                    # active particle is advancing in x direction
                     if (displacement_to_candidate_particle[0] > 0.0 and
                             np.abs(displacement_to_candidate_particle[1]) < 2.0 * self._particle_radius):
                         # collision possible
                         distance_to_possible_collision = displacement_to_candidate_particle[0] - (
                                 4.0 * self._particle_radius ** 2 - displacement_to_candidate_particle[1] ** 2) ** 0.5
                 else:
-                    # particle is advancing in y direction
+                    # active particle is advancing in y direction
                     if (displacement_to_candidate_particle[1] > 0.0 and
                             np.abs(displacement_to_candidate_particle[0]) < 2.0 * self._particle_radius):
                         # collision possible
                         distance_to_possible_collision = displacement_to_candidate_particle[1] - (
                                 4.0 * self._particle_radius ** 2 - displacement_to_candidate_particle[0] ** 2) ** 0.5
-                if distance_to_possible_collision < shortest_distance_to_next_collision:
-                    shortest_distance_to_next_collision = distance_to_possible_collision
+                if distance_to_possible_collision < shortest_distance_to_next_event:
+                    shortest_distance_to_next_event = distance_to_possible_collision
                     vetoing_particle_index = candidate_particle_index
                 candidate_particle_index = self._linked_lists.next_particle_in_same_cell[candidate_particle_index]
-
-        return shortest_distance_to_next_collision, vetoing_particle_index
+        return shortest_distance_to_next_event, vetoing_particle_index
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """Chooses the index and direction for the next active particle in the markov chain"""
@@ -169,6 +196,6 @@ class HardDiskPotential(SoftMatterPotential):
 
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
-        # todo check this - copied from copied from QuantumHarmonic Oscillator but don't think it traslates!!!
+        # todo check this - copied from copied from QuantumHarmonic Oscillator but might not translate!!!
         """ Updates position of the active particle."""
         positions[active_particle_index] += displacement_distance * movement_direction
