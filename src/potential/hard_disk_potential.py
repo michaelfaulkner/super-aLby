@@ -1,10 +1,12 @@
 """Module for the HardDiskPotential class"""
 import itertools
+import math
 import numpy as np
 from .euclidean_subspace_potential import EuclideanSubspacePotential
 from base.exceptions import ConfigurationError
+from base.vectors import get_shortest_vectors_on_torus
 from linked_lists.two_dimensional_linked_lists import TwoDimensionalLinkedLists
-from model_settings import size_of_particle_space
+from model_settings import size_of_particle_space, number_of_particles
 
 
 class HardDiskPotential(EuclideanSubspacePotential):
@@ -26,8 +28,14 @@ class HardDiskPotential(EuclideanSubspacePotential):
         Raises
         ------
         base.exceptions.ConfigurationError
+            If each Cartesian component of size_of_particle_space is not equal.
+        base.exceptions.ConfigurationError
             If particle_radius is greater than half the length of the particle space along any Cartesian dimension.
         """
+        if not math.isclose(size_of_particle_space[0], size_of_particle_space[1]):
+            raise ConfigurationError(
+                f"Set each Cartesian component of size_of_particle_space to a common float when using "
+                f"{self.__class__.__name__}, as this class currently provides only for square compact subspaces.")
         for linear_length in size_of_particle_space:
             if particle_radius > 0.5 * linear_length:
                 raise ConfigurationError(
@@ -82,6 +90,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
         pass
 
     def initialised_position_array(self):
+        # todo test this function in terminal etc
         """
         Returns the initial positions array.
 
@@ -89,13 +98,23 @@ class HardDiskPotential(EuclideanSubspacePotential):
         -------
         numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle, e.g., two particles
-            (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
+            is a float and represents one Cartesian component of the position of a single particle, e.g., three
             particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
-        # todo write the next line for hard disks!!!
-        positions = super().initialised_position_array()
+        dx = [1.00001 * 2.0 * self._particle_radius, 0.0]
+        dy = [1.00001 * self._particle_radius, 1.00001 * self._particle_radius * np.sqrt(3.0)]
+        positions = np.zeros((number_of_particles, 2))
+        for index_x in range(int(number_of_particles ** 0.5)):
+            """***NOTE THAT the commented-out code is adapted from HistoricDisks***"""
+            """for index_y in range(int(number_of_particles ** 0.5) + 2):
+                if index_y * int(number_of_particles ** 0.5) + index_x + 1 > number_of_particles:
+                    continue"""
+            for index_y in range(int(number_of_particles ** 0.5)):
+                positions[index_x + index_y * int(number_of_particles ** 0.5)][0] = get_shortest_vectors_on_torus(
+                    (index_x * dx[0] + index_y * dy[0]) % size_of_particle_space[0])
+                positions[index_x + index_y * int(number_of_particles ** 0.5)][1] = get_shortest_vectors_on_torus(
+                    (index_y * dy[1]) % size_of_particle_space[1])
         self._linked_lists.reset_linked_lists(positions)
         return positions
 
