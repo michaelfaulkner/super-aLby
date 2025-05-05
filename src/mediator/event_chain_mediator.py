@@ -4,7 +4,7 @@ import numpy as np
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from .mediator import Mediator
-from potential.continuous_potential import ContinuousPotential
+from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from sampler.sampler import Sampler
 from typing import Sequence
 import logging
@@ -15,17 +15,17 @@ parsing = importlib.import_module("base.parsing")
 class EventChainMediator(Mediator):
     """The EventChainMediator class provides functionality for the event-chain Monte Carlo algorithm."""
 
-    def __init__(self, potential: ContinuousPotential, samplers: Sequence[Sampler], minimum_temperature: float = 1.0,
-                 maximum_temperature: float = 1.0, number_of_temperature_increments: int = 0,
-                 number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
-                 distance_between_measurements: float = 1.0):
+    def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
+                 minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
+                 number_of_temperature_increments: int = 0, number_of_equilibration_iterations: int = 10000,
+                 number_of_observations: int = 100000, distance_between_measurements: float = 1.0):
         r"""
         Constructor of the EventChainMediator class.
 
         Parameters
         ----------
-        potential : potential.potential.Potential
-            Instance of the chosen child class of potential.potential.Potential.
+        potential : potential.euclidean_subspace_potential.EuclideanSubspacePotential
+            Instance of the chosen child class of potential.euclidean_subspace_potential.EuclideanSubspacePotential.
         samplers : Sequence[sampler.sampler.Sampler]
             Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
         minimum_temperature : float, optional
@@ -69,7 +69,7 @@ class EventChainMediator(Mediator):
         """
         super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
                          number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations)
-        """Re-declare self._potential as ContinuousPotential contains additional abstract methods (rel. to Potential)"""
+        """Re-declare self._potential as EuclideanSubspacePotential contains additional abstract methods."""
         self._potential = potential
         if distance_between_measurements <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 as distance_between_measurements in "

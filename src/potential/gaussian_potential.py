@@ -1,5 +1,5 @@
 """Module for the GaussianPotential class."""
-from .continuous_potential import ContinuousPotential
+from .smooth_potential import SmoothPotential
 from base. exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from model_settings import size_of_particle_space
@@ -7,7 +7,7 @@ import logging
 import numpy as np
 
 
-class GaussianPotential(ContinuousPotential):
+class GaussianPotential(SmoothPotential):
     """
     This class implements the Gaussian potential U = prefactor * sum(x[i] ** 2) / 2
     """

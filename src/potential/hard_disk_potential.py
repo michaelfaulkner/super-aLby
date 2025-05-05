@@ -1,12 +1,12 @@
 """Module for the HardDiskPotential class"""
 import itertools
 import numpy as np
-from .soft_matter_potential import SoftMatterPotential
+from .euclidean_subspace_potential import EuclideanSubspacePotential
 from linked_lists.two_dimensional_linked_lists import TwoDimensionalLinkedLists
 from model_settings import size_of_particle_space
 
 
-class HardDiskPotential(SoftMatterPotential):
+class HardDiskPotential(EuclideanSubspacePotential):
     r"""
     This class implements the potential functionality for event-chain simulation of the hard-disk model.  Some abstract
         methods from SoftMatterPotential are not relevant due to the non-smooth nature of the 'potential' function.
@@ -82,28 +82,10 @@ class HardDiskPotential(SoftMatterPotential):
             particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
+        # todo write the next line for hard disks!!!
         positions = super().initialised_position_array()
         self._linked_lists.reset_linked_lists(positions)
         return positions
-
-    def get_gradient(self, positions):
-        """
-        This is a dummy method as it is not relevant to hard-sphere models.  For a smooth potential function, the
-            functionality provides all leapfrog-based mediators with the current value of the gradient of the potential..
-
-        Parameters
-        ----------
-        positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle.
-
-        Returns
-        -------
-        numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the gradient of the potential of a single particle.
-        """
-        pass
 
     @staticmethod
     def get_random_event_chain_velocity():

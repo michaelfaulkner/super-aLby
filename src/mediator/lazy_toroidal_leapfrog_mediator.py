@@ -1,18 +1,18 @@
 """Module for the LazyToroidalLeapfrogIntegrator class."""
-from .euclidean_leapfrog_mediator import EuclideanAndLazyToroidalLeapfrogMediators
+from .unbounded_leapfrog_mediator import UnboundedAndLazyToroidalLeapfrogMediators
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
 from model_settings import size_of_particle_space
 from kinetic_energy.kinetic_energy import KineticEnergy
-from potential.continuous_potential import ContinuousPotential
+from potential.smooth_potential import SmoothPotential
 from sampler.sampler import Sampler
 from typing import Sequence
 import logging
 import numpy as np
 
 
-class LazyToroidalLeapfrogMediator(EuclideanAndLazyToroidalLeapfrogMediators):
+class LazyToroidalLeapfrogMediator(UnboundedAndLazyToroidalLeapfrogMediators):
     """
     This class implements the mediator using the leapfrog numerical integrator with corrections of the particle
     positions to account for the toroidal geometry (using base.vectors.get_shortest_vectors_on_torus()). In contrast
@@ -20,7 +20,7 @@ class LazyToroidalLeapfrogMediator(EuclideanAndLazyToroidalLeapfrogMediators):
     numerical integration steps.
     """
 
-    def __init__(self, potential: ContinuousPotential, samplers: Sequence[Sampler], kinetic_energy: KineticEnergy,
+    def __init__(self, potential: SmoothPotential, samplers: Sequence[Sampler], kinetic_energy: KineticEnergy,
                  minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
                  number_of_temperature_increments: int = 0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True,
@@ -31,8 +31,8 @@ class LazyToroidalLeapfrogMediator(EuclideanAndLazyToroidalLeapfrogMediators):
 
         Parameters
         ----------
-        potential : potential.continuous_potential.ContinuousPotential
-            Instance of the chosen child class of potential.potential.Potential.
+        potential : potential.smooth_potential.SmoothPotential
+            Instance of the chosen child class of potential.smooth_potential.SmoothPotential.
         samplers : Sequence[sampler.sampler.Sampler]
             Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
         kinetic_energy : kinetic_energy.kinetic_energy.KineticEnergy
@@ -104,7 +104,7 @@ class LazyToroidalLeapfrogMediator(EuclideanAndLazyToroidalLeapfrogMediators):
                          proposal_dynamics_adaptor_is_on, initial_step_size, max_number_of_integration_steps,
                          randomise_number_of_integration_steps, use_metropolis_accept_reject)
         for element in size_of_particle_space:
-            if type(element) != np.float64:
+            if type(element) is not np.float64:
                 raise ConfigurationError(f"For each component of size_of_particle_space, give a float value when using "
                                          f"{self.__class__.__name__}.")
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,

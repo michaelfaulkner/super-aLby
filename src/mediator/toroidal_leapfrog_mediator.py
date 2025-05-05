@@ -5,7 +5,7 @@ from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
 from model_settings import size_of_particle_space
 from kinetic_energy.kinetic_energy import KineticEnergy
-from potential.continuous_potential import ContinuousPotential
+from potential.smooth_potential import SmoothPotential
 from sampler.sampler import Sampler
 from typing import Sequence
 import logging
@@ -18,7 +18,7 @@ class ToroidalLeapfrogMediator(DeterministicMediator):
     positions to account for the toroidal geometry (using base.vectors.get_shortest_vectors_on_torus()).
     """
 
-    def __init__(self, potential: ContinuousPotential, samplers: Sequence[Sampler], kinetic_energy: KineticEnergy,
+    def __init__(self, potential: SmoothPotential, samplers: Sequence[Sampler], kinetic_energy: KineticEnergy,
                  minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
                  number_of_temperature_increments: int = 0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True,
@@ -29,8 +29,8 @@ class ToroidalLeapfrogMediator(DeterministicMediator):
 
         Parameters
         ----------
-        potential : potential.potential.Potential
-            Instance of the chosen child class of potential.continuous_potential.ContinuousPotential.
+        potential : potential.smooth_potential.SmoothPotential
+            Instance of the chosen child class of potential.smooth_potential.SmoothPotential.
         samplers : Sequence[sampler.sampler.Sampler]
             Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
         kinetic_energy : kinetic_energy.kinetic_energy.KineticEnergy

@@ -1,6 +1,6 @@
 """Module for the QuantumHarmonicOscillatorPotential class"""
 import numpy as np
-from .continuous_potential import ContinuousPotential
+from .smooth_potential import SmoothPotential
 from base.exceptions import ConfigurationError
 from base.logging import log_init_arguments
 import logging
@@ -8,7 +8,7 @@ from model_settings import number_of_particles
 from helper_methods import get_east_neighbour, get_west_neighbour
 
 
-class QuantumHarmonicOscillatorPotential(ContinuousPotential):
+class QuantumHarmonicOscillatorPotential(SmoothPotential):
     r"""
     This class implements the (currently one-dimensional) potential for the quantum harmonic oscillator resulting
         from the Wick rotation of the Feynman path integral.  The potential corresponds to the dimensionless action,

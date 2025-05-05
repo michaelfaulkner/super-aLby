@@ -1,11 +1,11 @@
 """Module for the GinzburgLandauPotential class."""
-from .non_compact_one_dim_particle_space_potential import NonCompactOneDimParticleSpacePotential
+from .one_dim_euclidean_particle_space_potential import OneDimEuclideanParticleSpacePotential
 from base.logging import log_init_arguments
 import logging
 import numpy as np
 
 
-class GinzburgLandauPotential(NonCompactOneDimParticleSpacePotential):
+class GinzburgLandauPotential(OneDimEuclideanParticleSpacePotential):
     """
     This class implements the Ginzburg-Landau potential with one-dimensional order parameter on a three-dimensional
         periodic cubic lattice.

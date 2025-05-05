@@ -1,5 +1,5 @@
 import numpy as np
-from .continuous_potential import ContinuousPotential
+from .smooth_potential import SmoothPotential
 from model_settings import number_of_particles
 from base.logging import log_init_arguments
 from base. exceptions import ConfigurationError
@@ -7,7 +7,7 @@ import logging
 from helper_methods import get_east_neighbour, get_north_neighbour, get_west_neighbour, get_south_neighbour
 
 
-class XyPotential(ContinuousPotential):
+class XyPotential(SmoothPotential):
 
     """
     This class implements the 2D XY model potential

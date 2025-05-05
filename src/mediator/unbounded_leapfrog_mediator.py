@@ -1,32 +1,33 @@
-"""Module for the EuclideanAndLazyToroidalLeapfrogMediators class."""
-from .deterministic_mediator import DeterministicMediator
-from abc import ABCMeta, abstractmethod
+"""Module for the EuclideanLeapfrogIntegrator class."""
+from .unbounded_and_lazy_toroidal_leapfrog_mediators import UnboundedAndLazyToroidalLeapfrogMediators
+from base.exceptions import ConfigurationError
+from base.logging import log_init_arguments
 from kinetic_energy.kinetic_energy import KineticEnergy
-from potential.continuous_potential import ContinuousPotential
+from model_settings import size_of_particle_space
+from potential.smooth_potential import SmoothPotential
 from sampler.sampler import Sampler
 from typing import Sequence
+import logging
 
 
-class EuclideanAndLazyToroidalLeapfrogMediators(DeterministicMediator, metaclass=ABCMeta):
+class UnboundedLeapfrogMediator(UnboundedAndLazyToroidalLeapfrogMediators):
     """
-    Abstract EuclideanAndLazyToroidalLeapfrogMediators class. This class provides a method common to both
-    EuclideanMediator and LazyToroidalLeapfrogMediator.
+    This class implements the mediator using the leapfrog numerical integrator on an unbounded Euclidean space.
     """
 
-    def __init__(self, potential: ContinuousPotential, samplers: Sequence[Sampler], kinetic_energy: KineticEnergy,
+    def __init__(self, potential: SmoothPotential, samplers: Sequence[Sampler], kinetic_energy: KineticEnergy,
                  minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
                  number_of_temperature_increments: int = 0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True,
                  initial_step_size: float = 0.1, max_number_of_integration_steps: int = 10,
-                 randomise_number_of_integration_steps: bool = False, use_metropolis_accept_reject: bool = True,
-                 **kwargs):
+                 randomise_number_of_integration_steps: bool = False, use_metropolis_accept_reject: bool = True):
         r"""
-        The constructor of the EuclideanLeapfrogMediator class.
+        The constructor of the UnboundedLeapfrogMediator class.
 
         Parameters
         ----------
-        potential : potential.continuous_potential.ContinuousPotential
-            Instance of the chosen child class of potential.continuous_potential.ContinuousPotential.
+        potential : potential.smooth_potential.SmoothPotential
+            Instance of the chosen child class of potential.smooth_potential.SmoothPotential.
         samplers : Sequence[sampler.sampler.Sampler]
             Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
         kinetic_energy : kinetic_energy.kinetic_energy.KineticEnergy
@@ -90,18 +91,33 @@ class EuclideanAndLazyToroidalLeapfrogMediators(DeterministicMediator, metaclass
             If type(randomise_number_of_integration_steps) is not bool.
         base.exceptions.ConfigurationError
             If type(use_metropolis_accept_reject) is not bool
+        base.exceptions.ConfigurationError
+            If element is not None for element in size_of_particle_space.
         """
         super().__init__(potential, samplers, kinetic_energy, minimum_temperature, maximum_temperature,
                          number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations,
                          proposal_dynamics_adaptor_is_on, initial_step_size, max_number_of_integration_steps,
-                         randomise_number_of_integration_steps, use_metropolis_accept_reject, **kwargs)
+                         randomise_number_of_integration_steps, use_metropolis_accept_reject)
+        for element in size_of_particle_space:
+            if element is not None:
+                raise ConfigurationError(f"For each component of size_of_particle_space, give None when using "
+                                         f"{self.__class__.__name__}.")
+        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
+                           potential=potential, samplers=samplers, kinetic_energy=kinetic_energy,
+                           minimum_temperature=minimum_temperature, maximum_temperature=maximum_temperature,
+                           number_of_temperature_increments=number_of_temperature_increments,
+                           number_of_equilibration_iterations=number_of_equilibration_iterations,
+                           number_of_observations=number_of_observations,
+                           proposal_dynamics_adaptor_is_on=proposal_dynamics_adaptor_is_on,
+                           initial_step_size=initial_step_size,
+                           max_number_of_integration_steps=max_number_of_integration_steps,
+                           randomise_number_of_integration_steps=randomise_number_of_integration_steps,
+                           use_metropolis_accept_reject=use_metropolis_accept_reject)
 
-    def _get_candidate_configuration_without_toroidal_corrections(self, temperature):
+    def _get_candidate_configuration(self, temperature):
         """
         Returns the candidate momenta, positions and potential after self._number_of_integration_steps integration
-        steps. This method is used in EuclideanLeapfrogMediator._get_candidate_configuration() and
-        LazyToroidalLeapfrogMediator._get_candidate_configuration(), where the candidate positions are corrected for
-        periodic boundaries in the latter case.
+        steps.
 
         Parameters
         ----------
@@ -121,13 +137,4 @@ class EuclideanAndLazyToroidalLeapfrogMediators(DeterministicMediator, metaclass
         float
             The potential of the candidate configuration.
         """
-        candidate_momenta = (self._momenta - 0.5 * self._step_size *
-                             self._potential.get_gradient(self._positions) / temperature)
-        candidate_positions = (self._positions + self._step_size *
-                               self._kinetic_energy.get_gradient(candidate_momenta) / temperature)
-        for _ in range(self._number_of_integration_steps - 1):
-            candidate_momenta -= self._step_size * self._potential.get_gradient(candidate_positions) / temperature
-            candidate_positions += self._step_size * self._kinetic_energy.get_gradient(candidate_momenta) / temperature
-        return (candidate_momenta - 0.5 * self._step_size *
-                self._potential.get_gradient(candidate_positions) / temperature,
-                candidate_positions, self._potential.get_value(candidate_positions))
+        return self._get_candidate_configuration_without_toroidal_corrections(temperature)

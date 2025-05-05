@@ -1,12 +1,12 @@
 """Module for the SmoothPinballLossPotential class."""
-from .non_compact_one_dim_particle_space_potential import NonCompactOneDimParticleSpacePotential
+from .one_dim_euclidean_particle_space_potential import OneDimEuclideanParticleSpacePotential
 from base.logging import log_init_arguments
 import logging
 import math
 import numpy as np
 
 
-class SmoothPinballLossPotential(NonCompactOneDimParticleSpacePotential):
+class SmoothPinballLossPotential(OneDimEuclideanParticleSpacePotential):
     """
     This class implements the Neal's funnel potential
         U = x[0] ** 2 / 18.0 + 9 * x[0] / 2.0 + exp(-x[0]) * np.sum(x[1:len(x)] ** 2) / 2.0

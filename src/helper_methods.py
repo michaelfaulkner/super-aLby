@@ -37,11 +37,11 @@ def get_temperatures(minimum_temperature, maximum_temperature, number_of_tempera
 
 
 def get_basic_config_data(config_file_string):
-    if type(config_file_string) == str:
+    if type(config_file_string) is str:
         """nb, argument of parsing.parse_options() must be of type Sequence[str]"""
         config_file_string = [config_file_string]
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-    possible_mediators = ["EuclideanLeapfrogMediator", "ToroidalLeapfrogMediator", "LazyToroidalLeapfrogMediator",
+    possible_mediators = ["UnboundedLeapfrogMediator", "ToroidalLeapfrogMediator", "LazyToroidalLeapfrogMediator",
                           "MetropolisMediator", "SwendsenWangMediator", "WolffMediator", "EventChainMediator"]
     (config_file_mediator, potential, samplers, temperatures, number_of_equilibration_iterations,
      number_of_observations) = (None, None, None, None, None, None)
@@ -61,7 +61,7 @@ def get_basic_config_data(config_file_string):
         except NoSectionError:
             continue
     if potential is None:
-        raise ConfigurationError("Mediator not one of EuclideanLeapfrogMediator, ToroidalLeapfrogMediator, "
+        raise ConfigurationError("Mediator not one of UnboundedLeapfrogMediator, ToroidalLeapfrogMediator, "
                                  "LazyToroidalLeapfrogMediator, MetropolisMediator, SwendsenWangMediator or "
                                  "WolffMediator.")
     sample_directories = [config.get(strings.to_camel_case(sampler), "output_directory") for sampler in samplers]

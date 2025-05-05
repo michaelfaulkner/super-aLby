@@ -1,19 +1,19 @@
-"""Module for the abstract NonCompactOneDimParticleSpacePotential class."""
-from .continuous_potential import ContinuousPotential
+"""Module for the abstract OneDimEuclideanParticleSpacePotential class."""
+from .smooth_potential import SmoothPotential
 from base.exceptions import ConfigurationError
 from model_settings import dimensionality_of_particle_space, size_of_particle_space
 from abc import ABCMeta
 import numpy as np
 
 
-class NonCompactOneDimParticleSpacePotential(ContinuousPotential, metaclass=ABCMeta):
+class OneDimEuclideanParticleSpacePotential(SmoothPotential, metaclass=ABCMeta):
     """
-    Abstract class for potentials restricted to non-compact, continuous one-dimensional particle space.
+    Abstract class for potentials defined such that each single-particle space is the entire Euclidean real line.
     """
 
     def __init__(self, prefactor: float = 1.0, **kwargs):
         """
-        The constructor of the NonCompactOneDimParticleSpacePotential class.
+        The constructor of the OneDimEuclideanParticleSpacePotential class.
 
         This abstract class verifies that i) element is None for each element of size_of_particle_space, and ii) the
         dimensionality of particle space is one. The static method _get_higher_dimension_array() is also provided,

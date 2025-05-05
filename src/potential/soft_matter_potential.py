@@ -1,14 +1,19 @@
 """Module for the abstract SoftMatterPotential class."""
-from .continuous_potential import ContinuousPotential
+from .smooth_potential import SmoothPotential
 from base.exceptions import ConfigurationError
 from model_settings import dimensionality_of_particle_space, range_of_initial_particle_positions, size_of_particle_space
 from abc import ABCMeta
 import numpy as np
 
 
-class SoftMatterPotential(ContinuousPotential, metaclass=ABCMeta):
+class SoftMatterPotential(SmoothPotential, metaclass=ABCMeta):
     """
-    Abstract class for soft-matter potentials, which are potentials that are functions of particle-separation vectors.
+    Abstract class for soft-matter potentials, which are potentials that are smooth functions of particle-separation
+        vectors.
+
+    The only additional structure provided by this class (relative to SmoothPotential) are raising exceptions to ensure
+        a valid combined choice of size_of_particle_space, range_of_initial_particle_positions and
+        dimensionality_of_particle_space.
     """
 
     def __init__(self, prefactor: float = 1.0, **kwargs):
@@ -34,7 +39,7 @@ class SoftMatterPotential(ContinuousPotential, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If type(element) is not np.float64 for element in size_of_particle_space.
         base.exceptions.ConfigurationError
-            If model_settings.range_of_initial_particle_positions does not give an real-valued interval for each
+            If model_settings.range_of_initial_particle_positions does not give a real-valued interval for each
             component of the initial positions of each particle.
         """
         super().__init__(prefactor, **kwargs)
