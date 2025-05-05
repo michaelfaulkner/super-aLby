@@ -23,7 +23,7 @@ class XyMagnetisationNormSampler(Sampler):
         log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
                            output_directory=output_directory)
         
-    def initialise_sample_array(self, total_number_of_iterations):
+    def get_empty_sample_array(self, total_number_of_iterations):
         """
         Generate array that stores the sample.
 

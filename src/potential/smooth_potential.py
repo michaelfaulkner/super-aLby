@@ -56,7 +56,7 @@ class SmoothPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def initialised_position_array(self):
+    def get_initial_positions(self):
         """
         Returns the initial positions array.
 

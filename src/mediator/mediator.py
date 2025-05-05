@@ -137,9 +137,8 @@ class Mediator(metaclass=ABCMeta):
     @abstractmethod
     def _reset_arrays_and_counters(self, temperature):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
-        self._positions = self._potential.initialised_position_array()
-        self._samples = [sampler.initialise_sample_array(self._total_number_of_iterations) for sampler in
-                         self._samplers]
+        self._positions = self._potential.get_initial_positions()
+        self._samples = [sampler.get_empty_sample_array(self._total_number_of_iterations) for sampler in self._samplers]
 
     @abstractmethod
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):

@@ -36,7 +36,7 @@ class Sampler(metaclass=ABCMeta):
         os.makedirs(self._output_directory, exist_ok=True)
 
     @abstractmethod
-    def initialise_sample_array(self, total_number_of_iterations):
+    def get_empty_sample_array(self, total_number_of_iterations):
         """
         Generate array that stores the sample.
 

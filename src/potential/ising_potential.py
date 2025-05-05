@@ -103,7 +103,7 @@ class IsingPotential(Potential):
         return self.potential_constant * sum_of_neighbouring_spins * (candidate_position -
                                                                       positions[active_particle_index])
 
-    def initialised_position_array(self):
+    def get_initial_positions(self):
         """
         Returns the initial positions array.
 

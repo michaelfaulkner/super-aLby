@@ -81,7 +81,7 @@ class Potential(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def initialised_position_array(self):
+    def get_initial_positions(self):
         """
         Returns the initial positions array.
 

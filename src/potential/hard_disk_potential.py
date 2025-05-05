@@ -89,10 +89,10 @@ class HardDiskPotential(EuclideanSubspacePotential):
         """
         pass
 
-    def initialised_position_array(self):
+    def get_initial_positions(self):
         # todo test this function in terminal etc
         """
-        Returns the initial positions array.
+        Returns the initial positions array.  Creates a close-packed configuration.
 
         Returns
         -------
