@@ -2,6 +2,7 @@
 import itertools
 import numpy as np
 from .euclidean_subspace_potential import EuclideanSubspacePotential
+from base.exceptions import ConfigurationError
 from linked_lists.two_dimensional_linked_lists import TwoDimensionalLinkedLists
 from model_settings import size_of_particle_space
 
@@ -21,7 +22,18 @@ class HardDiskPotential(EuclideanSubspacePotential):
         ----------
         prefactor : float, optional
             The prefactor k of the potential.
+
+        Raises
+        ------
+        base.exceptions.ConfigurationError
+            If particle_radius is greater than half the length of the particle space along any Cartesian dimension.
         """
+        for linear_length in size_of_particle_space:
+            if particle_radius > 0.5 * linear_length:
+                raise ConfigurationError(
+                    f"Give a value of less than half the length of the particle space (along each Cartesian dimension) "
+                    f"for particle_radius in {self.__class__.__name__}.  This ensures at least two cells along each "
+                    f"Cartesian direction, which avoids the possibility of self collision in event-chain Monte Carlo.")
         super().__init__(prefactor=prefactor)
         self._particle_radius = particle_radius
         number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * self._particle_radius))
