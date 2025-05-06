@@ -1,8 +1,6 @@
 """Module for the PressureSampler class."""
-import logging
 import numpy as np
 from .sampler import Sampler
-from base.logging import log_init_arguments
 from model_settings import number_of_particles, size_of_particle_space, dimensionality_of_particle_space
 
 
@@ -23,8 +21,6 @@ class PressureSampler(Sampler):
         super().__init__(output_directory)
         self.distance_between_measurements = None
         self.initial_active_particle_position = None
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           output_directory=output_directory)
 
     def get_empty_sample_array(self, total_number_of_iterations):
         """

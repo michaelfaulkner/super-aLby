@@ -1,9 +1,10 @@
 """Helper methods used in the main package and/or some sample analysis script(s)."""
-from base.exceptions import ConfigurationError
-from configparser import NoSectionError
 import importlib
+import math
 import os
 import sys
+from base.exceptions import ConfigurationError
+from configparser import NoSectionError
 
 # Add the directory that contains the module plotting_functions to sys.path
 this_directory = os.path.dirname(os.path.abspath(__file__))
@@ -44,10 +45,18 @@ def get_basic_config_data(config_file_string):
     possible_mediators = ["UnboundedLeapfrogMediator", "ToroidalLeapfrogMediator", "LazyToroidalLeapfrogMediator",
                           "MetropolisMediator", "SwendsenWangMediator", "WolffMediator", "EventChainMediator"]
     (config_file_mediator, potential, samplers, temperatures, number_of_equilibration_iterations,
-     number_of_observations) = (None, None, None, None, None, None)
+     number_of_observations, size_of_particle_space) = (None, None, None, None, None, None, None)
     for possible_mediator in possible_mediators:
         try:
             potential = config.get(possible_mediator, "potential")
+            if "hard_disk_potential" in str(potential):
+                number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
+                packing_fraction = parsing.get_value(config, "HardDiskPotential", "packing_fraction")
+                disk_radius = parsing.get_value(config, "HardDiskPotential", "disk_radius")
+                linear_system_size = math.sqrt(number_of_particles * math.pi / packing_fraction) * disk_radius
+                size_of_particle_space = [linear_system_size, linear_system_size]
+            else:
+                size_of_particle_space = parsing.get_value(config, "ModelSettings", "size_of_particle_space")
             samplers = config.get(possible_mediator, "samplers").replace(" ", "").split(",")
             temperatures = get_temperatures(parsing.get_value(config, possible_mediator, "minimum_temperature"),
                                             parsing.get_value(config, possible_mediator, "maximum_temperature"),
@@ -62,14 +71,13 @@ def get_basic_config_data(config_file_string):
             continue
     if potential is None:
         raise ConfigurationError("Mediator not one of UnboundedLeapfrogMediator, ToroidalLeapfrogMediator, "
-                                 "LazyToroidalLeapfrogMediator, MetropolisMediator, SwendsenWangMediator or "
-                                 "WolffMediator.")
+                                 "LazyToroidalLeapfrogMediator, MetropolisMediator, SwendsenWangMediator, "
+                                 "WolffMediator or EventChainMediator.")
     sample_directories = [config.get(strings.to_camel_case(sampler), "output_directory") for sampler in samplers]
     return (config_file_mediator, potential, samplers, sample_directories, temperatures,
             number_of_equilibration_iterations, number_of_observations,
             parsing.get_value(config, "ModelSettings", "number_of_particles"), 
-            parsing.get_value(config, "ModelSettings", "size_of_particle_space"),
-            parsing.get_value(config, "Run", "number_of_jobs"),
+            size_of_particle_space, parsing.get_value(config, "Run", "number_of_jobs"),
             parsing.get_value(config, "Run", "max_number_of_cpus"))
 
 

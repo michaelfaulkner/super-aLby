@@ -16,7 +16,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
         We include these methods as dummy methods.
     """
 
-    def __init__(self, prefactor: float = 1.0, particle_radius: float = 1.0):
+    def __init__(self, prefactor: float = 1.0, disk_radius: float = 1.0, packing_fraction: float = 0.5):
         r"""
         The constructor of the HardDiskPotential class
 
@@ -24,27 +24,38 @@ class HardDiskPotential(EuclideanSubspacePotential):
         ----------
         prefactor : float, optional
             The prefactor k of the potential.
+        disk_radius : float, optional
+            The radius of each disk.
+        packing_fraction : float, optional
+            The packing fraction of the disks.  This corresponds to the mean disk density.
 
         Raises
         ------
         base.exceptions.ConfigurationError
             If each Cartesian component of size_of_particle_space is not equal.
         base.exceptions.ConfigurationError
-            If particle_radius is greater than half the length of the particle space along any Cartesian dimension.
+            If disk_radius is greater than half the length of the particle space along any Cartesian dimension.
+        base.exceptions.ConfigurationError
+            If packing_fraction is less than 0.1 or greater than 0.85 (the theoretical minimum and maximum are zero and
+            approximately 0.9, respectively).
         """
+        super().__init__(prefactor=prefactor)
         if not math.isclose(size_of_particle_space[0], size_of_particle_space[1]):
             raise ConfigurationError(
                 f"Set each Cartesian component of size_of_particle_space to a common float when using "
                 f"{self.__class__.__name__}, as this class currently provides only for square compact subspaces.")
         for linear_length in size_of_particle_space:
-            if particle_radius > 0.5 * linear_length:
+            if disk_radius > 0.5 * linear_length:
                 raise ConfigurationError(
                     f"Give a value of less than half the length of the particle space (along each Cartesian dimension) "
-                    f"for particle_radius in {self.__class__.__name__}.  This ensures at least two cells along each "
+                    f"for disk_radius in {self.__class__.__name__}.  This ensures at least two cells along each "
                     f"Cartesian direction, which avoids the possibility of self collision in event-chain Monte Carlo.")
-        super().__init__(prefactor=prefactor)
-        self._particle_radius = particle_radius
-        number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * self._particle_radius))
+        if not (0.1 <= packing_fraction <= 0.85):
+            raise ConfigurationError(f"Give a value not less than 0.1 and not greater than 0.85 for packing_fraction "
+                                     f"in {self.__class__.__name__}.")
+        self._disk_radius = disk_radius
+        self._packing_fraction = packing_fraction
+        number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * self._disk_radius))
         self._linked_lists = TwoDimensionalLinkedLists(number_of_cells_in_each_direction)
 
     def get_value(self, positions):
@@ -102,8 +113,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
         max_index = int(number_of_particles ** 0.5)
-        delta_x = 1.00001 * 2.0 * self._particle_radius
-        delta_y = [1.00001 * self._particle_radius, 1.00001 * self._particle_radius * np.sqrt(3.0)]
+        delta_x = 1.00001 * 2.0 * self._disk_radius
+        delta_y = [1.00001 * self._disk_radius, 1.00001 * self._disk_radius * np.sqrt(3.0)]
         positions = np.zeros((number_of_particles, 2))
         for index_x in range(max_index):
             """***NOTE THAT the commented-out code is adapted from HistoricDisks***"""
@@ -194,17 +205,17 @@ class HardDiskPotential(EuclideanSubspacePotential):
                 if movement_direction[1] == 0:
                     # active particle is advancing in x direction
                     if (displacement_to_candidate_particle[0] > 0.0 and
-                            np.abs(displacement_to_candidate_particle[1]) < 2.0 * self._particle_radius):
+                            np.abs(displacement_to_candidate_particle[1]) < 2.0 * self._disk_radius):
                         # collision possible
                         distance_to_possible_collision = displacement_to_candidate_particle[0] - (
-                                4.0 * self._particle_radius ** 2 - displacement_to_candidate_particle[1] ** 2) ** 0.5
+                                4.0 * self._disk_radius ** 2 - displacement_to_candidate_particle[1] ** 2) ** 0.5
                 else:
                     # active particle is advancing in y direction
                     if (displacement_to_candidate_particle[1] > 0.0 and
-                            np.abs(displacement_to_candidate_particle[0]) < 2.0 * self._particle_radius):
+                            np.abs(displacement_to_candidate_particle[0]) < 2.0 * self._disk_radius):
                         # collision possible
                         distance_to_possible_collision = displacement_to_candidate_particle[1] - (
-                                4.0 * self._particle_radius ** 2 - displacement_to_candidate_particle[0] ** 2) ** 0.5
+                                4.0 * self._disk_radius ** 2 - displacement_to_candidate_particle[0] ** 2) ** 0.5
                 if distance_to_possible_collision < shortest_distance_to_next_event:
                     shortest_distance_to_next_event = distance_to_possible_collision
                     vetoing_particle_index = candidate_particle_index

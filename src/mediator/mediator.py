@@ -149,9 +149,8 @@ class Mediator(metaclass=ABCMeta):
     
     def _get_checkpoint_index(self):
         """Finds run index if checkpointing is being used."""
-        self._checkpoint_index = \
-            int(np.loadtxt(os.path.join(os.getcwd(), self._samplers[0].output_directory, "checkpoint_index.txt")
-                           , dtype='int')) + 1
+        self._checkpoint_index = int(np.loadtxt(os.path.join(os.getcwd(), self._samplers[0].output_directory,
+                                                             "checkpoint_index.txt"), dtype='int')) + 1
         
     def _write_checkpoint_index_and_configuration(self):
         """Saves current run index and final position state of system"""
