@@ -2,7 +2,6 @@
 import importlib
 import numpy as np
 from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
 from .mediator import Mediator
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from sampler.sampler import Sampler
@@ -79,13 +78,6 @@ class EventChainMediator(Mediator):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
         self._total_number_of_events = 0
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           potential=potential, samplers=samplers, minimum_temperature=minimum_temperature,
-                           maximum_temperature=maximum_temperature,
-                           number_of_temperature_increments=number_of_temperature_increments,
-                           number_of_equilibration_iterations=number_of_equilibration_iterations,
-                           number_of_observations=number_of_observations,
-                           distance_between_measurements=distance_between_measurements)
 
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""

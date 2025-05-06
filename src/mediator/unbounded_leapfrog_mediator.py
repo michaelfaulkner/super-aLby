@@ -1,7 +1,6 @@
 """Module for the EuclideanLeapfrogIntegrator class."""
 from .unbounded_and_lazy_toroidal_leapfrog_mediators import UnboundedAndLazyToroidalLeapfrogMediators
 from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
 from kinetic_energy.kinetic_energy import KineticEnergy
 from model_settings import size_of_particle_space
 from potential.smooth_potential import SmoothPotential
@@ -102,17 +101,6 @@ class UnboundedLeapfrogMediator(UnboundedAndLazyToroidalLeapfrogMediators):
             if element is not None:
                 raise ConfigurationError(f"For each component of size_of_particle_space, give None when using "
                                          f"{self.__class__.__name__}.")
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           potential=potential, samplers=samplers, kinetic_energy=kinetic_energy,
-                           minimum_temperature=minimum_temperature, maximum_temperature=maximum_temperature,
-                           number_of_temperature_increments=number_of_temperature_increments,
-                           number_of_equilibration_iterations=number_of_equilibration_iterations,
-                           number_of_observations=number_of_observations,
-                           proposal_dynamics_adaptor_is_on=proposal_dynamics_adaptor_is_on,
-                           initial_step_size=initial_step_size,
-                           max_number_of_integration_steps=max_number_of_integration_steps,
-                           randomise_number_of_integration_steps=randomise_number_of_integration_steps,
-                           use_metropolis_accept_reject=use_metropolis_accept_reject)
 
     def _get_candidate_configuration(self, temperature):
         """

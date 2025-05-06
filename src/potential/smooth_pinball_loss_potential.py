@@ -1,7 +1,5 @@
 """Module for the SmoothPinballLossPotential class."""
 from .one_dim_euclidean_particle_space_potential import OneDimEuclideanParticleSpacePotential
-from base.logging import log_init_arguments
-import logging
 import math
 import numpy as np
 
@@ -55,9 +53,6 @@ class SmoothPinballLossPotential(OneDimEuclideanParticleSpacePotential):
         self._y = np.loadtxt(y, dtype=float, delimiter=',')
         self._beta_function_value = self._beta_function(xi * (1.0 - tau), xi * tau)
         self._x_sum = np.sum(self._x, axis=0)
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, tau=tau, sigma=sigma,
-                           lambda_hyperparameter=lambda_hyperparameter, x=x, y=y, xi=xi, power=power,
-                           prefactor=prefactor)
 
     def get_value(self, positions):
         """

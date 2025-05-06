@@ -1,7 +1,6 @@
 """Module for the TDistributionKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
 from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
 from model_settings import dimensionality_of_momenta_array
 import logging
 import numpy as np
@@ -35,8 +34,6 @@ class TDistributionKineticEnergy(KineticEnergy):
         self._degrees_of_freedom_plus_one = self._degrees_of_freedom + 1.0
         self._degrees_of_freedom_plus_one_over_two = 0.5 * self._degrees_of_freedom_plus_one
         self._one_over_degrees_of_freedom = 1.0 / self._degrees_of_freedom
-        log_init_arguments(
-            logging.getLogger(__name__).debug, self.__class__.__name__, degrees_of_freedom=degrees_of_freedom)
 
     def get_value(self, momenta):
         """

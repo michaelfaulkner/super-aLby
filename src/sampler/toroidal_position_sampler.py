@@ -1,8 +1,6 @@
 """Module for the ToroidalPositionSampler class."""
 from .position_sampler import PositionSampler
-from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
-import logging
 
 
 class ToroidalPositionSampler(PositionSampler):
@@ -20,8 +18,6 @@ class ToroidalPositionSampler(PositionSampler):
             The filename onto which the sample is written at the end of the run.
         """
         super().__init__(output_directory)
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           output_directory=output_directory)
 
     def get_observation(self, momenta, positions, potential, active_particle_index=None):
         """

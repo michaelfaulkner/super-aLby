@@ -229,7 +229,7 @@ def main(config_file_string):
             "permanent_data/reference_data/xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
     elif "quantum_harmonic_oscillator_potential" in potential:
         reference_sample = np.load(
-            "permanent_data/reference_data/quantum_harmonic_oscillator_timestep1_N100_reference_sample.npy").flatten()
+            "permanent_data/reference_data/quantum_harmonic_oscillator_m_08_timestep_05_reference_sample.npy").flatten()
 
     if potential != "ising_potential":
         reference_cdf = get_cumulative_distribution(reference_sample)

@@ -1,7 +1,6 @@
 """Module for the GaussianPotential class."""
 from .smooth_potential import SmoothPotential
 from base. exceptions import ConfigurationError
-from base.logging import log_init_arguments
 from model_settings import size_of_particle_space
 import logging
 import numpy as np
@@ -32,7 +31,6 @@ class GaussianPotential(SmoothPotential):
             if element is not None:
                 raise ConfigurationError(f"For each component of size_of_particle_space, give None when using "
                                          f"{self.__class__.__name__}.")
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
     def get_value(self, positions):
         """

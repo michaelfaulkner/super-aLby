@@ -1,7 +1,6 @@
 """Module for the SuperRelativisticKineticEnergy class."""
 from .zig_zag_kinetic_energy import ZigZagKineticEnergy
 from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
 import logging
 import numpy as np
 
@@ -57,8 +56,6 @@ class SuperRelativisticKineticEnergy(ZigZagKineticEnergy):
         self._power_over_two_minus_one = self._power_over_two - 1.0
         self._one_over_power = 1.0 / power
         self._two_over_power = 2.0 / power
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, gamma=gamma, power=power,
-                           zig_zag_observation_parameter=zig_zag_observation_parameter)
 
     def get_value(self, momenta):
         """

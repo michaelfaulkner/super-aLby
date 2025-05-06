@@ -1,6 +1,5 @@
 """Module for the LennardJonesPotentialWithoutLinkedLists class."""
 from .lennard_jones_potentials_with_cutoff import LennardJonesPotentialsWithCutoff
-from base.logging import log_init_arguments
 from model_settings import dimensionality_of_particle_space, number_of_particles
 import logging
 import numpy as np
@@ -71,9 +70,6 @@ class LennardJonesPotentialWithoutLinkedLists(LennardJonesPotentialsWithCutoff):
             If use_linked_lists is True and cutoff_length is inf.
         """
         super().__init__(characteristic_length, well_depth, cutoff_length, prefactor)
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           characteristic_length=characteristic_length, well_depth=well_depth,
-                           cutoff_length=cutoff_length, prefactor=prefactor)
 
     def get_value(self, positions):
         """

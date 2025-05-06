@@ -1,7 +1,6 @@
 """Module for the MetropolisMediator class."""
 from .diffusive_mediator import DiffusiveMediator
 from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
 from model_settings import number_of_particles
 from noise_distribution.noise_distribution import NoiseDistribution
 from potential.potential import Potential
@@ -81,13 +80,6 @@ class MetropolisMediator(DiffusiveMediator):
                                      f"{self.__class__.__name__}.")
         self._target_acceptance_rate = 0.44  # TODO add functionality so the user can set self._target_acceptance_rate
         self._noise_distribution = noise_distribution
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           potential=potential, samplers=samplers, noise_distribution=noise_distribution,
-                           minimum_temperature=minimum_temperature, maximum_temperature=maximum_temperature,
-                           number_of_temperature_increments=number_of_temperature_increments,
-                           number_of_equilibration_iterations=number_of_equilibration_iterations,
-                           number_of_observations=number_of_observations,
-                           proposal_dynamics_adaptor_is_on=proposal_dynamics_adaptor_is_on)
 
     def _advance_markov_chain(self, markov_chain_step_index, temperature):
         """Advances the Markov chain by one step."""

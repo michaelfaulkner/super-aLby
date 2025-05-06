@@ -1,7 +1,6 @@
 """Module for the CoulombPotential class."""
 from .soft_matter_potential import SoftMatterPotential
 from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus, get_permuted_3d_vector
 from model_settings import dimensionality_of_particle_space, number_of_particles, size_of_particle_space
 import logging
@@ -110,9 +109,6 @@ class CoulombPotential(SoftMatterPotential):
                                                                                               self._alpha_sq /
                                                                                               self._length_sq) / norm_sq
         self._fourier_array.flags.writeable = False
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           alpha=alpha, fourier_cutoff=fourier_cutoff, position_cutoff=position_cutoff,
-                           prefactor=prefactor)
 
     def get_value(self, positions):
         """

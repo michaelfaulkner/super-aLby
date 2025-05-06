@@ -1,7 +1,6 @@
 """Module for the LazyToroidalLeapfrogIntegrator class."""
 from .unbounded_leapfrog_mediator import UnboundedAndLazyToroidalLeapfrogMediators
 from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
 from model_settings import size_of_particle_space
 from kinetic_energy.kinetic_energy import KineticEnergy
@@ -107,17 +106,6 @@ class LazyToroidalLeapfrogMediator(UnboundedAndLazyToroidalLeapfrogMediators):
             if type(element) is not np.float64:
                 raise ConfigurationError(f"For each component of size_of_particle_space, give a float value when using "
                                          f"{self.__class__.__name__}.")
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           potential=potential, samplers=samplers, kinetic_energy=kinetic_energy,
-                           minimum_temperature=minimum_temperature, maximum_temperature=maximum_temperature,
-                           number_of_temperature_increments=number_of_temperature_increments,
-                           number_of_equilibration_iterations=number_of_equilibration_iterations,
-                           number_of_observations=number_of_observations,
-                           proposal_dynamics_adaptor_is_on=proposal_dynamics_adaptor_is_on,
-                           initial_step_size=initial_step_size,
-                           max_number_of_integration_steps=max_number_of_integration_steps,
-                           randomise_number_of_integration_steps=randomise_number_of_integration_steps,
-                           use_metropolis_accept_reject=use_metropolis_accept_reject)
 
     def _get_candidate_configuration(self, temperature):
         """

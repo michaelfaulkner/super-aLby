@@ -1,7 +1,5 @@
 """Module for the StandardPositionSampler class."""
 from .position_sampler import PositionSampler
-from base.logging import log_init_arguments
-import logging
 
 
 class StandardPositionSampler(PositionSampler):
@@ -19,8 +17,6 @@ class StandardPositionSampler(PositionSampler):
             The filename onto which the sample is written at the end of the run.
         """
         super().__init__(output_directory)
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           output_directory=output_directory)
 
     def get_observation(self, momenta, positions, potential, active_particle_index=None):
         """

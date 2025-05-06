@@ -1,6 +1,5 @@
 """Module for the LennardJonesPotentialWithoutCutoff class."""
 from .lennard_jones_potentials import LennardJonesPotentials
-from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
 from model_settings import dimensionality_of_particle_space, number_of_particles
 import logging
@@ -55,8 +54,6 @@ class LennardJonesPotentialWithoutCutoff(LennardJonesPotentials):
             If characteristic_length is less than 0.5.
         """
         super().__init__(characteristic_length, well_depth, prefactor)
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           characteristic_length=characteristic_length, well_depth=well_depth, prefactor=prefactor)
 
     def get_value(self, positions):
         """

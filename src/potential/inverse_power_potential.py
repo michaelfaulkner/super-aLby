@@ -1,7 +1,6 @@
 """Module for the InversePowerPotential class."""
 from .smooth_potential import SmoothPotential
 from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
 from model_settings import size_of_particle_space
 import logging
@@ -41,7 +40,6 @@ class InversePowerPotential(SmoothPotential):
         self._potential_constant = prefactor / power
         self._negative_power = - power
         self._negative_power_minus_two = - power - 2.0
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, power=power, prefactor=prefactor)
         # TODO remove the following warning once the class works with DeterministicMediator
         Warning(f"{self.__class__.__name__} does not currently work with DeterministicMediator.  Acceptance rates are "
                 f"either 0 or 1, depending on step size of the numerical integrator.")
