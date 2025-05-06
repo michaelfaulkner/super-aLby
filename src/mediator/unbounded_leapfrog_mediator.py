@@ -6,7 +6,6 @@ from model_settings import size_of_particle_space
 from potential.smooth_potential import SmoothPotential
 from sampler.sampler import Sampler
 from typing import Sequence
-import logging
 
 
 class UnboundedLeapfrogMediator(UnboundedAndLazyToroidalLeapfrogMediators):

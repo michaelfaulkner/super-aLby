@@ -4,7 +4,6 @@ from base.exceptions import ConfigurationError
 from linked_lists.three_dimensional_linked_lists import ThreeDimensionalLinkedLists
 from model_settings import dimensionality_of_particle_space, number_of_particles, size_of_particle_space
 import itertools
-import logging
 import numpy as np
 
 

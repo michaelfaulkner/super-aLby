@@ -1,6 +1,5 @@
 """Module for the GinzburgLandauPotential class."""
 from .one_dim_euclidean_particle_space_potential import OneDimEuclideanParticleSpacePotential
-import logging
 import numpy as np
 
 

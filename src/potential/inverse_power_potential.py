@@ -3,7 +3,6 @@ from .smooth_potential import SmoothPotential
 from base.exceptions import ConfigurationError
 from base.vectors import get_shortest_vectors_on_torus
 from model_settings import size_of_particle_space
-import logging
 import numpy as np
 
 

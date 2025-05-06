@@ -1,7 +1,6 @@
 """Module for the ExponentialPowerKineticEnergy class."""
 from .zig_zag_kinetic_energy import ZigZagKineticEnergy
 from base.exceptions import ConfigurationError
-import logging
 import numpy as np
 
 

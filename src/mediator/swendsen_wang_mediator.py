@@ -5,7 +5,6 @@ from potential.ising_potential import IsingPotential
 from helper_methods import get_neighbours
 from sampler.sampler import Sampler
 from typing import Sequence
-import logging
 import numpy as np
 import random
 
