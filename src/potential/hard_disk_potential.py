@@ -90,7 +90,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
         pass
 
     def get_initial_positions(self):
-        # todo test this function in terminal etc
         """
         Returns the initial positions array.  Creates a close-packed configuration.
 
@@ -102,19 +101,20 @@ class HardDiskPotential(EuclideanSubspacePotential):
             particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
-        dx = [1.00001 * 2.0 * self._particle_radius, 0.0]
-        dy = [1.00001 * self._particle_radius, 1.00001 * self._particle_radius * np.sqrt(3.0)]
+        max_index = int(number_of_particles ** 0.5)
+        delta_x = 1.00001 * 2.0 * self._particle_radius
+        delta_y = [1.00001 * self._particle_radius, 1.00001 * self._particle_radius * np.sqrt(3.0)]
         positions = np.zeros((number_of_particles, 2))
-        for index_x in range(int(number_of_particles ** 0.5)):
+        for index_x in range(max_index):
             """***NOTE THAT the commented-out code is adapted from HistoricDisks***"""
-            """for index_y in range(int(number_of_particles ** 0.5) + 2):
-                if index_y * int(number_of_particles ** 0.5) + index_x + 1 > number_of_particles:
+            """for index_y in range(max_index + 2):
+                if index_y * max_index + index_x + 1 > number_of_particles:
                     continue"""
-            for index_y in range(int(number_of_particles ** 0.5)):
-                positions[index_x + index_y * int(number_of_particles ** 0.5)][0] = get_shortest_vectors_on_torus(
-                    (index_x * dx[0] + index_y * dy[0]) % size_of_particle_space[0])
-                positions[index_x + index_y * int(number_of_particles ** 0.5)][1] = get_shortest_vectors_on_torus(
-                    (index_y * dy[1]) % size_of_particle_space[1])
+            for index_y in range(max_index):
+                positions[index_x + index_y * max_index, 0] = (index_x * delta_x + index_y * delta_y[0]
+                                                               ) % size_of_particle_space[0]
+                positions[index_x + index_y * max_index, 1] = (index_y * delta_y[1]) % size_of_particle_space[1]
+        positions = get_shortest_vectors_on_torus(positions)
         self._linked_lists.reset_linked_lists(positions)
         return positions
 
