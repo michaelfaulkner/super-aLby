@@ -1,7 +1,5 @@
 """Module for the PotentialSampler class."""
 from .sampler import Sampler
-from base.logging import log_init_arguments
-import logging
 import numpy as np
 
 
@@ -20,8 +18,6 @@ class PotentialSampler(Sampler):
             The filename onto which the sample is written at the end of the run.
         """
         super().__init__(output_directory)
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           output_directory=output_directory)
 
     def initialise_sample_array(self, total_number_of_iterations):
         """

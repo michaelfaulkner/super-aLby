@@ -1,10 +1,8 @@
 """Module for the MeanParticleSeparationSampler class."""
 from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
 from base.vectors import get_shortest_vectors_on_torus
 from model_settings import number_of_particle_pairs, number_of_particles, size_of_particle_space
 from .sampler import Sampler
-import logging
 import numpy as np
 
 
@@ -36,8 +34,6 @@ class MeanParticleSeparationSampler(Sampler):
                 raise ConfigurationError(f"Give a float for each component of size_of_particle_space in [ModelSettings]"
                                          f" when using {self.__class__.__name__} as {self.__class__.__name__} is "
                                          f"designed for toroidal systems.")
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           output_directory=output_directory)
 
     def initialise_sample_array(self, total_number_of_iterations):
         """

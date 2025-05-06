@@ -1,7 +1,5 @@
 """Module for the MeanSquaredPositionSampler class."""
 from .sampler import Sampler
-from base.logging import log_init_arguments
-import logging
 import numpy as np
 
 
@@ -21,8 +19,6 @@ class MeanSquaredPositionSampler(Sampler):
         """
         super().__init__(output_directory)
         self._timestep = timestep
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           output_directory=output_directory)
 
     def initialise_sample_array(self, total_number_of_iterations):
         """

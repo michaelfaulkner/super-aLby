@@ -1,9 +1,7 @@
 import numpy as np
 from .continuous_potential import ContinuousPotential
 from model_settings import number_of_particles
-from base.logging import log_init_arguments
 from base. exceptions import ConfigurationError
-import logging
 from helper_methods import get_east_neighbour, get_north_neighbour, get_west_neighbour, get_south_neighbour
 
 
@@ -35,8 +33,6 @@ class XyPotential(ContinuousPotential):
         self._lattice_dimensionality = lattice_dimensionality
         self._lattice_length = int(lattice_length)
         self.potential_constant = prefactor
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor,
-                           lattice_dimensionality=lattice_dimensionality)
 
     def get_value(self, positions):
 

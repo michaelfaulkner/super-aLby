@@ -2,7 +2,6 @@
 import numpy as np
 from .soft_matter_potential import SoftMatterPotential
 from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
 import logging
 from model_settings import number_of_particles
 

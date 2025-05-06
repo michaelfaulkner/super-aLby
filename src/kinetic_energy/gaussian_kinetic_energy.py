@@ -1,6 +1,5 @@
 """Module for the GaussianKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
-from base.logging import log_init_arguments
 from model_settings import dimensionality_of_momenta_array
 import logging
 import numpy as np
@@ -16,7 +15,6 @@ class GaussianKineticEnergy(KineticEnergy):
         The constructor of the GaussianKineticEnergy class.
         """
         super().__init__()
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__)
 
     def get_value(self, momenta):
         """

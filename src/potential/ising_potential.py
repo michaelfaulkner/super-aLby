@@ -1,7 +1,6 @@
 """Module for the IsingPotential class."""
 from .potential import Potential
 from base. exceptions import ConfigurationError
-from base.logging import log_init_arguments
 from model_settings import number_of_particles, range_of_initial_particle_positions, size_of_particle_space
 from helper_methods import get_east_neighbour, get_north_neighbour, get_west_neighbour, get_south_neighbour
 import logging
@@ -50,9 +49,6 @@ class IsingPotential(Potential):
         self._lattice_dimensionality = lattice_dimensionality
         self.potential_constant = - prefactor * exchange_constant
         self.lattice_length = int(lattice_length)  # no of lattice sites along each dimension of the hypercubic lattice
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           lattice_dimensionality=lattice_dimensionality, exchange_constant=exchange_constant,
-                           prefactor=prefactor)
 
     def get_value(self, positions):
         """

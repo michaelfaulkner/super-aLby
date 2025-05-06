@@ -1,6 +1,5 @@
 """Module for the SwendsenWangMediator class."""
 from .ising_cluster_mediator import IsingClusterMediator
-from base.logging import log_init_arguments
 from model_settings import number_of_particles
 from potential.ising_potential import IsingPotential
 from helper_methods import get_neighbours
@@ -74,13 +73,6 @@ class SwendsenWangMediator(IsingClusterMediator):
         super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
                          number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations,
                          proposal_dynamics_adaptor_is_on)
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__,
-                           potential=potential, samplers=samplers, minimum_temperature=minimum_temperature,
-                           maximum_temperature=maximum_temperature,
-                           number_of_temperature_increments=number_of_temperature_increments,
-                           number_of_equilibration_iterations=number_of_equilibration_iterations,
-                           number_of_observations=number_of_observations,
-                           proposal_dynamics_adaptor_is_on=proposal_dynamics_adaptor_is_on)
 
     def _advance_markov_chain(self, markov_chain_step_index, temperature):
         """Advances the Markov chain by one step."""

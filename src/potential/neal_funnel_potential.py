@@ -1,6 +1,5 @@
 """Module for the NealFunnelPotential class."""
 from .non_compact_one_dim_particle_space_potential import NonCompactOneDimParticleSpacePotential
-from base.logging import log_init_arguments
 import logging
 import math
 import numpy as np
@@ -27,7 +26,6 @@ class NealFunnelPotential(NonCompactOneDimParticleSpacePotential):
             If dimensionality_of_particle_space does not equal 1.
         """
         super().__init__(prefactor=prefactor)
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor)
 
     def get_value(self, positions):
         """

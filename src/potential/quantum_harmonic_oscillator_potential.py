@@ -2,7 +2,6 @@
 import numpy as np
 from .continuous_potential import ContinuousPotential
 from base.exceptions import ConfigurationError
-from base.logging import log_init_arguments
 import logging
 from model_settings import number_of_particles
 from helper_methods import get_east_neighbour, get_west_neighbour
@@ -42,8 +41,6 @@ class QuantumHarmonicOscillatorPotential(ContinuousPotential):
         self._mass = mass
         self._timestep = timestep
         self._omega = self._mass
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, prefactor=prefactor,
-                           lattice_dimensionality=lattice_dimensionality, mass=mass, timestep=timestep)
 
     def get_value(self, positions):
         """

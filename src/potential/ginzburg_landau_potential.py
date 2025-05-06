@@ -1,6 +1,5 @@
 """Module for the GinzburgLandauPotential class."""
 from .non_compact_one_dim_particle_space_potential import NonCompactOneDimParticleSpacePotential
-from base.logging import log_init_arguments
 import logging
 import numpy as np
 
@@ -43,9 +42,6 @@ class GinzburgLandauPotential(NonCompactOneDimParticleSpacePotential):
         self._one_minus_tau = (1 - tau)
         self._tau_dot_alpha = tau * alpha
         self._tau_dot_lambda = tau * lambda_hyperparameter
-        log_init_arguments(logging.getLogger(__name__).debug, self.__class__.__name__, alpha=alpha,
-                           lambda_hyperparameter=lambda_hyperparameter, tau=tau, lattice_length=lattice_length,
-                           prefactor=prefactor)
 
     def get_value(self, positions):
         """
