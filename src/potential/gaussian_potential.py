@@ -2,7 +2,6 @@
 from .continuous_potential import ContinuousPotential
 from base. exceptions import ConfigurationError
 from model_settings import size_of_particle_space
-import logging
 import numpy as np
 
 

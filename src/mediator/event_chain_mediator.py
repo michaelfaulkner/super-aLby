@@ -6,7 +6,6 @@ from .mediator import Mediator
 from potential.continuous_potential import ContinuousPotential
 from sampler.sampler import Sampler
 from typing import Sequence
-import logging
 from model_settings import number_of_particles
 parsing = importlib.import_module("base.parsing")
 

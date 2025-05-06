@@ -2,7 +2,6 @@
 from .kinetic_energy import KineticEnergy
 from base.exceptions import ConfigurationError
 from model_settings import dimensionality_of_momenta_array
-import logging
 import numpy as np
 
 

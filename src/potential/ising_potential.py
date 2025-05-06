@@ -3,7 +3,6 @@ from .potential import Potential
 from base. exceptions import ConfigurationError
 from model_settings import number_of_particles, range_of_initial_particle_positions, size_of_particle_space
 from helper_methods import get_east_neighbour, get_north_neighbour, get_west_neighbour, get_south_neighbour
-import logging
 import numpy as np
 
 

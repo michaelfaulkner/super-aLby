@@ -2,7 +2,6 @@
 from .lennard_jones_potentials import LennardJonesPotentials
 from base.vectors import get_shortest_vectors_on_torus
 from model_settings import dimensionality_of_particle_space, number_of_particles
-import logging
 import numpy as np
 
 

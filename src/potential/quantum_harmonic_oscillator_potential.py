@@ -2,7 +2,6 @@
 import numpy as np
 from .continuous_potential import ContinuousPotential
 from base.exceptions import ConfigurationError
-import logging
 from model_settings import number_of_particles
 from helper_methods import get_east_neighbour, get_west_neighbour
 

@@ -1,6 +1,5 @@
 """Module for the NealFunnelPotential class."""
 from .non_compact_one_dim_particle_space_potential import NonCompactOneDimParticleSpacePotential
-import logging
 import math
 import numpy as np
 

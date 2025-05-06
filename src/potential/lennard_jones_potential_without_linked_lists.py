@@ -1,7 +1,6 @@
 """Module for the LennardJonesPotentialWithoutLinkedLists class."""
 from .lennard_jones_potentials_with_cutoff import LennardJonesPotentialsWithCutoff
 from model_settings import dimensionality_of_particle_space, number_of_particles
-import logging
 import numpy as np
 
 

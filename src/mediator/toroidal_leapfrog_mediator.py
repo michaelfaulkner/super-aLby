@@ -7,7 +7,6 @@ from kinetic_energy.kinetic_energy import KineticEnergy
 from potential.continuous_potential import ContinuousPotential
 from sampler.sampler import Sampler
 from typing import Sequence
-import logging
 import numpy as np
 
 

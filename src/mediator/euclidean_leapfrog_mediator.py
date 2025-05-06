@@ -6,7 +6,6 @@ from model_settings import size_of_particle_space
 from potential.continuous_potential import ContinuousPotential
 from sampler.sampler import Sampler
 from typing import Sequence
-import logging
 
 
 class EuclideanLeapfrogMediator(EuclideanAndLazyToroidalLeapfrogMediators):

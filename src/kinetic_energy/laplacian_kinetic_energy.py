@@ -1,7 +1,6 @@
 """Module for the LaplacianKineticEnergy class."""
 from .kinetic_energy import KineticEnergy
 from model_settings import dimensionality_of_momenta_array
-import logging
 import numpy as np
 
 

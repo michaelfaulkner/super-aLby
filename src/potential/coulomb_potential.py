@@ -3,7 +3,6 @@ from .soft_matter_potential import SoftMatterPotential
 from base.exceptions import ConfigurationError
 from base.vectors import get_shortest_vectors_on_torus, get_permuted_3d_vector
 from model_settings import dimensionality_of_particle_space, number_of_particles, size_of_particle_space
-import logging
 import math
 import numpy as np
 
