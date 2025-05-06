@@ -145,8 +145,7 @@ class Mediator(metaclass=ABCMeta):
         """Reloads position data from a previous sub-run in the case of checkpointing."""
         self._positions = np.load(os.path.join(os.getcwd(), self._samplers[0].output_directory,
                                                "configuration_at_checkpoint.npy"))
-        self._samples = [sampler.initialise_sample_array(self._total_number_of_iterations) for sampler in
-                         self._samplers]
+        self._samples = [sampler.get_empty_sample_array(self._total_number_of_iterations) for sampler in self._samplers]
     
     def _get_checkpoint_index(self):
         """Finds run index if checkpointing is being used."""
