@@ -38,7 +38,7 @@ def get_mean_particle_separation(sample_directory, temperature, temperature_inde
         None.  The nth element is a float corresponding to the mean particle separation measured at observation n.
     """
     return get_reduced_sample(np.load(
-        f"{sample_directory}/temperature_{temperature_index:02d}_run_{checkpoint_index:02d}_sample_of_mean_particle_separation.npy").flatten(),
+        f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_sample_of_mean_particle_separation.npy").flatten(),
                               number_of_equilibration_iterations, thinning_level)
 
 
@@ -76,7 +76,7 @@ def get_mean_positions(sample_directory, temperature, temperature_index, checkpo
         sub-array is the ith Cartesian component the mean particle position at observation n.
     """
     return get_reduced_sample(
-        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_run_{checkpoint_index:02d}_sample_of_mean_positions.npy"),
+        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_sample_of_mean_positions.npy"),
         number_of_equilibration_iterations, thinning_level)
 
 
@@ -148,7 +148,7 @@ def get_momenta(sample_directory, temperature, temperature_index, checkpoint_ind
         shortened if number_of_equilibration_iterations and/or thinning_level is not None.  Each element is a
         float corresponding to one of the Cartesian components of the momentum of some particle.
     """
-    return get_reduced_sample(np.load(f"{sample_directory}/temperature_{temperature_index:02d}_run_{checkpoint_index:02d}_sample_of_momenta.npy"),
+    return get_reduced_sample(np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_sample_of_momenta.npy"),
                               number_of_equilibration_iterations, thinning_level)
 
 
@@ -185,7 +185,7 @@ def get_particle_separations(sample_directory, temperature, temperature_index, c
         separation.
     """
     return get_reduced_sample(np.load(
-        f"{sample_directory}/temperature_{temperature_index:02d}_run_{checkpoint_index:02d}_sample_of_particle_separations.npy"),
+        f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_sample_of_particle_separations.npy"),
         number_of_equilibration_iterations, thinning_level)
 
 
@@ -222,7 +222,7 @@ def get_positions(sample_directory, temperature, temperature_index, checkpoint_i
         float corresponding to one of the Cartesian components of the position of some particle.
     """
     return get_reduced_sample(
-        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_run_{checkpoint_index:02d}_sample_of_positions.npy"),
+        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_sample_of_positions.npy"),
         number_of_equilibration_iterations, thinning_level)
 
 
@@ -258,7 +258,7 @@ def get_potential(sample_directory, temperature, temperature_index, checkpoint_i
         is a float corresponding to the potential measured at observation n.
     """
     return get_reduced_sample(np.load(
-        f"{sample_directory}/temperature_{temperature_index:02d}_run_{checkpoint_index:02d}_sample_of_potential.npy").flatten(),
+        f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_sample_of_potential.npy").flatten(),
                               number_of_equilibration_iterations, thinning_level)
 
 
@@ -295,7 +295,7 @@ def get_single_particle_separation(sample_directory, temperature, temperature_in
         corresponding to single minimum particle-pair separation.
     """
     return get_reduced_sample(np.load(
-        f"{sample_directory}/temperature_{temperature_index:02d}_run_{checkpoint_index:02d}_sample_of_single_particle_separation.npy"),
+        f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_sample_of_single_particle_separation.npy"),
         number_of_equilibration_iterations, thinning_level)
 
 
@@ -521,14 +521,14 @@ def get_xy_magnetisation_norm(sample_directory, temperature, temperature_index, 
         element is a float corresponding to the magnetisation norm measured at observation n.
     """
     return get_reduced_sample(
-        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_run_{checkpoint_index:02d}_sample_of_magnetisation_norm.npy"),
+        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_sample_of_magnetisation_norm.npy"),
         number_of_equilibration_iterations, thinning_level)
 
 
 """helper methods"""
 
 def get_checkpointing_indices(sample_directory):
-    return np.loadtxt(os.path.join(f"{sample_directory}", "run_index.txt"), dtype='int')
+    return np.loadtxt(os.path.join(f"{sample_directory}", "checkpoint_index.txt"), dtype='int')
     
 
 def get_reduced_sample(entire_sample, number_of_equilibration_iterations=None, thinning_level=None):

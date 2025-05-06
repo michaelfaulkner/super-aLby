@@ -112,7 +112,7 @@ def run_single_simulation(config_file_location: str, job_number: Union[int, None
                               f"configuration file {args.config_file}.")
     config = read_config(args.config_file)
     mediator = factory.build_from_config(config, to_camel_case(config.get("Run", "mediator")), "mediator")
-    restart_flag = os.path.isfile(os.path.join(os.getcwd(), mediator._samplers[0]._output_directory, "run_index.txt"))
+    restart_flag = os.path.isfile(os.path.join(os.getcwd(), mediator._samplers[0].output_directory, "checkpoint_index.txt"))
 
     used_sections = factory.used_sections
     for section in config.sections():
