@@ -7,6 +7,13 @@
 *.npy
 !*reference_sample.npy
 !src/permanent_data/*.npy
+!src/permanent_data/reference_data/*.npy
+src/event_chain_mediator_constant_lambda/
+src/config_files/event_chain/event_chain_*.ini
+src/sample_analysis/test_convergence_copy.py
+src/sample_analysis/quantum_harmonic_oscillator_analysis.py
+src/vals_0.txt
+
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
@@ -33,6 +40,7 @@
 *.eps
 *.pdf
 *.png
+*.mp4
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
@@ -75,7 +83,7 @@ output/
 env/
 vals.txt
 vals1.txt
-src/config_files/event_chain/event_chain_*.ini
-src/sample_analysis/test_convergence_copy.py
-src/sample_analysis/quantum_harmonic_oscillator_analysis.py
-src/vals_0.txt
+
+# helper filesfor HPC
+src/generate_bash_scripts.py
+src/generate_configs.py

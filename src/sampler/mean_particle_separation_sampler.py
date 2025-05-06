@@ -81,7 +81,7 @@ class MeanParticleSeparationSampler(Sampler):
         return sum([np.linalg.norm(get_shortest_vectors_on_torus(positions[i] - positions[j])) for i in
                     range(number_of_particles) for j in range(i + 1, number_of_particles)]) / number_of_particle_pairs
 
-    def output_sample(self, sample, temperature_index):
+    def output_sample(self, sample, temperature_index, run_index):
         """
         Following completion of the Markov chain, print the sample to the output file.
 
@@ -93,7 +93,7 @@ class MeanParticleSeparationSampler(Sampler):
             The index of the iteration through the list sampling temperatures.
         """
         self._write_sample_to_file(sample,
-                                   f"temperature_{temperature_index:02d}_sample_of_mean_particle_separation.npy")
+                    f"temperature_{temperature_index:02d}_run_{run_index:02d}_sample_of_mean_particle_separation.npy")
 
     def get_sample(self, temperature_index):
         """
