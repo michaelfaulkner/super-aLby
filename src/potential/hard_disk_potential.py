@@ -36,7 +36,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
         base.exceptions.ConfigurationError
             If disk_radius is greater than half the length of the particle space along any Cartesian dimension.
         base.exceptions.ConfigurationError
-            If packing_fraction is less than 0.1 or greater than 0.85 (the theoretical minimum and maximum are zero and
+            If packing_fraction is less than 0.1 or greater than 0.8 (the theoretical minimum and maximum are zero and
             approximately 0.9, respectively).
         """
         super().__init__(prefactor=prefactor)
@@ -50,9 +50,9 @@ class HardDiskPotential(EuclideanSubspacePotential):
                     f"Give a value of less than half the length of the particle space (along each Cartesian dimension) "
                     f"for disk_radius in {self.__class__.__name__}.  This ensures at least two cells along each "
                     f"Cartesian direction, which avoids the possibility of self collision in event-chain Monte Carlo.")
-        if not (0.1 <= packing_fraction <= 0.85):
-            raise ConfigurationError(f"Give a value not less than 0.1 and not greater than 0.85 for packing_fraction "
-                                     f"in {self.__class__.__name__}.")
+        if not (0.1 <= packing_fraction <= 0.8):
+            raise ConfigurationError(f"Give a value not less than 0.1 and not greater than 0.8 for packing_fraction in "
+                                     f"{self.__class__.__name__}.")
         self._disk_radius = disk_radius
         self._packing_fraction = packing_fraction
         number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * self._disk_radius))
