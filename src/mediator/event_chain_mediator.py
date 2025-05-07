@@ -6,7 +6,7 @@ from .mediator import Mediator
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from sampler.sampler import Sampler
 from typing import Sequence
-from model_settings import number_of_particles, size_of_particle_space
+from model_settings import number_of_particles, system_volume
 parsing = importlib.import_module("base.parsing")
 
 
@@ -117,9 +117,6 @@ class EventChainMediator(Mediator):
         super()._reset_arrays_and_counters(temperature)
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
-                system_volume = 1.0
-                for component in size_of_particle_space:
-                    system_volume *= component
                 self._samples[sampler_index][0, :] = number_of_particles / system_volume  # use ideal-gas pressure
             else:
                 self._samples[sampler_index][0, :] = sampler.get_observation(None, self._positions, self._potential)

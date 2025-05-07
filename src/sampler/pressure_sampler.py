@@ -1,7 +1,7 @@
 """Module for the PressureSampler class."""
 import numpy as np
 from .sampler import Sampler
-from model_settings import number_of_particles, size_of_particle_space, dimensionality_of_particle_space
+from model_settings import number_of_particles, system_volume
 
 
 class PressureSampler(Sampler):
@@ -69,10 +69,11 @@ class PressureSampler(Sampler):
         if active_particle_index is None:
             raise ValueError(f"The value of active_particle_index passed to get_observation() in PressureSampler is "
                              f"None but must be an integer.  get_observation() method has been used incorrectly.")
+
         aggregate_distance_during_sampling_interval = np.linalg.norm(positions[active_particle_index] -
                                                                      self.initial_active_particle_position)
         return (number_of_particles * aggregate_distance_during_sampling_interval / self.distance_between_measurements /
-                size_of_particle_space ** dimensionality_of_particle_space)
+                system_volume)
 
     def output_sample(self, sample, temperature_index, checkpoint_index):
         """

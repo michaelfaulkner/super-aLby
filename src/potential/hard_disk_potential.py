@@ -231,3 +231,4 @@ class HardDiskPotential(EuclideanSubspacePotential):
         # todo check this - copied from copied from QuantumHarmonic Oscillator but might not translate!!!
         """ Updates position of the active particle."""
         positions[active_particle_index] += displacement_distance * movement_direction
+        positions[active_particle_index] = get_shortest_vectors_on_torus(positions[active_particle_index])
