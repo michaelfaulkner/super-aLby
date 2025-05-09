@@ -49,11 +49,29 @@ class LinkedLists(metaclass=ABCMeta):
             is a float and represents one Cartesian component of the position of a single particle.
         """
         self.leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
-        for index, position in enumerate(positions):
-            cell = np.int_(position // self.cell_size)
+        for particle_index, position in enumerate(positions):
+            cell = self.get_cell(position)
             cell_index = self.get_cell_index(cell)
-            self.next_particle_in_same_cell[index] = self.leading_particle_of_cell[cell_index]
-            self.leading_particle_of_cell[cell_index] = index
+            self.next_particle_in_same_cell[particle_index] = self.leading_particle_of_cell[cell_index]
+            self.leading_particle_of_cell[cell_index] = particle_index
+
+    def get_cell(self, position):
+        """
+        Gets the cell coordinates for some given particle position.
+
+        Parameters
+        ----------
+        position : numpy.ndarray
+            A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
+            represents one Cartesian component of the particle position.
+
+        Returns
+        ----------
+        cell : numpy.ndarray
+            The cell coordinates.  This is a one-dimensional numpy array of length dimensionality_of_particle_space.
+            Each component is an integer and represents one Cartesian cell coordinate.
+        """
+        return np.int_((position + 0.5 * size_of_particle_space) // self.cell_size)
 
     @abstractmethod
     def get_cell_index(self, cell):
