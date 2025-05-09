@@ -177,11 +177,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
         self._linked_lists.reset_linked_lists(positions)
         active_particle_position = positions[active_particle_index]
         active_cell = self._linked_lists.get_cell(active_particle_position)
-        print(f"positions are {positions}")
-        print(f"active_particle_index is {active_particle_index}")
-        print(f"movement_direction is {movement_direction}")
-        print(f"----------------------------------------")
-        print(f"----------------------------------------")
         """NB, following would have to be adapted for a negative direction of motion"""
         distance_to_edge_of_active_cell = ((1.0 + np.dot(movement_direction, active_cell)) *
                                            np.dot(movement_direction, self._linked_lists.cell_size) -
@@ -201,23 +196,20 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                                                                    active_particle_position)
                 if candidate_particle_index != active_particle_index:
                     distance_to_possible_collision = 1.0e10
-                    # todo can probably simplify these if statements
                     if movement_direction[1] == 0:
                         # active particle is advancing in x direction
-                        if np.abs(displacement_to_candidate_particle[1]) < 2.0 * self._disk_radius:
-                            # collision possible
-                            if displacement_to_candidate_particle[0] < 0.0:
-                                displacement_to_candidate_particle[0] += size_of_particle_space[0]
-                            distance_to_possible_collision = displacement_to_candidate_particle[0] - (
-                                    4.0 * self._disk_radius ** 2 - displacement_to_candidate_particle[1] ** 2) ** 0.5
+                        motion_index = 0
                     else:
                         # active particle is advancing in y direction
-                        if np.abs(displacement_to_candidate_particle[0]) < 2.0 * self._disk_radius:
-                            # collision possible
-                            if displacement_to_candidate_particle[1] < 0.0:
-                                displacement_to_candidate_particle[1] += size_of_particle_space[1]
-                            distance_to_possible_collision = displacement_to_candidate_particle[1] - (
-                                    4.0 * self._disk_radius ** 2 - displacement_to_candidate_particle[0] ** 2) ** 0.5
+                        motion_index = 1
+                    other_index = 1 - motion_index
+                    if np.abs(displacement_to_candidate_particle[other_index]) < 2.0 * self._disk_radius:
+                        # collision possible
+                        if displacement_to_candidate_particle[motion_index] < 0.0:
+                            displacement_to_candidate_particle[motion_index] += size_of_particle_space[motion_index]
+                        distance_to_possible_collision = displacement_to_candidate_particle[motion_index] - (
+                                4.0 * self._disk_radius ** 2 -
+                                displacement_to_candidate_particle[other_index] ** 2) ** 0.5
                     if distance_to_possible_collision < shortest_distance_to_next_event:
                         shortest_distance_to_next_event = distance_to_possible_collision
                         vetoing_particle_index = candidate_particle_index
@@ -230,7 +222,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
 
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
-        # todo check this - copied from copied from QuantumHarmonic Oscillator but might not translate!!!
         """ Updates position of the active particle."""
         positions[active_particle_index] += displacement_distance * movement_direction
         positions[active_particle_index] = get_shortest_vectors_on_torus(positions[active_particle_index])
