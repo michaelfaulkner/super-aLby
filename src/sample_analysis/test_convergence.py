@@ -182,7 +182,7 @@ def main(config_file_string):
                         # expected magnetic-norm density is E[|m|] où m = sum_i s_i / N
                         magnetic_norm_density_mean_and_error = get_sample_mean_and_error(
                             sample_getter.get_magnetic_norm_density(sample_directories[sample_index], temperature,
-                                                                    temperature_index, number_of_particles,
+                                                                    temperature_index, 0, number_of_particles,
                                                                     number_of_equilibration_iterations, thinning_level))
                         print(f"Sample estimate of expected magnetic-norm density = "
                               f"{magnetic_norm_density_mean_and_error[0]:.3g} +- "
@@ -193,7 +193,7 @@ def main(config_file_string):
                         # magnetic-norm susc (per particle))
                         magnetic_norm_susceptibility_mean_and_error = get_sample_mean_and_error(
                             sample_getter.get_magnetic_norm_susceptibility(sample_directories[sample_index],
-                                                                           temperature, temperature_index,
+                                                                           temperature, temperature_index, 0,
                                                                            number_of_particles,
                                                                            number_of_equilibration_iterations,
                                                                            thinning_level))
@@ -203,7 +203,7 @@ def main(config_file_string):
                               f"{expected_magnetic_norm_susc_per_particle_reference_values[temperature_index]})")
                     elif sampler == "potential_sampler":
                         potential_mean_and_error = get_sample_mean_and_error(sample_getter.get_potential(
-                            sample_directories[sample_index], temperature, temperature_index, number_of_particles,
+                            sample_directories[sample_index], temperature, temperature_index, 0, number_of_particles,
                             number_of_equilibration_iterations, thinning_level))
                         print(f"Sample estimate of expected potential per particle = "
                               f"{potential_mean_and_error[0] / number_of_particles} +- "
@@ -212,7 +212,7 @@ def main(config_file_string):
                         # expected specific heat is \partial_T E[U] = beta^2 Var[U] (a dimensionless quantity) -- we
                         # estimate beta^2 Var[U] / N (the expected specific heat per particle)
                         specific_heat_mean_and_error = get_sample_mean_and_error(sample_getter.get_specific_heat(
-                            sample_directories[sample_index], temperature, temperature_index, number_of_particles,
+                            sample_directories[sample_index], temperature, temperature_index, 0, number_of_particles,
                             number_of_equilibration_iterations, thinning_level))
                         print(f"Sample estimate of expected specific heat per particle = "
                               f"{specific_heat_mean_and_error[0] / number_of_particles} +- "
@@ -234,18 +234,18 @@ def main(config_file_string):
     if potential != "ising_potential":
         reference_cdf = get_cumulative_distribution(reference_sample)
         if "coulomb" in potential or "lennard_jones" in potential:
-            sample = sample_getter.get_particle_separations(sample_directories[0], temperatures[0], 0,
+            sample = sample_getter.get_particle_separations(sample_directories[0], temperatures[0], 0, 0,
                                                             number_of_particles,
                                                             number_of_equilibration_iterations).flatten()
         elif "xy" in potential:
-            sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperatures[0], 0,
+            sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperatures[0], 0, 0,
                                                              number_of_particles).flatten()
         elif "quantum_harmonic_oscillator_potential" in potential:
-            sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperatures[0], 0,
+            sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperatures[0], 0, 0,
                                                               number_of_particles, number_of_equilibration_iterations
                                                               ).flatten()
         else:
-            sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, number_of_particles,
+            sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
         effective_sample_size = get_effective_sample_size(sample)
         print(f"Effective sample size = {effective_sample_size} (from a total sample size of {len(sample)}).")
