@@ -57,6 +57,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
         self._packing_fraction = packing_fraction
         number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * self._disk_radius))
         self._linked_lists = TwoDimensionalLinkedLists(number_of_cells_in_each_direction)
+        self._cell_boundary_event = False
 
     def get_value(self, positions):
         """
@@ -172,9 +173,9 @@ class HardDiskPotential(EuclideanSubspacePotential):
         vetoing_particle_index : int
             The index of the particle that triggers the event.
         """
-        # todo adapt EventChainMediator._generate_sample_at_current_temperature() to remove following line (since we
-        #  perform its operation in initialised_position_array())
-        self._linked_lists.reset_linked_lists(positions)
+        if self._cell_boundary_event:
+            self._linked_lists.reset_linked_lists(positions)
+        self._cell_boundary_event = True
         active_particle_position = positions[active_particle_index]
         active_cell = self._linked_lists.get_cell(active_particle_position)
         """NB, following would have to be adapted for a negative direction of motion"""
@@ -196,12 +197,9 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                                                                    active_particle_position)
                 if candidate_particle_index != active_particle_index:
                     distance_to_possible_collision = 1.0e10
-                    if movement_direction[1] == 0:
-                        # active particle is advancing in x direction
-                        motion_index = 0
-                    else:
-                        # active particle is advancing in y direction
-                        motion_index = 1
+                    motion_index = 0  # assume that active particle is advancing in x direction
+                    if movement_direction[0] == 0:
+                        motion_index = 1  # active particle is actually advancing in y direction
                     other_index = 1 - motion_index
                     if np.abs(displacement_to_candidate_particle[other_index]) < 2.0 * self._disk_radius:
                         # collision possible
@@ -211,6 +209,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                 4.0 * self._disk_radius ** 2 -
                                 displacement_to_candidate_particle[other_index] ** 2) ** 0.5
                     if distance_to_possible_collision < shortest_distance_to_next_event:
+                        self._cell_boundary_event = False
                         shortest_distance_to_next_event = distance_to_possible_collision
                         vetoing_particle_index = candidate_particle_index
                 candidate_particle_index = self._linked_lists.next_particle_in_same_cell[candidate_particle_index]
