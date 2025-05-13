@@ -37,10 +37,13 @@ class LinkedLists(metaclass=ABCMeta):
         self.cell_size = size_of_particle_space / self.number_of_cells_in_each_direction
         self.leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
         self.next_particle_in_same_cell = [None for _ in range(number_of_particles)]
+        self._trailing_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
+        self._previous_particle_in_same_cell = [None for _ in range(number_of_particles)]
 
     def reset_linked_lists(self, positions):
         """
-        Resets the linked lists (self._leading_particle_of_cell and self._next_particle_in_same_cell).
+        Resets both linked lists {(self.leading_particle_of_cell, self.next_particle_in_same_cell) and
+            (self._trailing_particle_of_cell and self._previous_particle_in_same_cell)}.
 
         Parameters
         ----------
@@ -49,11 +52,62 @@ class LinkedLists(metaclass=ABCMeta):
             is a float and represents one Cartesian component of the position of a single particle.
         """
         self.leading_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
+        self._trailing_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
         for particle_index, position in enumerate(positions):
-            cell = self.get_cell(position)
-            cell_index = self.get_cell_index(cell)
-            self.next_particle_in_same_cell[particle_index] = self.leading_particle_of_cell[cell_index]
+            cell_index = self.get_cell_index(self.get_cell(position))
+            current_leading_particle_of_cell = self.leading_particle_of_cell[cell_index]
+            self.next_particle_in_same_cell[particle_index] = current_leading_particle_of_cell
+            if current_leading_particle_of_cell is not None:
+                self._previous_particle_in_same_cell[current_leading_particle_of_cell] = particle_index
             self.leading_particle_of_cell[cell_index] = particle_index
+            if self._trailing_particle_of_cell[cell_index] is None:
+                self._trailing_particle_of_cell[cell_index] = particle_index
+
+    def move_particle_to_new_cell(self, particle_position, particle_index, previous_cell_index):
+        """
+        Updates both linked lists {(self.leading_particle_of_cell, self.next_particle_in_same_cell) and
+            (self._trailing_particle_of_cell and self._previous_particle_in_same_cell)} to account for a single particle
+            moving into a new cell.  This is achieved by adding it to the end of the combined cell list.
+
+        Parameters
+        ----------
+        particle_position : numpy.ndarray
+            A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
+            represents one Cartesian component of the position of the particle whose cell is being updated.
+        particle_index : int
+            The index of the particle whose cell is being updated.
+        previous_cell_index : int
+            The cell index of the particle before being updated.
+        """
+        """Remove the particle from its current position in the combined cell list, then get new_cell_index"""
+        next_particle = self.next_particle_in_same_cell[particle_index]
+        previous_particle = self._previous_particle_in_same_cell[particle_index]
+        if previous_particle is not None:
+            self.next_particle_in_same_cell[previous_particle] = next_particle
+        if next_particle is not None:
+            self._previous_particle_in_same_cell[next_particle] = previous_particle
+        if self.leading_particle_of_cell[previous_cell_index] == particle_index:
+            self.leading_particle_of_cell[previous_cell_index] = next_particle
+        if self._trailing_particle_of_cell[previous_cell_index] == particle_index:
+            self._trailing_particle_of_cell[previous_cell_index] = previous_particle
+        new_cell_index = self.get_cell_index(self.get_cell(particle_position))
+        """Iterate over self.leading_particle_of_cell[new_cell_index] to insert at end of leading-particle list"""
+        current_particle = self.leading_particle_of_cell[new_cell_index]
+        previous_particle = None
+        while current_particle is not None:
+            if current_particle == particle_index:
+                raise ValueError(f"Particle {particle_index} is already a member of the cell into which it is being "
+                                 f"moved.")
+            previous_particle = current_particle
+            current_particle = self.next_particle_in_same_cell[current_particle]
+        if previous_particle is not None:
+            self.next_particle_in_same_cell[previous_particle] = particle_index
+        else:
+            self.leading_particle_of_cell[new_cell_index] = particle_index
+        self.next_particle_in_same_cell[particle_index] = None
+        """Now insert at start of trailing-particle list"""
+        self._previous_particle_in_same_cell[particle_index] = self._trailing_particle_of_cell[new_cell_index]
+        self._trailing_particle_of_cell[new_cell_index] = particle_index
 
     def get_cell(self, position):
         """
