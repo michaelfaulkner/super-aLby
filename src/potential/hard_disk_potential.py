@@ -185,9 +185,9 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                                   0.5 * size_of_particle_space))
         shortest_distance_to_next_event = distance_to_edge_of_active_cell
         vetoing_particle_index = active_particle_index
-        # todo can probably reduce range of this iteration by accounting for direction of motion
-        for candidate_cell in itertools.product(range(active_cell[0] - 1, active_cell[0] + 2),
-                                                range(active_cell[1] - 1, active_cell[1] + 2)):
+        motion_index, other_index = self._get_motion_and_other_indices(movement_direction)
+        for candidate_cell in itertools.product(range(active_cell[0] - motion_index, active_cell[0] + 2),
+                                                range(active_cell[1] - other_index, active_cell[1] + 2)):
             candidate_cell = candidate_cell % self._linked_lists.number_of_cells_in_each_direction
             candidate_cell_index = self._linked_lists.get_cell_index(candidate_cell)
             candidate_particle_index = self._linked_lists.leading_particle_of_cell[candidate_cell_index]
@@ -197,10 +197,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                                                                    active_particle_position)
                 if candidate_particle_index != active_particle_index:
                     distance_to_possible_collision = 1.0e10
-                    motion_index = 0  # assume that active particle is advancing in x direction
-                    if movement_direction[0] == 0:
-                        motion_index = 1  # active particle is actually advancing in y direction
-                    other_index = 1 - motion_index
                     if np.abs(displacement_to_candidate_particle[other_index]) < 2.0 * self._disk_radius:
                         # collision possible
                         if displacement_to_candidate_particle[motion_index] < 0.0:
@@ -234,3 +230,11 @@ class HardDiskPotential(EuclideanSubspacePotential):
                         abs(minimal_separation_distance - 2.0 * self._disk_radius) < 1.0e-12):
                     raise ValueError(f"Disks {particle_index_1} and {particle_index_2} are overlapping.  Their minimal "
                                      f"separation distance is {minimal_separation_distance}.")
+
+    @staticmethod
+    def _get_motion_and_other_indices(movement_direction):
+        motion_index = 0  # assume that active particle is advancing in x direction
+        if movement_direction[0] == 0:
+            motion_index = 1  # active particle is actually advancing in y direction
+        other_index = 1 - motion_index
+        return motion_index, other_index
