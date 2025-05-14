@@ -55,8 +55,26 @@ def get_basic_config_data(config_file_string):
                 disk_radius = parsing.get_value(config, "HardDiskPotential", "disk_radius")
                 linear_system_size = math.sqrt(number_of_particles * math.pi / packing_fraction) * disk_radius
                 size_of_particle_space = [linear_system_size, linear_system_size]
+
             else:
                 size_of_particle_space = parsing.get_value(config, "ModelSettings", "size_of_particle_space")
+            
+            if "quantum_hard_disk_potential" or "quantum_harmonic_oscillator_potential" in str(potential):
+                try:
+                    number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
+                    if number_of_particles is not None:
+                        raise ConfigurationError("number_of_particles is not a valid config option for Worldline Monte"
+                                                 "Carlo. Use number_of_quantum_particles and number_of_timeslices."
+                                                 "number_of_particles ="
+                                                 " number_of_quantum_particles * number_of_timeslices.")
+                except:
+                    pass
+                number_of_quantum_particles = parsing.get_value(config, "ModelSettings", "number_of_quantum_particles")
+                number_of_timeslices = parsing.get_value(config, "ModelSettings", "number_of_timeslices")
+                number_of_particles = number_of_quantum_particles * number_of_timeslices
+                
+            else:
+                number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
             samplers = config.get(possible_mediator, "samplers").replace(" ", "").split(",")
             temperatures = get_temperatures(parsing.get_value(config, possible_mediator, "minimum_temperature"),
                                             parsing.get_value(config, possible_mediator, "maximum_temperature"),
@@ -76,7 +94,7 @@ def get_basic_config_data(config_file_string):
     sample_directories = [config.get(strings.to_camel_case(sampler), "output_directory") for sampler in samplers]
     return (config_file_mediator, potential, samplers, sample_directories, temperatures,
             number_of_equilibration_iterations, number_of_observations,
-            parsing.get_value(config, "ModelSettings", "number_of_particles"), 
+            number_of_particles, 
             size_of_particle_space, parsing.get_value(config, "Run", "number_of_jobs"),
             parsing.get_value(config, "Run", "max_number_of_cpus"))
 
