@@ -190,7 +190,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                                   0.5 * size_of_particle_space))
         shortest_distance_to_next_event = distance_to_edge_of_active_cell
         vetoing_particle_index = active_particle_index
-        motion_index, other_index = self._get_motion_and_other_indices(movement_direction)
+        motion_index, other_index = self._get_motion_index_and_other_index(movement_direction)
         for candidate_cell in itertools.product(range(active_cell[0] - motion_index, active_cell[0] + 2),
                                                 range(active_cell[1] - other_index, active_cell[1] + 2)):
             candidate_cell = candidate_cell % self._linked_lists.number_of_cells_in_each_direction
@@ -237,7 +237,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                      f"separation distance is {minimal_separation_distance}.")
 
     @staticmethod
-    def _get_motion_and_other_indices(movement_direction):
+    def _get_motion_index_and_other_index(movement_direction):
         motion_index = 0  # assume that active particle is advancing in x direction
         if movement_direction[0] == 0:
             motion_index = 1  # active particle is actually advancing in y direction
