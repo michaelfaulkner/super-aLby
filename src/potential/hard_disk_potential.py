@@ -176,10 +176,10 @@ class HardDiskPotential(EuclideanSubspacePotential):
         """
         active_particle_position = positions[active_particle_index]
         if self._cell_boundary_event:
-            """try reinstating following O(N) operation if first convergence tests don't work"""
-            # self._linked_lists.reset_linked_lists(positions)
-            self._linked_lists.move_particle_to_new_cell(active_particle_position, active_particle_index,
-                                                         self._active_cell_index)
+            self._linked_lists.reset_linked_lists(positions)
+            """debug the following alternative O(1) method (self._linked_lists.reset_linked_lists() is O(N))"""
+            """self._linked_lists.move_particle_to_new_cell(active_particle_position, active_particle_index,
+                                                         self._active_cell_index)"""
         self._cell_boundary_event = True
         active_cell = self._linked_lists.get_cell(active_particle_position)
         self._active_cell_index = self._linked_lists.get_cell_index(active_cell)

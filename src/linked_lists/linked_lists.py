@@ -63,7 +63,7 @@ class LinkedLists(metaclass=ABCMeta):
             if self._trailing_particle_of_cell[cell_index] is None:
                 self._trailing_particle_of_cell[cell_index] = particle_index
 
-    def move_particle_to_new_cell(self, particle_position, particle_index, previous_cell_index):
+    def move_particle_to_new_cell(self, particle_position, particle_index, current_cell_index):
         """
         Updates both linked lists {(self.leading_particle_of_cell, self.next_particle_in_same_cell) and
             (self._trailing_particle_of_cell and self._previous_particle_in_same_cell)} to account for a single particle
@@ -76,32 +76,35 @@ class LinkedLists(metaclass=ABCMeta):
             represents one Cartesian component of the position of the particle whose cell is being updated.
         particle_index : int
             The index of the particle whose cell is being updated.
-        previous_cell_index : int
+        current_cell_index : int
             The cell index of the particle before being updated.
         """
         """Remove the particle from its current position in the combined cell list, then get new_cell_index"""
-        next_particle = self.next_particle_in_same_cell[particle_index]
-        previous_particle = self._previous_particle_in_same_cell[particle_index]
-        if previous_particle is not None:
-            self.next_particle_in_same_cell[previous_particle] = next_particle
-        if next_particle is not None:
-            self._previous_particle_in_same_cell[next_particle] = previous_particle
-        if self.leading_particle_of_cell[previous_cell_index] == particle_index:
-            self.leading_particle_of_cell[previous_cell_index] = next_particle
-        if self._trailing_particle_of_cell[previous_cell_index] == particle_index:
-            self._trailing_particle_of_cell[previous_cell_index] = previous_particle
+        next_particle_index = self.next_particle_in_same_cell[particle_index]
+        previous_particle_index = self._previous_particle_in_same_cell[particle_index]
+        if previous_particle_index is not None:
+            self.next_particle_in_same_cell[previous_particle_index] = next_particle_index
+        if next_particle_index is not None:
+            self._previous_particle_in_same_cell[next_particle_index] = previous_particle_index
+        if self.leading_particle_of_cell[current_cell_index] == particle_index:
+            self.leading_particle_of_cell[current_cell_index] = next_particle_index
+        if self._trailing_particle_of_cell[current_cell_index] == particle_index:
+            self._trailing_particle_of_cell[current_cell_index] = previous_particle_index
         new_cell_index = self.get_cell_index(self.get_cell(particle_position))
         """Iterate over self.leading_particle_of_cell[new_cell_index] to insert at end of leading-particle list"""
         current_particle = self.leading_particle_of_cell[new_cell_index]
-        previous_particle = None
+        previous_particle_index = None
         while current_particle is not None:
             if current_particle == particle_index:
+                # todo this is sometimes raised - when it occurs, the previous leading_particle_of_cell[new_cell_index]
+                #  is equal to particle_index (ie, the index of the current active particle) - best guess is that error
+                #  occurs due to the cell not being correctly updated the last time particle_index was active
                 raise ValueError(f"Particle {particle_index} is already a member of the cell into which it is being "
                                  f"moved.")
-            previous_particle = current_particle
+            previous_particle_index = current_particle
             current_particle = self.next_particle_in_same_cell[current_particle]
-        if previous_particle is not None:
-            self.next_particle_in_same_cell[previous_particle] = particle_index
+        if previous_particle_index is not None:
+            self.next_particle_in_same_cell[previous_particle_index] = particle_index
         else:
             self.leading_particle_of_cell[new_cell_index] = particle_index
         self.next_particle_in_same_cell[particle_index] = None
