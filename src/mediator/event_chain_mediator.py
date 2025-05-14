@@ -6,7 +6,7 @@ from .mediator import Mediator
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from sampler.sampler import Sampler
 from typing import Sequence
-from model_settings import number_of_particles, system_volume
+from model_settings import number_of_particles, size_of_particle_space, system_volume
 parsing = importlib.import_module("base.parsing")
 
 
@@ -16,7 +16,7 @@ class EventChainMediator(Mediator):
     def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
                  minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
                  number_of_temperature_increments: int = 0, number_of_equilibration_iterations: int = 10000,
-                 number_of_observations: int = 100000, distance_between_measurements: float = 1.0):
+                 number_of_observations: int = 100000, normalised_distance_between_measurements: float = 1.0):
         r"""
         Constructor of the EventChainMediator class.
 
@@ -39,8 +39,8 @@ class EventChainMediator(Mediator):
         number_of_observations : int, optional
             Number of sample observations, i.e., the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
-        distance_between_measurements : float, optional
-            Total distance through state space between samples (normalised by number_of_particles).
+        normalised_distance_between_measurements : float, optional
+            Total distance through state space between samples (normalised as indicated by operations below).
 
         Raises
         ------
@@ -63,16 +63,20 @@ class EventChainMediator(Mediator):
         base.exceptions.ConfigurationError
             If number_of_observations is not greater than 0.
         base.exceptions.ConfigurationError
-            If distance_between_measurements is not greater than 0.0.
+            If normalised_distance_between_measurements is not greater than 0.0.
         """
         super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
                          number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations)
         """Re-declare self._potential as EuclideanSubspacePotential contains additional abstract methods."""
         self._potential = potential
-        if distance_between_measurements <= 0.0:
-            raise ConfigurationError(f"Give a value greater than 0.0 as distance_between_measurements in "
+        if normalised_distance_between_measurements <= 0.0:
+            raise ConfigurationError(f"Give a value greater than 0.0 as normalised_distance_between_measurements in "
                                      f"{self.__class__.__name__}.")
-        self._distance_between_measurements = distance_between_measurements * number_of_particles
+        if "HardDiskPotential" in str(potential):
+            self._distance_between_measurements = (normalised_distance_between_measurements * number_of_particles *
+                                                   np.min(size_of_particle_space))
+        else:
+            self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
