@@ -59,6 +59,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
         self._linked_lists = TwoDimensionalLinkedLists(number_of_cells_in_each_direction)
         self.cell_boundary_event = False
         self._active_cell_index = 0
+        print(f"System length along each Cartesian dimension is {size_of_particle_space}.")
         print(f"Number of cells along each Cartesian dimension is {number_of_cells_in_each_direction}.")
 
     def get_value(self, positions):
