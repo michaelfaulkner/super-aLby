@@ -14,6 +14,7 @@ if size_of_particle_space is None or type(size_of_particle_space) is float or ty
     dimensionality_of_particle_space = 1
 else:
     dimensionality_of_particle_space = len(size_of_particle_space)
+print(f"System length along each Cartesian dimension is {size_of_particle_space}.")
 system_volume = 1.0
 for component in size_of_particle_space:
     system_volume *= component

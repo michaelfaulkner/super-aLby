@@ -98,6 +98,8 @@ class EventChainMediator(Mediator):
                 if distance_to_next_measurement < distance_to_next_event:
                     self._potential.update_position(self._positions, distance_to_next_measurement,
                                                     active_particle_index, movement_direction)
+                    if "HardDiskPotential" in str(self._potential):
+                        self._potential.cell_boundary_event = False
                     for sampler_index, sampler in enumerate(self._samplers):
                         self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
                             None, self._positions, self._potential, active_particle_index)

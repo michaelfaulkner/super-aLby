@@ -39,6 +39,7 @@ class LinkedLists(metaclass=ABCMeta):
         self.next_particle_in_same_cell = [None for _ in range(number_of_particles)]
         self._trailing_particle_of_cell = [None for _ in range(self._total_number_of_cells)]
         self._previous_particle_in_same_cell = [None for _ in range(number_of_particles)]
+        print(f"Cell length along each Cartesian dimension is {self.cell_size}.")
 
     def reset_linked_lists(self, positions):
         """
@@ -96,9 +97,6 @@ class LinkedLists(metaclass=ABCMeta):
         previous_particle_index = None
         while current_particle is not None:
             if current_particle == particle_index:
-                # todo this is sometimes raised - when it occurs, the previous leading_particle_of_cell[new_cell_index]
-                #  is equal to particle_index (ie, the index of the current active particle) - best guess is that error
-                #  occurs due to the cell not being correctly updated the last time particle_index was active
                 raise ValueError(f"Particle {particle_index} is already a member of the cell into which it is being "
                                  f"moved.")
             previous_particle_index = current_particle
@@ -128,7 +126,7 @@ class LinkedLists(metaclass=ABCMeta):
             The cell coordinates.  This is a one-dimensional numpy array of length dimensionality_of_particle_space.
             Each component is an integer and represents one Cartesian cell coordinate.
         """
-        return np.int_((position + 0.5 * size_of_particle_space) // self.cell_size)
+        return np.int_((position + 0.5 * size_of_particle_space + 1.0e-12) // self.cell_size)
 
     @abstractmethod
     def get_cell_index(self, cell):

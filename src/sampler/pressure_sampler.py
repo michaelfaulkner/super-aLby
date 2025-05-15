@@ -69,7 +69,7 @@ class PressureSampler(Sampler):
         if active_particle_index is None:
             raise ValueError(f"The value of active_particle_index passed to get_observation() in PressureSampler is "
                              f"None but must be an integer.  get_observation() method has been used incorrectly.")
-
+        # todo (BUGFIX!) the following line does NOT account for the active-particle pointer passing around torus
         aggregate_distance_during_sampling_interval = np.linalg.norm(positions[active_particle_index] -
                                                                      self.initial_active_particle_position)
         return (number_of_particles * aggregate_distance_during_sampling_interval / self.distance_between_measurements /
