@@ -20,7 +20,7 @@ if type(size_of_particle_space) is list:
     for component in size_of_particle_space:
         system_volume *= component
 else:
-     system_volume *= size_of_particle_space
+    system_volume *= size_of_particle_space
 dimensionality_of_momenta_array = (number_of_particles, dimensionality_of_particle_space)
 number_of_momenta_components = number_of_particles * dimensionality_of_particle_space
 

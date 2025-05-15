@@ -62,18 +62,18 @@ def get_basic_config_data(config_file_string):
             if "quantum_hard_disk_potential" in str(potential) or "quantum_harmonic_oscillator_potential" in str(potential):
                 
                 try:
-                    number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
-                    if number_of_particles is not None:
-                        raise ConfigurationError("number_of_particles is not a valid config option for Worldline Monte"
-                                                 "Carlo. Use number_of_quantum_particles and number_of_timeslices."
-                                                 "number_of_particles ="
-                                                 " number_of_quantum_particles * number_of_timeslices.")
-                except:
-                    pass
-                number_of_quantum_particles = parsing.get_value(config, "ModelSettings", "number_of_quantum_particles")
-                number_of_timeslices = parsing.get_value(config, "ModelSettings", "number_of_timeslices")
-                number_of_particles = number_of_quantum_particles * number_of_timeslices
+                    number_of_quantum_particles = parsing.get_value(config, "ModelSettings", "number_of_quantum_particles")
+                    number_of_timeslices = parsing.get_value(config, "ModelSettings", "number_of_timeslices")
                 
+                except:
+                    raise ConfigurationError("Use number_of_quantum_particles and number_of_timeslices for \n" \
+                                                 "Worldline Monte Carlo. "
+                                                 "number_of_particles ="
+                                                 " number_of_quantum_particles * number_of_timeslices")
+                
+
+                number_of_particles = number_of_quantum_particles * number_of_timeslices
+            
             else:
                 number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
             samplers = config.get(possible_mediator, "samplers").replace(" ", "").split(",")
