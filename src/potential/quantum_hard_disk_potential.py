@@ -2,8 +2,8 @@
 import numpy as np
 from .smooth_potential import SmoothPotential
 from base.exceptions import ConfigurationError
-from model_settings import number_of_particles
-from helper_methods import get_east_neighbour, get_west_neighbour
+from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
+from helper_methods import get_east_neighbour_quantum_hard_disks, get_west_neighbour_quantum_hard_disks
 
 class QuantumHardDiskPotential(SmoothPotential):
     r"""
@@ -43,6 +43,22 @@ class QuantumHardDiskPotential(SmoothPotential):
         self._omega = self._mass
         self._disk_radius = disk_radius
 
+        @staticmethod
+        def get_random_event_chain_velocity():
+            """
+            Uniformly samples a direction of motion for the active particle from chosen velocity distribution.
+
+            Returns
+            ----------
+            random_event_chain_velocity : int or numpy.ndarray
+                The uniformly sampled event-chain velocity of the active particle.  If the state space of each particle is
+                a subset of the real line, the method should output an integer; otherwise it should output a one-dimensional
+                numpy array (of integers) of length dimensionality_of_particle_space, where the nth component represents the
+                velocity of the active particle along the nth Cartesian direction.
+            """
+             
+            return 1.0
+    
         def get_value(self, positions):
             """
             Returns the dimensionless action for the given particle positions.  Note that the dimensional action
@@ -108,17 +124,24 @@ class QuantumHardDiskPotential(SmoothPotential):
             float
                 The dimensionless-action difference.
             """
+            neighbour_indices = [get_west_neighbour_quantum_hard_disks(active_particle_index,
+                        number_of_timeslices, number_of_quantum_particles),
+                        get_east_neighbour_quantum_hard_disks(active_particle_index,
+                        number_of_timeslices, number_of_quantum_particles)]
+            
             current_dimensionless_action = (
-                    self._get_pairwise_dimensionless_action( particle and west neighbour
+                    self._get_pairwise_dimensionless_action(positions[active_particle_index],
+                        positions[neighbour_indices[0]]
                         ) +
-                    self._get_pairwise_dimensionless_action(
-                        particle and east neighbour))
+                    self._get_pairwise_dimensionless_action(positions[active_particle_index],
+                        positions[neighbour_indices[1]]
+                        ))
             
             candidate_dimensionless_action = (
-                    self._get_pairwise_dimensionless_action(
-                        proposed move and west neighbour) +
-                    self._get_pairwise_dimensionless_action(
-                        proposed move and east neighbour))
+                    self._get_pairwise_dimensionless_action(positions, candidate_position,
+                        positions[neighbour_indices[0]], active_particle_index, neighbour_indices) +
+                    self._get_pairwise_dimensionless_action(positions, candidate_position,
+                        positions[neighbour_indices[1]], active_particle_index, neighbour_indices))
             return candidate_dimensionless_action - current_dimensionless_action
         
         def _get_gradient_at_index(self, positions, particle_index):
@@ -137,9 +160,10 @@ class QuantumHardDiskPotential(SmoothPotential):
             float
                 The dimensionless-action gradient at particle_index.
             """
-            return 
+            pass
         
-        def _get_pairwise_dimensionless_action(self, position_at_index, position_at_east_index):
+        def _get_pairwise_dimensionless_action(self, positions, position_at_index, position_at_east_index, active_paricle_index,
+                                                neighbour_indices):
             """
             Returns the contribution to the dimensionless action from a given pair of positions.
 
@@ -149,6 +173,8 @@ class QuantumHardDiskPotential(SmoothPotential):
                 The position of the particle at some particle index.
             position_at_east_index : float
                 The position of the particle at the site east of the particle index.
+            active_particle_index : int
+                The index of the active particle.
             Returns
             -------
             float
@@ -156,10 +182,11 @@ class QuantumHardDiskPotential(SmoothPotential):
             """
 
             return 0.5 * self._mass * (position_at_east_index - position_at_index) ** 2 / self._timestep + \
-                                    self._get_hard_disk_potential_at_timeslicel(active_particle_index, active_particle_position)
+                                    _get_hard_disk_potential_at_timeslice(positions, active_paricle_index,
+                                                                                 position_at_index, neighbour_indices)
         
         @staticmethod
-        def _get_hard_disk_potential_at_timeslice(active_particle_index, active_particle_position):
+        def _get_hard_disk_potential_at_timeslice(positions, active_particle_index, active_particle_position, neighbour_indices):
             """
             Returns the hard disk potential which goes as:
             V(r) = \inf ir r < \sigma
@@ -172,13 +199,15 @@ class QuantumHardDiskPotential(SmoothPotential):
                 Index of the currently active particle
             active_particle_position : float
                 Position of the currently active particle
+            neighbour_indices : list
+                List of indices of the neighbouring particles
             Returns
             --------
             The hard disk potential.
             """
             r = 10e6
-            for index in range(self.number_of_quantum_particles-1):
-                y = position of other particle
+            for index in neighbour_indices:
+                y = positions[index]
                 r_new = np.abs(active_particle_position - y)
                 if r_new < r:
                     r = r_new
@@ -186,6 +215,7 @@ class QuantumHardDiskPotential(SmoothPotential):
                     hard_disk_potential = np.inf
                 else:
                     hard_disk_potential = 0.0
+            return hard_disk_potential
 
         def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
                                                 movement_direction):
@@ -195,3 +225,7 @@ class QuantumHardDiskPotential(SmoothPotential):
         def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
              raise  SystemError(f"The choose_next_active_particle method of {self.__class__.__name__} "
                                "has not been written.")
+        @staticmethod
+        def update_position(positions, displacement_distance, active_particle_index, movement_direction):
+            """ Updates position of the active particle following an event."""
+            pass

@@ -26,7 +26,7 @@ number_of_momenta_components = number_of_particles * dimensionality_of_particle_
 
 with open(args.config_file) as config_file:
     config_file_as_str = config_file.read()
-    if "HardDiskPotential" in config_file_as_str:
+    if "HardDiskPotential" in config_file_as_str and "QuantumHardDiskPotential" not in config_file_as_str:
         if ("size_of_particle_space" in config_file_as_str or
                 "range_of_initial_particle_positions" in config_file_as_str):
             raise ConfigurationError(
