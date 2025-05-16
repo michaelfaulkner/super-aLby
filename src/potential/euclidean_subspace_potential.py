@@ -9,6 +9,11 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
 
     The additional structure provided by this class (relative to Potential) are those methods required for event-chain
         Monte Carlo.
+
+    NB, self.aggregate_pointer_hop_distance (defined below) is the aggregate distance travelled through the state space
+        by the active-particle pointer due to hops when the active particle changes.  self.cell_boundary_event (defined
+        below) is used to track whether the next event is a cell-boundary event.  Each is currently only used for ECMC
+        in HardDiskPotential
     """
 
     def __init__(self, prefactor: float = 1.0, **kwargs):
@@ -31,6 +36,9 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
             If prefactor is not greater than 0.0.
         """
         super().__init__(prefactor, **kwargs)
+        """the following are currently only used for ECMC in HardDiskPotential - see main docstring above for details"""
+        self.aggregate_pointer_hop_distance = 0.0
+        self.cell_boundary_event = False
 
     @staticmethod
     @abstractmethod

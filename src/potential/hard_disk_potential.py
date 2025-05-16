@@ -57,7 +57,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
         self._packing_fraction = packing_fraction
         number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * self._disk_radius))
         self._linked_lists = TwoDimensionalLinkedLists(number_of_cells_in_each_direction)
-        self.cell_boundary_event = False
         self._active_cell_index = 0
         print(f"System length along each Cartesian dimension is {size_of_particle_space}.")
         print(f"Number of cells along each Cartesian dimension is {number_of_cells_in_each_direction}.")
@@ -190,7 +189,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                            np.dot(movement_direction, self._linked_lists.cell_size) -
                                            np.dot(movement_direction, active_particle_position +
                                                   0.5 * size_of_particle_space))
-        shortest_distance_to_next_event = distance_to_edge_of_active_cell
+        shortest_distance_to_next_event, pointer_hop_distance = distance_to_edge_of_active_cell, 0.0
         vetoing_particle_index = active_particle_index
         motion_index, other_index = self._get_motion_index_and_other_index(movement_direction)
         for candidate_cell in itertools.product(range(active_cell[0] - motion_index, active_cell[0] + 2),
@@ -199,23 +198,26 @@ class HardDiskPotential(EuclideanSubspacePotential):
             candidate_cell_index = self._linked_lists.get_cell_index(candidate_cell)
             candidate_particle_index = self._linked_lists.leading_particle_of_cell[candidate_cell_index]
             while candidate_particle_index is not None:
-                candidate_particle_position = positions[candidate_particle_index]
-                displacement_to_candidate_particle = get_shortest_vectors_on_torus(candidate_particle_position -
-                                                                                   active_particle_position)
                 if candidate_particle_index != active_particle_index:
-                    distance_to_possible_collision = 1.0e10
+                    candidate_particle_position = positions[candidate_particle_index]
+                    displacement_to_candidate_particle = get_shortest_vectors_on_torus(candidate_particle_position -
+                                                                                       active_particle_position)
+                    distance_to_possible_collision, candidate_pointer_hop_distance = 1.0e10, 0.0
                     if np.abs(displacement_to_candidate_particle[other_index]) < 2.0 * self._disk_radius:
                         # collision possible
                         if displacement_to_candidate_particle[motion_index] < 0.0:
                             displacement_to_candidate_particle[motion_index] += size_of_particle_space[motion_index]
-                        distance_to_possible_collision = displacement_to_candidate_particle[motion_index] - (
-                                4.0 * self._disk_radius ** 2 -
-                                displacement_to_candidate_particle[other_index] ** 2) ** 0.5
+                        candidate_pointer_hop_distance = (4.0 * self._disk_radius ** 2 -
+                                                          displacement_to_candidate_particle[other_index] ** 2) ** 0.5
+                        distance_to_possible_collision = (displacement_to_candidate_particle[motion_index] -
+                                                          candidate_pointer_hop_distance)
                     if distance_to_possible_collision < shortest_distance_to_next_event:
                         self.cell_boundary_event = False
                         shortest_distance_to_next_event = distance_to_possible_collision
                         vetoing_particle_index = candidate_particle_index
+                        pointer_hop_distance = candidate_pointer_hop_distance
                 candidate_particle_index = self._linked_lists.next_particle_in_same_cell[candidate_particle_index]
+        self.aggregate_pointer_hop_distance += pointer_hop_distance
         return shortest_distance_to_next_event, vetoing_particle_index
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
