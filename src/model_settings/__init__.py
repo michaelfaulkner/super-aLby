@@ -15,7 +15,6 @@ if size_of_particle_space is None or type(size_of_particle_space) is float or ty
 else:
     dimensionality_of_particle_space = len(size_of_particle_space)
 system_volume = 1.0
-
 if type(size_of_particle_space) is list:
     for component in size_of_particle_space:
         system_volume *= component

@@ -66,6 +66,10 @@ def main(config_file_string):
             raise ValueError("1D quantum harmonic oscillator model reference data only available for "
                              "MeanSquaredPositionSampler. Please give only this value for samplers in the Mediator "
                              "section.")
+    elif potential == "hard_disk_potential":
+        if not (len(samplers) == 1 and samplers[0] == "pressure_sampler"):
+            raise ValueError("Hard-disk model reference data only available for PressureSampler. Please give only this "
+                             "value for samplers in the Mediator section.")
     else:
         raise ValueError("Reference data not provided for this potential.")
 
@@ -231,7 +235,12 @@ def main(config_file_string):
         reference_sample = np.load(
             "permanent_data/reference_data/quantum_harmonic_oscillator_m_08_timestep_05_reference_sample.npy").flatten()
 
-    if potential != "ising_potential":
+    if "hard_disk_potential" in potential:
+        disk_radius = 1.0
+        sample = sample_getter.get_pressure(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
+                                            number_of_equilibration_iterations).flatten()
+        print(np.mean(sample) * (2.0 * disk_radius) ** 2)
+    elif potential != "ising_potential":
         reference_cdf = get_cumulative_distribution(reference_sample)
         if "coulomb" in potential or "lennard_jones" in potential:
             sample = sample_getter.get_particle_separations(sample_directories[0], temperatures[0], 0, 0,

@@ -1,6 +1,7 @@
 """Module for the PressureSampler class."""
 import numpy as np
 from .sampler import Sampler
+from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from model_settings import number_of_particles, system_volume
 
 
@@ -20,7 +21,6 @@ class PressureSampler(Sampler):
         """
         super().__init__(output_directory)
         self.distance_between_measurements = None
-        self.initial_active_particle_position = None
 
     def get_empty_sample_array(self, total_number_of_iterations):
         """
@@ -38,7 +38,7 @@ class PressureSampler(Sampler):
         """
         return np.zeros((total_number_of_iterations + 1, 1))
 
-    def get_observation(self, momenta, positions, potential, active_particle_index=None):
+    def get_observation(self, momenta, positions, potential):
         """
         Returns an observation of the system for the given particle momenta and positions.  We estimate the pressure
             (in units of packing fraction) using Eq. (21) of J. Chem. Phys. 157, 234111 (2022) [DOI:10.1063/5.0126437].
@@ -55,24 +55,21 @@ class PressureSampler(Sampler):
             is a float and represents one Cartesian component of the position of a single particle. For Bayesian
             models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
             lattice, the entire positions array corresponds to the entire array of superconducting phase.
-        potential : float or potential.potential.Potential
-            If a float, the current value of the potential; otherwise, an instance of the chosen child class of
-            potential.potential.Potential.
-        active_particle_index : None or int
-            The index of the active particle.
+        potential : potential.potential.Potential
+            An instance of the chosen child class of potential.euclidean_subspace_potential.EuclideanSubspacePotential.
 
         Returns
         -------
         float
             The observation of the pressure in units of packing fraction.
         """
-        if active_particle_index is None:
-            raise ValueError(f"The value of active_particle_index passed to get_observation() in PressureSampler is "
-                             f"None but must be an integer.  get_observation() method has been used incorrectly.")
-
-        aggregate_distance_during_sampling_interval = np.linalg.norm(positions[active_particle_index] -
-                                                                     self.initial_active_particle_position)
-        return (number_of_particles * aggregate_distance_during_sampling_interval / self.distance_between_measurements /
+        if not isinstance(potential, EuclideanSubspacePotential):
+            raise ValueError(f"Give a EuclideanSubspacePotential class as the value for potential in the "
+                             f"get_observation() method of {self.__class__.__name__}.")
+        aggregate_pointer_hop_distance = potential.aggregate_pointer_hop_distance
+        potential.aggregate_pointer_hop_distance = 0.0
+        # todo test this new method!!!
+        return (number_of_particles * (1.0 + aggregate_pointer_hop_distance / self.distance_between_measurements) /
                 system_volume)
 
     def output_sample(self, sample, temperature_index, checkpoint_index):
