@@ -95,18 +95,21 @@ class QuantumHardDiskPotential(WorldlinePotential):
         float
             The potential energy contribution to the pairwise dimensionless action.
         """
-    
-        east_dist = np.abs(position_at_active_particle_index - positions[
-                    get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                number_of_quantum_particles)])
-        west_dist = np.abs(position_at_active_particle_index - positions[
-                    get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                number_of_quantum_particles)])
-        radius = np.max((east_dist))
- 
+        #find timeslice
+        timeslice_index = active_particle_index // number_of_quantum_particles
+        #find quantum particle index
+        quantum_particle_index = active_particle_index % number_of_quantum_particles
+
+        dist = 10e6
+        for quantum_particle in range(number_of_quantum_particles):
+            if quantum_particle != quantum_particle_index:
+                quantum_particle_location = number_of_quantum_particles * timeslice_index + quantum_particle
+                dist_new = np.abs(position_at_active_particle_index - positions[quantum_particle_location])
+                if dist_new < dist:
+                    dist = dist_new
         
-        if r < self._disk_radius:
-            hard_disk_potential = np.inf
+        if dist < self._disk_radius:
+            hard_disk_potential = 10e10
         else:
             hard_disk_potential = 0.0
         return hard_disk_potential

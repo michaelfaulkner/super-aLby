@@ -154,7 +154,8 @@ class WorldlinePotential(SmoothPotential, metaclass=ABCMeta):
 
         return self._get_kinetic_action_term(active_particle_index,  position_at_active_particle_index, 
                                             position_at_neighbouring_worldline_index) + \
-                                            self._get_potential_action_term(positions, active_particle_index)
+                                            self._get_potential_action_term(positions, active_particle_index,
+                                                                             position_at_active_particle_index)
     
     def _get_kinetic_action_term(self, active_particle_index,  position_at_active_particle_index, 
                                  position_at_neighbouring_worldline_index):
