@@ -57,6 +57,16 @@ with open(args.config_file) as config_file:
                     raise ConfigurationError(
                         "The absolute value of any float or integer given within range_of_initial_particle_positions "
                         "must be less than half the size_of_particle_space.")
+    if "QuantumHardDiskPotential" in config_file_as_str:
+        number_of_quantum_particles = get_value(config, "QuantumHardDiskPotential", "number_of_quantum_particles")
+        number_of_timeslices = get_value(config, "QuantumHardDiskPotential", "number_of_timeslices")
+
+    elif "QuantumHarmonicOscillatorPotential" in config_file_as_str:
+        number_of_quantum_particles = get_value(config, "QuantumHarmonicOscillatorPotential", "number_of_quantum_particles")
+        number_of_timeslices = get_value(config, "QuantumHarmonicOscillatorPotential", "number_of_timeslices")
+    else:
+        number_of_quantum_particles = None
+        number_of_timeslices = None
 
 if (dimensionality_of_particle_space == 1 and type(size_of_particle_space) is float or
         (dimensionality_of_particle_space > 1 and type(size_of_particle_space) is list and

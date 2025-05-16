@@ -1,12 +1,12 @@
 """Module for the QuantumHarmonicOscillatorPotential class"""
 import numpy as np
-from .smooth_potential import SmoothPotential
+from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError
-from model_settings import number_of_particles
-from helper_methods import get_east_neighbour, get_west_neighbour
+from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
+from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
 
 
-class QuantumHarmonicOscillatorPotential(SmoothPotential):
+class QuantumHarmonicOscillatorPotential(WorldlinePotential):
     r"""
     This class implements the (currently one-dimensional) potential for the quantum harmonic oscillator resulting
         from the Wick rotation of the Feynman path integral.  The potential corresponds to the dimensionless action,
@@ -29,99 +29,17 @@ class QuantumHarmonicOscillatorPotential(SmoothPotential):
         timestep : float
             The size of the time step, \delta \tau.
         """
-        super().__init__(prefactor=prefactor)
+        super().__init__(prefactor=prefactor, lattice_dimensionality=lattice_dimensionality, mass=mass,
+                          timestep=timestep)
         if prefactor != 1.0:
             raise ConfigurationError(f"Give a value of 1.0 for prefactor in {self.__class__.__name__} - functionality "
                                      f"for other values is not yet provided.")
         if lattice_dimensionality != 1:
             raise ConfigurationError(f"Give a value of 1 for lattice_dimensionality in {self.__class__.__name__} - "
                                      f"functionality for other dimensions not yet provided.")
-        self._lattice_dimensionality = lattice_dimensionality
-        self._mass = mass
-        self._timestep = timestep
-        self._omega = self._mass
 
-    def get_value(self, positions):
-        """
-        Returns the dimensionless action for the given particle positions.  Note that the dimensional action
-            S * self._timestep is analogous to the potential of a statistical-physics model (since hbar is considered
-            analogous to the inverse temperature (beta) of a stat-physics model; S denotes the raw action).
 
-        Parameters
-        ----------
-        positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
-        Returns
-        -------
-        float
-            The dimensionless action.
-        """
-        dimensionless_action = 0.0
-        for particle_index in range(0, number_of_particles):
-            dimensionless_action += self._get_pairwise_dimensionless_action(
-                positions[particle_index], positions[get_east_neighbour(particle_index, number_of_particles)])
-        return dimensionless_action
-
-    def get_gradient(self, positions):
-        # TODO implement get_gradient() function in this class
-        """
-        Returns the gradient of the dimensionless action for the given particle positions.
-
-        Parameters
-        ----------
-        positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
-            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
-            lattice, the entire positions array corresponds to the entire array of superconducting phase.
-
-        Returns
-        -------
-        numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the gradient of the potential of a single particle.
-        """
-        raise SystemError(f"The get_gradient method of {self.__class__.__name__} has not been written.")
-
-    def get_potential_difference(self, active_particle_index, candidate_position, positions):
-        """
-        Returns the difference in dimensionless action resulting from moving the single active particle to
-            candidate_position.  Note that the dimensional action S * self._timestep is analogous to the potential of a
-            statistical-physics model (since hbar is considered analogous to the inverse temperature (beta) of a
-            stat-physics model; S denotes the raw action).
-
-        Parameters
-        ----------
-        active_particle_index : int
-            The index of the active particle.
-        candidate_position : float
-            A float representing the proposed position of the active particle.
-        positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
-
-        Returns
-        -------
-        float
-            The dimensionless-action difference.
-        """
-        current_dimensionless_action = (
-                self._get_pairwise_dimensionless_action(
-                    positions[get_west_neighbour(active_particle_index, number_of_particles)],
-                    positions[active_particle_index]) +
-                self._get_pairwise_dimensionless_action(
-                    positions[active_particle_index],
-                    positions[get_east_neighbour(active_particle_index, number_of_particles)]))
-        
-        candidate_dimensionless_action = (
-                self._get_pairwise_dimensionless_action(
-                    positions[get_west_neighbour(active_particle_index, number_of_particles)], candidate_position) +
-                self._get_pairwise_dimensionless_action(
-                    candidate_position, positions[get_east_neighbour(active_particle_index, number_of_particles)]))
-        return candidate_dimensionless_action - current_dimensionless_action
-
-    def _get_gradient_at_index(self, positions, particle_index):
+    def _get_gradient_at_index(self, positions, active_particle_index):
         """
         Returns the gradient of the dimensionless action with respect to the particle position at particle_index.
 
@@ -130,7 +48,7 @@ class QuantumHarmonicOscillatorPotential(SmoothPotential):
         positions : numpy.ndarray
             A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
             is a float and represents the position of the worldline at that time step.
-        particle_index : int
+        active_particle_index : int
             The particle index (i.e., the discretised-time index).
         Returns
         -------
@@ -138,28 +56,27 @@ class QuantumHarmonicOscillatorPotential(SmoothPotential):
             The dimensionless-action gradient at particle_index.
         """
         return self._mass / self._timestep * (
-                (2.0 + self._timestep ** 2 * self._omega ** 2) * positions[particle_index] -
-                positions[get_west_neighbour(particle_index, number_of_particles)] -
-                positions[get_east_neighbour(particle_index, number_of_particles)]).item()
+                (2.0 + self._timestep ** 2 * self._omega ** 2) * positions[active_particle_index] -
+                positions[get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
+                                                            number_of_quantum_particles)] -
+                positions[get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
+                                                            number_of_quantum_particles)]).item()
 
-    def _get_pairwise_dimensionless_action(self, position_at_index, position_at_east_index):
+    def _get_potential_action_term(self, positions, active_particle_index):
         """
-        Returns the contribution to the dimensionless action from a given pair of positions.
-
+        Returns the potential energy contribution to teh pairwise dimensionless action
         Parameters
         ----------
-        position_at_index : float
+        position_at_active_particle_index : float
             The position of the particle at some particle index.
         position_at_east_index : float
             The position of the particle at the site east of the particle index.
         Returns
         -------
         float
-            The pairwise contribution to the dimensionless action.
+            The potential energy contribution to the pairwise dimensionless action.
         """
-
-        return 0.5 * self._mass * ((position_at_east_index - position_at_index) ** 2 / self._timestep +
-                                   self._timestep * self._omega ** 2 * position_at_index ** 2)
+        return 0.5 * self._mass *self._timestep * self._omega ** 2 * positions[active_particle_index] ** 2
 
     @staticmethod
     def get_random_event_chain_velocity():
@@ -202,9 +119,11 @@ class QuantumHarmonicOscillatorPotential(SmoothPotential):
         """
         shortest_distance_to_next_factor_event = 1.0e10
         neighbouring_indices = np.zeros(3, dtype=np.int32)
-        neighbouring_indices[0] = get_west_neighbour(active_particle_index, number_of_particles)
+        neighbouring_indices[0] = get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
+                                                            number_of_quantum_particles)
         neighbouring_indices[1] = active_particle_index
-        neighbouring_indices[2] = get_east_neighbour(active_particle_index, number_of_particles)
+        neighbouring_indices[2] = get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
+                                                            number_of_quantum_particles)
 
         vetoing_index = None
         initial_position = positions[active_particle_index].item()

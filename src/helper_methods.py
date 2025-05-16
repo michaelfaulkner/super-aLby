@@ -133,12 +133,12 @@ def get_south_neighbour(lattice_site_index, lattice_length):
             (int(lattice_site_index / lattice_length) + lattice_length - 1) % lattice_length -
             (int(lattice_site_index / lattice_length) + lattice_length) % lattice_length)
 
-def get_east_neighbour_quantum_hard_disks(lattice_site_index, number_of_timeslices, number_of_quantum_particles):
+def get_east_neighbour_worldline(lattice_site_index, number_of_timeslices, number_of_quantum_particles):
     """Returns the eastwards timeslice neighbour of lattice_site_index in the quantum hard disks model"""
 
     return int((lattice_site_index + number_of_quantum_particles) % number_of_timeslices)
 
-def get_west_neighbour_quantum_hard_disks(lattice_site_index, number_of_timeslices, number_of_quantum_particles):
+def get_west_neighbour_worldline(lattice_site_index, number_of_timeslices, number_of_quantum_particles):
     """Returns the eastwards timeslice neighbour of lattice_site_index in the quantum hard disks model"""
 
     return int((lattice_site_index - number_of_quantum_particles) % number_of_timeslices)

@@ -1,11 +1,11 @@
 """Module for the QuantumHardDiskPotential class"""
 import numpy as np
-from .smooth_potential import SmoothPotential
+from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError
 from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
-from helper_methods import get_east_neighbour_quantum_hard_disks, get_west_neighbour_quantum_hard_disks
+from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
 
-class QuantumHardDiskPotential(SmoothPotential):
+class QuantumHardDiskPotential(WorldlinePotential):
     r"""
     This class implements a 2-body quantum hard disk model in the worldline formalism.
     The potential corresponds to the dimensionless action,
@@ -30,202 +30,96 @@ class QuantumHardDiskPotential(SmoothPotential):
         disk_radius : float, optional
             The radius of each disk.
         """
-        super().__init__(prefactor=prefactor)
+        super().__init__(prefactor=prefactor, lattice_dimensionality=lattice_dimensionality, mass=mass,
+                          timestep=timestep)
         if prefactor != 1.0:
             raise ConfigurationError(f"Give a value of 1.0 for prefactor in {self.__class__.__name__} - functionality "
                                      f"for other values is not yet provided.")
-        if lattice_dimensionality != 1:
-            raise ConfigurationError(f"Give a value of 1 for lattice_dimensionality in {self.__class__.__name__} - "
-                                     f"functionality for other dimensions not yet provided.")
-        self._lattice_dimensionality = lattice_dimensionality
-        self._mass = mass
-        self._timestep = timestep
-        self._omega = self._mass
         self._disk_radius = disk_radius
 
-        @staticmethod
-        def get_random_event_chain_velocity():
-            """
-            Uniformly samples a direction of motion for the active particle from chosen velocity distribution.
+    @staticmethod
+    def get_random_event_chain_velocity():
+        """
+        Uniformly samples a direction of motion for the active particle from chosen velocity distribution.
 
-            Returns
-            ----------
-            random_event_chain_velocity : int or numpy.ndarray
-                The uniformly sampled event-chain velocity of the active particle.  If the state space of each particle is
-                a subset of the real line, the method should output an integer; otherwise it should output a one-dimensional
-                numpy array (of integers) of length dimensionality_of_particle_space, where the nth component represents the
-                velocity of the active particle along the nth Cartesian direction.
-            """
-             
-            return 1.0
+        Returns
+        ----------
+        random_event_chain_velocity : int or numpy.ndarray
+            The uniformly sampled event-chain velocity of the active particle.  If the state space of each particle is
+            a subset of the real line, the method should output an integer; otherwise it should output a one-dimensional
+            numpy array (of integers) of length dimensionality_of_particle_space, where the nth component represents the
+            velocity of the active particle along the nth Cartesian direction.
+        """
+            
+        return 1.0
+
     
-        def get_value(self, positions):
-            """
-            Returns the dimensionless action for the given particle positions.  Note that the dimensional action
-                S * self._timestep is analogous to the potential of a statistical-physics model (since hbar is considered
-                analogous to the inverse temperature (beta) of a stat-physics model; S denotes the raw action).
+    def _get_gradient_at_index(self, positions, particle_index):
+        """
+        Returns the gradient of the dimensionless action with respect to the particle position at particle_index.
 
-            Parameters
-            ----------
-            positions : numpy.ndarray
-                A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-                is a float and represents the position of the worldline at that time step.
-            Returns
-            -------
-            float
-                The dimensionless action.
-            """
-            dimensionless_action = 0.0
-            for particle_index in range():
-                dimensionless_action += self._get_pairwise_dimensionless_action()
-            return dimensionless_action
-        
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
+            is a float and represents the position of the worldline at that time step.
+        particle_index : int
+            The particle index (i.e., the discretised-time index).
+        Returns
+        -------
+        float
+            The dimensionless-action gradient at particle_index.
+        """
+        pass
     
-        def get_gradient(self, positions):
-            # TODO implement get_gradient() function in this class
-            """
-            Returns the gradient of the dimensionless action for the given particle positions.
-
-            Parameters
-            ----------
-            positions : numpy.ndarray
-                A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-                is a float and represents one Cartesian component of the position of a single particle. For Bayesian
-                models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
-                lattice, the entire positions array corresponds to the entire array of superconducting phase.
-
-            Returns
-            -------
-            numpy.ndarray
-                A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-                is a float and represents one Cartesian component of the gradient of the potential of a single particle.
-            """
-            raise SystemError(f"The get_gradient method of {self.__class__.__name__} has not been written.")
+    
+    
+    def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
+        """
+        Returns the hard disk potential which goes as:
+        V(r) = \inf ir r < \sigma
+                0 if r \geq \sigma
+        where r = |x_i - y_j| and \sigma is the disk radius
         
-        def get_potential_difference(self, active_particle_index, candidate_position, positions):
-            """
-            Returns the difference in dimensionless action resulting from moving the single active particle to
-                candidate_position.  Note that the dimensional action S * self._timestep is analogous to the potential of a
-                statistical-physics model (since hbar is considered analogous to the inverse temperature (beta) of a
-                stat-physics model; S denotes the raw action).
-
-            Parameters
-            ----------
-            active_particle_index : int
-                The index of the active particle.
-            candidate_position : float
-                A float representing the proposed position of the active particle.
-            positions : numpy.ndarray
-                A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-                is a float and represents the position of the worldline at that time step.
-
-            Returns
-            -------
-            float
-                The dimensionless-action difference.
-            """
-            neighbour_indices = [get_west_neighbour_quantum_hard_disks(active_particle_index,
-                        number_of_timeslices, number_of_quantum_particles),
-                        get_east_neighbour_quantum_hard_disks(active_particle_index,
-                        number_of_timeslices, number_of_quantum_particles)]
-            
-            current_dimensionless_action = (
-                    self._get_pairwise_dimensionless_action(positions[active_particle_index],
-                        positions[neighbour_indices[0]]
-                        ) +
-                    self._get_pairwise_dimensionless_action(positions[active_particle_index],
-                        positions[neighbour_indices[1]]
-                        ))
-            
-            candidate_dimensionless_action = (
-                    self._get_pairwise_dimensionless_action(positions, candidate_position,
-                        positions[neighbour_indices[0]], active_particle_index, neighbour_indices) +
-                    self._get_pairwise_dimensionless_action(positions, candidate_position,
-                        positions[neighbour_indices[1]], active_particle_index, neighbour_indices))
-            return candidate_dimensionless_action - current_dimensionless_action
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
+            is a float and represents the position of the worldline at that time step.
+        active_particle_index : int
+            The index of the active particle.
+        position_at_active_particle_index : float
+            The position of the particle at the active particle index.
+        Returns
+        -------
+        float
+            The potential energy contribution to the pairwise dimensionless action.
+        """
+    
+        east_dist = np.abs(position_at_active_particle_index - positions[
+                    get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
+                                                number_of_quantum_particles)])
+        west_dist = np.abs(position_at_active_particle_index - positions[
+                    get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
+                                                number_of_quantum_particles)])
+        radius = np.max((east_dist))
+ 
         
-        def _get_gradient_at_index(self, positions, particle_index):
-            """
-            Returns the gradient of the dimensionless action with respect to the particle position at particle_index.
+        if r < self._disk_radius:
+            hard_disk_potential = np.inf
+        else:
+            hard_disk_potential = 0.0
+        return hard_disk_potential
 
-            Parameters
-            ----------
-            positions : numpy.ndarray
-                A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-                is a float and represents the position of the worldline at that time step.
-            particle_index : int
-                The particle index (i.e., the discretised-time index).
-            Returns
-            -------
-            float
-                The dimensionless-action gradient at particle_index.
-            """
-            pass
-        
-        def _get_pairwise_dimensionless_action(self, positions, position_at_index, position_at_east_index, active_paricle_index,
-                                                neighbour_indices):
-            """
-            Returns the contribution to the dimensionless action from a given pair of positions.
-
-            Parameters
-            ----------
-            position_at_index : float
-                The position of the particle at some particle index.
-            position_at_east_index : float
-                The position of the particle at the site east of the particle index.
-            active_particle_index : int
-                The index of the active particle.
-            Returns
-            -------
-            float
-                The pairwise contribution to the dimensionless action.
-            """
-
-            return 0.5 * self._mass * (position_at_east_index - position_at_index) ** 2 / self._timestep + \
-                                    _get_hard_disk_potential_at_timeslice(positions, active_paricle_index,
-                                                                                 position_at_index, neighbour_indices)
-        
-        @staticmethod
-        def _get_hard_disk_potential_at_timeslice(positions, active_particle_index, active_particle_position, neighbour_indices):
-            """
-            Returns the hard disk potential which goes as:
-            V(r) = \inf ir r < \sigma
-                    0 if r \geq \sigma
-            where r = |x_i - y_j| and \sigma is the disk radius
-            
-            Parameters
-            ----------
-            active_particle_index : int
-                Index of the currently active particle
-            active_particle_position : float
-                Position of the currently active particle
-            neighbour_indices : list
-                List of indices of the neighbouring particles
-            Returns
-            --------
-            The hard disk potential.
-            """
-            r = 10e6
-            for index in neighbour_indices:
-                y = positions[index]
-                r_new = np.abs(active_particle_position - y)
-                if r_new < r:
-                    r = r_new
-                if r < self._disk_radius:
-                    hard_disk_potential = np.inf
-                else:
-                    hard_disk_potential = 0.0
-            return hard_disk_potential
-
-        def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
-                                                movement_direction):
-            raise  SystemError(f"The get_distance_to_next_event_and_veto_index method of {self.__class__.__name__} "
-                               "has not been written.")
-        
-        def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
-             raise  SystemError(f"The choose_next_active_particle method of {self.__class__.__name__} "
-                               "has not been written.")
-        @staticmethod
-        def update_position(positions, displacement_distance, active_particle_index, movement_direction):
-            """ Updates position of the active particle following an event."""
-            pass
+    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
+                                            movement_direction):
+        raise  SystemError(f"The get_distance_to_next_event_and_veto_index method of {self.__class__.__name__} "
+                            "has not been written.")
+    
+    def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
+            raise  SystemError(f"The choose_next_active_particle method of {self.__class__.__name__} "
+                            "has not been written.")
+    @staticmethod
+    def update_position(positions, displacement_distance, active_particle_index, movement_direction):
+        """ Updates position of the active particle following an event."""
+        pass
