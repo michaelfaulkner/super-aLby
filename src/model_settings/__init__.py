@@ -18,8 +18,10 @@ system_volume = 1.0
 if type(size_of_particle_space) is list:
     for component in size_of_particle_space:
         system_volume *= component
-else:
+elif type(size_of_particle_space) is float:
     system_volume *= size_of_particle_space
+else:
+    system_volume = None
 dimensionality_of_momenta_array = (number_of_particles, dimensionality_of_particle_space)
 number_of_momenta_components = number_of_particles * dimensionality_of_particle_space
 
