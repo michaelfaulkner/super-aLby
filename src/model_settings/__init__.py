@@ -39,7 +39,8 @@ with open(args.config_file) as config_file:
         config = read_config(args.config_file)
         range_of_initial_particle_positions = get_value(config, "ModelSettings", "range_of_initial_particle_positions")
         if dimensionality_of_particle_space == 1 and size_of_particle_space is not None:
-            if type(range_of_initial_particle_positions) is float or type(range_of_initial_particle_positions) is int:
+            if type(range_of_initial_particle_positions) is float or type(range_of_initial_particle_positions) is int \
+                or range_of_initial_particle_positions is None:
                 conditions = abs(range_of_initial_particle_positions) <= size_of_particle_space / 2
             else:
                 conditions = (range_of_initial_particle_positions[0] >= - size_of_particle_space / 2 and
