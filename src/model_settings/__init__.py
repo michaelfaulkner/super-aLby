@@ -40,6 +40,7 @@ with open(args.config_file) as config_file:
             if type(range_of_initial_particle_positions) is float or type(range_of_initial_particle_positions) is int:
                 conditions = abs(range_of_initial_particle_positions) <= size_of_particle_space / 2
             else:
+                # What about is range_of_initial_particle_positions is None?
                 conditions = (range_of_initial_particle_positions[0] >= - size_of_particle_space / 2 and
                               range_of_initial_particle_positions[1] <= size_of_particle_space / 2)
         elif dimensionality_of_particle_space > 1 and size_of_particle_space[0] is not None:

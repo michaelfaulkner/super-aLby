@@ -82,6 +82,7 @@ class SmoothPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
                     f"using {self.__class__.__name__} (or any child class of ContinuousPotential) with a "
                     f"one-dimensional particle space.")
             if range_of_initial_particle_positions is None:
+                print(np.array([np.atleast_1d(np.random.normal()) for _ in range(number_of_particles)]))
                 return np.array([np.atleast_1d(np.random.normal()) for _ in range(number_of_particles)])
             elif type(range_of_initial_particle_positions) is float:
                 return np.array(
