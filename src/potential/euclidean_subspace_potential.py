@@ -7,8 +7,8 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
     """
     Abstract class for potentials defined in Euclidean subspaces.
 
-    The additional structure provided by this class (relative to Potential) are those methods required for event-chain
-        Monte Carlo.
+    Apart from get_gradient(), the additional structure provided by this class (relative to Potential) are those methods
+        required for event-chain Monte Carlo.
 
     NB, self.aggregate_pointer_hop_distance (defined below) is the aggregate distance travelled through the state space
         by the active-particle pointer due to hops when the active particle changes.  self.cell_boundary_event (defined
@@ -39,6 +39,28 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
         """the following are currently only used for ECMC in HardDiskPotential - see main docstring above for details"""
         self.aggregate_pointer_hop_distance = 0.0
         self.cell_boundary_event = False
+
+    @abstractmethod
+    def get_gradient(self, positions):
+        """
+        Returns the gradient of the potential function for the given particle positions.  This should throw an error if
+            used with a non-smooth potential, eg, a hard-sphere potential.
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
+            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
+            lattice, the entire positions array corresponds to the entire array of superconducting phase.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the gradient of the potential of a single particle.
+        """
+        raise NotImplementedError
 
     @staticmethod
     @abstractmethod
@@ -84,8 +106,7 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
-                                    veto_index):
+    def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """
         Chooses the index and direction for the next active particle in the markov chain for ECMC.
         Parameters

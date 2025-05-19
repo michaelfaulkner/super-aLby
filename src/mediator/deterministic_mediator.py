@@ -3,7 +3,7 @@ from .reversible_mediator import ReversibleMediator
 from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
 from kinetic_energy.kinetic_energy import KineticEnergy
-from potential.smooth_potential import SmoothPotential
+from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from potential.ising_potential import IsingPotential
 from sampler.sampler import Sampler
 from typing import Sequence
@@ -14,8 +14,8 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
     """Abstract DeterministicMediator class.  This is the parent class for all mediators that use Newtonian,
         relativistic or super-relativistic dynamics."""
 
-    def __init__(self, potential: SmoothPotential, samplers: Sequence[Sampler], kinetic_energy: KineticEnergy,
-                 minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
+    def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
+                 kinetic_energy: KineticEnergy, minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
                  number_of_temperature_increments: int = 1, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True,
                  initial_step_size: float = 0.1, max_number_of_integration_steps: int = 10,
@@ -29,8 +29,8 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
 
         Parameters
         ----------
-        potential : potential.potential.smooth_potential.SmoothPotential
-            Instance of the chosen child class of potential.smooth_potential.SmoothPotential.
+        potential : potential.euclidean_subspace_potential.EuclideanSubspacePotential
+            Instance of the chosen child class of potential.euclidean_subspace_potential.EuclideanSubspacePotential.
         samplers : Sequence[sampler.sampler.Sampler]
             Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
         kinetic_energy : kinetic_energy.kinetic_energy.KineticEnergy
@@ -120,7 +120,8 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
                                      f"{self.__class__.__name__} as child classes of DeterministicMediator cannot "
                                      f"resolve potentials defined on discrete configuration space.")
         """In the following line, we re-declare self._potential (it has already been declared in Mediator.__init__()) 
-            as the default potential of DeterministicMediator is SmoothPotential, which contains get_gradient()."""
+            as the default potential of DeterministicMediator is EuclideanSubspacePotential, which contains 
+            get_gradient()."""
         self._potential = potential
         self._kinetic_energy = kinetic_energy
         self._initial_step_size = initial_step_size

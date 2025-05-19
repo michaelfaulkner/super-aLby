@@ -1,12 +1,13 @@
 """Module for the InversePowerPotential class."""
-from .smooth_potential import SmoothPotential
+from .euclidean_subspace_potential import EuclideanSubspacePotential
 from base.exceptions import ConfigurationError
 from base.vectors import get_shortest_vectors_on_torus
+from helper_methods import get_initial_positions_of_smooth_potential
 from model_settings import size_of_particle_space
 import numpy as np
 
 
-class InversePowerPotential(SmoothPotential):
+class InversePowerPotential(EuclideanSubspacePotential):
     # TODO this class does not work with DeterministicMediator -- acceptance rates are 0 or 1, depending on step size
     """This class implements the inverse power potential U = prefactor * sum(| positions[i] | ** (- power)) / power"""
 
@@ -42,6 +43,21 @@ class InversePowerPotential(SmoothPotential):
         # TODO remove the following warning once the class works with DeterministicMediator
         Warning(f"{self.__class__.__name__} does not currently work with DeterministicMediator.  Acceptance rates are "
                 f"either 0 or 1, depending on step size of the numerical integrator.")
+
+    def get_initial_positions(self):
+        """
+        Returns the initial positions array.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle, e.g., two particles
+            (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
+            particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
+            represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
+        """
+        return get_initial_positions_of_smooth_potential(self.__class__.__name__)
 
     def get_value(self, positions):
         """

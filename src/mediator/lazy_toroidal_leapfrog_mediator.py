@@ -4,7 +4,7 @@ from base.exceptions import ConfigurationError
 from base.vectors import get_shortest_vectors_on_torus
 from model_settings import size_of_particle_space
 from kinetic_energy.kinetic_energy import KineticEnergy
-from potential.smooth_potential import SmoothPotential
+from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from sampler.sampler import Sampler
 from typing import Sequence
 import numpy as np
@@ -18,8 +18,8 @@ class LazyToroidalLeapfrogMediator(UnboundedAndLazyToroidalLeapfrogMediators):
     numerical integration steps.
     """
 
-    def __init__(self, potential: SmoothPotential, samplers: Sequence[Sampler], kinetic_energy: KineticEnergy,
-                 minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
+    def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
+                 kinetic_energy: KineticEnergy, minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
                  number_of_temperature_increments: int = 0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True,
                  initial_step_size: float = 0.1, max_number_of_integration_steps: int = 10,
@@ -29,8 +29,8 @@ class LazyToroidalLeapfrogMediator(UnboundedAndLazyToroidalLeapfrogMediators):
 
         Parameters
         ----------
-        potential : potential.smooth_potential.SmoothPotential
-            Instance of the chosen child class of potential.smooth_potential.SmoothPotential.
+        potential : potential.euclidean_subspace_potential.EuclideanSubspacePotential
+            Instance of the chosen child class of potential.euclidean_subspace_potential.EuclideanSubspacePotential.
         samplers : Sequence[sampler.sampler.Sampler]
             Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
         kinetic_energy : kinetic_energy.kinetic_energy.KineticEnergy
