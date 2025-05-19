@@ -82,10 +82,11 @@ class EventChainMediator(Mediator):
                 sampler.distance_between_measurements = self._distance_between_measurements
         self._total_number_of_events = 0
 
-    def _generate_sample_at_current_temperature(self, temperature_index, temperature):
+    def _generate_sample_at_current_temperature(self, temperature_index, temperature, restart_flag):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         self._total_number_of_events = 0
-        for markov_chain_index in range(self._total_number_of_iterations):
+        super()._generate_sample_at_current_temperature(self, temperature_index, temperature, restart_flag)
+        for markov_chain_index in range(self.number_of_markov_iterations):
             active_particle_index = np.random.randint(0, number_of_particles)
             movement_direction = self._potential.get_random_event_chain_velocity()
             distance_to_next_measurement = self._distance_between_measurements
@@ -96,9 +97,14 @@ class EventChainMediator(Mediator):
                     self._potential.update_position(self._positions, distance_to_next_measurement,
                                                     active_particle_index, movement_direction)
                     self._potential.cell_boundary_event = False
-                    for sampler_index, sampler in enumerate(self._samplers):
-                        self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
-                            None, self._positions, self._potential)
+                    if restart_flag:
+                        for sampler_index, sampler in enumerate(self._samplers):
+                            self._samples[sampler_index][markov_chain_index, :] = sampler.get_observation(
+                                None, self._positions, self._potential)
+                    else:
+                        for sampler_index, sampler in enumerate(self._samplers):
+                            self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
+                                None, self._positions, self._potential)
                     break
                 else:
                     distance_to_next_measurement -= distance_to_next_event
@@ -114,11 +120,12 @@ class EventChainMediator(Mediator):
         print(f"Mean event rate per particle = "
               f"{self._total_number_of_events / self._number_of_observations / number_of_particles}")
 
-    def _reset_arrays_and_counters(self, temperature):
+    def _reset_arrays_and_counters(self, temperature, restart_flag):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
-        super()._reset_arrays_and_counters(temperature)
-        for sampler_index, sampler in enumerate(self._samplers):
-            if "PressureSampler" in str(sampler):
-                self._samples[sampler_index][0, :] = number_of_particles / system_volume  # use ideal-gas pressure
-            else:
-                self._samples[sampler_index][0, :] = sampler.get_observation(None, self._positions, self._potential)
+        super()._reset_arrays_and_counters(temperature, restart_flag)
+        if not restart_flag:
+            for sampler_index, sampler in enumerate(self._samplers):
+                if "PressureSampler" in str(sampler):
+                    self._samples[sampler_index][0, :] = number_of_particles / system_volume  # use ideal-gas pressure
+                else:
+                    self._samples[sampler_index][0, :] = sampler.get_observation(None, self._positions, self._potential)

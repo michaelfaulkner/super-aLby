@@ -5,7 +5,7 @@ import sample_getter
 import sys
 import time
 from configparser import NoOptionError
-
+import matplotlib.pyplot as plt
 
 this_directory = os.path.dirname(os.path.abspath(__file__))
 src_directory = os.path.abspath(this_directory + "/../")
@@ -21,8 +21,8 @@ def main(config_file_string):
     number_of_equilibration_iterations, number_of_observations, number_of_particles,
     _, _, _) = helper_methods.get_basic_config_data(config_file_string)
     
-    mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
-    timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
+    #mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
+    #timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
     number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
     sample_directory = sample_directories[0]
     temperature_index = 0
@@ -32,11 +32,11 @@ def main(config_file_string):
     print(checkpointing_indices)
     if checkpointing_indices != 0:
         sub_arr_len = number_of_equilibration_iterations + number_of_observations
-        mean_sample = np.zeros(sub_arr_len * (checkpointing_indices + 1))
+        mean_sample = np.zeros(sub_arr_len * (checkpointing_indices + 1) + 1)
         for i in range(checkpointing_indices + 1):
-            mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = sample_getter.get_mean_positions(
+            mean_sample[i * sub_arr_len : (i+1) * sub_arr_len + 1] = sample_getter.get_mean_positions(
                 sample_directory, temperatures[temperature_index], temperature_index, i, number_of_particles, 
-                None, thinning_level=thinning_level)[1:, 0]
+                None, thinning_level=thinning_level)[:, 0]
             
     else:
         mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
@@ -45,7 +45,8 @@ def main(config_file_string):
         
 
 
-    
+    # plt.scatter(np.arange(sub_arr_len * (checkpointing_indices + 1) + 1), mean_sample)
+    # plt.savefig("test.png")
 
 if __name__ == '__main__':
     main(sys.argv[1])

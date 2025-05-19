@@ -136,14 +136,15 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
         self._current_potential = None
         self._number_of_unstable_trajectories = None
 
-    def _reset_arrays_and_counters(self, temperature):
+    def _reset_arrays_and_counters(self, temperature, restart_flag):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
-        super()._reset_arrays_and_counters(temperature)
+        super()._reset_arrays_and_counters(temperature, restart_flag)
         self._momenta = self._kinetic_energy.get_momentum_observations(temperature)
         self._current_potential = self._potential.get_value(self._positions)
-        for sampler_index, sampler in enumerate(self._samplers):
-            self._samples[sampler_index][0, :] = sampler.get_observation(self._momenta, self._positions,
-                                                                         self._potential)
+        if not restart_flag:
+            for sampler_index, sampler in enumerate(self._samplers):
+                self._samples[sampler_index][0, :] = sampler.get_observation(self._momenta, self._positions,
+                                                                            self._potential)
         self._number_of_unstable_trajectories = 0
 
     def _generate_single_observation(self, markov_chain_step_index, temperature):

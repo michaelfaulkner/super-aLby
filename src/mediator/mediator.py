@@ -112,11 +112,11 @@ class Mediator(metaclass=ABCMeta):
         """Iterates through temperatures, generating a sample at each."""
         for temperature_index, temperature in enumerate(self._temperatures):
             self._print_temperature_message(temperature, temperature_index)
-            self._reset_arrays_and_counters(temperature)
+            self._reset_arrays_and_counters(temperature, restart_flag)
             if restart_flag:
                 self._reload_configuration_from_file_and_reset()
                 self._get_checkpoint_index()
-            self._generate_sample_at_current_temperature(temperature_index, temperature)
+            self._generate_sample_at_current_temperature(temperature_index, temperature, restart_flag)
             [sampler.output_sample(self._samples[sampler_index], temperature_index, self._checkpoint_index)
              for sampler_index, sampler in enumerate(self._samplers)]
             self._write_checkpoint_index_and_configuration()
@@ -145,7 +145,6 @@ class Mediator(metaclass=ABCMeta):
         """Reloads position data from a previous sub-run in the case of checkpointing."""
         self._positions = np.load(os.path.join(os.getcwd(), self._samplers[0].output_directory,
                                                "configuration_at_checkpoint.npy"))
-        self._samples = [sampler.get_empty_sample_array(self._total_number_of_iterations) for sampler in self._samplers]
     
     def _get_checkpoint_index(self):
         """Finds run index if checkpointing is being used."""
@@ -160,16 +159,20 @@ class Mediator(metaclass=ABCMeta):
                 self._positions)
 
     @abstractmethod
-    def _reset_arrays_and_counters(self, temperature):
+    def _reset_arrays_and_counters(self, temperature, restart_flag):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
         self._positions = self._potential.get_initial_positions()
         self._samples = [sampler.get_empty_sample_array(self._total_number_of_iterations) for sampler in self._samplers]
         self._checkpoint_index = 0
 
     @abstractmethod
-    def _generate_sample_at_current_temperature(self, temperature_index, temperature):
+    def _generate_sample_at_current_temperature(self, temperature_index, temperature, restart_flag):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
-        raise NotImplementedError
+        if restart_flag:
+            self.number_of_markov_iterations = self._total_number_of_iterations + 1
+        else:
+            self.number_of_markov_iterations = self._total_number_of_iterations
+        
 
     @abstractmethod
     def _print_markov_chain_summary(self):
