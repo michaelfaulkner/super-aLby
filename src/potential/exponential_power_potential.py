@@ -1,11 +1,12 @@
 """Module for the ExponentialPowerPotential class."""
-from .smooth_potential import SmoothPotential
+from .euclidean_subspace_potential import EuclideanSubspacePotential
 from base.exceptions import ConfigurationError
+from helper_methods import get_initial_positions_of_smooth_potential
 from model_settings import size_of_particle_space
 import numpy as np
 
 
-class ExponentialPowerPotential(SmoothPotential):
+class ExponentialPowerPotential(EuclideanSubspacePotential):
     """
     This class implements the exponential power potential U = sum(|x[i]| ** power / power)
 
@@ -41,6 +42,21 @@ class ExponentialPowerPotential(SmoothPotential):
         self._potential_constant = prefactor / power
         self._power = power
         self._power_minus_two = power - 2.0
+
+    def get_initial_positions(self):
+        """
+        Returns the initial positions array.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle, e.g., two particles
+            (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
+            particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
+            represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
+        """
+        return get_initial_positions_of_smooth_potential(self.__class__.__name__)
 
     def get_value(self, positions):
         """

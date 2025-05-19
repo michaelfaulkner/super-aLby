@@ -3,7 +3,7 @@ import itertools
 import math
 import numpy as np
 from .euclidean_subspace_potential import EuclideanSubspacePotential
-from base.exceptions import ConfigurationError
+from base.exceptions import ConfigurationError, MediatorError
 from base.vectors import get_shortest_vectors_on_torus
 from linked_lists.two_dimensional_linked_lists import TwoDimensionalLinkedLists
 from model_settings import size_of_particle_space, number_of_particles
@@ -102,6 +102,27 @@ class HardDiskPotential(EuclideanSubspacePotential):
             The potential difference resulting from moving the single active particle to candidate_position.
         """
         pass
+
+    def get_gradient(self, positions):
+        """
+        Throws an error if used in this case.  The method is only validw for smooth potential functions.
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
+            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
+            lattice, the entire positions array corresponds to the entire array of superconducting phase.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the gradient of the potential of a single particle.
+        """
+        raise MediatorError(f"get_gradient() is not a valid method for {self.__class__.__name__} as this is not a "
+                            f"smooth potential function.")
 
     def get_initial_positions(self):
         """

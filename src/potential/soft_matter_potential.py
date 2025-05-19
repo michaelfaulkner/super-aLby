@@ -1,18 +1,19 @@
 """Module for the abstract SoftMatterPotential class."""
-from .smooth_potential import SmoothPotential
+from .euclidean_subspace_potential import EuclideanSubspacePotential
 from base.exceptions import ConfigurationError
+from helper_methods import get_initial_positions_of_smooth_potential
 from model_settings import dimensionality_of_particle_space, range_of_initial_particle_positions, size_of_particle_space
 from abc import ABCMeta
 import numpy as np
 
 
-class SoftMatterPotential(SmoothPotential, metaclass=ABCMeta):
+class SoftMatterPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     """
     Abstract class for soft-matter potentials, which are potentials that are smooth functions of particle-separation
         vectors.
 
-    The only additional structure provided by this class (relative to SmoothPotential) are raising exceptions to ensure
-        a valid combined choice of size_of_particle_space, range_of_initial_particle_positions and
+    The only additional structure provided by this class (relative to EuclideanSubspacePotential) are raising exceptions
+        to ensure a valid combined choice of size_of_particle_space, range_of_initial_particle_positions and
         dimensionality_of_particle_space.
     """
 
@@ -80,3 +81,18 @@ class SoftMatterPotential(SmoothPotential, metaclass=ABCMeta):
                     f"dimension dimensionality_of_particle_space.  Each element of the list corresponds to a Cartesian "
                     f"component of each particle position and each sub-list represents the bounds of the interval from "
                     f"which the corresponding initial Cartesian component is randomly chosen.")
+
+    def get_initial_positions(self):
+        """
+        Returns the initial positions array.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle, e.g., two particles
+            (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
+            particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
+            represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
+        """
+        return get_initial_positions_of_smooth_potential(self.__class__.__name__)
