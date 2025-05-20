@@ -111,21 +111,25 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             The dimensionless-action difference.
         """
         current_dimensionless_action = (
-                self._get_pairwise_dimensionless_action(positions, active_particle_index, 
+                self._get_pairwise_dimensionless_action(
+                                                        positions, active_particle_index, 
                                                         positions[get_west_neighbour_worldline(active_particle_index,
                                                         number_of_timeslices, number_of_quantum_particles)],
                                                         positions[active_particle_index]) +
-                self._get_pairwise_dimensionless_action(positions, active_particle_index,
+                self._get_pairwise_dimensionless_action(
+                                                        positions, active_particle_index,
                                                         positions[active_particle_index],
                                                         positions[get_east_neighbour_worldline(active_particle_index,
                                                         number_of_timeslices, number_of_quantum_particles)]))
         
         candidate_dimensionless_action = (
-                self._get_pairwise_dimensionless_action(positions, active_particle_index,
+                self._get_pairwise_dimensionless_action(
+                                                        positions, active_particle_index,
                                                         positions[get_west_neighbour_worldline(active_particle_index,
                                                         number_of_timeslices, number_of_quantum_particles)],
                                                         candidate_position) +
-                self._get_pairwise_dimensionless_action(positions, active_particle_index, candidate_position,
+                self._get_pairwise_dimensionless_action(
+                                                        positions, active_particle_index, candidate_position,
                                                         positions[get_east_neighbour_worldline(active_particle_index,
                                                         number_of_timeslices, number_of_quantum_particles)]))
         return candidate_dimensionless_action - current_dimensionless_action

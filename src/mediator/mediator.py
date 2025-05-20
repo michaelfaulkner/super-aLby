@@ -116,6 +116,7 @@ class Mediator(metaclass=ABCMeta):
             if restart_flag:
                 self._reload_configuration_from_file_and_reset()
                 self._get_checkpoint_index()
+                print(f"Reloading final configuration from checkpoint. Starting checkpoint {self._checkpoint_index}")
             self._generate_sample_at_current_temperature(temperature_index, temperature, restart_flag)
             [sampler.output_sample(self._samples[sampler_index], temperature_index, self._checkpoint_index)
              for sampler_index, sampler in enumerate(self._samplers)]
