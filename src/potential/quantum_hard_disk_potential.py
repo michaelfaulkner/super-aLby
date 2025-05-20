@@ -2,7 +2,9 @@
 import numpy as np
 from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError
-from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
+from base.vectors import get_shortest_vectors_on_torus
+from model_settings import size_of_particle_space, number_of_quantum_particles, number_of_timeslices
+from model_settings import number_of_particles, size_of_particle_space_over_two
 from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
 
 class QuantumHardDiskPotential(WorldlinePotential):
@@ -36,6 +38,28 @@ class QuantumHardDiskPotential(WorldlinePotential):
             raise ConfigurationError(f"Give a value of 1.0 for prefactor in {self.__class__.__name__} - functionality "
                                      f"for other values is not yet provided.")
         self._disk_radius = disk_radius
+
+    def get_initial_positions(self):
+        """
+        Returns the initial positions array.  Creates an equidistant configuration.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle, e.g., three
+            particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
+            represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
+        """
+
+        distance_between_particles = size_of_particle_space / number_of_quantum_particles
+        positions = np.zeros((number_of_particles, 1))
+        for particle_index in range(number_of_particles):
+            quantum_particle_index = particle_index % number_of_quantum_particles
+            positions[particle_index] = get_shortest_vectors_on_torus(size_of_particle_space_over_two +
+                                                                    quantum_particle_index * distance_between_particles)
+        return positions
+
 
     @staticmethod
     def get_random_event_chain_velocity():

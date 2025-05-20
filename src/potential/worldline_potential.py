@@ -1,12 +1,12 @@
 """Module for the WorldlinePotential class"""
 import numpy as np
-from .smooth_potential import SmoothPotential
+from .euclidean_subspace_potential import EuclideanSubspacePotential
 from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
 from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
 from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
 
-class WorldlinePotential(SmoothPotential, metaclass=ABCMeta):
+class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     """
     Abstract class for worldline potentials. The extra methods provided are those required to calculate the action
     of the system.
