@@ -76,16 +76,20 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
                 positions[get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
                                                             number_of_quantum_particles)]).item()
 
-    def _get_potential_action_term(self, positions, active_particle_index):
+    def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
         """
         Returns the potential energy contribution to teh pairwise dimensionless action
         Parameters
         ----------
         position_at_active_particle_index : float
             The position of the particle at some particle index.
-        position_at_east_index : float
-            The position of the particle at the site east of the particle index.
-        Returns
+        position_at_east_index : flpositions : numpy.ndarray
+            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
+            is a float and represents the position of the worldline at that time step.
+        active_particle_index : int
+            The index of the active particle.
+        position_at_active_particle_index : float
+            The position of the particle at the active particle index.
         -------
         float
             The potential energy contribution to the pairwise dimensionless action.

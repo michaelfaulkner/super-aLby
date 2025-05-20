@@ -112,21 +112,22 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         """
         current_dimensionless_action = (
                 self._get_pairwise_dimensionless_action(positions, active_particle_index, 
-                    positions[get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles)],
-                    positions[active_particle_index]) +
+                                                        positions[get_west_neighbour_worldline(active_particle_index,
+                                                        number_of_timeslices, number_of_quantum_particles)],
+                                                        positions[active_particle_index]) +
                 self._get_pairwise_dimensionless_action(positions, active_particle_index,
-                    positions[active_particle_index],
-                    positions[get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles)]))
+                                                        positions[active_particle_index],
+                                                        positions[get_east_neighbour_worldline(active_particle_index,
+                                                        number_of_timeslices, number_of_quantum_particles)]))
         
         candidate_dimensionless_action = (
                 self._get_pairwise_dimensionless_action(positions, active_particle_index,
-                    positions[get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles)], candidate_position) +
+                                                        positions[get_west_neighbour_worldline(active_particle_index,
+                                                        number_of_timeslices, number_of_quantum_particles)],
+                                                        candidate_position) +
                 self._get_pairwise_dimensionless_action(positions, active_particle_index, candidate_position,
-                    positions[get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles)]))
+                                                        positions[get_east_neighbour_worldline(active_particle_index,
+                                                        number_of_timeslices, number_of_quantum_particles)]))
         return candidate_dimensionless_action - current_dimensionless_action
     
     
@@ -163,11 +164,10 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         Returns the kinetic energy contribution to the pairwise dimensionless action.
         Parameters
         ----------
-        positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
         active_particle_index : int
             The index of the active particle.
+        position_at_active_particle_index : float
+            The position of the particle at the active particle index.
         position_at_neighbouring_worldline_index : float
             The position of the same index quantum particle at a neighbouring timeslice
         Returns
@@ -180,16 +180,17 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
                 position_at_active_particle_index)**2 / self._timestep
     
     @abstractmethod
-    def _get_potential_action_term(self, positions, active_particle_index):
+    def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
         """
         Returns the potential energy contribution to teh pairwise dimensionless action
         Parameters
-        ----------
         positions : numpy.ndarray
             A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
             is a float and represents the position of the worldline at that time step.
         active_particle_index : int
             The index of the active particle.
+        position_at_active_particle_index : float
+            The position of the particle at the active particle index.
         Returns
         -------
         float
