@@ -1,9 +1,9 @@
 # super-aLby
-super-aLby is a Python application that implements the super-relativistic, Hamiltonian, Metropolis and Wolff Monte 
-Carlo algorithm for the simulation of Bayesian probability models and classical *N*-body models in statistical physics. 
-For a closely connected discussion of kinetic-energy choice in Hamiltonian/hybrid Monte Carlo, see 
-[\[Livingstone2019\]](https://academic.oup.com/biomet/article-abstract/106/2/303/5476364), where we first introduced 
-super-relativistic Monte Carlo (though we did not name it).
+super-aLby is a Python application that implements various Monte Carlo sampling algorithms for both classical *N*-body 
+models in statistical physics (including Wick-rotated quantum actions) and Bayesian probability models.  The Monte Carlo
+algorithms include the Metropolis, event-chain, super-relativistic, Hamiltonian, Wolff and Swendsen-Wang Monte Carlo 
+algorithms.  For a closely connected discussion of kinetic-energy choice in Hamiltonian/hybrid Monte Carlo, see 
+[\[Livingstone2019\]](https://academic.oup.com/biomet/article-abstract/106/2/303/5476364), where we first introduced super-relativistic Monte Carlo (though we did not name it).
 
 ## Installation
 

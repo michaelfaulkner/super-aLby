@@ -112,7 +112,7 @@ def get_mean_squared_positions(sample_directory, temperature, temperature_index,
         and/or thinning_level is not None.  The nth element is the mean squared particle position at observation n.
     """
     return get_reduced_sample(
-        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_sample_of_mean_squared_positions.npy"),
+        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_sample_of_mean_squared_positions.npy"),
         number_of_equilibration_iterations, thinning_level)
 
 
