@@ -1,36 +1,22 @@
 import math
 import numpy as np
 
-try:
-    import rpy2.robjects.numpy2ri as n2ri
-    import rpy2.robjects.packages as r_packages
-    n2ri.activate()
-    laplaces_demon_r_package = r_packages.importr('LaplacesDemon')
-    mcmcse_r_package = r_packages.importr('mcmcse')
-
-
-    def get_effective_sample_size(one_dimensional_sample):
-        if len(np.atleast_2d(one_dimensional_sample)) > 1:
-            raise Exception("Error: the sample passed to markov_chain_diagnostics.get_effective_sample_size() must be "
-                            "one (Cartesian) dimensional.")
-        return np.array(laplaces_demon_r_package.ESS(one_dimensional_sample))[0]
-
-
-    '''def get_sample_mean_and_error(one_dimensional_sample):
-        if len(np.atleast_2d(one_dimensional_sample)) > 1:
-            raise Exception("Error: the sample passed to markov_chain_diagnostics.get_sample_mean_and_error() must be "
-                            "one (Cartesian) dimensional.")
-        sample_mean_and_error = np.array(mcmcse_r_package.mcse(one_dimensional_sample))
-        return [sample_mean_and_error[0, 0], sample_mean_and_error[1, 0]]'''
-
-except (ModuleNotFoundError, ValueError) as _:
-    def get_effective_sample_size(_):
-        print("rpy2 not available: get_effective_sample_size() returns None.")
-        return None
-
-
 def get_sample_mean_and_error(sample):
-    return [np.mean(sample), np.std(sample) / len(sample) ** 0.5]
+    """
+    Calculate the mean and error of a one-dimensional sample.
+
+    Parameters
+    ----------
+    sample : numpy.ndarray
+        Sample to be analysed.
+    
+    Returns
+    -------
+    list
+        A list containing the mean and error of the sample [mean, error].
+    """
+    iat = get_integrated_autocorrelation_time(sample)
+    return [np.mean(sample), np.std(sample, ddof=1) * (iat / len(sample)) ** 0.5]
 
 
 def get_thinned_sample(one_dimensional_sample, thinning_level):
@@ -54,15 +40,69 @@ def get_cumulative_distribution(one_dimensional_sample):
 
 
 def get_autocorrelation(sample):
+    """
+    Calculate the autocorrelation function of a one-dimensional sample.  
+
+    Parameters
+    ----------
+    sample : numpy.ndarray
+        Sample to be analysed.
+
+    Returns
+    -------
+    numpy.ndarray
+        Autocorrelation function of the sample.
+    """
     if len(np.atleast_2d(sample)) > 1:
         raise Exception("Error: the sample passed to markov_chain_diagnostics.get_autocorrelation() must be one "
                         "(Cartesian) dimensional.")
     mean_zero_sample = sample - np.mean(sample)
     full_acf = np.correlate(mean_zero_sample, mean_zero_sample, mode='full')
     """np.correlate() is symmetric about t = 0 when mode='full' - full_acf[full_acf.size // 2:] returns t >= 0 values"""
-    return full_acf[full_acf.size // 2:]
+    acf = full_acf[full_acf.size // 2:]
+    acf /= acf[0] # Normalise
+    return acf
 
 
-def get_integrated_autocorrelation_time(autocorrelation_function, cutoff=math.e ** (-2)):
-    max_acf_index = [index for index, value in enumerate(autocorrelation_function) if value < cutoff][0] - 1
-    return 2.0 * np.sum(autocorrelation_function[:max_acf_index]) - 1.0
+def get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-2)):
+    """
+    Calculate the integrated autocorrelation time of a one-dimensional sample.
+    
+    Parameters
+    ----------
+    sample : numpy.ndarray
+        Sample to be analysed.
+    cutoff : float
+        Cutoff value for the autocorrelation function. The default value is e^(-2).
+/page
+    Returns
+    -------
+    float
+        Integrated autocorrelation time.
+    """
+    autocorrelation_function = get_autocorrelation(sample)
+    below_cutoff = np.where(autocorrelation_function < cutoff)[0]
+    max_acf_index = below_cutoff[0] - 1
+    return 2.0 * np.sum(autocorrelation_function[:max_acf_index]) - 1.0, autocorrelation_function
+
+
+def get_effective_sample_size(sample):
+    """
+    Calculate the effective sample size of a one-dimensional sample.
+    
+    Parameters
+    ----------
+    sample : numpy.ndarray
+        Sample to be analysed.
+
+    Returns
+    -------
+    float
+        Effective sample size.
+    """
+    if len(np.atleast_2d(sample)) > 1:
+        raise Exception("Error: the sample passed to markov_chain_diagnostics.get_effective_sample_size() must be "
+                        "one (Cartesian) dimensional.")
+    iat = get_integrated_autocorrelation_time(sample)
+    return len(sample) / iat
+

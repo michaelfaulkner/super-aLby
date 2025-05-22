@@ -135,7 +135,7 @@ def get_observable_autocorrelation_vs_temperature(observable_string, mediator, o
                 f"{number_of_observations}_observations.npy", acf_vs_temperature)
     return acf_vs_temperature
 
-
+# Needs to be adapted to meet the new interface of get_integrated_autocorrelation_time
 def get_magnetic_norm_integrated_autocorrelation_times_vs_temperature(autocorrelation_function, mediator,
                                                                       output_directory, temperatures, lattice_length,
                                                                       number_of_observations, number_of_jobs):
@@ -146,7 +146,7 @@ def get_magnetic_norm_integrated_autocorrelation_times_vs_temperature(autocorrel
             output_file_sans_header = np.array([np.fromstring(line, dtype=float, sep='\t') for line in output_file
                                                 if not line.startswith('#')]).transpose()
             integrated_autocorrelation_times_vs_temperature = output_file_sans_header[1]
-    except IOError:
+    except IOError: 
         integrated_autocorrelation_times_vs_temperature = [get_integrated_autocorrelation_time(
             autocorrelation_function[temperature_index]) for temperature_index, _ in enumerate(temperatures)]
         output_file = open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_norm_integrated_"
