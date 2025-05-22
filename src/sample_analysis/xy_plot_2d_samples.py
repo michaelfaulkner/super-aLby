@@ -14,14 +14,16 @@ helper_methods = importlib.import_module("helper_methods")
 
 plt.style.use('ggplot')
 
-def main(config_file_string):
+def main(config_file_string, temperature_index='00'):
     """
     Plot 2D samples.
     
     Parameters
     ----------
-    config_file_path : str 
+    config_file_string : str 
         Location of the config file.
+    temperature_index : str
+        Index of simulation temperature.
     """
     config_file_path = parsing.parse_options([config_file_string]).config_file
     config = parsing.read_config(config_file_path)
@@ -29,20 +31,18 @@ def main(config_file_string):
      _, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
 
     directory_path = sample_directories[0]
-    file_path = os.path.join(directory_path, 'temperature_00_checkpoint_*_sample_of_magnetisation_vector.npy')
-    samples_paths = glob.glob(file_path)
-    samples_paths = sorted(samples_paths, key=lambda fname: int(re.search(r"checkpoint_(\d{2})", fname).group(1)))
-
-    samples = []
-    for samples_path in samples_paths:
-        run_samples = np.load(samples_path)
-        samples.append(run_samples)
-    samples = np.array(samples).reshape(-1, 2)
-
+    file_path = os.path.join(directory_path, f'temperature_{temperature_index}_checkpoint_*_sample_of_magnetisation_vector.npy')
     just_file_path = file_path.split('/')[-1].split('.')[0]
+    sample_paths = glob.glob(file_path) # Find all filepaths satisfying wildcard condition 
+    sample_paths = sorted(sample_paths, key=lambda fname: int(re.search(r"checkpoint_(\d{2})", fname).group(1)))
 
+    sample = []
+    for sample_path in sample_paths:
+        sample.append(np.load(sample_path))
+    sample = np.concatenate(sample, axis=0).reshape(2, -1)
+    
     fig, ax = plt.subplots(figsize=(10, 8))
-    ax.plot(samples[:, 0], samples[:, 1], color='firebrick', alpha=0.8)
+    ax.plot(sample[0, :], sample[1, :], color='firebrick', alpha=0.8)
     ax.set_title(file_path, fontsize=10)
     plt.savefig(os.path.join(directory_path, f'{just_file_path}.png'))
 
