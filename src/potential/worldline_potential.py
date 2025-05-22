@@ -112,7 +112,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         """
         current_dimensionless_action = (
                 self._get_pairwise_dimensionless_action(
-                                                        positions,get_west_neighbour_worldline(active_particle_index,
+                                                        positions, get_west_neighbour_worldline(active_particle_index,
                                                         number_of_timeslices, number_of_quantum_particles), 
                                                         positions[get_west_neighbour_worldline(active_particle_index,
                                                         number_of_timeslices, number_of_quantum_particles)],
@@ -188,7 +188,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     @abstractmethod
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
         """
-        Returns the potential energy contribution to teh pairwise dimensionless action
+        Returns the potential energy contribution to the pairwise dimensionless action
         Parameters
         positions : numpy.ndarray
             A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
