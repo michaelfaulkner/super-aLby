@@ -112,7 +112,8 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         """
         current_dimensionless_action = (
                 self._get_pairwise_dimensionless_action(
-                                                        positions, active_particle_index, 
+                                                        positions,get_west_neighbour_worldline(active_particle_index,
+                                                        number_of_timeslices, number_of_quantum_particles), 
                                                         positions[get_west_neighbour_worldline(active_particle_index,
                                                         number_of_timeslices, number_of_quantum_particles)],
                                                         positions[active_particle_index]) +
@@ -124,7 +125,8 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         
         candidate_dimensionless_action = (
                 self._get_pairwise_dimensionless_action(
-                                                        positions, active_particle_index,
+                                                        positions, get_west_neighbour_worldline(active_particle_index,
+                                                        number_of_timeslices, number_of_quantum_particles),
                                                         positions[get_west_neighbour_worldline(active_particle_index,
                                                         number_of_timeslices, number_of_quantum_particles)],
                                                         candidate_position) +

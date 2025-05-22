@@ -85,7 +85,7 @@ class EventChainMediator(Mediator):
     def _generate_sample_at_current_temperature(self, temperature_index, temperature, restart_flag):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         self._total_number_of_events = 0
-        super()._generate_sample_at_current_temperature(self, temperature_index, temperature, restart_flag)
+        super()._generate_sample_at_current_temperature(temperature_index, temperature, restart_flag)
         for markov_chain_index in range(self.number_of_markov_iterations):
             active_particle_index = np.random.randint(0, number_of_particles)
             movement_direction = self._potential.get_random_event_chain_velocity()

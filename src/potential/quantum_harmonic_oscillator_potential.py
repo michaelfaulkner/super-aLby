@@ -73,7 +73,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         dimensionless_action = 0.0
         for particle_index in range(0, number_of_particles):
             dimensionless_action += self._get_pairwise_dimensionless_action(
-                positions[particle_index], positions[get_east_neighbour(particle_index, number_of_particles)])
+                positions[particle_index], positions[get_east_neighbour_worldline(particle_index, number_of_timeslices,
+                                                                                  number_of_quantum_particles)])
         return dimensionless_action
 
     def get_gradient(self, positions):
