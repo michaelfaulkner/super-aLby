@@ -2,7 +2,11 @@ import math
 import numpy as np
 
 def get_effective_sample_size(sample):
+    """
     
+    
+    """
+    iat = get_integrated_autocorrelation_time()
 
 try:
     import rpy2.robjects.numpy2ri as n2ri
@@ -67,5 +71,11 @@ def get_autocorrelation(sample):
 
 
 def get_integrated_autocorrelation_time(autocorrelation_function, cutoff=math.e ** (-2)):
+    max_acf_index = [index for index, value in enumerate(autocorrelation_function) if value < cutoff][0] - 1
+    return 2.0 * np.sum(autocorrelation_function[:max_acf_index]) - 1.0
+
+
+def get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-2)):
+    autocorrelation_function = get_autocorrelation(sample)
     max_acf_index = [index for index, value in enumerate(autocorrelation_function) if value < cutoff][0] - 1
     return 2.0 * np.sum(autocorrelation_function[:max_acf_index]) - 1.0
