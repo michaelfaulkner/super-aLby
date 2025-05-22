@@ -38,7 +38,46 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         if lattice_dimensionality != 1:
             raise ConfigurationError(f"Give a value of 1 for lattice_dimensionality in {self.__class__.__name__} - "
                                      f"functionality for other dimensions not yet provided.")
+        
     def get_initial_positions(self):
+        """
+        Returns the initial positions array.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle, e.g., two particles
+            (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
+            particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
+            represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
+        """
+        return get_initial_positions_of_smooth_potential(self.__class__.__name__)
+    
+    def get_value(self, positions):
+        """
+        Returns the dimensionless action for the given particle positions.  Note that the dimensional action
+            S * self._timestep is analogous to the potential of a statistical-physics model (since hbar is considered
+            analogous to the inverse temperature (beta) of a stat-physics model; S denotes the raw action).
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
+            is a float and represents the position of the worldline at that time step.
+        Returns
+        -------
+        float
+            The dimensionless action.
+        """
+        dimensionless_action = 0.0
+        for particle_index in range(0, number_of_particles):
+            dimensionless_action += self._get_pairwise_dimensionless_action(
+                positions[particle_index], positions[get_east_neighbour(particle_index, number_of_particles)])
+        return dimensionless_action
+
+    def get_gradient(self, positions):
+        # TODO implement get_gradient() function in this class
         """
         Returns the initial positions array.
 
