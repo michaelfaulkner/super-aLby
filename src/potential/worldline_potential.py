@@ -203,3 +203,133 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             The potential energy contribution to the pairwise dimensionless action.
         """
         raise NotImplementedError
+
+    def get_kinetic_term_distance_to_next_event_and_veto_index(self, positions, active_particle_index,
+                                                                        temperature, movement_direction,
+                                                                        worldline_neighbours):
+        """
+        Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
+            is a float and represents the position of the worldline at that time step.
+        active_particle_index : int
+            The active particle index (i.e., the discretised-time index).
+        temperature : float
+            The sampling temperature.  NB, we set temperature = 1.0 (for QHO) as this quantity is for stat-phys models.
+        movement_direction : int
+            The direction of movement of the active particle.
+        worldline_neighbours : numpy.ndarray
+            A one-dimensional array containing the indices of the neighbouring worldline points for the current active
+            particle index.
+        
+        Returns
+        ----------
+        distance_to_next_event : float
+            The distance to the next particle event according to the kinetic term of the action.
+        vetoing_particle_index : int
+            The index of the particle that triggers the eventaccording to the kinetic term of the action.
+        """
+    
+        shortest_distance_to_next_factor_event = 1.0e10
+        vetoing_index = None
+        initial_position = positions[active_particle_index].item()
+
+        for worldline_neighbour in worldline_neighbours:
+            if worldline_neighbour != active_particle_index:
+                uphill_energy = - np.log(np.random.uniform(0, 1))
+                neighbour_position = positions[worldline_neighbour].item()
+                bottom_of_well = neighbour_position
+                if ((movement_direction > 0 and initial_position < bottom_of_well) or
+                        (movement_direction < 0 and initial_position > bottom_of_well)):
+                    """advance to the bottom of the well"""
+                    intermediate_position = bottom_of_well
+                else:
+                    intermediate_position = initial_position
+                initial_action = 0.5 * (self._mass / self._timestep) * (intermediate_position - neighbour_position) ** 2
+                final_action = uphill_energy + initial_action
+                roots = np.roots([0.5 * self._mass / self._timestep, -(self._mass / self._timestep)
+                                    * neighbour_position, (0.5 * self._mass / self._timestep) * neighbour_position ** 2
+                                    - final_action])
+          
+            final_position_wrt_factor_event = self.get_final_position_wrt_factor_event(movement_direction, roots)
+            distance_to_next_factor_event = np.abs(final_position_wrt_factor_event - initial_position)
+            
+            if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
+                shortest_distance_to_next_factor_event = distance_to_next_factor_event
+                vetoing_index = worldline_neighbour
+                
+        return shortest_distance_to_next_factor_event, vetoing_index
+    
+    @abstractmethod
+    def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
+        """
+        Chooses the index and direction for the next active particle in the markov chain.
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
+            is a float and represents the position of the worldline at that time step.
+        active_particle_index : int
+            The active particle index (i.e., the discretised-time index).
+        movement_direction : int
+            The direction of movement of the active particle.
+        veto_index : int
+            The particle index responsible for the event. 
+        Returns
+        -------
+        new_active_particle_index : int
+            The next active particle index (i.e., the discretised-time index) in the event chain.
+        new_movement_direction : int
+            The direction of movement of the next active particle.
+        """
+        raise NotImplementedError
+    
+    @abstractmethod
+    def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
+        """
+        Updates position of the active particle following an event.
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
+            is a float and represents the position of the worldline at that time step.
+        displacement_distrance : float
+            The displacement that the current position of the cative particle will be updated using.
+        active_particle_index : int
+            The active particle index (i.e., the discretised-time index).
+        movement_direction : int
+            The direction of movement of the active particle.
+        Returns
+        -------
+        new_position : float
+            The updated position of the active particle
+        """
+        raise NotImplementedError
+
+    
+    def get_final_position_wrt_factor_event(self, movement_direction, roots):
+        """
+        Helper function for self.get_kinetic_term_distance_to_next_event_and_veto_index().
+        Returns the correct root of the quadratic equation produced by the kinetic energy term in the action.
+        Parameters
+        ----------
+        movement_direction : int
+            The direction of movement of the active particle.
+        roots : numpy.ndarray
+            Array of roots of the quadratic equation given by the kinetic term of the action.
+        Returns
+        -------
+            The correct root of the equation according to the direction of motion.
+        """
+
+        if (movement_direction > 0) and (roots[0] > roots[1]):
+            return roots[0]
+        elif (movement_direction > 0) and (roots[0] < roots[1]):
+            return roots[1]
+        elif (movement_direction < 0) and (roots[0] < roots[1]):
+            return roots[0]
+        else:
+            return roots[1]

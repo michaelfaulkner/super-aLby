@@ -101,7 +101,7 @@ class Mediator(metaclass=ABCMeta):
                                               number_of_temperature_increments)
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
-        self._number_of_observations_between_screen_prints_for_clock = int(number_of_observations / 10)
+        self._number_of_observations_between_screen_prints_for_clock = 1#int(number_of_observations / 10)
         self._total_number_of_iterations = number_of_equilibration_iterations + number_of_observations
         """The following objects are set in self._reset_arrays_and_counters()"""
         self._positions = None

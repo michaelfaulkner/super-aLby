@@ -7,6 +7,7 @@ from model_settings import size_of_particle_space, number_of_quantum_particles, 
 from model_settings import number_of_particles, size_of_particle_space_over_two
 from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
 
+
 class QuantumHardDiskPotential(WorldlinePotential):
     r"""
     This class implements a 2-body quantum hard disk model in the worldline formalism.
@@ -14,6 +15,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
         \delta\tau \sum_{i=1}^{N_{\tau}}[0.5 * m(x_{i+1} - x_i)^2 / (\delta\tau)^2 + V(r)],
         where m and \omega are the mass and frequency, respectively, and V(r) is the hard disk potential.
     """
+
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0,
                  timestep: float = 0.1, disk_radius: float = 1.0):
         r"""
@@ -33,7 +35,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
             The radius of each disk.
         """
         super().__init__(prefactor=prefactor, lattice_dimensionality=lattice_dimensionality, mass=mass,
-                          timestep=timestep)
+                         timestep=timestep)
         if prefactor != 1.0:
             raise ConfigurationError(f"Give a value of 1.0 for prefactor in {self.__class__.__name__} - functionality "
                                      f"for other values is not yet provided.")
@@ -56,11 +58,8 @@ class QuantumHardDiskPotential(WorldlinePotential):
         positions = np.zeros((number_of_particles, 1))
         for particle_index in range(number_of_particles):
             quantum_particle_index = particle_index % number_of_quantum_particles
-            positions[particle_index] = get_shortest_vectors_on_torus(size_of_particle_space_over_two +
-                                                                    quantum_particle_index * distance_between_particles)
-
+            positions[particle_index] = get_shortest_vectors_on_torus(quantum_particle_index * distance_between_particles)
         return positions
-
 
     @staticmethod
     def get_random_event_chain_velocity():
@@ -75,10 +74,9 @@ class QuantumHardDiskPotential(WorldlinePotential):
             numpy array (of integers) of length dimensionality_of_particle_space, where the nth component represents the
             velocity of the active particle along the nth Cartesian direction.
         """
-            
+
         return 1.0
 
-    
     def _get_gradient_at_index(self, positions, particle_index):
         """
         Returns the gradient of the dimensionless action with respect to the particle position at particle_index.
@@ -96,16 +94,14 @@ class QuantumHardDiskPotential(WorldlinePotential):
             The dimensionless-action gradient at particle_index.
         """
         pass
-    
-    
-    
+
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
         r"""
         Returns the hard disk potential which goes as:
         V(r) = \inf ir r < \sigma
                 0 if r \geq \sigma
         where r = |x_i - y_j| and \sigma is the disk radius
-        
+
         Parameters
         ----------
         positions : numpy.ndarray
@@ -120,24 +116,32 @@ class QuantumHardDiskPotential(WorldlinePotential):
         float
             The potential energy contribution to the pairwise dimensionless action.
         """
-    
+
         quantum_particles_at_timeslice = \
-            self.get_quantum_particles_at_timeslice(active_particle_index, number_of_quantum_particles)          
+            self.get_quantum_particles_at_timeslice(
+                active_particle_index, number_of_quantum_particles)
         dist = 10e6
+        dist_new = None
         for quantum_particle in quantum_particles_at_timeslice:
             if quantum_particle != active_particle_index:
-                dist_new = np.abs(position_at_active_particle_index - positions[quantum_particle])
-            if dist_new < dist:
-                dist = dist_new
-        
-        if dist < self._disk_radius:
-            hard_disk_potential = 10e10
-        else:
-            hard_disk_potential = 0.0
+                if (position_at_active_particle_index - positions[quantum_particle]) > 0:
+                    dist_new = np.abs(
+                        position_at_active_particle_index - positions[quantum_particle])
+                else:  # do periodic BCs
+                    dist_new = size_of_particle_space_over_two - np.abs(position_at_active_particle_index) + \
+                        size_of_particle_space_over_two - \
+                        np.abs(positions[quantum_particle])
+                if dist_new < dist:
+                    dist = dist_new
+
+                if dist < 2 * self._disk_radius:
+                    hard_disk_potential = 10e10
+                else:
+                    hard_disk_potential = 0.0
         return hard_disk_potential
 
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
-                                            movement_direction):
+                                                  movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -152,57 +156,103 @@ class QuantumHardDiskPotential(WorldlinePotential):
             The sampling temperature.  NB, we set temperature = 1.0 (for QHO) as this quantity is for stat-phys models.
         movement_direction : int
             The direction of movement of the active particle.
-        
+
         Returns
         ----------
         distance_to_next_event : float
             The distance to the next particle event
-        vetoing_particle_index : int
+        vetoing_index : int
             The index of the particle that triggers the event.
             """
-        shortest_distance_to_next_factor_event = 1.0e10
+        print(f"active particle: {active_particle_index}")
         worldline_neighbours = [get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                                number_of_quantum_particles),
+                                                             number_of_quantum_particles),
                                 get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                                number_of_quantum_particles)]
-        particle_neighbours = \
-            self.get_quantum_particles_at_timeslice(active_particle_index, number_of_quantum_particles)   
-         
+                                                             number_of_quantum_particles)]
+        print(f"worldline neighbours: {worldline_neighbours}")
+        quantum_particle_neighbours = \
+            self.get_quantum_particles_at_timeslice(
+                active_particle_index, number_of_quantum_particles)
+        print(f"quantum neighbours: {quantum_particle_neighbours}")
+
+        shortest_distance_to_next_factor_event, vetoing_index = \
+            self.get_kinetic_term_distance_to_next_event_and_veto_index(positions, active_particle_index,
+                                                                        temperature, movement_direction,
+                                                                        worldline_neighbours)
+        potential_distance_to_next_factor_event = 1.0e10
         initial_position = positions[active_particle_index].item()
-        for worldline_neighbour in worldline_neighbours:
-            uphill_energy = - np.log(np.random.uniform(0, 1))
-            neighbour_position = positions[worldline_neighbour].item()
-            bottom_of_well = neighbour_position
-            if ((movement_direction > 0 and initial_position < bottom_of_well) or
-                    (movement_direction < 0 and initial_position > bottom_of_well)):
-                """advance to the bottom of the well"""
-                intermediate_position = bottom_of_well
-            else:
-                intermediate_position = initial_position
-            initial_action = 0.5 * (self._mass / self._timestep) * (intermediate_position - neighbour_position) ** 2
-            final_action = uphill_energy + initial_action
-            roots = np.roots([0.5 * self._mass / self._timestep, -(self._mass / self._timestep)
-                                  * neighbour_position, (0.5 * self._mass / self._timestep) * neighbour_position ** 2
-                                  - final_action])
-            final_position_wrt_factor_event = self.get_final_position_wrt_factor_event(movement_direction, roots)
-            distance_to_next_factor_event = np.abs(final_position_wrt_factor_event - initial_position)
-
-            if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
-                shortest_distance_to_next_factor_event = distance_to_next_factor_event
-                vetoing_index = worldline_neighbour   
-
-        for particle_neighbour in      
-
-
-
+        for quantum_particle_neighbour in quantum_particle_neighbours:
+            if quantum_particle_neighbour != active_particle_index:
+                quantum_particle_position = positions[quantum_particle_neighbour].item(
+                )
+                if quantum_particle_position - initial_position > 0:
+                    distance_to_next_particle = np.abs(initial_position - quantum_particle_position)
+                else:  # do periodic BCs
+                    distance_to_next_particle = size_of_particle_space_over_two - np.abs(initial_position) + \
+                        size_of_particle_space_over_two - \
+                        np.abs(quantum_particle_position)
+                if distance_to_next_particle < potential_distance_to_next_factor_event:
+                    potential_distance_to_next_factor_event = distance_to_next_particle
+                    potential_veto_index = quantum_particle_neighbour
+                #print(f"potential_dist: {potential_distance_to_next_factor_event}")
+        if shortest_distance_to_next_factor_event < potential_distance_to_next_factor_event:
+            pass
+        else:
+            vetoing_index = potential_veto_index
+            shortest_distance_to_next_factor_event = potential_distance_to_next_factor_event
+        print(
+            f"dist: {shortest_distance_to_next_factor_event}, veto: {vetoing_index}")
+        return shortest_distance_to_next_factor_event, vetoing_index
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
-            raise  SystemError(f"The choose_next_active_particle method of {self.__class__.__name__} "
-                            "has not been written.")
+        """
+        Chooses the index and direction for the next active particle in the markov chain.
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
+            is a float and represents the position of the worldline at that time step.
+        active_particle_index : int
+            The active particle index (i.e., the discretised-time index).
+        movement_direction : int
+            The direction of movement of the active particle.
+        veto_index : int
+            The particle index responsible for the event. 
+        Returns
+        -------
+        new_active_particle_index : int
+            The next active particle index (i.e., the discretised-time index) in the event chain.
+        new_movement_direction : int
+            The direction of movement of the next active particle.
+        """
+        return veto_index, movement_direction
+
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
-        """ Updates position of the active particle following an event."""
-        pass
+        """
+        Updates position of the active particle following an event.
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
+            is a float and represents the position of the worldline at that time step.
+        displacement_distrance : float
+            The displacement that the current position of the cative particle will be updated using.
+        active_particle_index : int
+            The active particle index (i.e., the discretised-time index).
+        movement_direction : int
+            The direction of movement of the active particle.
+        Returns
+        -------
+        new_position : float
+            The updated position of the active particle
+        """
+        old_position = positions[active_particle_index]
+        positions[active_particle_index] += displacement_distance * \
+            movement_direction
+        positions[active_particle_index] = get_shortest_vectors_on_torus(
+            positions[active_particle_index])
+        print(f"moved particle {active_particle_index}: {old_position} -> {positions[active_particle_index]}")
 
     @staticmethod
     def get_quantum_particles_at_timeslice(active_particle_index, number_of_quantum_particles):
@@ -213,4 +263,4 @@ class QuantumHardDiskPotential(WorldlinePotential):
         for index in range(number_of_quantum_particles):
             quantum_particle_index = number_of_quantum_particles * timeslice_index + index
             quantum_particles_at_timeslice[index] = quantum_particle_index
-        return quantum_particles_at_timeslice
+        return quantum_particles_at_timeslice.astype(int)

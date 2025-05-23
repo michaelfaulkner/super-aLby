@@ -175,60 +175,61 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         vetoing_particle_index : int
             The index of the particle that triggers the event.
         """
-        shortest_distance_to_next_factor_event = 1.0e10
-        neighbouring_indices = np.zeros(3, dtype=np.int32)
-        neighbouring_indices[0] = get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles)
-        neighbouring_indices[1] = active_particle_index
-        neighbouring_indices[2] = get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles)
-
-        vetoing_index = None
-        initial_position = positions[active_particle_index].item()
-
-        for i in range(3):
-            uphill_energy = - np.log(np.random.uniform(0, 1))
-            if i != 1:  # considering the neighbour terms
-                neighbour_position = positions[neighbouring_indices[i]].item()
-                bottom_of_well = neighbour_position
-                if ((movement_direction > 0 and initial_position < bottom_of_well) or
-                        (movement_direction < 0 and initial_position > bottom_of_well)):
-                    """advance to the bottom of the well"""
-                    intermediate_position = bottom_of_well
-                else:
-                    intermediate_position = initial_position
-
-                initial_action = 0.5 * (self._mass / self._timestep) * (intermediate_position - neighbour_position) ** 2
-                final_action = uphill_energy + initial_action
-                roots = np.roots([0.5 * self._mass / self._timestep, -(self._mass / self._timestep)
-                                  * neighbour_position, (0.5 * self._mass / self._timestep) * neighbour_position ** 2
-                                  - final_action])
-                final_position_wrt_factor_event = self.get_final_position_wrt_factor_event(movement_direction, roots)
-                    
-            else:  # consider x^2 term
-                bottom_of_well = 0.0
-                if (((movement_direction > 0) and (initial_position < bottom_of_well)) or
-                        ((movement_direction < 0) and (initial_position > bottom_of_well))):
-                    """advance to the bottom of the well"""
-                    intermediate_position = bottom_of_well
-                else:
-                    intermediate_position = initial_position
-                
-                initial_action = 0.5 * self._mass * self._timestep * self._omega ** 2 * intermediate_position ** 2
-                final_action = uphill_energy + initial_action
-                roots = np.roots([0.5 * self._mass * self._timestep * self._omega ** 2, 0.0, -final_action])
-                final_position_wrt_factor_event = self.get_final_position_wrt_factor_event(movement_direction, roots)
-
-            distance_to_next_factor_event = np.abs(final_position_wrt_factor_event - initial_position)
-
-            if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
-                shortest_distance_to_next_factor_event = distance_to_next_factor_event
-                vetoing_index = neighbouring_indices[i]
         
+        worldline_neighbours = [get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
+                                                            number_of_quantum_particles),
+                                get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
+                                                            number_of_quantum_particles)]
+
+        shortest_distance_to_next_factor_event, vetoing_index = \
+            self.get_kinetic_term_distance_to_next_event_and_veto_index(positions, active_particle_index,
+                                                                        temperature, movement_direction,
+                                                                        worldline_neighbours)
+         # consider x^2 term
+        initial_position = initial_position = positions[active_particle_index].item()
+        uphill_energy = - np.log(np.random.uniform(0, 1))
+        bottom_of_well = 0.0
+        if (((movement_direction > 0) and (initial_position < bottom_of_well)) or
+                ((movement_direction < 0) and (initial_position > bottom_of_well))):
+            """advance to the bottom of the well"""
+            intermediate_position = bottom_of_well
+        else:
+            intermediate_position = initial_position
+                
+        initial_action = 0.5 * self._mass * self._timestep * self._omega ** 2 * intermediate_position ** 2
+        final_action = uphill_energy + initial_action
+        roots = np.roots([0.5 * self._mass * self._timestep * self._omega ** 2, 0.0, -final_action])
+        final_position_wrt_factor_event = self.get_final_position_wrt_factor_event(movement_direction, roots)
+
+        distance_to_next_factor_event = np.abs(final_position_wrt_factor_event - initial_position)
+
+        if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
+            shortest_distance_to_next_factor_event = distance_to_next_factor_event
+            vetoing_index = active_particle_index
+
         return shortest_distance_to_next_factor_event, vetoing_index
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
-        """Chooses the index and direction for the next active particle in the markov chain"""
+        """
+        Chooses the index and direction for the next active particle in the markov chain.
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
+            is a float and represents the position of the worldline at that time step.
+        active_particle_index : int
+            The active particle index (i.e., the discretised-time index).
+        movement_direction : int
+            The direction of movement of the active particle.
+        veto_index : int
+            The particle index responsible for the event. 
+        Returns
+        -------
+        active_particle_index : int
+            The next active particle index (i.e., the discretised-time index) in the event chain.
+        movement_direction : int
+            The direction of movement of the next active particle.
+        """
         initial_a = active_particle_index
         initial_v = movement_direction
   
@@ -240,18 +241,24 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             raise Exception("Chose the same index and direction twice in a row")
         return active_particle_index, movement_direction
 
-    @staticmethod
-    def update_position(positions, displacement_distance, active_particle_index, movement_direction):
-        """ Updates position of the active particle."""
+    
+    def update_position(self,positions, displacement_distance, active_particle_index, movement_direction):
+        """
+        Updates position of the active particle following an event.
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
+            is a float and represents the position of the worldline at that time step.
+        displacement_distrance : float
+            The displacement that the current position of the cative particle will be updated using.
+        active_particle_index : int
+            The active particle index (i.e., the discretised-time index).
+        movement_direction : int
+            The direction of movement of the active particle.
+        Returns
+        -------
+        new_position : float
+            The updated position of the active particle
+        """
         positions[active_particle_index] += displacement_distance * movement_direction
-
-    @staticmethod
-    def get_final_position_wrt_factor_event(movement_direction, roots):
-        if (movement_direction > 0) and (roots[0] > roots[1]):
-            return roots[0]
-        elif (movement_direction > 0) and (roots[0] < roots[1]):
-            return roots[1]
-        elif (movement_direction < 0) and (roots[0] < roots[1]):
-            return roots[0]
-        else:
-            return roots[1]
