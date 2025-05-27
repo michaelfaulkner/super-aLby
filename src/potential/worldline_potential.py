@@ -253,7 +253,6 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
                 roots = np.roots([0.5 * self._mass / self._timestep, -(self._mass / self._timestep)
                                     * neighbour_position, (0.5 * self._mass / self._timestep) * neighbour_position ** 2
                                     - final_action])
-          
             final_position_wrt_factor_event = self.get_final_position_wrt_factor_event(movement_direction, roots)
             distance_to_next_factor_event = np.abs(final_position_wrt_factor_event - initial_position)
             
