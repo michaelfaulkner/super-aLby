@@ -90,9 +90,7 @@ class EventChainMediator(Mediator):
             active_particle_index = np.random.randint(0, number_of_particles)
             movement_direction = self._potential.get_random_event_chain_velocity()
             distance_to_next_measurement = self._distance_between_measurements
-            iters = 0
             while True:
-                iters+=1
                 distance_to_next_event, vetoing_index = self._potential.get_distance_to_next_event_and_veto_index(
                     self._positions, active_particle_index, temperature, movement_direction)
                 if distance_to_next_measurement < distance_to_next_event:
@@ -115,8 +113,7 @@ class EventChainMediator(Mediator):
                     active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                         self._positions, active_particle_index, movement_direction, vetoing_index)
                     self._total_number_of_events += 1
-                if iters >15:
-                    break
+              
             super()._print_sample_progress(markov_chain_index)
 
 
