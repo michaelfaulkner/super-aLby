@@ -5,7 +5,7 @@ import numpy as np
 
 class XyMagnetisationNormSampler(Sampler):
     """
-    Class for taking observations of magnetisation norm in XY model.
+    Class for taking observations of magnetisation norm in the 2DXY model.
     """
 
     def __init__(self, output_directory: str):
@@ -35,7 +35,7 @@ class XyMagnetisationNormSampler(Sampler):
         """
         return np.zeros((total_number_of_iterations + 1, 1))
 
-    def get_observation(self, momenta, positions, potential, active_particle_index=None):
+    def get_observation(self, momenta, positions, potential):
         """
         Returns an observation of the system for the given particle momenta and positions.
 
@@ -52,20 +52,14 @@ class XyMagnetisationNormSampler(Sampler):
         potential : float or potential.potential.Potential
             If a float, the current value of the potential; otherwise, an instance of the chosen child class of
             potential.potential.Potential.
-        active_particle_index : None or int
-            The index of the active particle.
 
         Returns
         -------
         numpy.ndarray
             The observation.
         """
-        spin_vectors = np.zeros((np.shape(positions)[0], 2))
-        for index, phase in enumerate(positions):
-            spin_vectors[index, 0] = np.cos(phase)
-            spin_vectors[index, 1] = np.sin(phase)
-        mean_ij = np.mean(spin_vectors, axis=0)
-        return np.linalg.norm(mean_ij)
+        spin_vectors = np.array([[np.cos(phase[0]), np.sin(phase[0])] for phase in positions])
+        return np.linalg.norm(np.mean(spin_vectors, axis=0))
     
     def output_sample(self, sample, temperature_index, checkpoint_index):
         """
