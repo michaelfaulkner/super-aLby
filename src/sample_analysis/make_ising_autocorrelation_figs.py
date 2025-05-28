@@ -135,7 +135,8 @@ def get_observable_autocorrelation_vs_temperature(observable_string, mediator, o
                 f"{number_of_observations}_observations.npy", acf_vs_temperature)
     return acf_vs_temperature
 
-# Needs to be adapted to meet the new interface of get_integrated_autocorrelation_time
+
+# todo Needs to be adapted to meet the new interface of get_integrated_autocorrelation_time
 def get_magnetic_norm_integrated_autocorrelation_times_vs_temperature(autocorrelation_function, mediator,
                                                                       output_directory, temperatures, lattice_length,
                                                                       number_of_observations, number_of_jobs):
