@@ -46,7 +46,9 @@ def main(config_file_string):
         f"output/metropolis_001_checkpoints/temperature_00_run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
     mean_sample = mean_sample[50000:]
  
-    iact, acf = get_integrated_autocorrelation_time(mean_sample[:])
+    acf = get_autocorrelation(mean_sample[:])
+    
+    iact = get_integrated_autocorrelation_time(mean_sample[:])
 
     np.save("acf_001_metropolis_thermalised.npy", acf)
     print(iact)

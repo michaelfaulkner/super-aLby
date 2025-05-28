@@ -59,7 +59,7 @@ def main(config_folder):
             mean_sample = mean_sample[:80000]
 
             
-        iact, acf = get_integrated_autocorrelation_time(mean_sample[:])
+        iact = get_integrated_autocorrelation_time(mean_sample[:])
         iact_arr[index] = iact
     
     save_arr = np.zeros((len(iact_arr), 2))

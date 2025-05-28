@@ -63,7 +63,6 @@ def get_autocorrelation(sample):
     acf /= acf[0] # Normalise
     return acf
 
-
 def get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-2)):
     """
     Calculate the integrated autocorrelation time of a one-dimensional sample.
@@ -74,7 +73,7 @@ def get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-2)):
         Sample to be analysed.
     cutoff : float
         Cutoff value for the autocorrelation function. The default value is e^(-2).
-/page
+
     Returns
     -------
     float
@@ -83,7 +82,7 @@ def get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-2)):
     autocorrelation_function = get_autocorrelation(sample)
     below_cutoff = np.where(autocorrelation_function < cutoff)[0]
     max_acf_index = below_cutoff[0] - 1
-    return 2.0 * np.sum(autocorrelation_function[:max_acf_index]) - 1.0, autocorrelation_function
+    return 2.0 * np.sum(autocorrelation_function[:max_acf_index]) - 1.0
 
 
 def get_effective_sample_size(sample):
@@ -103,6 +102,5 @@ def get_effective_sample_size(sample):
     if len(np.atleast_2d(sample)) > 1:
         raise Exception("Error: the sample passed to markov_chain_diagnostics.get_effective_sample_size() must be "
                         "one (Cartesian) dimensional.")
-    iat = get_integrated_autocorrelation_time(sample)
+    iat = get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-4))
     return len(sample) / iat
-
