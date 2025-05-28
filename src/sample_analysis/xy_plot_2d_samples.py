@@ -39,10 +39,10 @@ def main(config_file_string, temperature_index='00'):
     sample = []
     for sample_path in sample_paths:
         sample.append(np.load(sample_path))
-    sample = np.concatenate(sample, axis=0).reshape(2, -1)
-    
+    sample = np.concatenate(sample, axis=0).T
+
     fig, ax = plt.subplots(figsize=(10, 8))
-    ax.plot(sample[0, :], sample[1, :], color='firebrick', alpha=0.8)
+    ax.plot(sample[0, :], sample[1, :], color='firebrick', alpha=0.6)
     ax.set_title(file_path, fontsize=10)
     plt.savefig(os.path.join(directory_path, f'{just_file_path}.png'))
 

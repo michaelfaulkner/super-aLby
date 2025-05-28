@@ -192,3 +192,72 @@ def get_initial_positions_of_smooth_potential(potential_class):
         else:
             return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]
                              for _ in range(number_of_particles)])
+
+def get_temp_star(temperatures, magnetisation_sample, number_of_particles):
+    """
+    Compute the temperature T* using magnetisation samples. T* is the temperature
+    at which critical behaviour starts in the 2D XY model BKT transition T*<Tc.
+    
+    Parameters
+    ----------
+    temperatures: numpy.ndarray
+        The temperatures at which the magnetisation samples were taken.
+    magnetisation_sample: numpy.ndarray
+        The magnetisation samples.
+    number_of_particles: int
+        The number of particles in the system. 
+    
+    Returns
+    ---
+    temp_star: float
+        The temperature T* for the simulation.
+    """
+    magnetisation_star = (1 / (2 * number_of_particles)) ** (1 / 16)
+    temp_star = temperatures[magnetisation_sample > magnetisation_star][-1]
+    
+    return temp_star
+
+def fit_linear(X, Y, y_errors=None):
+    """
+    Perform OLS linear regression.
+
+    Parameters
+    ---
+    """
+    import statsmodels.api as sm
+
+    X = sm.add_constant(X)
+    if y_errors is None:
+        fit_model = sm.OLS(Y, X).fit()
+        Y_fit = fit_model.params[0] + fit_model.params[1] * X[:, 1]
+        chi2 = np.sum((Y - Y_fit) ** 2)
+    else:
+        weights = 1 / (y_errors ** 2)
+        fit_model = sm.WLS(Y, X, weights=weights).fit()
+        Y_fit = fit_model.params[0] + fit_model.params[1] * X[:, 1]
+        chi2 = np.sum(((Y - Y_fit) ** 2) / (y_errors**2))
+
+    dof = len(Y) - len(fit_model.params)
+    chi2_reduced = chi2 / dof
+
+    return fit_model, fit_model.params, fit_model.bse, np.linspace(X[:,1].min(), X[:,1].max(), 1000), chi2_reduced
+
+def fit_curve(fit_func, X, Y, p0, y_errors=None):
+    """
+    Perform non-linear fit.
+    
+    Parameters
+    ---
+    """
+    from scipy.optimize import curve_fit
+
+    if y_errors is None:
+        fit_model_params, fit_model_cov = curve_fit(fit_func, X, Y, p0=p0, maxfev=10000)
+    else:
+        fit_model_params, fit_model_cov = curve_fit(fit_func, X, Y, p0=p0, maxfev=10000, sigma=y_errors, absolute_sigma=True)
+    Y_fit = fit_func(X, *fit_model_params)
+
+    dof = len(Y) - len(fit_model_params)
+    chi2_reduced = np.sum((Y - Y_fit) ** 2) / dof
+
+    return fit_model_params, fit_model_cov, np.linspace(X.min(), X.max(), 1000), chi2_reduced
