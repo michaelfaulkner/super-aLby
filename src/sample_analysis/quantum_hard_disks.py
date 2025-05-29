@@ -32,7 +32,7 @@ def main(config_file_string):
     number_of_equilibration_iterations = None
     position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
                     temperature_index, 0, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
-    print(np.shape(np.arange(np.shape(position_sample)[0])))
+
     print(np.shape(position_sample))
     plt.scatter(np.arange(np.shape(position_sample)[1]), position_sample[0, :], label="0")
     plt.scatter(np.arange(np.shape(position_sample)[1]), position_sample[1000, :], label="1000")

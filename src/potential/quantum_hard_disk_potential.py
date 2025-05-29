@@ -137,7 +137,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
                     dist = dist_new
 
         if dist < 2 * self._disk_radius:
-            hard_disk_potential = 10e10
+            hard_disk_potential = 1.0e10 # infinite potential
         else:
             hard_disk_potential = 0.0
             
@@ -266,7 +266,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
             positions[active_particle_index])
 
         #print(f"movement direction: {movement_direction}, displacement: {displacement_distance} moved particle {active_particle_index} at {old_position} to {positions[active_particle_index]} \n"
-            #" ----------------------------------------------------------------------------------------------")
+           # " ----------------------------------------------------------------------------------------------")
 
     @staticmethod
     def get_quantum_particles_at_timeslice(active_particle_index, number_of_quantum_particles):

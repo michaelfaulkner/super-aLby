@@ -72,11 +72,12 @@ class EventChainMediator(Mediator):
         if normalised_distance_between_measurements <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 as normalised_distance_between_measurements in "
                                      f"{self.__class__.__name__}.")
-        if "HardDiskPotential" in str(potential):
+        if "HardDiskPotential" in str(potential) and "QuantumHardDiskPotential" not in str(potential):
             self._distance_between_measurements = (normalised_distance_between_measurements * number_of_particles *
                                                    np.min(size_of_particle_space))
         else:
             self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
+        print(f"distance between measurements: {self._distance_between_measurements}")
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
