@@ -16,7 +16,8 @@ class EventChainMediator(Mediator):
     def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
                  minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
                  number_of_temperature_increments: int = 0, number_of_equilibration_iterations: int = 10000,
-                 number_of_observations: int = 100000, normalised_distance_between_measurements: float = 1.0):
+                 number_of_observations: int = 100000, normalised_distance_between_measurements: float = 1.0,
+                 teleportation_portal: bool = False):
         r"""
         Constructor of the EventChainMediator class.
 
@@ -81,6 +82,7 @@ class EventChainMediator(Mediator):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
         self._total_number_of_events = 0
+        self.teleportation_portal = teleportation_portal
 
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
@@ -102,11 +104,24 @@ class EventChainMediator(Mediator):
                     break
                 else:
                     distance_to_next_measurement -= distance_to_next_event
-                    self._potential.update_position(self._positions, distance_to_next_event, active_particle_index,
+                    if self.teleportation_portal:
+                        portal_candidate = self._potential.teleportation_portal(self._positions, distance_to_next_event,
+                                                                            active_particle_index, vetoing_index, movement_direction)
+                        if np.random.uniform(0.0, 1.0) < self._potential.teleportation_acceptance_prob(self._positions,
+                                                                                active_particle_index, portal_candidate, temperature):
+                            self._positions[active_particle_index] = portal_candidate
+                        else:
+                            self._potential.update_position(self._positions, distance_to_next_event,
+                                                            active_particle_index, movement_direction)
+                            active_particle_index, movement_direction = self._potential.choose_next_active_particle(
+                                self._positions, active_particle_index, movement_direction, vetoing_index)
+                    else:
+                        self._potential.update_position(self._positions, distance_to_next_event, active_particle_index,
                                                     movement_direction)
-                    active_particle_index, movement_direction = self._potential.choose_next_active_particle(
-                        self._positions, active_particle_index, movement_direction, vetoing_index)
+                        active_particle_index, movement_direction = self._potential.choose_next_active_particle(
+                            self._positions, active_particle_index, movement_direction, vetoing_index)
                     self._total_number_of_events += 1
+                
             super()._print_sample_progress(markov_chain_index)
 
     def _print_markov_chain_summary(self):

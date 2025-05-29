@@ -12,7 +12,7 @@ class XyPotential(EuclideanSubspacePotential):
     This class implements the 2D XY model potential
     """
 
-    def __init__(self, prefactor: float = 1.0,  lattice_dimensionality: int = 2): 
+    def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 2): 
         """
         The constructor of the XyPotential class.
         6 
@@ -242,3 +242,14 @@ class XyPotential(EuclideanSubspacePotential):
     def _get_spin_difference(spin_value_one, spin_value_two):
         """ returns the difference between two spin angles"""
         return (spin_value_one - spin_value_two + np.pi) % (2.0 * np.pi) - np.pi
+
+    def teleportation_portal(self, positions, distance_to_next_event, active_particle_index, vetoing_index, movement_direction):
+        candidate_position = (positions[active_particle_index] + distance_to_next_event) % (2.0 * np.pi)
+        #spin_difference = self._get_spin_difference(candidate_position, positions[vetoing_index])
+        #teleported_spin_difference = 2.0 * np.pi - spin_difference
+        #teleported_candidate_position = (positions[vetoing_index] + teleported_spin_difference) % (2.0 * np.pi)
+        return (2.0 * np.pi - 2.0 * positions[vetoing_index] - candidate_position) % (2.0 * np.pi)
+
+    def teleportation_acceptance_prob(self, positions, active_particle_index, candidate_position, temperature):
+        potential_difference = self.get_potential_difference(active_particle_index, candidate_position, positions)
+        return np.exp(-potential_difference / temperature)
