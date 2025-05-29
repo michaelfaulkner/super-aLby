@@ -58,8 +58,7 @@ class XyMagnetisationNormSampler(Sampler):
         numpy.ndarray
             The observation.
         """
-        spin_vectors = np.array([[np.cos(phase[0]), np.sin(phase[0])] for phase in positions])
-        return np.linalg.norm(np.mean(spin_vectors, axis=0))
+        return np.linalg.norm([np.mean(np.cos(positions)), np.mean(np.sin(positions))])
     
     def output_sample(self, sample, temperature_index, checkpoint_index):
         """
