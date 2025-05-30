@@ -6,7 +6,8 @@ from base.vectors import get_shortest_vectors_on_torus
 from model_settings import size_of_particle_space, number_of_quantum_particles, number_of_timeslices
 from model_settings import number_of_particles, size_of_particle_space_over_two
 from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
-
+import warnings
+import time
 
 class QuantumHardDiskPotential(WorldlinePotential):
     r"""
@@ -175,11 +176,11 @@ class QuantumHardDiskPotential(WorldlinePotential):
             self.get_quantum_particles_at_timeslice(
                 active_particle_index, number_of_quantum_particles)
 
-        shortest_distance_to_next_factor_event, vetoing_index = \
-            self.get_kinetic_term_distance_to_next_event_and_veto_index(positions, active_particle_index,
-                                                                        temperature, movement_direction,
-                                                                        worldline_neighbours)
-        #shortest_distance_to_next_factor_event = 1.0e10
+        # shortest_distance_to_next_factor_event, vetoing_index = \
+        #     self.get_kinetic_term_distance_to_next_event_and_veto_index(positions, active_particle_index,
+        #                                                                 temperature, movement_direction,
+        #                                                                 worldline_neighbours)
+        shortest_distance_to_next_factor_event = 1.0e10
         distance_to_next_potential_event = 1.0e10
         potential_veto_index = None
         initial_position = positions[active_particle_index].item()
@@ -190,28 +191,31 @@ class QuantumHardDiskPotential(WorldlinePotential):
                 
                 distance_to_next_particle = get_shortest_vectors_on_torus(neighbour_quantum_particle_position -
                                                                            initial_position)
-                #print(f"initial sep: {distance_to_next_particle}")
-                                
+                if np.abs(distance_to_next_particle)[0] < 2.0 * self._disk_radius:
+                    """Naive correction for floating point error propagation through the iterations.
+                        End up with separations of 1.99999...99996 whch are interpreted as overlaps."""
+                    leftover = 2.0 * self._disk_radius - np.abs(distance_to_next_particle)[0]
+                    warnings.warn(f"particles overlapped, active: {initial_position}, neighbour: {neighbour_quantum_particle_position}, dist: {np.abs(distance_to_next_particle)[0]}"
+                                    f", leftover: {leftover}")
+                    time.sleep(1)
+                    neighbour_quantum_particle_position -= leftover
+                    distance_to_next_particle = get_shortest_vectors_on_torus(neighbour_quantum_particle_position -
+                                                                           initial_position)
+                    
                 if distance_to_next_particle < 0.0: # we need to move in direction +1
-                    distance_to_next_particle += size_of_particle_space
-                    #print(f"boundary event, dist: {distance_to_next_particle}")                                       
+                    distance_to_next_particle += size_of_particle_space                                     
               
                 distance_to_next_particle = np.abs(distance_to_next_particle) - 2.0 * self._disk_radius
 
-                #print(f"initial: {initial_position}, neighbour: {neighbour_quantum_particle_position}")
+                #print(f"initial: {initial_position}, neighbour: {neighbour_quantum_particle_position}, separation: {distance_to_next_particle[0]}")
     
                 if distance_to_next_particle < distance_to_next_potential_event:
                     distance_to_next_potential_event = distance_to_next_particle
                     potential_veto_index = quantum_particle_neighbour
-        if shortest_distance_to_next_factor_event < distance_to_next_potential_event:
-            #print(f"shortest dist (due to kinetic): {shortest_distance_to_next_factor_event}, potential dist was {distance_to_next_potential_event}")
-            pass
-        else:
+        if shortest_distance_to_next_factor_event > distance_to_next_potential_event:
             vetoing_index = potential_veto_index
             shortest_distance_to_next_factor_event = distance_to_next_potential_event
-            #print(f"shortest dist (due to potential): {shortest_distance_to_next_factor_event}")
-        
-        #print(f"shortest dist: {shortest_distance_to_next_factor_event}, veto: {vetoing_index}, active: {active_particle_index}")
+
      
         return shortest_distance_to_next_factor_event, vetoing_index
 
@@ -265,8 +269,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
         positions[active_particle_index] = get_shortest_vectors_on_torus(
             positions[active_particle_index])
 
-        #print(f"movement direction: {movement_direction}, displacement: {displacement_distance} moved particle {active_particle_index} at {old_position} to {positions[active_particle_index]} \n"
-           # " ----------------------------------------------------------------------------------------------")
+        #print(f"displacement: {displacement_distance} moved particle {active_particle_index} at {old_position} to {positions[active_particle_index]}")
 
     @staticmethod
     def get_quantum_particles_at_timeslice(active_particle_index, number_of_quantum_particles):

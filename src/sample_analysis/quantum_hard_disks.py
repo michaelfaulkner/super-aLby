@@ -33,16 +33,22 @@ def main(config_file_string):
     position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
                     temperature_index, 0, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
 
-    print(np.shape(position_sample))
-    plt.scatter(np.arange(np.shape(position_sample)[1]), position_sample[0, :], label="0")
-    plt.scatter(np.arange(np.shape(position_sample)[1]), position_sample[1000, :], label="1000")
-    plt.scatter(np.arange(np.shape(position_sample)[1]), position_sample[5000, :], label="5000")
-    plt.scatter(np.arange(np.shape(position_sample)[1]), position_sample[10000, :], label="10000")
-    plt.legend()
+   
+    # plt.scatter(np.arange(np.shape(position_sample)[1]), position_sample[0, :], label="0")
+    # plt.scatter(np.arange(np.shape(position_sample)[1]), position_sample[1000, :], label="1000")
+    # plt.scatter(np.arange(np.shape(position_sample)[1]), position_sample[5000, :], label="5000")
+    # plt.scatter(np.arange(np.shape(position_sample)[1]), position_sample[10000, :], label="10000")
+    # plt.legend()
+    particle_0_sample = position_sample[:,::2]
+    
+    particle_0_mean = np.mean(particle_0_sample**2, axis=1)
+    print(np.shape(particle_0_mean))
+    
+    plt.plot(np.arange(len(particle_0_mean)), particle_0_mean)
+    plt.savefig("test.png")
 
 
 
-    plt.savefig("qhd_test.png")
-
+   
 if __name__ == '__main__':
     main(sys.argv[1])
