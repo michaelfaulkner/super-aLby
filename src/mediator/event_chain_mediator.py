@@ -104,20 +104,18 @@ class EventChainMediator(Mediator):
                     break
                 else:
                     distance_to_next_measurement -= distance_to_next_event
+                    self._potential.update_position(self._positions, distance_to_next_event,
+                                                            active_particle_index, movement_direction)
                     if self.teleportation_portal:
-                        portal_candidate = self._potential.teleportation_portal(self._positions, distance_to_next_event,
-                                                                            active_particle_index, vetoing_index, movement_direction)
+                        portal_candidate = self._potential.teleportation_portal(self._positions, active_particle_index, 
+                                                                                vetoing_index, movement_direction)
                         if np.random.uniform(0.0, 1.0) < self._potential.teleportation_acceptance_prob(self._positions,
                                                                                 active_particle_index, portal_candidate, temperature):
                             self._positions[active_particle_index] = portal_candidate
                         else:
-                            self._potential.update_position(self._positions, distance_to_next_event,
-                                                            active_particle_index, movement_direction)
                             active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                                 self._positions, active_particle_index, movement_direction, vetoing_index)
                     else:
-                        self._potential.update_position(self._positions, distance_to_next_event, active_particle_index,
-                                                    movement_direction)
                         active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                             self._positions, active_particle_index, movement_direction, vetoing_index)
                     self._total_number_of_events += 1

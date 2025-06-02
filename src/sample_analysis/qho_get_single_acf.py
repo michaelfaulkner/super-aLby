@@ -1,4 +1,4 @@
-from markov_chain_diagnostics import get_autocorrelation, get_integrated_autocorrelation_time
+from markov_chain_diagnostics import get_autocorrelation
 import importlib
 import math
 import matplotlib

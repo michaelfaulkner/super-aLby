@@ -1,4 +1,4 @@
-from markov_chain_diagnostics import get_autocorrelation, get_integrated_autocorrelation_time
+from markov_chain_diagnostics import get_iact_and_acf
 import importlib
 import math
 import matplotlib
@@ -45,10 +45,8 @@ def main(config_file_string):
         mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = np.load(
         f"output/metropolis_001_checkpoints/temperature_00_run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
     mean_sample = mean_sample[50000:]
- 
-    acf = get_autocorrelation(mean_sample[:])
 
-    iact = get_integrated_autocorrelation_time(acf)
+    iact, acf = get_iact_and_acf(mean_sample[:])
 
     np.save("acf_001_metropolis_thermalised.npy", acf)
     print(iact)

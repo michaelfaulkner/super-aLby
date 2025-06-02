@@ -1,6 +1,7 @@
 import math
 import numpy as np
 
+
 def get_sample_mean_and_error(sample):
     """
     Calculate the mean and error of a one-dimensional sample.
@@ -60,10 +61,13 @@ def get_autocorrelation(sample):
     full_acf = np.correlate(mean_zero_sample, mean_zero_sample, mode='full')
     """np.correlate() is symmetric about t = 0 when mode='full' - full_acf[full_acf.size // 2:] returns t >= 0 values"""
     acf = full_acf[full_acf.size // 2:]
-    acf /= acf[0] # Normalise
+    if acf[0] < 1.0e-12:
+        return acf 
+    acf /= acf[0]  # Normalise
     return acf
 
-def get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-2)):
+
+def get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-4)):
     """
     Calculate the integrated autocorrelation time of a one-dimensional sample.
     
@@ -72,7 +76,7 @@ def get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-2)):
     sample : numpy.ndarray
         Sample to be analysed.
     cutoff : float
-        Cutoff value for the autocorrelation function. The default value is e^(-2).
+        Cutoff value for the autocorrelation function. The default value is e^(-4).
 
     Returns
     -------
@@ -83,6 +87,30 @@ def get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-2)):
     below_cutoff = np.where(autocorrelation_function < cutoff)[0]
     max_acf_index = below_cutoff[0] - 1
     return 2.0 * np.sum(autocorrelation_function[:max_acf_index]) - 1.0
+
+
+def get_iact_and_acf(sample, cutoff=math.e ** (-4)):
+    """
+    Calculate the integrated autocorrelation time and autocorrelation function of a one-dimensional sample.
+    
+    Parameters
+    ----------
+    sample : numpy.ndarray
+        Sample to be analysed.
+    cutoff : float
+        Cutoff value for the autocorrelation function. The default value is e^(-4).
+
+    Returns
+    -------
+    float
+        Integrated autocorrelation time.
+    autocorrelation_function : numpy.ndarray 
+        Autocorrelation function of the sample.
+    """
+    autocorrelation_function = get_autocorrelation(sample)
+    below_cutoff = np.where(autocorrelation_function < cutoff)[0]
+    max_acf_index = below_cutoff[0] - 1
+    return 2.0 * np.sum(autocorrelation_function[:max_acf_index]) - 1.0, autocorrelation_function
 
 
 def get_effective_sample_size(sample):

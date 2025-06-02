@@ -1,4 +1,4 @@
-from markov_chain_diagnostics import get_autocorrelation, get_integrated_autocorrelation_time
+from markov_chain_diagnostics import get_iact_and_acf
 import importlib
 import math
 import matplotlib
@@ -55,18 +55,16 @@ def main(config_folder, N):
                     # np.load(
                     #     os.path.join(sample_directory, f"temperature_00_run_{i:02d}_sample_of_mean_positions.npy"))[1:, 0]
                 mean_sample = mean_sample[50000:129999]
-                acf = get_autocorrelation(mean_sample[:])
             
             else:
                 mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
                                 temperature_index, number_of_particles, number_of_equilibration_iterations,
                                 thinning_level=thinning_level)
                 mean_sample = mean_sample[:80000]
-                acf = get_autocorrelation(mean_sample[:,0])
 
                 
 
-            iact = get_integrated_autocorrelation_time(acf)
+            iact, acf = get_iact_and_acf(mean_sample[:])
             iact_arr[index] = iact
         
         save_arr = np.zeros((len(iact_arr), 2))
