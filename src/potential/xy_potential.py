@@ -7,19 +7,21 @@ from helper_methods import get_initial_positions_of_smooth_potential
 
 
 class XyPotential(EuclideanSubspacePotential):
-
     """
-    This class implements the 2D XY model potential
+    This class implements the 2DXY model potential.
     """
 
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 2): 
         """
         The constructor of the XyPotential class.
-        6 
+
         Parameters
         ----------
         prefactor : float
             The prefactor k of the potential.
+        lattice_dimensionality : int
+            The dimensionality of the lattice on which the XY model is defined.  We currently only provide functionality
+            for the 2DXY model, i.e., for lattice_dimensionality equal to two.
         """
         super().__init__(prefactor=prefactor)
         if lattice_dimensionality != 2:
@@ -30,9 +32,8 @@ class XyPotential(EuclideanSubspacePotential):
             raise ConfigurationError(
                 f"For the value of number_of_particles in ModelSettings, give lattice_length ** lattice_dimensionality "
                 f"when using {self.__class__.__name__}, where lattice_length is an integer not less than 2.")
-        
         self._lattice_dimensionality = lattice_dimensionality
-        self._lattice_length = int(lattice_length)
+        self._lattice_length = int(lattice_length + 1.0e-12)
         self.potential_constant = prefactor
 
     def get_initial_positions(self):
@@ -73,7 +74,6 @@ class XyPotential(EuclideanSubspacePotential):
                                                        for index in range(number_of_particles)])
 
     def get_gradient(self, positions):
-        # TODO implement get_gradient() function in this class
         """
         Returns the gradient of the potential function for the given particle positions.
 
@@ -96,9 +96,10 @@ class XyPotential(EuclideanSubspacePotential):
         ----------
         active_particle_index : int
             The index of the active particle.
-        candidate_position : float
-            A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
-            represents the spin angle of the proposed spin of the active particle.
+        candidate_position : numpy.ndarray
+            A one-dimensional numpy array of length 1 whose sole element is a float and represents the proposed phase of
+            the spin of the active particle at active_particle_index.  This is a numpy array his is because the ith
+            component of the positions array is a one-dimensional numpy array of length 1.
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents the spin angle of its corresponding particle.
@@ -120,11 +121,13 @@ class XyPotential(EuclideanSubspacePotential):
         ----------
         active_particle_index : int
             The index of the active_particle.
-        active_particle_position : float
-            The phase of the spin of the particle at active_particle_index.
+        active_particle_position : numpy.ndarray
+            A one-dimensional numpy array of length 1 whose sole element is a float and represents the phase of the spin
+            of the active particle.  This is because the ith component of the positions array is a one-dimensional numpy
+            array of length 1.
         positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents the spin angle of its corresponding particle.
+            A two-dimensional numpy array of size (number_of_particles, 1); each element is a float and represents the
+            phase of the spin of its corresponding particle.
         Returns
         -------
         float
