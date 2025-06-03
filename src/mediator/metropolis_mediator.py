@@ -83,7 +83,6 @@ class MetropolisMediator(DiffusiveMediator):
     def _advance_markov_chain(self, markov_chain_step_index, temperature):
         """Advances the Markov chain by one step."""
         particles_to_update = [index for index in range(number_of_particles)]
-    
         random.shuffle(particles_to_update)  # randomises order of elements in particles_to_update
         for active_particle_index in particles_to_update:
             candidate_position = self._noise_distribution.get_candidate_position(active_particle_index, self._positions)
