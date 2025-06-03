@@ -87,3 +87,5 @@ vals1.txt
 # helper filesfor HPC
 src/generate_bash_scripts.py
 src/generate_configs.py
+
+test.py
