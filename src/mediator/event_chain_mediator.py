@@ -87,6 +87,7 @@ class EventChainMediator(Mediator):
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         self._total_number_of_events = 0
+        portal_events_accepted = 0
         for markov_chain_index in range(self._total_number_of_iterations):
             active_particle_index = np.random.randint(0, number_of_particles)
             movement_direction = self._potential.get_random_event_chain_velocity()
@@ -112,6 +113,7 @@ class EventChainMediator(Mediator):
                                                                             self._positions)
                         if potential_difference < 0.0 or np.random.uniform(0.0, 1.0) < np.exp(- potential_difference / temperature):
                             self._positions[active_particle_index] = portal_candidate
+                            portal_events_accepted += 1
                         else:
                             active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                                 self._positions, active_particle_index, movement_direction, vetoing_index)
@@ -122,6 +124,7 @@ class EventChainMediator(Mediator):
                     distance_to_next_measurement -= distance_to_next_event
                 
             super()._print_sample_progress(markov_chain_index)
+        print(f'Portal acceptance probability: {portal_events_accepted / self._total_number_of_events}')
 
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
