@@ -1,4 +1,4 @@
-from markov_chain_diagnostics import get_autocorrelation, get_integrated_autocorrelation_time, get_iact_and_acf
+from markov_chain_diagnostics import get_iact_and_acf
 import importlib
 import math
 import matplotlib
@@ -135,55 +135,6 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
                 f"{number_of_observations}_observations.npy", acf_vs_temperature) 
     
     return iact_vs_temperature, acf_vs_temperature
-
-
-def get_observable_autocorrelation_vs_temperature(observable_string, mediator, output_directory,
-                                                  sample_directory, temperatures, lattice_length,
-                                                  number_of_equilibration_iterations, number_of_observations,
-                                                  number_of_jobs, thinning_level=None):
-    try:
-        return np.load(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_"
-                       f"autocorrelation_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_{number_of_jobs}x"
-                       f"{number_of_observations}_observations.npy")
-    except IOError:
-        get_sample_method = getattr(sample_getter, "get_" + observable_string)
-        acfs, acf_errors = [], []
-        for temperature_index, temperature in enumerate(temperatures):
-            acf_vs_job = [get_autocorrelation(get_sample_method(
-                f"{sample_directory}/job_{job_number:02d}", temperature, temperature_index, 0, lattice_length ** 2,
-                number_of_equilibration_iterations, thinning_level)) for job_number in range(number_of_jobs)]
-            acf, acf_error = np.mean(acf_vs_job, axis=0), np.std(acf_vs_job, axis=0) / number_of_jobs ** 0.5
-            acfs.append(acf), acf_errors.append(acf_error)
-        acf_vs_temperature = np.array([acfs, acf_errors])
-        np.save(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_autocorrelation_"
-                f"vs_temperature_{mediator.replace('_mediator', '')}_algorithm_{number_of_jobs}x"
-                f"{number_of_observations}_observations.npy", acf_vs_temperature)
-    return acf_vs_temperature
-
-
-def get_magnetic_norm_integrated_autocorrelation_times_vs_temperature(autocorrelation_function, mediator,
-                                                                      output_directory, temperatures, lattice_length,
-                                                                      number_of_observations, number_of_jobs):
-    try:
-        with open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_norm_integrated_"
-                  f"autocorrelation_times_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_"
-                  f"{number_of_jobs}x{number_of_observations}_observations.tsv", "r") as output_file:
-            output_file_sans_header = np.array([np.fromstring(line, dtype=float, sep='\t') for line in output_file
-                                                if not line.startswith('#')]).transpose()
-            integrated_autocorrelation_times_vs_temperature = output_file_sans_header[1]
-    except IOError:
-        integrated_autocorrelation_times_vs_temperature = [get_integrated_autocorrelation_time(
-            autocorrelation_function[temperature_index]) for temperature_index, _ in enumerate(temperatures)]
-        output_file = open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_norm_integrated_"
-                           f"autocorrelation_times_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_"
-                           f"{number_of_jobs}x{number_of_observations}_observations.tsv", "w")
-        output_file.write("# temperature".ljust(30) + "magnetic-norm integrated autocorrelation time".ljust(35) + "\n")
-        for temperature_index, temperature in enumerate(temperatures):
-            output_file.write(f"{temperature:.14e}".ljust(30) +
-                              f"{integrated_autocorrelation_times_vs_temperature[temperature_index]:.14e}".ljust(35) +
-                              "\n")
-        output_file.close()
-    return np.array(integrated_autocorrelation_times_vs_temperature)
 
 
 if __name__ == "__main__":
