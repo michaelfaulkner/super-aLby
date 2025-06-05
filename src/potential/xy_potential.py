@@ -241,8 +241,5 @@ class XyPotential(EuclideanSubspacePotential):
                 get_west_neighbour(active_particle_index, self._lattice_length)]
 
     def teleportation_portal(self, positions, active_particle_index, vetoing_index, movement_direction):
-        #return positions[vetoing_index] + (positions[active_particle_index] - positions[vetoing_index] + np.pi) % (2.0 * np.pi) - np.pi
-        #return (positions[vetoing_index] + np.arccos(np.cos(positions[active_particle_index] - positions[vetoing_index]))) % (2.0 * np.pi)
         return (2.0 * positions[vetoing_index] - positions[active_particle_index]) % (2.0 * np.pi)
-        #return 2.0 * positions[vetoing_index] - positions[active_particle_index]
 
