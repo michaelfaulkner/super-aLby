@@ -4,7 +4,7 @@ import numpy as np
 
 def get_sample_mean_and_error(sample):
     """
-    Calculate the mean and error of sample.  The elements of sample must be scalar quantities.
+    Calculate the mean and error of an MCMC sample.  The elements of sample must be scalar quantities.
 
     Parameters
     ----------
@@ -19,8 +19,8 @@ def get_sample_mean_and_error(sample):
     if len(np.atleast_2d(sample)) > 1:
         raise Exception("Error: the sample passed to markov_chain_diagnostics.get_autocorrelation() must be a sample "
                         "of a scalar quantity.")
-    iat = get_iact_and_acf(sample)[0]
-    return [np.mean(sample), np.std(sample, ddof=1) * (iat / len(sample)) ** 0.5]
+    iact = get_iact_and_acf(sample)[0]
+    return [np.mean(sample), np.std(sample, ddof=1) * (iact / len(sample)) ** 0.5]
 
 
 def get_thinned_sample(sample, thinning_level):
@@ -101,8 +101,8 @@ def get_iact_and_acf(sample, cutoff=math.e ** (-4)):
     -------
     float
         Integrated autocorrelation time.
-    autocorrelation_function : numpy.ndarray 
-        Autocorrelation function of the sample.
+    numpy.ndarray
+        The autocorrelation function of the sample.
     """
     autocorrelation_function = get_autocorrelation(sample)
     below_cutoff = np.where(autocorrelation_function < cutoff)[0]
@@ -112,7 +112,7 @@ def get_iact_and_acf(sample, cutoff=math.e ** (-4)):
 
 def get_effective_sample_size(sample):
     """
-    Calculate the effective sample size of sample.  The elements of sample must be scalar quantities.
+    Calculate the effective sample size of an MCMC sample.  The elements of sample must be scalar quantities.
     
     Parameters
     ----------
