@@ -159,19 +159,17 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             The pairwise contribution to the dimensionless action.
         """
 
-        return self._get_kinetic_action_term(active_particle_index,  position_at_active_particle_index, 
+        return self._get_kinetic_action_term(position_at_active_particle_index, 
                                             position_at_neighbouring_worldline_index) + \
                                             self._get_potential_action_term(positions, active_particle_index,
                                                                              position_at_active_particle_index)
     
-    def _get_kinetic_action_term(self, active_particle_index,  position_at_active_particle_index, 
+    def _get_kinetic_action_term(self, position_at_active_particle_index, 
                                  position_at_neighbouring_worldline_index):
         """
         Returns the kinetic energy contribution to the pairwise dimensionless action.
         Parameters
         ----------
-        active_particle_index : int
-            The index of the active particle.
         position_at_active_particle_index : float
             The position of the particle at the active particle index.
         position_at_neighbouring_worldline_index : float
@@ -182,8 +180,8 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             The kinetic energy contribution to the pairwise dimensionless action.
         """
 
-        return 0.5 * self._mass * (position_at_neighbouring_worldline_index -
-                position_at_active_particle_index)**2 / self._timestep
+        return 0.5 * self._mass * (position_at_neighbouring_worldline_index - position_at_active_particle_index)**2 \
+                        / self._timestep
     
     @abstractmethod
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
@@ -256,9 +254,9 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
                 final_position_wrt_factor_event = self.get_final_position_wrt_factor_event(movement_direction, roots)
                 distance_to_next_factor_event = np.abs(final_position_wrt_factor_event - initial_position)
                 
-            if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
-                shortest_distance_to_next_factor_event = distance_to_next_factor_event
-                vetoing_index = worldline_neighbour
+                if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
+                    shortest_distance_to_next_factor_event = distance_to_next_factor_event
+                    vetoing_index = worldline_neighbour
                 
         return shortest_distance_to_next_factor_event, vetoing_index
     
@@ -323,7 +321,6 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         -------
             The correct root of the equation according to the direction of motion.
         """
-
         if (movement_direction > 0) and (roots[0] > roots[1]):
             return roots[0]
         elif (movement_direction > 0) and (roots[0] < roots[1]):

@@ -39,14 +39,30 @@ def main(config_file_string):
     # plt.scatter(np.arange(np.shape(position_sample)[1]), position_sample[5000, :], label="5000")
     # plt.scatter(np.arange(np.shape(position_sample)[1]), position_sample[10000, :], label="10000")
     # plt.legend()
-    particle_0_sample = position_sample[:,::2]
+    # particle_0_sample = position_sample[:,::2]
     
-    particle_0_mean = np.mean(particle_0_sample**2, axis=1)
-    print(np.shape(particle_0_mean))
+    # particle_0_mean = np.mean(particle_0_sample**2, axis=1)
+    # print(np.shape(particle_0_mean))
     
-    plt.plot(np.arange(len(particle_0_mean)), particle_0_mean)
-    plt.savefig("test.png")
+    # plt.plot(np.arange(len(particle_0_mean)), particle_0_mean)
 
+    worldline_0 = position_sample[:, 0:2]
+    print(np.shape(worldline_0))
+    plt.figure(figsize=[10,10])
+    ax = plt.axes(ylim=(-5, 5))
+    start = 1000
+    num_of_samples = 1150
+    print(np.shape(np.arange(0,num_of_samples)), np.shape(worldline_0[0:num_of_samples, :]))
+    ax.scatter(np.arange(start,num_of_samples), worldline_0[start:num_of_samples, 0], s=100)
+    ax.scatter(np.arange(start,num_of_samples), worldline_0[start:num_of_samples, 1], s=100)
+    ax.errorbar(np.arange(start,num_of_samples), worldline_0[start:num_of_samples, 1], yerr=np.ones(np.shape(np.arange(start,num_of_samples))), fmt=".", capsize=5.0)
+    ax.errorbar(np.arange(start,num_of_samples), worldline_0[start:num_of_samples, 0], yerr=np.ones(np.shape(np.arange(start,num_of_samples))), fmt=".", capsize=5.0)
+
+    ax.set_yticks(np.arange(-5,6))
+    plt.tight_layout()
+    plt.savefig("test.png")
+    with np.printoptions(threshold=np.inf):
+        print(worldline_0[0:50,:])
 
 
    
