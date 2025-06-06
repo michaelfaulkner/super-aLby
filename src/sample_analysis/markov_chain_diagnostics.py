@@ -21,6 +21,17 @@ def get_sample_mean_and_error(sample):
 
 
 def get_thinned_sample(one_dimensional_sample, thinning_level):
+    """
+    Get a thinned sample from a one-dimensional sample by keeping every nth element, where n is determined 
+    by the thinning level.
+    
+    Parameters
+    ----------
+    one_dimensional_sample : numpy.ndarray
+        Sample to be thinned.
+    thinning_level : int
+        The level of thinning, i.e., keep every nth element of the sample.
+    """
     if len(np.atleast_2d(one_dimensional_sample)) > 1:
         raise Exception("Error: the sample passed to markov_chain_diagnostics.get_thinned_sample() must be one "
                         "(Cartesian) dimensional.")
@@ -29,6 +40,14 @@ def get_thinned_sample(one_dimensional_sample, thinning_level):
 
 
 def get_cumulative_distribution(one_dimensional_sample):
+    """
+    Calculate empirical cdf for a one-dimensional sample.
+    
+    Parameters
+    ----------
+    one_dimensional_sample : numpy.ndarray
+        Sample to be analysed.
+    """
     if len(np.atleast_2d(one_dimensional_sample)) > 1:
         raise Exception("Error: the sample passed to markov_chain_diagnostics.get_cumulative_distribution() must be "
                         "one (Cartesian) dimensional.")

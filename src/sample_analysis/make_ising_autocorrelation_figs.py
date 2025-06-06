@@ -91,9 +91,9 @@ def make_empty_fig():
 
 
 def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, output_directory,
-                                                  sample_directory, temperatures, lattice_length,
-                                                  number_of_equilibration_iterations, number_of_observations,
-                                                  number_of_jobs, thinning_level=None):
+                                               sample_directory, temperatures, lattice_length,
+                                               number_of_equilibration_iterations, number_of_observations,
+                                               number_of_jobs, thinning_level=None):
     try:
         with open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_norm_integrated_"
                   f"autocorrelation_times_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_"
