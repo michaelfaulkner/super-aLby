@@ -13,23 +13,7 @@ super-aLby was written using Python 3.8 but is likely to support any Python vers
 this). It has been tested with CPython.
 
 super-aLby depends on [`numpy`](https://numpy.org). Some of the sample-analysis code (i.e., scripts contained in the 
-[`output`](src/output) directory) also depends on [`matplotlib`](https://matplotlib.org) and [`rpy2`](
-https://rpy2.github.io).  However, everything can run without [`rpy2`](https://rpy2.github.io) - measurements of effective sample size would then be the only 
-lost functionality (we may resolve this in the future).
-
-[`markov_chain_diagnostics.py`](sample_analysis/markov_chain_diagnostics.py) depends on the R packages 
-[`LaplacesDemon`](https://cran.r-project.org/web/packages/LaplacesDemon/) and [`mcmcse`](
-https://cran.r-project.org/web/packages/mcmcse/). To install these R packages: download the binaries [here](
-https://cran.r-project.org/web/packages/LaplacesDemon/) and [here](https://cran.r-project.org/web/packages/mcmcse/) 
-and then run `R CMD INSTALL <binary location>` in your terminal.  You may also need to install various dependencies of 
-these R packages (listed under Imports on the relevant CRAN package page).  Note again that everything can run without 
-[`rpy2`](https://rpy2.github.io) and these R packages (see preceding paragraph).
-
-To manage external Python packages, we use [conda](https://docs.conda.io/projects/conda/en/latest/) environments via 
-the [miniconda distribution](https://docs.conda.io/en/latest/miniconda.html). However, we found [`rpy2`](
-https://rpy2.github.io) to be buggy when installed via conda. Instead, we `pip install rpy2` from within the project's 
-conda environment (after having `conda install`ed [`numpy`](https://numpy.org) and [`matplotlib`](
-https://matplotlib.org)).
+[`output`](src/output) directory) also depends on [`matplotlib`](https://matplotlib.org).
 
 ## Implementation
 
