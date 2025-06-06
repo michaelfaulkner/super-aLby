@@ -113,8 +113,8 @@ class Mediator(metaclass=ABCMeta):
         for temperature_index, temperature in enumerate(self._temperatures):
             self._print_temperature_message(temperature, temperature_index)
             self._reset_arrays_and_counters(temperature) 
-            if restart_flag: # If checkpoint file exists 
-                self._reload_configuration_from_file_and_reset() # This seems to repeat processes done in _reset_arrays_and_counters anyway
+            if restart_flag: 
+                self._reload_configuration_from_file_and_reset() 
                 self._get_checkpoint_index()
             self._generate_sample_at_current_temperature(temperature_index, temperature)
             # Write samples to files 
@@ -146,7 +146,7 @@ class Mediator(metaclass=ABCMeta):
         """Reloads position data from a previous sub-run in the case of checkpointing."""
         self._positions = np.load(os.path.join(os.getcwd(), self._samplers[0].output_directory,
                                                "configuration_at_checkpoint.npy"))
-        self._samples = [sampler.get_empty_sample_array(self._total_number_of_iterations) for sampler in self._samplers] # Redundant?
+        self._samples = [sampler.get_empty_sample_array(self._total_number_of_iterations) for sampler in self._samplers] 
         for samples, sampler in zip(self._samples, self._samplers):
             samples[0, :] = sampler.get_observation(None, self._positions, self._potential)
 

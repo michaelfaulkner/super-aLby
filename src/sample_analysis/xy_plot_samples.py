@@ -31,7 +31,7 @@ def main(config_file_string, temperature_index='00'):
      _, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
 
     directory_path = sample_directories[0]
-    file_path = 'output/convergence_tests/xy_potential/event_chain/8x8/teleport_single/temperature_00_checkpoint_00_sample_of_magnetisation_norm.npy'
+    file_path = os.path.join(directory_path, f'temperature_{temperature_index}_checkpoint_00_sample_of_magnetisation_norm.npy')
     just_file_path = file_path.split('/')[-1].split('.')[0]
     sample_paths = glob.glob(file_path) # Finds all filepaths satisfying wildcard condition 
     sample_paths = sorted(sample_paths, key=lambda fname: int(re.search(r"checkpoint_(\d{2})", fname).group(1)))
