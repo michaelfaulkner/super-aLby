@@ -1,8 +1,5 @@
-from markov_chain_diagnostics import get_autocorrelation, get_integrated_autocorrelation_time
+from markov_chain_diagnostics import get_iact_and_acf
 import importlib
-import math
-import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
 import os
 import sample_getter
@@ -15,7 +12,6 @@ sys.path.insert(0, src_directory)
 helper_methods = importlib.import_module("helper_methods")
 parsing = importlib.import_module("base.parsing")
 strings = importlib.import_module("base.strings")
-
 
 
 def main(config_folder, N):
@@ -31,10 +27,9 @@ def main(config_folder, N):
 
             config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
             (config_file_mediator, potential, samplers, sample_directories, temperatures,
-            number_of_equilibration_iterations, number_of_observations, number_of_particles,
-            _, _, _) = helper_methods.get_basic_config_data(config_file_string)
-            
-            mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
+             number_of_equilibration_iterations, number_of_observations, number_of_particles,
+             _, _, _) = helper_methods.get_basic_config_data(config_file_string)
+
             timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
             number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
             sample_directory = sample_directories[0]
@@ -51,25 +46,26 @@ def main(config_folder, N):
                     mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = sample_getter.get_mean_positions(
                         sample_directory, temperatures[temperature_index], temperature_index, number_of_particles, 
                         None, thinning_level=thinning_level)[1:, 0]
-                    
-                    # np.load(
-                    #     os.path.join(sample_directory, f"temperature_00_run_{i:02d}_sample_of_mean_positions.npy"))[1:, 0]
+
+                    """
+                    np.load(os.path.join(sample_directory, 
+                                         f"temperature_00_run_{i:02d}_sample_of_mean_positions.npy"))[1:, 0]
+                    """
                 mean_sample = mean_sample[50000:129999]
             
             else:
                 mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
-                                temperature_index, number_of_particles, number_of_equilibration_iterations,
-                                thinning_level=thinning_level)
+                                                               temperature_index, number_of_particles,
+                                                               number_of_equilibration_iterations,
+                                                               thinning_level=thinning_level)
                 mean_sample = mean_sample[:80000]
 
-                
-            iact = get_integrated_autocorrelation_time(mean_sample[:])
+            iact = get_iact_and_acf(mean_sample[:])[0]
             iact_arr[index] = iact
         
         save_arr = np.zeros((len(iact_arr), 2))
         save_arr[:, 0] = iact_arr
         save_arr[:, 1] = timestep_arr
-
         np.save(f"output/iact_metropolis_{i}.npy", save_arr)
     
 

@@ -19,7 +19,7 @@ def get_sample_mean_and_error(sample):
     if len(np.atleast_2d(sample)) > 1:
         raise Exception("Error: the sample passed to markov_chain_diagnostics.get_autocorrelation() must be a sample "
                         "of a scalar quantity.")
-    iat = get_integrated_autocorrelation_time(sample)
+    iat = get_iact_and_acf(sample)[0]
     return [np.mean(sample), np.std(sample, ddof=1) * (iat / len(sample)) ** 0.5]
 
 
@@ -85,28 +85,6 @@ def get_autocorrelation(sample):
     return acf
 
 
-def get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-4)):
-    """
-    Calculate the integrated autocorrelation time of sample.  The elements of sample must be scalar quantities.
-    
-    Parameters
-    ----------
-    sample : numpy.ndarray
-        Sample to be analysed.
-    cutoff : float
-        Cutoff value for the autocorrelation function. The default value is e^(-4).
-
-    Returns
-    -------
-    float
-        Integrated autocorrelation time.
-    """
-    autocorrelation_function = get_autocorrelation(sample)
-    below_cutoff = np.where(autocorrelation_function < cutoff)[0]
-    max_acf_index = below_cutoff[0] - 1
-    return 2.0 * np.sum(autocorrelation_function[:max_acf_index]) - 1.0
-
-
 def get_iact_and_acf(sample, cutoff=math.e ** (-4)):
     """
     Calculate the integrated autocorrelation time and autocorrelation function of sample.  The elements of sample must
@@ -146,5 +124,5 @@ def get_effective_sample_size(sample):
     float
         Effective sample size.
     """
-    iact = get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-4))
+    iact = get_iact_and_acf(sample, cutoff=math.e ** (-4))[0]
     return len(sample) / iact
