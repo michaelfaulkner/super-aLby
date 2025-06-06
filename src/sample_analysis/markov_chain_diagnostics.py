@@ -4,7 +4,7 @@ import numpy as np
 
 def get_sample_mean_and_error(sample):
     """
-    Calculate the mean and error of a one-dimensional sample.
+    Calculate the mean and error of sample.  The elements of sample must be scalar quantities.
 
     Parameters
     ----------
@@ -16,52 +16,51 @@ def get_sample_mean_and_error(sample):
     list
         A list containing the mean and error of the sample [mean, error].
     """
+    if len(np.atleast_2d(sample)) > 1:
+        raise Exception("Error: the sample passed to markov_chain_diagnostics.get_autocorrelation() must be a sample "
+                        "of a scalar quantity.")
     iat = get_integrated_autocorrelation_time(sample)
     return [np.mean(sample), np.std(sample, ddof=1) * (iat / len(sample)) ** 0.5]
 
 
-def get_thinned_sample(one_dimensional_sample, thinning_level):
+def get_thinned_sample(sample, thinning_level):
     """
-    Get a thinned sample from a one-dimensional sample by keeping every nth element, where n is determined 
-    by the thinning level.
+    Get a thinned sample from sample by keeping every nth element, where n is determined by the thinning level.
     
     Parameters
     ----------
-    one_dimensional_sample : numpy.ndarray
+    sample : numpy.ndarray
         Sample to be thinned.
     thinning_level : int
         The level of thinning, i.e., keep every nth element of the sample.
     """
-    if len(np.atleast_2d(one_dimensional_sample)) > 1:
-        raise Exception("Error: the sample passed to markov_chain_diagnostics.get_thinned_sample() must be one "
-                        "(Cartesian) dimensional.")
-    sample_indices_to_keep = np.array([i for i in range(len(one_dimensional_sample)) if i % thinning_level == 0])
-    return np.take(one_dimensional_sample, sample_indices_to_keep)
+    sample_indices_to_keep = np.array([i for i in range(len(sample)) if i % thinning_level == 0])
+    return np.take(sample, sample_indices_to_keep)
 
 
-def get_cumulative_distribution(one_dimensional_sample):
+def get_cumulative_distribution(sample):
     """
-    Calculate empirical cdf for a one-dimensional sample.
+    Calculate empirical cdf of a sample.  The elements of sample must be scalar quantities.
     
     Parameters
     ----------
-    one_dimensional_sample : numpy.ndarray
+    sample : numpy.ndarray
         Sample to be analysed.
     """
-    if len(np.atleast_2d(one_dimensional_sample)) > 1:
-        raise Exception("Error: the sample passed to markov_chain_diagnostics.get_cumulative_distribution() must be "
-                        "one (Cartesian) dimensional.")
+    if len(np.atleast_2d(sample)) > 1:
+        raise Exception("Error: the sample passed to markov_chain_diagnostics.get_autocorrelation() must be a sample "
+                        "of a scalar quantity.")
     """alternative calculation commented out, nb, factor of 1 / 10 (in bins) may not be optimal"""
     """count, bins_count = np.histogram(magnetisation_phase, bins=int(len(one_dimensional_sample) / 10))
     cdf = np.array([bins_count[1:], np.cumsum(count / sum(count))])"""
-    bin_values = np.arange(1, len(one_dimensional_sample) + 1) / float(len(one_dimensional_sample))
-    ordered_sample = np.sort(one_dimensional_sample)
+    bin_values = np.arange(1, len(sample) + 1) / float(len(sample))
+    ordered_sample = np.sort(sample)
     return [ordered_sample, bin_values]
 
 
 def get_autocorrelation(sample):
     """
-    Calculate the autocorrelation function of a one-dimensional sample.  
+    Calculate the autocorrelation function of sample.  The elements of sample must be scalar quantities.
 
     Parameters
     ----------
@@ -74,8 +73,8 @@ def get_autocorrelation(sample):
         Autocorrelation function of the sample.
     """
     if len(np.atleast_2d(sample)) > 1:
-        raise Exception("Error: the sample passed to markov_chain_diagnostics.get_autocorrelation() must be one "
-                        "(Cartesian) dimensional.")
+        raise Exception("Error: the sample passed to markov_chain_diagnostics.get_autocorrelation() must be a sample "
+                        "of a scalar quantity.")
     mean_zero_sample = sample - np.mean(sample)
     full_acf = np.correlate(mean_zero_sample, mean_zero_sample, mode='full')
     """np.correlate() is symmetric about t = 0 when mode='full' - full_acf[full_acf.size // 2:] returns t >= 0 values"""
@@ -88,7 +87,7 @@ def get_autocorrelation(sample):
 
 def get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-4)):
     """
-    Calculate the integrated autocorrelation time of a one-dimensional sample.
+    Calculate the integrated autocorrelation time of sample.  The elements of sample must be scalar quantities.
     
     Parameters
     ----------
@@ -110,7 +109,8 @@ def get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-4)):
 
 def get_iact_and_acf(sample, cutoff=math.e ** (-4)):
     """
-    Calculate the integrated autocorrelation time and autocorrelation function of a one-dimensional sample.
+    Calculate the integrated autocorrelation time and autocorrelation function of sample.  The elements of sample must
+        be scalar quantities.
     
     Parameters
     ----------
@@ -134,7 +134,7 @@ def get_iact_and_acf(sample, cutoff=math.e ** (-4)):
 
 def get_effective_sample_size(sample):
     """
-    Calculate the effective sample size of a one-dimensional sample.
+    Calculate the effective sample size of sample.  The elements of sample must be scalar quantities.
     
     Parameters
     ----------
@@ -146,8 +146,5 @@ def get_effective_sample_size(sample):
     float
         Effective sample size.
     """
-    if len(np.atleast_2d(sample)) > 1:
-        raise Exception("Error: the sample passed to markov_chain_diagnostics.get_effective_sample_size() must be "
-                        "one (Cartesian) dimensional.")
-    iat = get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-4))
-    return len(sample) / iat
+    iact = get_integrated_autocorrelation_time(sample, cutoff=math.e ** (-4))
+    return len(sample) / iact
