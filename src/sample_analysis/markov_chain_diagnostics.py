@@ -107,7 +107,7 @@ def get_iact_and_acf(sample, cutoff=math.e ** (-4)):
     autocorrelation_function = get_autocorrelation(sample)
     below_cutoff = np.where(autocorrelation_function < cutoff)[0]
     max_acf_index = below_cutoff[0] - 1
-    return 2.0 * np.sum(autocorrelation_function[:max_acf_index]) - 1.0, autocorrelation_function
+    return 2.0 * np.sum(autocorrelation_function[1:max_acf_index]) + 1.0, autocorrelation_function
 
 
 def get_effective_sample_size(sample):
