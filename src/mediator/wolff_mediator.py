@@ -70,6 +70,8 @@ class WolffMediator(IsingClusterMediator):
         super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
                          number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations,
                          proposal_dynamics_adaptor_is_on)
+        """Re-instantiate self._potential as IsingPotential contains lattice_length."""
+        self._potential = potential
 
     def _advance_markov_chain(self, markov_chain_step_index, temperature):
         """Advances the Markov chain by one step."""
