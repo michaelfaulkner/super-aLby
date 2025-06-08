@@ -68,7 +68,7 @@ class EventChainMediator(Mediator):
         """
         super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
                          number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations)
-        """Re-declare self._potential as EuclideanSubspacePotential contains additional abstract methods."""
+        """Re-instantiate self._potential as EuclideanSubspacePotential contains additional abstract methods."""
         self._potential = potential
         if normalised_distance_between_measurements <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 as normalised_distance_between_measurements in "

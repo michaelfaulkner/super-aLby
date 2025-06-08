@@ -105,7 +105,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
 
     def get_gradient(self, positions):
         """
-        Throws an error if used in this case.  The method is only validw for smooth potential functions.
+        Throws an error if used in this case.  The method is only valid for smooth potential functions.
 
         Parameters
         ----------

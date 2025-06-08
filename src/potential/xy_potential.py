@@ -2,9 +2,8 @@ import numpy as np
 from .euclidean_subspace_potential import EuclideanSubspacePotential
 from model_settings import number_of_particles
 from base.exceptions import ConfigurationError
+from helper_methods import get_neighbours, get_initial_positions_of_smooth_potential
 from helper_methods import get_east_neighbour, get_north_neighbour, get_west_neighbour, get_south_neighbour
-from helper_methods import get_initial_positions_of_smooth_potential
-
 
 class XyPotential(EuclideanSubspacePotential):
     """
@@ -134,7 +133,7 @@ class XyPotential(EuclideanSubspacePotential):
             The potential at lattice_site_index.
         """
         return -np.sum([np.cos(positions[neighbouring_spin_index, 0] - active_particle_position[0])
-                        for neighbouring_spin_index in self._get_neighbouring_spin_indices(active_particle_index)])
+                        for neighbouring_spin_index in get_neighbours(active_particle_index, self._lattice_length)])
 
     @staticmethod
     def get_random_event_chain_velocity():
@@ -179,7 +178,7 @@ class XyPotential(EuclideanSubspacePotential):
         active_spin_value = positions[active_particle_index, 0]
         vetoing_spin_index = None
 
-        for neighbouring_spin_index in self._get_neighbouring_spin_indices(active_particle_index):
+        for neighbouring_spin_index in get_neighbours(active_particle_index, self._lattice_length):
             non_active_spin_value = positions[neighbouring_spin_index, 0]
             initial_spin_value_difference = self._get_spin_difference(active_spin_value, non_active_spin_value)
             uphill_energy = - temperature * np.log(1.0 - np.random.rand())
