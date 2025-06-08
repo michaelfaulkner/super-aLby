@@ -59,15 +59,15 @@ def main(number_of_system_sizes=5):
             temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)
 
         axis_1.plot(reduced_temperatures, wolff_iacts_vs_temp, marker="*", markersize=8,
-                        color=system_size_colors[lattice_length_index], linestyle="--",
-                        label=fr"$N$ = {lattice_length}x{lattice_length} Wolff")
+                    color=system_size_colors[lattice_length_index], linestyle="--",
+                    label=fr"$N$ = {lattice_length}x{lattice_length} Wolff")
         axis_1.plot(reduced_temperatures, metrop_iacts_vs_temp, marker=".",
-                        markersize=8, color=system_size_colors[lattice_length_index], linestyle="-",
-                        label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
+                    markersize=8, color=system_size_colors[lattice_length_index], linestyle="-",
+                    label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
         """The following line plots Metropolis IACTs on a separate figure, w/out the Wolff data and for use in talks."""
         axis_2.plot(reduced_temperatures, metrop_iacts_vs_temp, marker=".",
-                        markersize=8, color=system_size_colors[lattice_length_index], linestyle="-",
-                        label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
+                    markersize=8, color=system_size_colors[lattice_length_index], linestyle="-",
+                    label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
 
     legends = [axis_1.legend(loc="upper left", fontsize=10), axis_2.legend(loc="upper left", fontsize=10)]
     [legend.get_frame().set_edgecolor("k") for legend in legends], [legend.get_frame().set_lw(3) for legend in legends]
@@ -120,17 +120,17 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
         iact_vs_temperature = np.array(iacts)
         acf_vs_temperature = np.array([acfs, acf_errors])   
     
-        output_file = open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_integrated_"
-                           f"autocorrelation_times_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_"
-                           f"{number_of_jobs}x{number_of_observations}_observations.tsv", "w")
+        output_file = open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}"
+                           f"_integrated_autocorrelation_times_vs_temperature_{mediator.replace('_mediator', '')}"
+                           f"_algorithm_{number_of_jobs}x{number_of_observations}_observations.tsv", "w")
         output_file.write("# temperature".ljust(30) + "magnetic-norm IACT".ljust(35) + "\n")
         for temperature_index, temperature in enumerate(temperatures):
             output_file.write(f"{temperature:.14e}".ljust(30) +
                               f"{iact_vs_temperature[temperature_index]:.14e}".ljust(35) + "\n")
         output_file.close()
 
-        np.save(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_autocorrelation_"
-                f"vs_temperature_{mediator.replace('_mediator', '')}_algorithm_{number_of_jobs}x"
+        np.save(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}"
+                f"_autocorrelation_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_{number_of_jobs}x"
                 f"{number_of_observations}_observations.npy", acf_vs_temperature)
     return iact_vs_temperature, acf_vs_temperature
 
