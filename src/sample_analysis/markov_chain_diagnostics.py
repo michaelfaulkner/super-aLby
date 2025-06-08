@@ -85,7 +85,7 @@ def get_autocorrelation(sample):
     return acf
 
 
-def get_iact_and_acf(sample, cutoff=math.e ** (-4)):
+def get_iact_and_acf(sample, cutoff=math.e ** (-2)):
     """
     Calculate the integrated autocorrelation time and autocorrelation function of sample.  The elements of sample must
         be scalar quantities.
@@ -124,5 +124,5 @@ def get_effective_sample_size(sample):
     float
         Effective sample size.
     """
-    iact = get_iact_and_acf(sample, cutoff=math.e ** (-4))[0]
+    iact = get_iact_and_acf(sample, cutoff=math.e ** (-2))[0]
     return len(sample) / iact

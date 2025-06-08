@@ -42,7 +42,7 @@ def main(number_of_system_sizes=5):
         _, _ = get_observable_iact_and_acf_vs_temperature(
             "magnetic_density", metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
             temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)
-        (metrop_iacts_vs_temp, metrop_iact_errors_vs_temp), _ = get_observable_iact_and_acf_vs_temperature(
+        metrop_iacts_vs_temp, _ = get_observable_iact_and_acf_vs_temperature(
             "magnetic_norm_density", metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
             temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)
         _, _ = get_observable_iact_and_acf_vs_temperature(
@@ -51,21 +51,21 @@ def main(number_of_system_sizes=5):
         _, _ = get_observable_iact_and_acf_vs_temperature(
             "magnetic_density", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
             temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)
-        (wolff_iacts_vs_temp, wolff_iact_errors_vs_temp), _ = get_observable_iact_and_acf_vs_temperature(
+        wolff_iacts_vs_temp, _ = get_observable_iact_and_acf_vs_temperature(
             "magnetic_norm_density", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
             temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)
         _, _ = get_observable_iact_and_acf_vs_temperature(
             "potential", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
             temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)
 
-        axis_1.errorbar(reduced_temperatures, wolff_iacts_vs_temp, wolff_iact_errors_vs_temp, marker="*", markersize=8,
+        axis_1.plot(reduced_temperatures, wolff_iacts_vs_temp, marker="*", markersize=8,
                         color=system_size_colors[lattice_length_index], linestyle="--",
                         label=fr"$N$ = {lattice_length}x{lattice_length} Wolff")
-        axis_1.errorbar(reduced_temperatures, metrop_iacts_vs_temp, metrop_iact_errors_vs_temp, marker=".",
+        axis_1.plot(reduced_temperatures, metrop_iacts_vs_temp, marker=".",
                         markersize=8, color=system_size_colors[lattice_length_index], linestyle="-",
                         label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
         """The following line plots Metropolis IACTs on a separate figure, w/out the Wolff data and for use in talks."""
-        axis_2.errorbar(reduced_temperatures, metrop_iacts_vs_temp, metrop_iact_errors_vs_temp, marker=".",
+        axis_2.plot(reduced_temperatures, metrop_iacts_vs_temp, marker=".",
                         markersize=8, color=system_size_colors[lattice_length_index], linestyle="-",
                         label=fr"$N$ = {lattice_length}x{lattice_length} Metrop")
 
@@ -95,12 +95,12 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
                                                number_of_equilibration_iterations, number_of_observations,
                                                number_of_jobs, thinning_level=None):
     try:
-        with open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_norm_integrated_"
+        with open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_integrated_"
                   f"autocorrelation_times_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_"
                   f"{number_of_jobs}x{number_of_observations}_observations.tsv", "r") as output_file:
             output_file_sans_header = np.array([np.fromstring(line, dtype=float, sep='\t') for line in output_file
                                                 if not line.startswith('#')]).transpose()
-            iact_vs_temperature = np.array(output_file_sans_header[1], output_file_sans_header[2])
+            iact_vs_temperature = output_file_sans_header[1]
         acf_vs_temperature = np.load(
             f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_autocorrelation_vs_"
             f"temperature_{mediator.replace('_mediator', '')}_algorithm_{number_of_jobs}x{number_of_observations}_"
@@ -108,27 +108,25 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
         
     except IOError:
         get_sample_method = getattr(sample_getter, "get_" + observable_string)
-        iacts, iact_errors, acfs, acf_errors = [], [], [], []
+        iacts, acfs, acf_errors = [], [], []
         for temperature_index, temperature in enumerate(temperatures):
             iact_vs_job, acf_vs_job = map(list, zip(*[get_iact_and_acf(get_sample_method(
                 f"{sample_directory}/job_{job_number:02d}", temperature, temperature_index, 0, lattice_length ** 2,
                 number_of_equilibration_iterations, thinning_level)) for job_number in range(number_of_jobs)]))
-            iact, iact_error = np.mean(iact_vs_job), np.std(iact_vs_job, axis=0) / number_of_jobs ** 0.5
-            iacts.append(iact), iact_errors.append(iact_error)
+            iact = np.mean(iact_vs_job)
+            iacts.append(iact)
             acf, acf_error = np.mean(acf_vs_job, axis=0), np.std(acf_vs_job, axis=0) / number_of_jobs ** 0.5
             acfs.append(acf), acf_errors.append(acf_error)
-        iact_vs_temperature = np.array([iacts, iact_errors])
+        iact_vs_temperature = np.array(iacts)
         acf_vs_temperature = np.array([acfs, acf_errors])   
     
-        output_file = open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_norm_integrated_"
+        output_file = open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_integrated_"
                            f"autocorrelation_times_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_"
                            f"{number_of_jobs}x{number_of_observations}_observations.tsv", "w")
-        output_file.write("# temperature".ljust(30) + "magnetic-norm IACT".ljust(35) +
-                          "magnetic-norm IACT error".ljust(35) + "\n")
+        output_file.write("# temperature".ljust(30) + "magnetic-norm IACT".ljust(35) + "\n")
         for temperature_index, temperature in enumerate(temperatures):
             output_file.write(f"{temperature:.14e}".ljust(30) +
-                              f"{iact_vs_temperature[temperature_index, 0]:.14e}".ljust(35) +
-                              f"{iact_vs_temperature[temperature_index, 1]:.14e}".ljust(35) + "\n")
+                              f"{iact_vs_temperature[temperature_index]:.14e}".ljust(35) + "\n")
         output_file.close()
 
         np.save(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_autocorrelation_"
