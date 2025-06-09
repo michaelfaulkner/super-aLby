@@ -179,25 +179,25 @@ class XyPotential(EuclideanSubspacePotential):
         vetoing_spin_index = None
 
         for neighbouring_spin_index in get_neighbours(active_particle_index, self._lattice_length):
-            non_active_spin_value = positions[neighbouring_spin_index, 0]
-            initial_spin_value_difference = self._get_spin_difference(active_spin_value, non_active_spin_value)
-            uphill_energy = - temperature * np.log(1.0 - np.random.rand())
+            neighbour_spin_value = positions[neighbouring_spin_index, 0]
+            initial_spin_value_difference = self._get_spin_difference(active_spin_value, neighbour_spin_value)
+            total_uphill_potential = - temperature * np.log(1.0 - np.random.rand())
+            initial_two_spin_potential = 1.0 - np.cos(initial_spin_value_difference)
 
             if initial_spin_value_difference > 0.0:
-                initial_two_spin_potential = 1.0 - np.cos(initial_spin_value_difference)
-                no_of_complete_spin_rotations = int(0.5 * (initial_two_spin_potential + uphill_energy))
-                final_two_spin_potential = ((no_of_complete_spin_rotations + 1.0) * 2.0 - initial_two_spin_potential -
-                                            uphill_energy)
-                final_spin_value_difference = np.arccos(1.0 - final_two_spin_potential)
-                distance_to_next_factor_event = ((no_of_complete_spin_rotations + 0.5) * 2.0 * np.pi -
-                                                 initial_spin_value_difference - final_spin_value_difference)
+                number_of_full_rotations = int(0.5 * (initial_two_spin_potential + total_uphill_potential))
+                final_pair_potential = (initial_two_spin_potential + total_uphill_potential
+                                        - 2.0 * number_of_full_rotations)
+                final_spin_value_difference = np.arccos(1.0 - final_pair_potential)
+                distance_to_next_factor_event = (number_of_full_rotations * 2.0 * np.pi + final_spin_value_difference
+                                                 - initial_spin_value_difference)
 
             else:
-                no_of_complete_spin_rotations = int(0.5 * uphill_energy)
-                final_two_spin_potential = ((no_of_complete_spin_rotations + 1.0) * 2.0 - uphill_energy)
-                final_spin_value_difference = np.arccos(1.0 - final_two_spin_potential)
-                distance_to_next_factor_event = ((no_of_complete_spin_rotations + 0.5) * 2.0 * np.pi -
-                                                 initial_spin_value_difference - final_spin_value_difference)
+                number_of_full_rotations = int(0.5 * total_uphill_potential)
+                final_pair_potential = total_uphill_potential - 2.0 * number_of_full_rotations 
+                final_spin_value_difference = np.arccos(1.0 - final_pair_potential)
+                distance_to_next_factor_event = (number_of_full_rotations * 2.0 * np.pi + final_spin_value_difference
+                                                 - initial_spin_value_difference)
 
             if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
                 shortest_distance_to_next_factor_event = distance_to_next_factor_event
