@@ -13,7 +13,7 @@ super-aLby was written using Python 3.8 but is likely to support any Python vers
 this). It has been tested with CPython.
 
 super-aLby depends on [`numpy`](https://numpy.org). Some of the sample-analysis code (i.e., scripts contained in the 
-[`output`](src/output) directory) also depends on [`matplotlib`](https://matplotlib.org).
+[`sample_analysis`](src/sample_analysis) directory) also depends on [`matplotlib`](https://matplotlib.org).
 
 ## Implementation
 
@@ -25,7 +25,7 @@ directory.
 
 To run the super-aLby application, open your terminal, navigate to the [`src`](src) directory and enter `python run.py 
 <configuration file>`. The generated sample data will appear in the [`output`](src/output) directory (at a location 
-given in the configuration file). Sample analysis can then be performed via scripts within the [`output`](src/output) 
+given in the configuration file). Sample analysis can then be performed via scripts within the [`sample_analysis`](src/sample_analysis) 
 directory.
 
 The [`run.py`](src/run.py) script also takes optional arguments. These are:
