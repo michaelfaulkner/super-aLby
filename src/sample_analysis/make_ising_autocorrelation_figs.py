@@ -39,24 +39,22 @@ def main(number_of_system_sizes=5):
     system_size_colors.reverse()
 
     for lattice_length_index, lattice_length in enumerate(lattice_lengths):
-        _, _ = get_observable_iact_and_acf_vs_temperature(
-            "magnetic_density", metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)
-        metrop_iacts_vs_temp, _ = get_observable_iact_and_acf_vs_temperature(
+        metrop_iacts_vs_temp = get_observable_iact_and_acf_vs_temperature(
             "magnetic_norm_density", metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)
-        _, _ = get_observable_iact_and_acf_vs_temperature(
-            "potential", metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)
-        _, _ = get_observable_iact_and_acf_vs_temperature(
-            "magnetic_density", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
-            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)
-        wolff_iacts_vs_temp, _ = get_observable_iact_and_acf_vs_temperature(
+            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)[0]
+        wolff_iacts_vs_temp = get_observable_iact_and_acf_vs_temperature(
             "magnetic_norm_density", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
+            temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)[0]
+        """Now also compute the IACTs and ACFs of the observables we don't use in the figure, in case the information 
+            is needed in future"""
+        [get_observable_iact_and_acf_vs_temperature(
+            observable_string, metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
             temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)
-        _, _ = get_observable_iact_and_acf_vs_temperature(
-            "potential", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
+            for observable_string in ["magnetic_density", "potential"]]
+        [get_observable_iact_and_acf_vs_temperature(
+            observable_string, wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
             temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)
+            for observable_string in ["magnetic_density", "potential"]]
 
         axis_1.plot(reduced_temperatures, wolff_iacts_vs_temp, marker="*", markersize=8,
                     color=system_size_colors[lattice_length_index], linestyle="--",
