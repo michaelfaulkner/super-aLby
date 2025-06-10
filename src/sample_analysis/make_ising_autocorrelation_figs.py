@@ -92,8 +92,13 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
                                                sample_directory, temperatures, lattice_length,
                                                number_of_equilibration_iterations, number_of_observations,
                                                number_of_jobs, thinning_level=None):
+    """Renaming of observable string to load iact values for historic data stored under old naming convention."""
+    if observable_string == 'magnetic_norm_density':
+        iact_observable_string = 'magnetic_norm'
+    else:
+        iact_observable_string = observable_string
     try:
-        with open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_integrated_"
+        with open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{iact_observable_string}_integrated_"
                   f"autocorrelation_times_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_"
                   f"{number_of_jobs}x{number_of_observations}_observations.tsv", "r") as output_file:
             output_file_sans_header = np.array([np.fromstring(line, dtype=float, sep='\t') for line in output_file
@@ -107,18 +112,22 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
     except IOError:
         get_sample_method = getattr(sample_getter, "get_" + observable_string)
         iacts, acfs, acf_errors = [], [], []
-        for temperature_index, temperature in enumerate(temperatures):
-            iact_vs_job, acf_vs_job = map(list, zip(*[get_iact_and_acf(get_sample_method(
-                f"{sample_directory}/job_{job_number:02d}", temperature, temperature_index, 0, lattice_length ** 2,
-                number_of_equilibration_iterations, thinning_level)) for job_number in range(number_of_jobs)]))
-            iact = np.mean(iact_vs_job)
-            iacts.append(iact)
-            acf, acf_error = np.mean(acf_vs_job, axis=0), np.std(acf_vs_job, axis=0) / number_of_jobs ** 0.5
-            acfs.append(acf), acf_errors.append(acf_error)
-        iact_vs_temperature = np.array(iacts)
-        acf_vs_temperature = np.array([acfs, acf_errors])   
+        try:
+            for temperature_index, temperature in enumerate(temperatures):
+                iact_vs_job, acf_vs_job = map(list, zip(*[get_iact_and_acf(get_sample_method(
+                    f"{sample_directory}/job_{job_number:02d}", temperature, temperature_index, 0, lattice_length ** 2,
+                    number_of_equilibration_iterations, thinning_level)) for job_number in range(number_of_jobs)]))
+                iact = np.mean(iact_vs_job)
+                iacts.append(iact)
+                acf, acf_error = np.mean(acf_vs_job, axis=0), np.std(acf_vs_job, axis=0) / number_of_jobs ** 0.5
+                acfs.append(acf), acf_errors.append(acf_error)
+            iact_vs_temperature = np.array(iacts)
+            acf_vs_temperature = np.array([acfs, acf_errors])
+        except IOError as e:
+                print(f"Failed to load sample. Please generate samples for the observables. {e}")
+                raise
     
-        output_file = open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}"
+        output_file = open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{iact_observable_string}"
                            f"_integrated_autocorrelation_times_vs_temperature_{mediator.replace('_mediator', '')}"
                            f"_algorithm_{number_of_jobs}x{number_of_observations}_observations.tsv", "w")
         output_file.write("# temperature".ljust(30) + "magnetic-norm IACT".ljust(35) + "\n")
