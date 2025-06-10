@@ -42,6 +42,8 @@ class EventChainMediator(Mediator):
             iterations of the Markov process.
         normalised_distance_between_measurements : float, optional
             Total distance through state space between samples (normalised as indicated by operations below).
+        teleportation_portal : bool 
+            Determines whether to use teleportation portal boundary conditions.
 
         Raises
         ------
@@ -91,10 +93,11 @@ class EventChainMediator(Mediator):
         for markov_chain_index in range(self._total_number_of_iterations):
             active_particle_index = np.random.randint(0, number_of_particles)
             movement_direction = self._potential.get_random_event_chain_velocity()
-            distance_to_next_measurement = self._distance_between_measurements
+            distance_to_next_measurement = self._distance_between_measurements 
+            accepts_in_a_row = 0
             while True:
-                distance_to_next_event, vetoing_index = self._potential.get_distance_to_next_event_and_veto_index(
-                    self._positions, active_particle_index, temperature, movement_direction)
+                distance_to_next_event, vetoing_index, neighbour_range = self._potential.get_distance_to_next_event_and_veto_index(
+                    self._positions, active_particle_index, temperature, movement_direction, accepts_in_a_row)
                 if distance_to_next_measurement < distance_to_next_event:
                     self._potential.update_position(self._positions, distance_to_next_measurement,
                                                     active_particle_index, movement_direction)
@@ -110,13 +113,20 @@ class EventChainMediator(Mediator):
                         portal_candidate = self._potential.teleportation_portal(self._positions, active_particle_index, 
                                                                                 vetoing_index, movement_direction)
                         potential_difference = self._potential.get_potential_difference(active_particle_index, portal_candidate,
-                                                                            self._positions)
-                        if potential_difference < 0.0 or np.random.uniform(0.0, 1.0) < np.exp(- potential_difference / temperature):
+                                                                                        self._positions)
+                        #if accepts_in_a_row > 5:
+                            #print(f'Active: index: {active_particle_index} value: {self._positions[active_particle_index]}')
+                            #print(f'Veto: index: {vetoing_index} value: {self._positions[vetoing_index]}')
+                            #print(f'Potential diff: {potential_difference}')
+                            #print(f'Accepts: {accepts_in_a_row}')
+                        if potential_difference < 0.0 or np.random.uniform(0.0, 1.0) < np.exp(- potential_difference / temperature) and accepts_in_a_row < 1:
                             self._positions[active_particle_index] = portal_candidate
                             portal_events_accepted += 1
+                            accepts_in_a_row += 1
                         else:
                             active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                                 self._positions, active_particle_index, movement_direction, vetoing_index)
+                            accepts_in_a_row = 0
                     else:
                         active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                             self._positions, active_particle_index, movement_direction, vetoing_index)
