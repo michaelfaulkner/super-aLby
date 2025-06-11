@@ -239,10 +239,11 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         else:
             active_particle_index = veto_index
         if active_particle_index == initial_a and movement_direction == initial_v:
-            raise Exception("Chose the same index and direction twice in a row")
+            raise Exception("The same combination of active particle index and direction of motion has been chosen "
+                            "twice in a row.")
         return active_particle_index, movement_direction
 
-    def update_position(self,positions, displacement_distance, active_particle_index, movement_direction):
+    def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
         """
         Updates position of the active particle following an event.
 
