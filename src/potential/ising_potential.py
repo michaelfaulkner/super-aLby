@@ -2,7 +2,7 @@
 from .potential import Potential
 from base. exceptions import ConfigurationError
 from model_settings import number_of_particles, range_of_initial_particle_positions, size_of_particle_space
-from helper_methods import get_east_neighbour, get_north_neighbour, get_west_neighbour, get_south_neighbour
+from helper_methods import get_neighbours, get_east_neighbour, get_north_neighbour
 import numpy as np
 
 
@@ -91,10 +91,8 @@ class IsingPotential(Potential):
         float
             The potential difference resulting from moving the single active particle to candidate_position.
         """
-        sum_of_neighbouring_spins = (positions[get_east_neighbour(active_particle_index, self.lattice_length)] +
-                                     positions[get_north_neighbour(active_particle_index, self.lattice_length)] +
-                                     positions[get_west_neighbour(active_particle_index, self.lattice_length)] +
-                                     positions[get_south_neighbour(active_particle_index, self.lattice_length)])
+        sum_of_neighbouring_spins = np.sum([positions[neighbouring_spin_index] for neighbouring_spin_index in
+                                            get_neighbours(active_particle_index, self.lattice_length)])
         return self.potential_constant * sum_of_neighbouring_spins * (candidate_position -
                                                                       positions[active_particle_index])
 
@@ -121,4 +119,3 @@ class IsingPotential(Potential):
         else:
             return np.array([np.atleast_1d(
                 np.random.choice(range_of_initial_particle_positions)) for _ in range(number_of_particles)])
-

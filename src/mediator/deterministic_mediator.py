@@ -119,9 +119,9 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
             raise ConfigurationError(f"Do not give IsingPotential as the value for potential in "
                                      f"{self.__class__.__name__} as child classes of DeterministicMediator cannot "
                                      f"resolve potentials defined on discrete configuration space.")
-        """In the following line, we re-declare self._potential (it has already been declared in Mediator.__init__()) 
-            as the default potential of DeterministicMediator is EuclideanSubspacePotential, which contains 
-            get_gradient()."""
+        """In the following line, we re-instantiate self._potential (it has already been declared in 
+            Mediator.__init__()) as the default potential of DeterministicMediator is EuclideanSubspacePotential, which 
+            contains get_gradient()."""
         self._potential = potential
         self._kinetic_energy = kinetic_energy
         self._initial_step_size = initial_step_size

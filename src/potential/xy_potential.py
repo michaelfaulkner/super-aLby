@@ -2,24 +2,25 @@ import numpy as np
 from .euclidean_subspace_potential import EuclideanSubspacePotential
 from model_settings import number_of_particles
 from base.exceptions import ConfigurationError
-from helper_methods import get_east_neighbour, get_north_neighbour, get_west_neighbour, get_south_neighbour
-from helper_methods import get_initial_positions_of_smooth_potential
+from helper_methods import get_neighbours, get_initial_positions_of_smooth_potential
 
 
 class XyPotential(EuclideanSubspacePotential):
-
     """
-    This class implements the 2D XY model potential
+    This class implements the 2DXY model potential.
     """
 
     def __init__(self, prefactor: float = 1.0,  lattice_dimensionality: int = 2): 
         """
         The constructor of the XyPotential class.
-        6 
+
         Parameters
         ----------
         prefactor : float
             The prefactor k of the potential.
+        lattice_dimensionality : int
+            The dimensionality of the lattice on which the XY model is defined.  We currently only provide functionality
+            for the 2DXY model, i.e., for lattice_dimensionality equal to two.
         """
         super().__init__(prefactor=prefactor)
         if lattice_dimensionality != 2:
@@ -30,9 +31,8 @@ class XyPotential(EuclideanSubspacePotential):
             raise ConfigurationError(
                 f"For the value of number_of_particles in ModelSettings, give lattice_length ** lattice_dimensionality "
                 f"when using {self.__class__.__name__}, where lattice_length is an integer not less than 2.")
-        
         self._lattice_dimensionality = lattice_dimensionality
-        self._lattice_length = int(lattice_length)
+        self._lattice_length = int(lattice_length + 1.0e-12)
         self.potential_constant = prefactor
 
     def get_initial_positions(self):
@@ -69,11 +69,10 @@ class XyPotential(EuclideanSubspacePotential):
             The potential.
         """
 
-        return self.potential_constant * 0.5 * np.sum([self._sum_nearest_neighbours(
-            index, positions[index].item(), positions) for index in range(number_of_particles)])
+        return self.potential_constant * 0.5 * np.sum([self._sum_nearest_neighbours(index, positions[index], positions)
+                                                       for index in range(number_of_particles)])
 
     def get_gradient(self, positions):
-        # TODO implement get_gradient() function in this class
         """
         Returns the gradient of the potential function for the given particle positions.
 
@@ -96,9 +95,10 @@ class XyPotential(EuclideanSubspacePotential):
         ----------
         active_particle_index : int
             The index of the active particle.
-        candidate_position : float
-            A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
-            represents the spin angle of the proposed spin of the active particle.
+        candidate_position : numpy.ndarray
+            A one-dimensional numpy array of length 1 whose sole element is a float and represents the proposed phase of
+            the spin of the active particle at active_particle_index.  This is a numpy array his is because the ith
+            component of the positions array is a one-dimensional numpy array of length 1.
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents the spin angle of its corresponding particle.
@@ -107,10 +107,9 @@ class XyPotential(EuclideanSubspacePotential):
         float
             The potential difference resulting from moving the single active particle to candidate_position.
         """
-        current_potential = self._sum_nearest_neighbours(active_particle_index, positions[active_particle_index].item(),
-                                                         positions)
-        candidate_potential = self._sum_nearest_neighbours(active_particle_index, candidate_position, positions)
-        return self.potential_constant * (candidate_potential - current_potential)
+        return self.potential_constant * (
+                self._sum_nearest_neighbours(active_particle_index, candidate_position, positions) -
+                self._sum_nearest_neighbours(active_particle_index, positions[active_particle_index], positions))
 
     def _sum_nearest_neighbours(self, active_particle_index, active_particle_position, positions):
 
@@ -121,24 +120,20 @@ class XyPotential(EuclideanSubspacePotential):
         ----------
         active_particle_index : int
             The index of the active_particle.
-        active_particle_position : float
-            The phase of the spin of the particle at active_particle_index.
+        active_particle_position : numpy.ndarray
+            A one-dimensional numpy array of length 1 whose sole element is a float and represents the phase of the spin
+            of the active particle.  This is because the ith component of the positions array is a one-dimensional numpy
+            array of length 1.
         positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents the spin angle of its corresponding particle.
+            A two-dimensional numpy array of size (number_of_particles, 1); each element is a float and represents the
+            phase of the spin of its corresponding particle.
         Returns
         -------
         float
             The potential at lattice_site_index.
         """
-        return -(np.cos(positions[get_north_neighbour(active_particle_index, self._lattice_length)] -
-                        active_particle_position) +
-                 np.cos(positions[get_east_neighbour(active_particle_index, self._lattice_length)] -
-                        active_particle_position) +
-                 np.cos(active_particle_position -
-                        positions[get_south_neighbour(active_particle_index, self._lattice_length)]) +
-                 np.cos(active_particle_position -
-                        positions[get_west_neighbour(active_particle_index, self._lattice_length)]))
+        return -np.sum([np.cos(positions[neighbouring_spin_index, 0] - active_particle_position[0])
+                        for neighbouring_spin_index in get_neighbours(active_particle_index, self._lattice_length)])
 
     @staticmethod
     def get_random_event_chain_velocity():
@@ -180,16 +175,11 @@ class XyPotential(EuclideanSubspacePotential):
             The index of the particle that triggers the event.
         """
         shortest_distance_to_next_factor_event = 1.0e10
-        active_spin_value = positions[active_particle_index]
-        neighbouring_spin_indices = np.zeros(4, dtype=np.int8)
-        neighbouring_spin_indices[0] = get_north_neighbour(active_particle_index, self._lattice_length)
-        neighbouring_spin_indices[1] = get_south_neighbour(active_particle_index, self._lattice_length)
-        neighbouring_spin_indices[2] = get_east_neighbour(active_particle_index, self._lattice_length)
-        neighbouring_spin_indices[3] = get_west_neighbour(active_particle_index, self._lattice_length)
+        active_spin_value = positions[active_particle_index, 0]
         vetoing_spin_index = None
 
-        for i in range(4):
-            non_active_spin_value = positions[neighbouring_spin_indices[i]]
+        for neighbouring_spin_index in get_neighbours(active_particle_index, self._lattice_length):
+            non_active_spin_value = positions[neighbouring_spin_index, 0]
             initial_spin_value_difference = self._get_spin_difference(active_spin_value, non_active_spin_value)
             uphill_energy = - temperature * np.log(1.0 - np.random.rand())
 
@@ -197,22 +187,22 @@ class XyPotential(EuclideanSubspacePotential):
                 initial_two_spin_potential = 1.0 - np.cos(initial_spin_value_difference)
                 no_of_complete_spin_rotations = int(0.5 * (initial_two_spin_potential + uphill_energy))
                 final_two_spin_potential = ((no_of_complete_spin_rotations + 1.0) * 2.0 - initial_two_spin_potential -
-                                            uphill_energy).item()
+                                            uphill_energy)
                 final_spin_value_difference = np.arccos(1.0 - final_two_spin_potential)
                 distance_to_next_factor_event = ((no_of_complete_spin_rotations + 0.5) * 2.0 * np.pi -
-                                                 initial_spin_value_difference - final_spin_value_difference).item()
-           
+                                                 initial_spin_value_difference - final_spin_value_difference)
+
             else:
                 no_of_complete_spin_rotations = int(0.5 * uphill_energy)
-                final_two_spin_potential = ((no_of_complete_spin_rotations + 1.0) * 2.0 - uphill_energy).item()
+                final_two_spin_potential = ((no_of_complete_spin_rotations + 1.0) * 2.0 - uphill_energy)
                 final_spin_value_difference = np.arccos(1.0 - final_two_spin_potential)
                 distance_to_next_factor_event = ((no_of_complete_spin_rotations + 0.5) * 2.0 * np.pi -
-                                                 initial_spin_value_difference - final_spin_value_difference).item()
+                                                 initial_spin_value_difference - final_spin_value_difference)
 
             if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
                 shortest_distance_to_next_factor_event = distance_to_next_factor_event
-                vetoing_spin_index = neighbouring_spin_indices[i]
-                
+                vetoing_spin_index = neighbouring_spin_index
+
         return shortest_distance_to_next_factor_event, vetoing_spin_index
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
