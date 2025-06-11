@@ -6,13 +6,14 @@ from base.exceptions import ConfigurationError
 from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
 from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
 
+
 class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     """
-    Abstract class for worldline potentials. The extra methods provided are those required to calculate the action
-    of the system.
+    Abstract class for worldline potentials.  The extra methods provided are those required to calculate the action
+        of the system.
     """
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0,
-                  timestep: float = 1.0, **kwargs):
+                 timestep: float = 1.0, **kwargs):
         """
         The constructor of the WorldlinePotential class.
 
@@ -60,11 +61,15 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         float
             The dimensionless action.
         """
+        # todo get_value() also appears in QHO class - think we should remove it there?
         dimensionless_action = 0.0
-        for active_particle_index in range(0, number_of_particles):
+        for particle_index in range(0, number_of_particles):
+            # todo looks like self._get_pairwise_dimensionless_action() should be called as below, not as before
+            # todo could also re-write using list comprehension
             dimensionless_action += self._get_pairwise_dimensionless_action(
-                positions[active_particle_index], positions[get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                                                number_of_quantum_particles)])
+                positions, particle_index, positions[particle_index, 0],
+                positions[get_east_neighbour_worldline(particle_index, number_of_timeslices,
+                                                       number_of_quantum_particles), 0])
         return dimensionless_action
     
     def get_gradient(self, positions):
@@ -111,34 +116,37 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             The dimensionless-action difference.
         """
         current_dimensionless_action = (
-                self._get_pairwise_dimensionless_action(
-                                                        positions, get_west_neighbour_worldline(active_particle_index,
-                                                        number_of_timeslices, number_of_quantum_particles), 
-                                                        positions[get_west_neighbour_worldline(active_particle_index,
-                                                        number_of_timeslices, number_of_quantum_particles)],
+                self._get_pairwise_dimensionless_action(positions,
+                                                        get_west_neighbour_worldline(
+                                                            active_particle_index, number_of_timeslices,
+                                                            number_of_quantum_particles),
+                                                        positions[get_west_neighbour_worldline(
+                                                            active_particle_index, number_of_timeslices,
+                                                            number_of_quantum_particles)],
                                                         positions[active_particle_index]) +
-                self._get_pairwise_dimensionless_action(
-                                                        positions, active_particle_index,
+                self._get_pairwise_dimensionless_action(positions, active_particle_index,
                                                         positions[active_particle_index],
-                                                        positions[get_east_neighbour_worldline(active_particle_index,
-                                                        number_of_timeslices, number_of_quantum_particles)]))
+                                                        positions[get_east_neighbour_worldline(
+                                                            active_particle_index, number_of_timeslices,
+                                                            number_of_quantum_particles)]))
         
         candidate_dimensionless_action = (
-                self._get_pairwise_dimensionless_action(
-                                                        positions, get_west_neighbour_worldline(active_particle_index,
-                                                        number_of_timeslices, number_of_quantum_particles),
-                                                        positions[get_west_neighbour_worldline(active_particle_index,
-                                                        number_of_timeslices, number_of_quantum_particles)],
+                self._get_pairwise_dimensionless_action(positions,
+                                                        get_west_neighbour_worldline(
+                                                            active_particle_index, number_of_timeslices,
+                                                            number_of_quantum_particles),
+                                                        positions[get_west_neighbour_worldline(
+                                                            active_particle_index, number_of_timeslices,
+                                                            number_of_quantum_particles)],
                                                         candidate_position) +
-                self._get_pairwise_dimensionless_action(
-                                                        positions, active_particle_index, candidate_position,
-                                                        positions[get_east_neighbour_worldline(active_particle_index,
-                                                        number_of_timeslices, number_of_quantum_particles)]))
+                self._get_pairwise_dimensionless_action(positions, active_particle_index, candidate_position,
+                                                        positions[get_east_neighbour_worldline(
+                                                            active_particle_index, number_of_timeslices,
+                                                            number_of_quantum_particles)]))
         return candidate_dimensionless_action - current_dimensionless_action
-    
-    
+
     def _get_pairwise_dimensionless_action(self, positions, active_particle_index, position_at_active_particle_index,
-                                            position_at_neighbouring_worldline_index):
+                                           position_at_neighbouring_worldline_index):
         """
         Returns the contribution to the dimensionless action from a given pair of positions.
 
@@ -149,39 +157,41 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             is a float and represents the position of the worldline at that time step.
         active_particle_index : int
             The index of the active particle.
-        position_at_active_particle_index : float
+        position_at_active_particle_index : float or numpy.ndarray
             The position of the particle at the active particle index.
-        position_at_neighbouring_worldline_index : float
+        position_at_neighbouring_worldline_index : float or numpy.ndarray
             The position of the same index quantum particle at a neighbouring timeslice.
         Returns
         -------
         float
             The pairwise contribution to the dimensionless action.
         """
-
-        return self._get_kinetic_action_term(position_at_active_particle_index, 
-                                            position_at_neighbouring_worldline_index) + \
-                                            self._get_potential_action_term(positions, active_particle_index,
-                                                                             position_at_active_particle_index)
+        # todo it looks self._get_potential_action_term() returns the pairwise value in QHO but the full value in
+        #  quantum hard disks - looks like pairwise value is correct; could also not pass positions?
+        # todo might be worth renaming to _get_pairwise_kinetic_action_term() and _get_pairwise_potential_action_term()
+        #  to avoid errors
+        return (self._get_kinetic_action_term(
+            position_at_active_particle_index, position_at_neighbouring_worldline_index) +
+                self._get_potential_action_term(positions, active_particle_index, position_at_active_particle_index))
     
-    def _get_kinetic_action_term(self, position_at_active_particle_index, 
-                                 position_at_neighbouring_worldline_index):
+    def _get_kinetic_action_term(self, position_at_active_particle_index, position_at_neighbouring_worldline_index):
         """
         Returns the kinetic energy contribution to the pairwise dimensionless action.
+
         Parameters
         ----------
-        position_at_active_particle_index : float
+        position_at_active_particle_index : float or numpy.ndarray
             The position of the particle at the active particle index.
-        position_at_neighbouring_worldline_index : float
+        position_at_neighbouring_worldline_index : float or numpy.ndarray
             The position of the same index quantum particle at a neighbouring timeslice
+
         Returns
         -------
         float
             The kinetic energy contribution to the pairwise dimensionless action.
         """
-
-        return 0.5 * self._mass * (position_at_neighbouring_worldline_index - position_at_active_particle_index)**2 \
-                        / self._timestep
+        return 0.5 * self._mass * (
+                position_at_neighbouring_worldline_index - position_at_active_particle_index) ** 2 / self._timestep
     
     @abstractmethod
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
@@ -202,9 +212,8 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def get_kinetic_term_distance_to_next_event_and_veto_index(self, positions, active_particle_index,
-                                                                        temperature, movement_direction,
-                                                                        worldline_neighbours):
+    def _get_distance_to_next_kinetic_event_and_veto_index(self, positions, active_particle_index, movement_direction,
+                                                           worldline_neighbours):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -215,8 +224,6 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             is a float and represents the position of the worldline at that time step.
         active_particle_index : int
             The active particle index (i.e., the discretised-time index).
-        temperature : float
-            The sampling temperature.  NB, we set temperature = 1.0 (for QHO) as this quantity is for stat-phys models.
         movement_direction : int
             The direction of movement of the active particle.
         worldline_neighbours : numpy.ndarray
@@ -228,10 +235,9 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         distance_to_next_event : float
             The distance to the next particle event according to the kinetic term of the action.
         vetoing_particle_index : int
-            The index of the particle that triggers the eventaccording to the kinetic term of the action.
+            The index of the particle that triggers the event according to the kinetic term of the action.
         """
-    
-        shortest_distance_to_next_factor_event = 1.0e10
+        shortest_distance_to_next_kinetic_event = 1.0e10
         vetoing_index = None
         initial_position = positions[active_particle_index].item()
 
@@ -251,14 +257,14 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
                 roots = np.roots([0.5 * self._mass / self._timestep, -(self._mass / self._timestep)
                                     * neighbour_position, (0.5 * self._mass / self._timestep) * neighbour_position ** 2
                                     - final_action])
-                final_position_wrt_factor_event = self.get_final_position_wrt_factor_event(movement_direction, roots)
-                distance_to_next_factor_event = np.abs(final_position_wrt_factor_event - initial_position)
+                final_position = self._get_final_position_wrt_quadratic_event(movement_direction, roots)
+                distance_to_candidate_kinetic_event = np.abs(final_position - initial_position)
                 
-                if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
-                    shortest_distance_to_next_factor_event = distance_to_next_factor_event
+                if distance_to_candidate_kinetic_event < shortest_distance_to_next_kinetic_event:
+                    shortest_distance_to_next_kinetic_event = distance_to_candidate_kinetic_event
                     vetoing_index = worldline_neighbour
                 
-        return shortest_distance_to_next_factor_event, vetoing_index
+        return shortest_distance_to_next_kinetic_event, vetoing_index
     
     @abstractmethod
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
@@ -293,8 +299,8 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         positions : numpy.ndarray
             A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
             is a float and represents the position of the worldline at that time step.
-        displacement_distrance : float
-            The displacement that the current position of the cative particle will be updated using.
+        displacement_distance : float
+            The displacement that the current position of the active particle will be updated using.
         active_particle_index : int
             The active particle index (i.e., the discretised-time index).
         movement_direction : int
@@ -306,11 +312,11 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    
-    def get_final_position_wrt_factor_event(self, movement_direction, roots):
+    @staticmethod
+    def _get_final_position_wrt_quadratic_event(movement_direction, roots):
         """
-        Helper function for self.get_kinetic_term_distance_to_next_event_and_veto_index().
-        Returns the correct root of the quadratic equation produced by the kinetic energy term in the action.
+        Returns the correct root of the quadratic equation for an event generated by a quadratic potential term.
+
         Parameters
         ----------
         movement_direction : int
