@@ -92,9 +92,9 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
                                                sample_directory, temperatures, lattice_length,
                                                number_of_equilibration_iterations, number_of_observations,
                                                number_of_jobs, thinning_level=None):
-    """Renaming of observable string to load iact values for historic data stored under old naming convention."""
     iact_observable_string = observable_string
     if observable_string == 'magnetic_norm_density':
+        """Rename iact_observable_string to load iact values for historic data stored under old naming convention."""
         iact_observable_string = 'magnetic_norm'
     try:
         with open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{iact_observable_string}"
@@ -117,12 +117,17 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
                 f"_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_{number_of_jobs}"
                 f"x{number_of_observations}_observations.npy")
             if observable_string == 'magnetic_norm_density':
-                # todo add raise exception clause
-                """print some warning AND exit"""
-            print(f"Only the ACF data is present for {lattice_length}x{lattice_length} {mediator} {observable_string}."
-                  f"This is not an issue as the IACT of {observable_string} is not being plotted.")
+                raise Exception(
+                    f"Only ACF data is present for {observable_string} on a {lattice_length}x{lattice_length} lattice "
+                    f"(generated using {mediator}).  This is an issue as the present script plots the IACT of "
+                    f"{observable_string}.  Please re-run the simulations (to generate new samples) then re-run this "
+                    f"script.")
+            print(f"Only ACF data is present for {observable_string} on a {lattice_length}x{lattice_length} lattice "
+                  f"(generated using {mediator}).  This is not an issue as the present script does not plot the IACT "
+                  f"of {observable_string}.")
         except IOError:
             get_sample_method = getattr(sample_getter, "get_" + observable_string)
+            """NB, we don't currently estimate the IACT errors.  We may introduce this in future."""
             iacts, acfs, acf_errors = [], [], []
             try:
                 for temperature_index, temperature in enumerate(temperatures):
@@ -148,8 +153,8 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
                 np.save(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}"
                         f"_autocorrelation_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_"
                         f"{number_of_jobs}x{number_of_observations}_observations.npy", acf_vs_temperature)
-            except IOError as e:
-                print(f"Failed to load sample.  Please generate samples for the observables. {e}")
+            except IOError as _:
+                print(f"Failed to load sample.  Please generate samples for the observables.")
                 raise
 
     return iact_vs_temperature, acf_vs_temperature
