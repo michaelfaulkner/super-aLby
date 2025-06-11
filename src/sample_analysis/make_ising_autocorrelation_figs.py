@@ -119,8 +119,8 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
             if observable_string == 'magnetic_norm_density':
                 # todo add raise exception clause
                 """print some warning AND exit"""
-            print(f"Only the ACF data is present for {observable_string}.  This is not an issue as the IACT of "
-                  f"{observable_string} is not being plotted.")
+            print(f"Only the ACF data is present for {lattice_length}x{lattice_length} {mediator} {observable_string}."
+                  f"This is not an issue as the IACT of {observable_string} is not being plotted.")
         except IOError:
             get_sample_method = getattr(sample_getter, "get_" + observable_string)
             iacts, acfs, acf_errors = [], [], []
