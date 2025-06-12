@@ -174,7 +174,7 @@ class Mediator(metaclass=ABCMeta):
         self._initial_samples = [sampler.get_empty_sample_array(1) for sampler in self._samplers]
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
-                self._samples[sampler_index][0, :] = number_of_particles / system_volume  # use ideal-gas pressure
+                self._initial_samples[sampler_index][0, :] = number_of_particles / system_volume  # use ideal-gas pressure
             else:
                 self._initial_samples[sampler_index][0, :] = sampler.get_observation(self._momenta, self._positions,
                                                                                     self._potential)
