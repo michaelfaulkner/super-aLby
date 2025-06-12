@@ -65,8 +65,7 @@ with open(args.config_file) as config_file:
     else:
         number_of_quantum_particles = None
         number_of_timeslices = None
-
-    toroidal_geometry =  get_value(config, "ModelSettings", "toroidal_geometry")
+    toroidal_geometry = get_value(config, "ModelSettings", "toroidal_geometry")
 if (dimensionality_of_particle_space == 1 and type(size_of_particle_space) is float or
         (dimensionality_of_particle_space > 1 and type(size_of_particle_space) is list and
          type(size_of_particle_space[0]) is float)):

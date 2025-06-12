@@ -31,7 +31,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             The size of the time step, \delta \tau.
         """
         super().__init__(prefactor=prefactor, lattice_dimensionality=lattice_dimensionality, mass=mass,
-                          timestep=timestep)
+                         timestep=timestep)
         if prefactor != 1.0:
             raise ConfigurationError(f"Give a value of 1.0 for prefactor in {self.__class__.__name__} - functionality "
                                      f"for other values is not yet provided.")
@@ -40,23 +40,6 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
                                      f"functionality for other dimensions not yet provided.")
         
     def get_initial_positions(self):
-        """
-        Returns the initial positions array.
-
-        Returns
-        -------
-        numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle, e.g., two particles
-            (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
-            particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
-            represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
-        """
-        return get_initial_positions_of_smooth_potential(self.__class__.__name__)
-    
-
-    def get_gradient(self, positions):
-        # TODO implement get_gradient() function in this class
         """
         Returns the initial positions array.
 
@@ -162,7 +145,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         shortest_distance_to_next_factor_event, vetoing_index = \
             self._get_distance_to_next_kinetic_event_and_veto_index(positions, active_particle_index,
                                                                     movement_direction, worldline_neighbours)
-         # consider x^2 term
+        # consider x^2 term
         initial_position = initial_position = positions[active_particle_index].item()
         uphill_energy = - np.log(np.random.uniform(0, 1))
         bottom_of_well = 0.0

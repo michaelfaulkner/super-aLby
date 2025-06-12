@@ -4,11 +4,8 @@ from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError
 from base.vectors import get_shortest_vectors_on_torus
 from model_settings import size_of_particle_space, number_of_quantum_particles, number_of_timeslices
-from model_settings import number_of_particles, size_of_particle_space_over_two
+from model_settings import number_of_particles
 from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
-import warnings
-import time
-from decimal import Decimal
 
 
 class QuantumHardDiskPotential(WorldlinePotential):
@@ -108,9 +105,9 @@ class QuantumHardDiskPotential(WorldlinePotential):
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
         r"""
         Returns the hard disk potential which goes as:
-        V(r) = \inf ir r < \sigma
-                0 if r \geq \sigma
-        where r = |x_i - y_j| and \sigma is the disk radius
+            V(r) = \inf ir r < \sigma
+                    0 if r \geq \sigma
+            where r = |x_i - y_j| and \sigma is the disk radius
 
         Parameters
         ----------
@@ -121,25 +118,20 @@ class QuantumHardDiskPotential(WorldlinePotential):
             The index of the active particle.
         position_at_active_particle_index : float
             The position of the particle at the active particle index.
+
         Returns
         -------
         float
             The potential energy contribution to the pairwise dimensionless action.
         """
-        quantum_particles_at_timeslice = \
-            self.get_quantum_particles_at_timeslice(
-                active_particle_index, number_of_quantum_particles)
+        quantum_particles_at_timeslice = self.get_quantum_particles_at_timeslice(active_particle_index,
+                                                                                 number_of_quantum_particles)
         for quantum_particle in quantum_particles_at_timeslice:
             if quantum_particle != active_particle_index:
-                dist = \
-                    np.abs(get_shortest_vectors_on_torus(
-                        position_at_active_particle_index - positions[quantum_particle]))
-            epsilon = 1.0e-12
-            if dist + epsilon < 2 * self._disk_radius:
-                return 1.0e10  # infinite potential
-            else:
-                pass
-
+                distance = np.abs(get_shortest_vectors_on_torus(position_at_active_particle_index -
+                                                                positions[quantum_particle]))
+                if distance + 1.0e-12 < 2 * self._disk_radius:
+                    return 1.0e10  # infinite potential
         return 0.0
 
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,

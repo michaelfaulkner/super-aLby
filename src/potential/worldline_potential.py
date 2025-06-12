@@ -4,6 +4,7 @@ from .euclidean_subspace_potential import EuclideanSubspacePotential
 from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
 from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
+from model_settings import dimensionality_of_particle_space
 from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
 
 
@@ -40,6 +41,9 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         if prefactor != 1.0:
             raise ConfigurationError(f"Give a value of 1.0 for prefactor in {self.__class__.__name__} - functionality "
                                      f"for other values is not yet provided.")
+        if dimensionality_of_particle_space > 1:
+            raise ConfigurationError(f"Functionality for dimensionality_of_particle_space greater than one not yet "
+                                     f"available for {self.__class__.__name__}.")
         self._lattice_dimensionality = lattice_dimensionality
         self._mass = mass
         self._timestep = timestep
@@ -63,7 +67,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         """
         dimensionless_action = 0.0
         for particle_index in range(0, number_of_particles):
-            # NOTE won't generalise to multidimensional position space idk if this weill be a problem though
+            """NB, this is one of the cases that prevents dimensionality_of_particle_space > 1 (see __init__())."""
             dimensionless_action += self._get_pairwise_dimensionless_action(
                 positions, particle_index, positions[particle_index, 0],
                 positions[get_east_neighbour_worldline(particle_index, number_of_timeslices,
