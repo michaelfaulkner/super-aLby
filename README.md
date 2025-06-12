@@ -59,23 +59,38 @@ range_of_initial_particle_positions = 1.0
 ```
 
 `some_mediator` corresponds the mediator used (for this particular simulation) in the `run.py` file. The mediator 
-serves as the central hub of the application and also hosts the Markov process. The three possible mediators are 
-[`euclidean_leapfrog_mediator`](src/mediator/euclidean_leapfrog_mediator.py), which implements the simulation using the 
-leapfrog numerical integrator, [`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py), which 
-differs from [`euclidean_leapfrog_mediator`](src/mediator/euclidean_leapfrog_mediator.py) in that it corrects particle 
-positions to account for periodic boundary conditions (i.e., for particles existing on a toroidal space) after each 
-numerical integration step, and [`lazy_toroidal_leapfrog_mediator`](src/mediator/lazy_toroidal_leapfrog_mediator.py), 
-which differs from [`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py) in that it corrects 
-particle positions only at the end of each leapfrog trajectory. We use [`euclidean_leapfrog_mediator`](
-src/mediator/euclidean_leapfrog_mediator.py) for models on Euclidean space and [`toroidal_leapfrog_mediator`](
-src/mediator/toroidal_leapfrog_mediator.py) or [`lazy_toroidal_leapfrog_mediator`](
-src/mediator/lazy_toroidal_leapfrog_mediator.py) for models on compact subspaces of Euclidean space (with toroidal 
-geometry).
+serves as the central hub of the application and also hosts the Markov process. We provide multiple mediators:
 
-The ```[ModelSettings]``` section specifies both the *NVT* physical parameters of the simulation and the range of the 
-initial particle positions. `number_of_particles` is an `int` that represents number of particles. 
-`size_of_particle_space` represents the size and dimensions of the spaces on which each particle exits and is either 
-`None`, a `float` or a Python `list` of `None` or `float` values (`None` corresponds to the whole real line). 
+1. [`event_chain_mediator`](src/mediator/event_chain_mediator.py) implements event-chain Monte Carlo.
+2. [`metropolis_mediator`](src/mediator/metropolis_mediator.py) implements Metropolis-Hastings Monte Carlo.
+3. [`swendsen_wang_mediator`](src/mediator/swendsen_wang_mediator.py) implements Swendsen-Wang Monte Carlo for the 2D Ising model.
+4. [`wolff_mediator`](src/mediator/wolff_mediator.py) implements Wolff Monte Carlo for the 2D Ising model.
+5. [`unbounded_leapfrog_mediator`](src/mediator/unbounded_leapfrog_mediator.py), 
+[`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py) and 
+[`lazy_toroidal_leapfrog_mediator`](src/mediator/lazy_toroidal_leapfrog_mediator.py) implement Hamiltonian Monte Carlo 
+with a leapfrog integrator (the first is for models defined on unbounded Euclidean space; the second is for models 
+defined on any compact subspace of Euclidean space with toroidal topology; the third is for models defined on any 
+compact subspace of Euclidean space with toroidal topology (but while only correcting for periodic boundaries at each 
+Metropolis step, hence _lazy_)).
+
+Additional mediators are present in the [`mediator`](src/mediator) package.  Each is an abstract parent class from 
+which one of the above mediators inherits.  We use this same inheritance structure in the following packages:
+
+1. [`kinetic_energy`](src/kinetic_energy) which provides functionality for various kinetic energies used in 
+Hamiltonian Monte Carlo. 
+2. [`linked_lists`](src/linked_lists) which provides functionality for various linked lists in multi-particle models.
+3. [`noise_distribution`](src/noise_distribution) which provides functionality for various noise distributions used in 
+Metropolis-Hastings Monte Carlo.
+4. [`potential`](src/potential) which provides functionality for the potential that defines the (probability) model.
+5. [`sampler`](src/sampler) which provides functionality for sampling various system observables.
+
+The mediator interacts with (instances of) classes contained in each of these packages, such that the classes never 
+interact with each other.  Below we detail how the configuration file chooses the classes that will be used.
+
+Within each configuration file, the ```[ModelSettings]``` section specifies both the *NVT* physical parameters of the 
+simulation and the range of the initial particle positions. `number_of_particles` is an `int` that represents number of 
+particles.  `size_of_particle_space` represents the size and dimensions of the spaces on which each particle exits and 
+is either `None`, a `float` or a Python `list` of `None` or `float` values (`None` corresponds to the whole real line). 
 `range_of_initial_particle_positions` represents the range of the initial position of each particle and is either a 
 `float`, a one-dimensional Python `list` of length `len(range_of_initial_particle_positions)` and composed of `float` 
 values, or a two-dimensional Python `list` of size `(len(range_of_initial_particle_positions), 2)` and composed of 
@@ -92,13 +107,14 @@ range_of_initial_particle_positions = [[-0.5, 0.5], [-0.5, 0.5]]
 represents a four-particle system in which each particle exists on the toroidal compact subspace (of 
 volume *1.0 x 1.0*) of two-dimensional Euclidean space and takes an initial position anywhere on that subspace.
 
-The remaining sections of the configuration file correspond to the different classes chosen for the simulation. Each 
-section contains pairs of properties and values. The property corresponds to the name of the argument in the `__init__` 
-method of the corresponding class, and its value provides the argument. Property-value pairs must be provided for all 
-properties for which the class does not provide a default value; for each property that does not have a default value, 
-a property-value pair may be given. Properties and values should be given in snake_case; sections should be given in 
-CamelCase. If a value corresponds to the instance of another class, then a corresponding section is required. In our 
-example, the first of the remaining sections is therefore either of the form
+The remaining sections of the configuration file correspond to the different classes chosen for the simulation (i.e., 
+the mediator and each of the classes with which it interacts). Each section contains pairs of properties and values. 
+The property corresponds to the name of the argument in the `__init__` method of the corresponding class, and its value 
+provides the argument. Property-value pairs must be provided for all properties for which the class does not provide a 
+default value; for each property that does not have a default value, a property-value pair may be given. Properties and 
+values should be given in snake_case; sections should be given in CamelCase. If a value corresponds to the instance of 
+another class, then a corresponding section is required. In our example, the first of the remaining sections is 
+therefore either of the form
 
 ```INI
 [SomeMediator]
@@ -130,7 +146,7 @@ config_files/convergence_tests/exponential_power_potential_power_equals_4/super_
 once the simulation has finished. 
 
 
-## *Emergent electrostatics in planar XY spin models* [Faulkner2024b]
+## *Emergent electrostatics in planar XY spin models* [\[Faulkner2025\]](https://doi.org/10.1088/1367-2630/add7fd)
 
 This details how to make its Ising-related figures.
 
@@ -155,7 +171,7 @@ eventually integrate [xy-type-models](https://github.com/michaelfaulkner/xy-type
 All other figures are either TikZ-based or some heuristic curve made using matplotlib in a simple Python script.
 
 
-## *Sampling algorithms in statistical physics* [\[Faulkner2024a\]](https://doi.org/10.1214/23-STS893)
+## *Sampling algorithms in statistical physics* [\[Faulkner2024\]](https://doi.org/10.1214/23-STS893)
 
 This details how to make its Ising-related figures.
 
