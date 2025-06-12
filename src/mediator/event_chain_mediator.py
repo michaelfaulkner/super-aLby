@@ -97,7 +97,7 @@ class EventChainMediator(Mediator):
                                                     active_particle_index, movement_direction)
                     self._potential.cell_boundary_event = False
                     for sampler_index, sampler in enumerate(self._samplers):
-                        self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
+                        self._samples[sampler_index][markov_chain_index, :] = sampler.get_observation(
                             None, self._positions, self._potential)
                     break
                 else:
@@ -114,11 +114,10 @@ class EventChainMediator(Mediator):
         print(f"Mean event rate per particle = "
               f"{self._total_number_of_events / self._number_of_observations / number_of_particles}")
 
-    def _reset_arrays_and_counters(self, temperature):
+    def _reset_arrays_and_counters(self, temperature, restart_flag):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
-        super()._reset_arrays_and_counters(temperature)
-        for sampler_index, sampler in enumerate(self._samplers):
-            if "PressureSampler" in str(sampler):
-                self._samples[sampler_index][0, :] = number_of_particles / system_volume  # use ideal-gas pressure
-            else:
-                self._samples[sampler_index][0, :] = sampler.get_observation(None, self._positions, self._potential)
+        super()._reset_arrays_and_counters(temperature, restart_flag)
+        self._momenta = None
+        if not restart_flag:
+            self._get_initial_sample()
+        

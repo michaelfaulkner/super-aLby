@@ -46,7 +46,7 @@ class ParticleSeparationSampler(Sampler):
         numpy.ndarray
             Numpy array of zeros of the required structure.
         """
-        return np.zeros((total_number_of_iterations + 1, number_of_particle_pairs))
+        return np.zeros((total_number_of_iterations, number_of_particle_pairs))
 
     def get_observation(self, momenta, positions, potential):
         """
