@@ -61,11 +61,9 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         float
             The dimensionless action.
         """
-        # todo get_value() also appears in QHO class - think we should remove it there?
         dimensionless_action = 0.0
         for particle_index in range(0, number_of_particles):
-            # todo looks like self._get_pairwise_dimensionless_action() should be called as below, not as before
-            # todo could also re-write using list comprehension
+            # NOTE won't generalise to multidimensional position space idk if this weill be a problem though
             dimensionless_action += self._get_pairwise_dimensionless_action(
                 positions, particle_index, positions[particle_index, 0],
                 positions[get_east_neighbour_worldline(particle_index, number_of_timeslices,

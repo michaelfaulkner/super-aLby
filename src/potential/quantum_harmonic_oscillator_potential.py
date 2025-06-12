@@ -54,28 +54,6 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         """
         return get_initial_positions_of_smooth_potential(self.__class__.__name__)
     
-    def get_value(self, positions):
-        """
-        Returns the dimensionless action for the given particle positions.  Note that the dimensional action
-            S * self._timestep is analogous to the potential of a statistical-physics model (since hbar is considered
-            analogous to the inverse temperature (beta) of a stat-physics model; S denotes the raw action).
-
-        Parameters
-        ----------
-        positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
-        Returns
-        -------
-        float
-            The dimensionless action.
-        """
-        dimensionless_action = 0.0
-        for particle_index in range(0, number_of_particles):
-            dimensionless_action += self._get_pairwise_dimensionless_action(
-                positions[particle_index], positions[get_east_neighbour_worldline(particle_index, number_of_timeslices,
-                                                                                  number_of_quantum_particles)])
-        return dimensionless_action
 
     def get_gradient(self, positions):
         # TODO implement get_gradient() function in this class
