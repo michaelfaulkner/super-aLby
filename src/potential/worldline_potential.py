@@ -147,6 +147,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
                                            position_at_neighbouring_worldline_index):
         """
         Returns the contribution to the dimensionless action from a given pair of positions.
+        'Pairwise' in the sense of worldline timeslices, not quantum particles.
 
         Parameters
         ----------
@@ -164,10 +165,6 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         float
             The pairwise contribution to the dimensionless action.
         """
-        # todo it looks self._get_potential_action_term() returns the pairwise value in QHO but the full value in
-        #  quantum hard disks - looks like pairwise value is correct; could also not pass positions?
-        # todo might be worth renaming to _get_pairwise_kinetic_action_term() and _get_pairwise_potential_action_term()
-        #  to avoid errors
         return (self._get_kinetic_action_term(
             position_at_active_particle_index, position_at_neighbouring_worldline_index) +
                 self._get_potential_action_term(positions, active_particle_index, position_at_active_particle_index))

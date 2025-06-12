@@ -126,30 +126,21 @@ class QuantumHardDiskPotential(WorldlinePotential):
         float
             The potential energy contribution to the pairwise dimensionless action.
         """
-        # todo this function should return a pairwise term? could just check for an overlap between two particles if so
         quantum_particles_at_timeslice = \
             self.get_quantum_particles_at_timeslice(
                 active_particle_index, number_of_quantum_particles)
-        dist = 1.0e10
-        dist_new = None
         for quantum_particle in quantum_particles_at_timeslice:
             if quantum_particle != active_particle_index:
-                # todo think we can just check for each overlap here; then 'return np.inf' if we find one;
-                #  then 'return 0.0' after the loop as there would be no overlaps if we reach that point; however, we
-                #  only need to check for one overlap if the fn should return a pairwise term (see previous comment)
-                dist_new = \
+                dist = \
                     np.abs(get_shortest_vectors_on_torus(
                         position_at_active_particle_index - positions[quantum_particle]))
+            epsilon = 1.0e-12
+            if dist + epsilon < 2 * self._disk_radius:
+                return 1.0e10  # infinite potential
+            else:
+                pass
 
-                if dist_new < dist:
-                    dist = dist_new
-        epsilon = 1.0e-12
-        if dist + epsilon < 2 * self._disk_radius:
-            hard_disk_potential = 1.0e10  # infinite potential
-        else:
-            hard_disk_potential = 0.0
-
-        return hard_disk_potential
+        return 0.0
 
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
                                                   movement_direction):
