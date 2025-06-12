@@ -67,8 +67,8 @@ class QuantumHardDiskPotential(WorldlinePotential):
         for particle_index in range(number_of_particles):
             quantum_particle_index = particle_index % number_of_quantum_particles
             positions[particle_index] = get_shortest_vectors_on_torus(quantum_particle_index * 2.0 * self._disk_radius)
-                #self._disk_radius + quantum_particle_index * 0.5 * self._disk_radius
-        #print(positions)
+            # self._disk_radius + quantum_particle_index * 0.5 * self._disk_radius
+        # print(positions)
         return positions
 
     @staticmethod
@@ -126,7 +126,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
         float
             The potential energy contribution to the pairwise dimensionless action.
         """
-
+        # todo this function should return a pairwise term? could just check for an overlap between two particles if so
         quantum_particles_at_timeslice = \
             self.get_quantum_particles_at_timeslice(
                 active_particle_index, number_of_quantum_particles)
@@ -134,6 +134,9 @@ class QuantumHardDiskPotential(WorldlinePotential):
         dist_new = None
         for quantum_particle in quantum_particles_at_timeslice:
             if quantum_particle != active_particle_index:
+                # todo think we can just check for each overlap here; then 'return np.inf' if we find one;
+                #  then 'return 0.0' after the loop as there would be no overlaps if we reach that point; however, we
+                #  only need to check for one overlap if the fn should return a pairwise term (see previous comment)
                 dist_new = \
                     np.abs(get_shortest_vectors_on_torus(
                         position_at_active_particle_index - positions[quantum_particle]))
@@ -179,9 +182,8 @@ class QuantumHardDiskPotential(WorldlinePotential):
         quantum_particle_neighbours = self.get_quantum_particles_at_timeslice(active_particle_index,
                                                                               number_of_quantum_particles)
         shortest_distance_to_next_factor_event, vetoing_index = \
-            self.get_kinetic_term_distance_to_next_event_and_veto_index(positions, active_particle_index,
-                                                                        temperature, movement_direction,
-                                                                        worldline_neighbours)
+            self._get_distance_to_next_kinetic_event_and_veto_index(positions, active_particle_index,
+                                                                    movement_direction, worldline_neighbours)
         #shortest_distance_to_next_factor_event = 1.0e10
         distance_to_next_potential_event = 1.0e10
         potential_veto_index = None
@@ -260,8 +262,8 @@ class QuantumHardDiskPotential(WorldlinePotential):
         positions : numpy.ndarray
             A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
             is a float and represents the position of the worldline at that time step.
-        displacement_distrance : float
-            The displacement that the current position of the cative particle will be updated using.
+        displacement_distance : float
+            The displacement that the current position of the active particle will be updated using.
         active_particle_index : int
             The active particle index (i.e., the discretised-time index).
         movement_direction : int

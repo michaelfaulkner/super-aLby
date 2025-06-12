@@ -112,29 +112,29 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         return self._mass / self._timestep * (
                 (2.0 + self._timestep ** 2 * self._omega ** 2) * positions[active_particle_index] -
                 positions[get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles)] -
+                                                       number_of_quantum_particles)] -
                 positions[get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles)]).item()
+                                                       number_of_quantum_particles)]).item()
 
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
         """
         Returns the potential energy contribution to teh pairwise dimensionless action
+
         Parameters
         ----------
         position_at_active_particle_index : float
             The position of the particle at some particle index.
-        position_at_east_index : flpositions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
         active_particle_index : int
             The index of the active particle.
         position_at_active_particle_index : float
             The position of the particle at the active particle index.
+
+        Returns
         -------
         float
             The potential energy contribution to the pairwise dimensionless action.
         """
-        return 0.5 * self._mass *self._timestep * self._omega ** 2 * position_at_active_particle_index ** 2
+        return 0.5 * self._mass * self._timestep * self._omega ** 2 * position_at_active_particle_index ** 2
 
     @staticmethod
     def get_random_event_chain_velocity():
@@ -177,14 +177,13 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         """
         
         worldline_neighbours = [get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles),
+                                                             number_of_quantum_particles),
                                 get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles)]
+                                                             number_of_quantum_particles)]
 
         shortest_distance_to_next_factor_event, vetoing_index = \
-            self.get_kinetic_term_distance_to_next_event_and_veto_index(positions, active_particle_index,
-                                                                        temperature, movement_direction,
-                                                                        worldline_neighbours)
+            self._get_distance_to_next_kinetic_event_and_veto_index(positions, active_particle_index,
+                                                                    movement_direction, worldline_neighbours)
          # consider x^2 term
         initial_position = initial_position = positions[active_particle_index].item()
         uphill_energy = - np.log(np.random.uniform(0, 1))
@@ -199,7 +198,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         initial_action = 0.5 * self._mass * self._timestep * self._omega ** 2 * intermediate_position ** 2
         final_action = uphill_energy + initial_action
         roots = np.roots([0.5 * self._mass * self._timestep * self._omega ** 2, 0.0, -final_action])
-        final_position_wrt_factor_event = self.get_final_position_wrt_factor_event(movement_direction, roots)
+        final_position_wrt_factor_event = self._get_final_position_wrt_quadratic_event(movement_direction, roots)
 
         distance_to_next_factor_event = np.abs(final_position_wrt_factor_event - initial_position)
 
@@ -212,6 +211,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """
         Chooses the index and direction for the next active particle in the markov chain.
+
         Parameters
         ----------
         positions : numpy.ndarray
@@ -223,6 +223,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             The direction of movement of the active particle.
         veto_index : int
             The particle index responsible for the event. 
+
         Returns
         -------
         active_particle_index : int
@@ -238,24 +239,26 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         else:
             active_particle_index = veto_index
         if active_particle_index == initial_a and movement_direction == initial_v:
-            raise Exception("Chose the same index and direction twice in a row")
+            raise Exception("The same combination of active particle index and direction of motion has been chosen "
+                            "twice in a row.")
         return active_particle_index, movement_direction
 
-    
-    def update_position(self,positions, displacement_distance, active_particle_index, movement_direction):
+    def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
         """
         Updates position of the active particle following an event.
+
         Parameters
         ----------
         positions : numpy.ndarray
             A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
             is a float and represents the position of the worldline at that time step.
-        displacement_distrance : float
-            The displacement that the current position of the cative particle will be updated using.
+        displacement_distance : float
+            The displacement that the current position of the active particle will be updated using.
         active_particle_index : int
             The active particle index (i.e., the discretised-time index).
         movement_direction : int
             The direction of movement of the active particle.
+
         Returns
         -------
         new_position : float
