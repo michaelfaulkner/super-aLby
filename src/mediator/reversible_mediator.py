@@ -79,9 +79,9 @@ class ReversibleMediator(Mediator, metaclass=ABCMeta):
         self._number_of_accepted_trajectories = None
 
     @abstractmethod
-    def _reset_arrays_and_counters(self, temperature):
+    def _reset_arrays_and_counters(self, temperature, restart_flag):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
-        super()._reset_arrays_and_counters(temperature)
+        super()._reset_arrays_and_counters(temperature, restart_flag)
         self._number_of_accepted_trajectories = 0
 
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
@@ -92,7 +92,7 @@ class ReversibleMediator(Mediator, metaclass=ABCMeta):
             self._generate_single_observation(markov_chain_index, temperature)
             if (self._proposal_dynamics_adaptor_is_on and
                     markov_chain_index < self._number_of_equilibration_iterations and
-                    (markov_chain_index + 1) % 100 == 0):
+                    (markov_chain_index) % 100 == 0):
                 self._proposal_dynamics_adaptor()
                 self._number_of_accepted_trajectories = 0
             super()._print_sample_progress(markov_chain_index)

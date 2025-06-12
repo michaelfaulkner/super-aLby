@@ -40,7 +40,7 @@ class MeanPositionSampler(Sampler, metaclass=ABCMeta):
         numpy.ndarray
             Numpy array of zeros of the required structure.
         """
-        return np.zeros((total_number_of_iterations + 1, dimensionality_of_particle_space))
+        return np.zeros((total_number_of_iterations, dimensionality_of_particle_space))
 
     def output_sample(self, sample, temperature_index, checkpoint_index):
         """

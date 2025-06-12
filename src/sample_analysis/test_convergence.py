@@ -234,6 +234,7 @@ def main(config_file_string):
     elif "quantum_harmonic_oscillator_potential" in potential:
         reference_sample = np.load(
             "permanent_data/reference_data/quantum_harmonic_oscillator_m_08_timestep_05_reference_sample.npy").flatten()
+        print("loaded reference sample")
 
     if "hard_disk_potential" in potential:
         disk_radius = 1.0
@@ -253,12 +254,14 @@ def main(config_file_string):
             sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperatures[0], 0, 0,
                                                               number_of_particles, number_of_equilibration_iterations
                                                               ).flatten()
+            print("loaded sample")
         else:
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
         effective_sample_size = get_effective_sample_size(sample)
         print(f"Effective sample size = {effective_sample_size} (from a total sample size of {len(sample)}).")
         sample_cdf = get_cumulative_distribution(sample)
+        print("got sample cdf")
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
         plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-aLby data')
@@ -270,8 +273,8 @@ def main(config_file_string):
         legend.get_frame().set_edgecolor('k')
         legend.get_frame().set_lw(1.5)
         plt.tight_layout()
-        plt.show()
-        # plt.savefig("convergence.png")
+        #plt.show()
+        plt.savefig("convergence.png")
 
 
 if __name__ == '__main__':
