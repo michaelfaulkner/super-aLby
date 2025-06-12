@@ -124,5 +124,6 @@ def get_effective_sample_size(sample):
     float
         Effective sample size.
     """
+    
     iact = get_iact_and_acf(sample, cutoff=math.e ** (-2))[0]
     return len(sample) / iact
