@@ -6,6 +6,7 @@ from model_settings import number_of_particles
 from helper_methods import get_east_neighbour, get_west_neighbour
 from helper_methods import get_initial_positions_of_smooth_potential
 
+
 class QuantumHarmonicOscillatorPotential(EuclideanSubspacePotential):
     r"""
     This class implements the (currently one-dimensional) potential for the quantum harmonic oscillator resulting
@@ -40,6 +41,7 @@ class QuantumHarmonicOscillatorPotential(EuclideanSubspacePotential):
         self._mass = mass
         self._timestep = timestep
         self._omega = self._mass
+
     def get_initial_positions(self):
         """
         Returns the initial positions array.
@@ -54,6 +56,7 @@ class QuantumHarmonicOscillatorPotential(EuclideanSubspacePotential):
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
         return get_initial_positions_of_smooth_potential(self.__class__.__name__)
+
     def get_value(self, positions):
         """
         Returns the dimensionless action for the given particle positions.  Note that the dimensional action
@@ -161,9 +164,9 @@ class QuantumHarmonicOscillatorPotential(EuclideanSubspacePotential):
 
         Parameters
         ----------
-        position_at_index : float
+        position_at_index : float or numpy.ndarray
             The position of the particle at some particle index.
-        position_at_east_index : float
+        position_at_east_index : float or numpy.ndarray
             The position of the particle at the site east of the particle index.
         Returns
         -------
