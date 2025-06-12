@@ -1,5 +1,5 @@
 from configparser import NoOptionError
-from markov_chain_diagnostics import get_cumulative_distribution, get_effective_sample_size, get_sample_mean_and_error
+from markov_chain_diagnostics import get_cumulative_distribution, get_sample_mean_and_error
 import importlib
 import matplotlib
 import matplotlib.pyplot as plt
@@ -256,11 +256,6 @@ def main(config_file_string):
         else:
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
-        if "quantum_harmonic_oscillator_potential" not in potential and "quantum_hard_disk_potential" not in potential:
-            effective_sample_size = get_effective_sample_size(sample)
-        else:
-            effective_sample_size = None
-        print(f"Effective sample size = {effective_sample_size} (from a total sample size of {len(sample)}).")
         sample_cdf = get_cumulative_distribution(sample)
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
@@ -274,7 +269,7 @@ def main(config_file_string):
         legend.get_frame().set_lw(1.5)
         plt.tight_layout()
         plt.show()
-        #plt.savefig("convergence.png")
+        # plt.savefig("convergence.png")
 
 
 if __name__ == '__main__':
