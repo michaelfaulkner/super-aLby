@@ -34,7 +34,7 @@ class MomentumSampler(Sampler):
         numpy.ndarray
             Numpy array of zeros of the required structure.
         """
-        return np.zeros((total_number_of_iterations + 1, number_of_particles, dimensionality_of_particle_space))
+        return np.zeros((total_number_of_iterations, number_of_particles, dimensionality_of_particle_space))
 
     def get_observation(self, momenta, positions, potential):
         """

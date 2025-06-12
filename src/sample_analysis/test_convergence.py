@@ -1,5 +1,5 @@
 from configparser import NoOptionError
-from markov_chain_diagnostics import get_cumulative_distribution, get_effective_sample_size, get_sample_mean_and_error
+from markov_chain_diagnostics import get_cumulative_distribution, get_sample_mean_and_error
 import importlib
 import matplotlib
 import matplotlib.pyplot as plt
@@ -235,7 +235,7 @@ def main(config_file_string):
         reference_sample = np.load(
             "permanent_data/reference_data/quantum_harmonic_oscillator_m_08_timestep_05_reference_sample.npy").flatten()
 
-    if "hard_disk_potential" in potential:
+    if "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
         disk_radius = 1.0
         sample = sample_getter.get_pressure(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                             number_of_equilibration_iterations).flatten()
@@ -256,8 +256,6 @@ def main(config_file_string):
         else:
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
-        effective_sample_size = get_effective_sample_size(sample)
-        print(f"Effective sample size = {effective_sample_size} (from a total sample size of {len(sample)}).")
         sample_cdf = get_cumulative_distribution(sample)
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
