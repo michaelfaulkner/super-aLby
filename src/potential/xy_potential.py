@@ -151,7 +151,7 @@ class XyPotential(EuclideanSubspacePotential):
         return 1
 
     def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
-                                                  movement_direction, accepts_in_a_row):
+                                                  movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -178,10 +178,8 @@ class XyPotential(EuclideanSubspacePotential):
         active_spin_value = positions[active_particle_index, 0]
         vetoing_spin_index = None
 
-        neighbours = []
         for neighbouring_spin_index in get_neighbours(active_particle_index, self._lattice_length):
             neighbour_spin_value = positions[neighbouring_spin_index, 0]
-            neighbours.append(neighbour_spin_value)
             initial_spin_value_difference = self._get_spin_difference(active_spin_value, neighbour_spin_value)
             total_uphill_potential = - temperature * np.log(1.0 - np.random.rand())
             initial_two_spin_potential = 1.0 - np.cos(initial_spin_value_difference)
@@ -205,14 +203,7 @@ class XyPotential(EuclideanSubspacePotential):
                 shortest_distance_to_next_factor_event = distance_to_next_factor_event
                 vetoing_spin_index = neighbouring_spin_index
 
-        #if accepts_in_a_row > 5:
-        #    print(f'Neighbours {neighbours}')
-        angles = np.array(neighbours) % (2 * np.pi)
-        angles_sorted = np.sort(angles)
-        angles_sorted = np.append(angles_sorted, angles_sorted[0] + 2 * np.pi)  # Wrap around
-        gaps = np.diff(angles_sorted)
-        max_gap = np.max(gaps)
-        return shortest_distance_to_next_factor_event, vetoing_spin_index, max_gap
+        return shortest_distance_to_next_factor_event, vetoing_spin_index
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
                                     veto_index):

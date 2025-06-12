@@ -17,7 +17,7 @@ class EventChainMediator(Mediator):
                  minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
                  number_of_temperature_increments: int = 0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, normalised_distance_between_measurements: float = 1.0,
-                 teleportation_portal: bool = False):
+                 distance_between_velocity_refreshments: float = 1.0, teleportation_portal: bool = False):
         r"""
         Constructor of the EventChainMediator class.
 
@@ -42,8 +42,6 @@ class EventChainMediator(Mediator):
             iterations of the Markov process.
         normalised_distance_between_measurements : float, optional
             Total distance through state space between samples (normalised as indicated by operations below).
-        teleportation_portal : bool 
-            Determines whether to use teleportation portal boundary conditions.
 
         Raises
         ------
@@ -83,55 +81,64 @@ class EventChainMediator(Mediator):
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
+        self._distance_between_velocity_refreshments = distance_between_velocity_refreshments
         self._total_number_of_events = 0
-        self.teleportation_portal = teleportation_portal
+        self._teleportation_portal = teleportation_portal
 
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         self._total_number_of_events = 0
         portal_events_accepted = 0
+        active_particle_index = np.random.randint(0, number_of_particles)
+        movement_direction = self._potential.get_random_event_chain_velocity()
+        distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
         for markov_chain_index in range(self._total_number_of_iterations):
-            active_particle_index = np.random.randint(0, number_of_particles)
-            movement_direction = self._potential.get_random_event_chain_velocity()
-            distance_to_next_measurement = self._distance_between_measurements 
-            accepts_in_a_row = 0
+            # active_particle_index = np.random.randint(0, number_of_particles)
+            # movement_direction = self._potential.get_random_event_chain_velocity()
+            distance_to_next_measurement = self._distance_between_measurements
             while True:
-                distance_to_next_event, vetoing_index, neighbour_range = self._potential.get_distance_to_next_event_and_veto_index(
-                    self._positions, active_particle_index, temperature, movement_direction, accepts_in_a_row)
-                if distance_to_next_measurement < distance_to_next_event:
+                distance_to_next_event, vetoing_index = self._potential.get_distance_to_next_event_and_veto_index(
+                    self._positions, active_particle_index, temperature, movement_direction)
+                if (distance_to_next_measurement < distance_to_next_event and
+                        distance_to_next_measurement < distance_to_next_velocity_refreshment):
                     self._potential.update_position(self._positions, distance_to_next_measurement,
                                                     active_particle_index, movement_direction)
                     self._potential.cell_boundary_event = False
+                    distance_to_next_velocity_refreshment -= distance_to_next_measurement
                     for sampler_index, sampler in enumerate(self._samplers):
                         self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
                             None, self._positions, self._potential)
                     break
+
+                elif distance_to_next_velocity_refreshment < distance_to_next_event:
+                    self._potential.update_position(self._positions, distance_to_next_velocity_refreshment,
+                                                    active_particle_index, movement_direction)
+                    self._potential.cell_boundary_event = False
+                    distance_to_next_measurement -= distance_to_next_velocity_refreshment
+                    active_particle_index = np.random.randint(0, number_of_particles)
+                    movement_direction = self._potential.get_random_event_chain_velocity()
+                    distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
+
                 else:
                     self._potential.update_position(self._positions, distance_to_next_event,
                                                             active_particle_index, movement_direction)
-                    if self.teleportation_portal:
+                    if self._teleportation_portal:
                         portal_candidate = self._potential.teleportation_portal(self._positions, active_particle_index, 
                                                                                 vetoing_index, movement_direction)
                         potential_difference = self._potential.get_potential_difference(active_particle_index, portal_candidate,
-                                                                                        self._positions)
-                        #if accepts_in_a_row > 5:
-                            #print(f'Active: index: {active_particle_index} value: {self._positions[active_particle_index]}')
-                            #print(f'Veto: index: {vetoing_index} value: {self._positions[vetoing_index]}')
-                            #print(f'Potential diff: {potential_difference}')
-                            #print(f'Accepts: {accepts_in_a_row}')
-                        if potential_difference < 0.0 or np.random.uniform(0.0, 1.0) < np.exp(- potential_difference / temperature) and accepts_in_a_row < 1:
+                                                                            self._positions)
+                        if potential_difference < 0.0 or np.random.uniform(0.0, 1.0) < np.exp(- potential_difference / temperature):
                             self._positions[active_particle_index] = portal_candidate
                             portal_events_accepted += 1
-                            accepts_in_a_row += 1
                         else:
                             active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                                 self._positions, active_particle_index, movement_direction, vetoing_index)
-                            accepts_in_a_row = 0
                     else:
                         active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                             self._positions, active_particle_index, movement_direction, vetoing_index)
                     self._total_number_of_events += 1
                     distance_to_next_measurement -= distance_to_next_event
+                    distance_to_next_velocity_refreshment -= distance_to_next_event
                 
             super()._print_sample_progress(markov_chain_index)
         print(f'Portal acceptance probability: {portal_events_accepted / self._total_number_of_events}')
