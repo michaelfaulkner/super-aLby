@@ -112,46 +112,8 @@ def get_mean_squared_positions(sample_directory, temperature, temperature_index,
         and/or thinning_level is not None.  The nth element is the mean squared particle position at observation n.
     """
     return get_reduced_sample(
-        np.load(
-        f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}"
-        f"_sample_of_mean_squared_positions.npy"), number_of_equilibration_iterations, thinning_level)
-
-
-def get_single_particle_mean_squared_positions(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
-                               number_of_equilibration_iterations=None, thinning_level=None):
-    """
-    Returns the sample of the mean squared particle positions without correcting for periodic boundaries.
-
-    Parameters
-    ----------
-    sample_directory : str
-        The location of the directory containing the sample(s).
-    temperature : float
-        The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
-    checkpoint_index : int
-        The index of the data file created as part of the checkpointing process
-    number_of_particles : int
-        The total number of particles.
-    number_of_equilibration_iterations : None or int, optional
-        The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
-    thinning_level : None or int, optional
-        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
-        all observations are retained.
-
-    Returns
-    -------
-    numpy.ndarray
-        The sample of the mean squared particle positions.  A two-dimensional numpy array of shape
-        (L, 1) where the maximum value of L is number_of_observations + number_of_equilibration_iterations + 1 (the 1
-        is for the observation of the initial system state) but L is shortened if number_of_equilibration_iterations
-        and/or thinning_level is not None.  The nth element is the mean squared particle position at observation n.
-    """
-    return get_reduced_sample(
-        np.load(
-        f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}"
-        f"_sample_of_single_particle_mean_squared_positions.npy"), number_of_equilibration_iterations, thinning_level)
+        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
+                f"sample_of_mean_squared_positions.npy"), number_of_equilibration_iterations, thinning_level)
 
 
 def get_momenta(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,

@@ -46,7 +46,8 @@ def get_basic_config_data(config_file_string):
     possible_mediators = ["UnboundedLeapfrogMediator", "ToroidalLeapfrogMediator", "LazyToroidalLeapfrogMediator",
                           "MetropolisMediator", "SwendsenWangMediator", "WolffMediator", "EventChainMediator"]
     (config_file_mediator, potential, samplers, temperatures, number_of_equilibration_iterations,
-     number_of_observations, size_of_particle_space) = (None, None, None, None, None, None, None)
+     number_of_observations, number_of_particles, size_of_particle_space) = (None, None, None, None, None, None, None,
+                                                                             None)
     for possible_mediator in possible_mediators:
         try:
             potential = config.get(possible_mediator, "potential")
