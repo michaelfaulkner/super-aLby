@@ -132,7 +132,6 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
         self._target_acceptance_rate = 0.85  # TODO add functionality so the user can set self._target_acceptance_rate
         """The following objects are set in self._reset_arrays_and_counters()"""
-        self._momenta = None
         self._current_potential = None
         self._number_of_unstable_trajectories = None
 
