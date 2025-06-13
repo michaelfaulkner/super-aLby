@@ -117,7 +117,7 @@ class Mediator(metaclass=ABCMeta):
             if restart_flag:
                 self._reload_configuration_from_file_and_reset()
                 self._get_checkpoint_index()
-            self._generate_sample_at_current_temperature(temperature_index, temperature)
+            self._generate_sample_at_current_temperature(temperature_index, temperature, restart_flag)
             if not restart_flag:
                 self._samples = [np.concatenate((self._initial_samples[sampler_index], self._samples[sampler_index])) 
                                  for sampler_index, sampler in enumerate(self._samplers)]
