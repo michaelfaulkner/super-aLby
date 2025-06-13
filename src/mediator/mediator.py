@@ -108,7 +108,7 @@ class Mediator(metaclass=ABCMeta):
         self._momenta = None
         self._positions = None
         self._samples = None
-        self._initial_samples= None
+        self._initial_samples = None
         self._checkpoint_index = None
 
     def generate_sample(self, restart_flag):
