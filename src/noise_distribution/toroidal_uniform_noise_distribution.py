@@ -1,13 +1,14 @@
-"""Module for the abstract UniformNoiseDistribution class."""
+"""Module for the ToroidalUniformNoiseDistribution class."""
 from .continuous_noise_distribution import ContinuousNoiseDistribution
 from model_settings import dimensionality_of_particle_space
 import numpy as np
+from base.vectors import get_shortest_vectors_on_torus
 
 
-class UniformNoiseDistribution(ContinuousNoiseDistribution):
+class ToroidalUniformNoiseDistribution(ContinuousNoiseDistribution):
     """
     This class is used to generate a proposed discrete change in position for each active particle using a uniform
-    noise distribution.
+    noise distribution. It assumes a toroidal poition space.
     """
 
     def __init__(self, initial_width_of_noise_distribution: float = 0.1):
@@ -41,6 +42,6 @@ class UniformNoiseDistribution(ContinuousNoiseDistribution):
             A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
             represents one Cartesian component of the proposed position of the active particle.
         """
-        return (positions[active_particle_index] +
+        return get_shortest_vectors_on_torus((positions[active_particle_index] +
                 np.random.uniform(-0.5 * self.width_of_noise_distribution, 0.5 * self.width_of_noise_distribution,
-                                  size=dimensionality_of_particle_space))
+                                  size=dimensionality_of_particle_space)))

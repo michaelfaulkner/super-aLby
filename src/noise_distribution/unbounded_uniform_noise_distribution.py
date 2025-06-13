@@ -1,23 +1,23 @@
-"""Module for the abstract GaussianNoiseDistribution class."""
+"""Module for the UniformNoiseDistribution class."""
 from .continuous_noise_distribution import ContinuousNoiseDistribution
 from model_settings import dimensionality_of_particle_space
 import numpy as np
 
 
-class GaussianNoiseDistribution(ContinuousNoiseDistribution):
+class UniformNoiseDistribution(ContinuousNoiseDistribution):
     """
-    This class is used to generate a proposed discrete change in position for each active particle using a Gaussian
-    noise distribution.
+    This class is used to generate a proposed discrete change in position for each active particle using a uniform
+    noise distribution. Unbounded position space.
     """
 
     def __init__(self, initial_width_of_noise_distribution: float = 0.1):
         """
-        The constructor of the GaussianNoiseDistribution class.
+        The constructor of the UniformNoiseDistribution class.
 
         Parameters
         ----------
         initial_width_of_noise_distribution : float
-            The initial standard deviation of the Gaussian distribution.
+            The initial width of the uniform distribution.
         """
         super().__init__(initial_width_of_noise_distribution)
 
@@ -41,5 +41,6 @@ class GaussianNoiseDistribution(ContinuousNoiseDistribution):
             A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
             represents one Cartesian component of the proposed position of the active particle.
         """
-        return positions[active_particle_index] + np.random.normal(0.0, self.width_of_noise_distribution,
-                                                                   size=dimensionality_of_particle_space)
+        return (positions[active_particle_index] +
+                np.random.uniform(-0.5 * self.width_of_noise_distribution, 0.5 * self.width_of_noise_distribution,
+                                  size=dimensionality_of_particle_space))
