@@ -160,7 +160,7 @@ Run the script `python sample_analysis/make_ising_spec_heat_and_mag_density_figs
 src/config_files/emergent_electrostatics_ising_figs) via the command 
 `python run.py config_files/emergent_electrostatics_ising_figs/4x4_metropolis.ini`, etc.  
 2. Once all simulations are complete, run the relevant sample-analysis script via the command 
-`python sample_analysis/make_ising_spec_heat_and_mag_density_figs.py False`.
+`python sample_analysis/make_ising_trace_plots.py False`.
 
 ### Other figures
 
