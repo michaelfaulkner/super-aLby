@@ -98,14 +98,9 @@ class EventChainMediator(Mediator):
                     self._potential.update_position(self._positions, distance_to_next_measurement,
                                                     active_particle_index, movement_direction)
                     self._potential.cell_boundary_event = False
-                    if restart_flag:
-                        for sampler_index, sampler in enumerate(self._samplers):
-                            self._samples[sampler_index][markov_chain_index, :] = sampler.get_observation(
-                                None, self._positions, self._potential)
-                    else:
-                        for sampler_index, sampler in enumerate(self._samplers):
-                            self._samples[sampler_index][markov_chain_index + 1, :] = sampler.get_observation(
-                                None, self._positions, self._potential)
+                    for sampler_index, sampler in enumerate(self._samplers):
+                        self._samples[sampler_index][markov_chain_index, :] = sampler.get_observation(
+                            None, self._positions, self._potential)
                     break
                 else:
                     distance_to_next_measurement -= distance_to_next_event
@@ -126,9 +121,7 @@ class EventChainMediator(Mediator):
     def _reset_arrays_and_counters(self, temperature, restart_flag):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
         super()._reset_arrays_and_counters(temperature, restart_flag)
+        self._momenta = None
         if not restart_flag:
-            for sampler_index, sampler in enumerate(self._samplers):
-                if "PressureSampler" in str(sampler):
-                    self._samples[sampler_index][0, :] = number_of_particles / system_volume  # use ideal-gas pressure
-                else:
-                    self._samples[sampler_index][0, :] = sampler.get_observation(None, self._positions, self._potential)
+            self._get_initial_sample()
+        

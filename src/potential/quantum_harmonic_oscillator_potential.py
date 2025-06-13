@@ -83,13 +83,10 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
 
         Parameters
         ----------
-        position_at_active_particle_index : float
+        position_at_index : float or numpy.ndarray
             The position of the particle at some particle index.
-        active_particle_index : int
-            The index of the active particle.
-        position_at_active_particle_index : float
-            The position of the particle at the active particle index.
-
+        position_at_east_index : float or numpy.ndarray
+            The position of the particle at the site east of the particle index.
         Returns
         -------
         float

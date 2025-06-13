@@ -73,23 +73,16 @@ class DiffusiveMediator(ReversibleMediator, metaclass=ABCMeta):
     def _reset_arrays_and_counters(self, temperature, restart_flag):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
         super()._reset_arrays_and_counters(temperature, restart_flag)
+        self._momenta = None
         if not restart_flag:
-            for sampler_index, sampler in enumerate(self._samplers):
-                self._samples[sampler_index][0, :] = sampler.get_observation(None, self._positions, self._potential)
+            self._get_initial_sample()
 
     def _generate_single_observation(self, markov_chain_step_index, temperature, restart_flag):
         """Advances the Markov chain by one step and adds a single observation to the sample."""
         self._advance_markov_chain(markov_chain_step_index, temperature)
-        if restart_flag:
-            for sampler_index, sampler in enumerate(self._samplers):
-                self._samples[sampler_index][markov_chain_step_index, :] = sampler.get_observation(
-                    None, self._positions, self._potential)
-        else:
-            for sampler_index, sampler in enumerate(self._samplers):
-                self._samples[sampler_index][markov_chain_step_index + 1, :] = sampler.get_observation(
-                    None, self._positions, self._potential)
-
-
+        for sampler_index, sampler in enumerate(self._samplers):
+            self._samples[sampler_index][markov_chain_step_index, :] = sampler.get_observation(
+                None, self._positions, self._potential)
 
     @abstractmethod
     def _advance_markov_chain(self, markov_chain_step_index, temperature):

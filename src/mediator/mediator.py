@@ -8,7 +8,7 @@ from sampler.sampler import Sampler
 from typing import Sequence
 import numpy as np
 import os
-
+from model_settings import number_of_particles, system_volume
 
 class Mediator(metaclass=ABCMeta):
     """Abstract Mediator class."""
@@ -106,6 +106,7 @@ class Mediator(metaclass=ABCMeta):
         """The following objects are set in self._reset_arrays_and_counters()"""
         self._positions = None
         self._samples = None
+        self._initial_samples= None
         self._checkpoint_index = None
 
     def generate_sample(self, restart_flag):
@@ -116,8 +117,10 @@ class Mediator(metaclass=ABCMeta):
             if restart_flag:
                 self._reload_configuration_from_file_and_reset()
                 self._get_checkpoint_index()
-                print(f"Reloading final configuration from checkpoint. Starting checkpoint {self._checkpoint_index}")
-            self._generate_sample_at_current_temperature(temperature_index, temperature, restart_flag)
+            self._generate_sample_at_current_temperature(temperature_index, temperature)
+            if not restart_flag:
+                self._samples = [np.concatenate((self._initial_samples[sampler_index], self._samples[sampler_index])) 
+                                 for sampler_index, sampler in enumerate(self._samplers)]
             [sampler.output_sample(self._samples[sampler_index], temperature_index, self._checkpoint_index)
              for sampler_index, sampler in enumerate(self._samplers)]
             self._write_checkpoint_index_and_configuration()
@@ -137,8 +140,8 @@ class Mediator(metaclass=ABCMeta):
 
     def _print_sample_progress(self, markov_chain_index):
         """Prints (to screen) details of the current sampling process."""
-        if (markov_chain_index + 1) % self._number_of_observations_between_screen_prints_for_clock == 0:
-            print(f"{markov_chain_index + 1} observations drawn out of a total of "
+        if (markov_chain_index) % self._number_of_observations_between_screen_prints_for_clock == 0 and markov_chain_index != 0:
+            print(f"{markov_chain_index} observations drawn out of a total of "
                   f"{self._total_number_of_iterations} (including {self._number_of_equilibration_iterations} "
                   f"equilibration observations).")
 
@@ -165,6 +168,16 @@ class Mediator(metaclass=ABCMeta):
         self._positions = self._potential.get_initial_positions()
         self._samples = [sampler.get_empty_sample_array(self._total_number_of_iterations) for sampler in self._samplers]
         self._checkpoint_index = 0
+    
+    def _get_initial_sample(self):
+        self._initial_samples = [sampler.get_empty_sample_array(1) for sampler in self._samplers]
+        for sampler_index, sampler in enumerate(self._samplers):
+            if "PressureSampler" in str(sampler):
+                self._initial_samples[sampler_index][0, :] = number_of_particles / system_volume  # use ideal-gas pressure
+            else:
+                self._initial_samples[sampler_index][0, :] = sampler.get_observation(self._momenta, self._positions,
+                                                                                    self._potential)
+
 
     @abstractmethod
     def _generate_sample_at_current_temperature(self, temperature_index, temperature, restart_flag):
