@@ -2,8 +2,12 @@
 super-aLby is a Python application that implements various Monte Carlo sampling algorithms for both classical *N*-body 
 models in statistical physics (including Wick-rotated quantum actions) and Bayesian probability models.  The Monte Carlo
 algorithms include the Metropolis, event-chain, super-relativistic, Hamiltonian, Wolff and Swendsen-Wang Monte Carlo 
-algorithms.  For a closely connected discussion of kinetic-energy choice in Hamiltonian/hybrid Monte Carlo, see 
-[\[Livingstone2019\]](https://academic.oup.com/biomet/article-abstract/106/2/303/5476364), where we first introduced super-relativistic Monte Carlo (though we did not name it).
+algorithms.
+
+For a closely connected discussion of kinetic-energy choice in Hamiltonian/hybrid Monte Carlo, see 
+[\[Livingstone2019\]](https://academic.oup.com/biomet/article-abstract/106/2/303/5476364), where we first introduced 
+super-relativistic Monte Carlo (though we did not name it).  super-aLby in fact started life as an application for 
+Hamiltonian and super-relativistic Monte Carlo (hence the name super-aLby, in reference to Einstein).
 
 ## Installation
 
@@ -24,16 +28,13 @@ format](https://en.wikipedia.org/wiki/INI_file). The [`run.py`](src/run.py) scri
 directory. 
 
 To run the super-aLby application, open your terminal, navigate to the [`src`](src) directory and enter `python run.py 
-<configuration file>`. The generated sample data will appear in the [`output`](src/output) directory (at a location 
-given in the configuration file). Sample analysis can then be performed via scripts within the [`sample_analysis`](src/sample_analysis) 
-directory.
+<configuration file>`. The generated sample data should then appear in the [`output`](src/output) directory (at a 
+location given in the configuration file). Sample analysis can then be performed via scripts within the 
+[`sample_analysis`](src/sample_analysis) directory.
 
 The [`run.py`](src/run.py) script also takes optional arguments. These are:
 - `-h`, `--help`: Show the help message and exit.
 - `-V`, `--version`: Show program's version number and exit.
-- `-v`, `--verbose`: Increase verbosity of logging messages (multiple -v options increase the verbosity, the maximum is 
-2).
-- `-l LOGFILE`, `--logfile LOGFILE`: Specify the logging file. 
 
 ## Configuration files
 
@@ -62,30 +63,38 @@ range_of_initial_particle_positions = 1.0
 serves as the central hub of the application and also hosts the Markov process. We provide multiple mediators:
 
 1. [`event_chain_mediator`](src/mediator/event_chain_mediator.py) implements event-chain Monte Carlo.
-2. [`metropolis_mediator`](src/mediator/metropolis_mediator.py) implements Metropolis-Hastings Monte Carlo.
+2. [`metropolis_mediator`](src/mediator/metropolis_mediator.py) implements Metropolis Monte Carlo.
 3. [`swendsen_wang_mediator`](src/mediator/swendsen_wang_mediator.py) implements Swendsen-Wang Monte Carlo for the 2D Ising model.
 4. [`wolff_mediator`](src/mediator/wolff_mediator.py) implements Wolff Monte Carlo for the 2D Ising model.
 5. [`unbounded_leapfrog_mediator`](src/mediator/unbounded_leapfrog_mediator.py), 
 [`toroidal_leapfrog_mediator`](src/mediator/toroidal_leapfrog_mediator.py) and 
 [`lazy_toroidal_leapfrog_mediator`](src/mediator/lazy_toroidal_leapfrog_mediator.py) implement Hamiltonian Monte Carlo 
 with a leapfrog integrator (the first is for models defined on unbounded Euclidean space; the second is for models 
-defined on any compact subspace of Euclidean space with toroidal topology; the third is for models defined on any 
-compact subspace of Euclidean space with toroidal topology (but while only correcting for periodic boundaries at each 
-Metropolis step, hence _lazy_)).
+defined on any torus; the third is for models defined on any torus (but while only correcting for periodic boundaries 
+at each Metropolis step, hence _lazy_)).
+
+(Note that any reference to a torus is to the [flat torus](https://en.wikipedia.org/wiki/Torus#Flat_torus).)
+
+`number_of_jobs` and `max_number_of_cpus` are `int` values and should also specified in the `[Run]` section. They 
+correspond (respectively) to the number of independent realisations of the same process (i.e., simulation) and the 
+maximum number of CPUs that should be simultaneously used for each of these realisations (to avoid overloading personal 
+machines). 
 
 Additional mediators are present in the [`mediator`](src/mediator) package.  Each is an abstract parent class from 
 which one of the above mediators inherits.  We use this same inheritance structure in the following packages:
 
 1. [`kinetic_energy`](src/kinetic_energy) which provides functionality for various kinetic energies used in 
-Hamiltonian Monte Carlo. 
-2. [`linked_lists`](src/linked_lists) which provides functionality for various linked lists in multi-particle models.
-3. [`noise_distribution`](src/noise_distribution) which provides functionality for various noise distributions used in 
-Metropolis-Hastings Monte Carlo.
-4. [`potential`](src/potential) which provides functionality for the potential that defines the (probability) model.
-5. [`sampler`](src/sampler) which provides functionality for sampling various system observables.
+Hamiltonian Monte Carlo.
+2. [`noise_distribution`](src/noise_distribution) which provides functionality for various noise distributions used in 
+Metropolis Monte Carlo.
+3. [`potential`](src/potential) which provides functionality for the potential (energy) function that defines the model.
+4. [`sampler`](src/sampler) which provides functionality for sampling various system observables.
 
 The mediator interacts with (instances of) classes contained in each of these packages, such that the classes never 
-interact with each other.  Below we detail how the configuration file chooses the classes that will be used.
+interact with each other.  In addition, some [`potential`](src/potential) classes instantiate classes contained in the 
+[`linked_lists`](src/linked_lists) package.  This provides linked-list functionality for cell-based evaluation of 
+certain multi-particle models defined on the two- or three-dimensional torus.  Below we detail how the configuration 
+file chooses the classes that will be used.
 
 Within each configuration file, the ```[ModelSettings]``` section specifies both the *NVT* physical parameters of the 
 simulation and the range of the initial particle positions. `number_of_particles` is an `int` that represents number of 
@@ -104,17 +113,18 @@ size_of_particle_space = [1.0, 1.0]
 range_of_initial_particle_positions = [[-0.5, 0.5], [-0.5, 0.5]]
 ```
 
-represents a four-particle system in which each particle exists on the toroidal compact subspace (of 
-volume *1.0 x 1.0*) of two-dimensional Euclidean space and takes an initial position anywhere on that subspace.
+represents a four-particle system in which each particle exists on the two-dimensional torus (of volume *1.0 x 1.0*) 
+and takes an initial position anywhere on that torus.
 
 The remaining sections of the configuration file correspond to the different classes chosen for the simulation (i.e., 
-the mediator and each of the classes with which it interacts). Each section contains pairs of properties and values. 
-The property corresponds to the name of the argument in the `__init__` method of the corresponding class, and its value 
-provides the argument. Property-value pairs must be provided for all properties for which the class does not provide a 
-default value; for each property that does not have a default value, a property-value pair may be given. Properties and 
-values should be given in snake_case; sections should be given in CamelCase. If a value corresponds to the instance of 
-another class, then a corresponding section is required. In our example, the first of the remaining sections is 
-therefore either of the form
+the mediator and each of the classes with which it interacts - and possibly also a [`linked_lists`](src/linked_lists) 
+class). Each section contains pairs of properties and values. Each property corresponds to the name of an argument in 
+the `__init__` method of the corresponding class, and its value provides the argument. Property-value pairs must be 
+provided for all properties that do not have a default value; for each property that does have a default value, a 
+property-value pair may be given. Properties and values should be given in snake_case; sections should be given in 
+CamelCase. If a value corresponds to the instance of another class, then a corresponding section is required. 
+
+In our example `[Run]` section above, the first of the remaining sections might therefore be of the form
 
 ```INI
 [SomeMediator]
@@ -135,8 +145,11 @@ noise_distribution = some_noise_distribution
 ```
 
 where the ellipsis accounts for further pairs of properties and values that do not correspond to other classes. The 
-first / second example therefore also requires the sections `[SomePotential]`, `[SomeSampler]` and`[SomeKineticEnergy]` 
-/ `[SomeNoiseDistribution]`. 
+first / second example therefore also requires the sections `[SomePotential]`, `[SomeSampler]` and `[SomeKineticEnergy]`
+/ `[SomeNoiseDistribution]`. The first / second example must correspond to some form of Hamiltonian Monte Carlo 
+simulation (as it selects a [`kinetic_energy`](src/kinetic_energy)) while the second must correspond to a Metropolis 
+Monte Carlo simulation (as it selects a [`noise_distribution`](src/noise_distribution)). Note that additional examples 
+are also possible (e.g., one may choose to construct an event-chain Monte Carlo simulation).
 
 Some example configuration files are located in the [`src/config_files`](src/config_files) directory. To get a feel for 
 the application, run `python run.py 
