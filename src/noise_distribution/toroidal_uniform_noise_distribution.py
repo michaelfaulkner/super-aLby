@@ -30,7 +30,7 @@ class ToroidalUniformNoiseDistribution(ContinuousNoiseDistribution):
         ----------
         active_particle_index : int
             The index of the active particle.
-        positions : numpy.ndarray
+        positions : numpy.ndarray(number_of_particles, dimensionality_of_particle_space)
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the position of a single particle. For Bayesian
             models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
@@ -43,5 +43,6 @@ class ToroidalUniformNoiseDistribution(ContinuousNoiseDistribution):
             represents one Cartesian component of the proposed position of the active particle.
         """
         return get_shortest_vectors_on_torus((positions[active_particle_index] +
-                np.random.uniform(-0.5 * self.width_of_noise_distribution, 0.5 * self.width_of_noise_distribution,
-                                  size=dimensionality_of_particle_space)))
+                                              np.random.uniform(-0.5 * self.width_of_noise_distribution,
+                                                                0.5 * self.width_of_noise_distribution,
+                                                                size=dimensionality_of_particle_space)))

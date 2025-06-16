@@ -26,7 +26,7 @@ class SignFlipNoiseDistribution(NoiseDistribution):
         ----------
         active_particle_index : int
             The index of the active particle.
-        positions : numpy.ndarray
+        positions : numpy.ndarray(number_of_particles, dimensionality_of_particle_space)
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is an int and represents one Cartesian component of the position of a single particle.
 
