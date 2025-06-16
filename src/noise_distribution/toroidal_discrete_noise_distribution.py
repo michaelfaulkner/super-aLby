@@ -8,7 +8,7 @@ from base.vectors import get_shortest_vectors_on_torus
 class ToroidalDiscreteNoiseDistribution(NoiseDistribution):
     r"""
     Class for generating a change of \pm 1 in each Cartesian component of the active-particle position.
-    It assumes a toroidal poition space.
+    It assumes a toroidal position space.
         """
 
     def __init__(self, initial_width_of_noise_distribution=None):
@@ -30,7 +30,7 @@ class ToroidalDiscreteNoiseDistribution(NoiseDistribution):
         ----------
         active_particle_index : int
             The index of the active particle.
-        positions : numpy.ndarray
+        positions : numpy.ndarray(number_of_particles, dimensionality_of_particle_space)
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is an int and represents one Cartesian component of the position of a single particle.
 
