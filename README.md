@@ -59,7 +59,7 @@ size_of_particle_space = None
 range_of_initial_particle_positions = 1.0
 ```
 
-`some_mediator` corresponds the mediator used (for this particular simulation) in the `run.py` file. The mediator 
+`some_mediator` corresponds to the mediator used (for this particular simulation) in the `run.py` file. The mediator 
 serves as the central hub of the application and also hosts the Markov process. We provide multiple mediators:
 
 1. [`event_chain_mediator`](src/mediator/event_chain_mediator.py) implements event-chain Monte Carlo.
@@ -75,8 +75,8 @@ at each Metropolis step, hence _lazy_)).
 
 (Note that any reference to a torus is to the [flat torus](https://en.wikipedia.org/wiki/Torus#Flat_torus).)
 
-`number_of_jobs` and `max_number_of_cpus` are `int` values and should also specified in the `[Run]` section. They 
-correspond (respectively) to the number of independent realisations of the same process (i.e., simulation) and the 
+`number_of_jobs` and `max_number_of_cpus` are `int` values and should also be specified in the `[Run]` section. They 
+correspond, respectively, to the number of independent realisations of the same process (i.e. simulation) and the 
 maximum number of CPUs that should be simultaneously used for each of these realisations (to avoid overloading personal 
 machines). 
 
@@ -97,8 +97,8 @@ certain multi-particle models defined on the two- or three-dimensional torus.  B
 file chooses the classes that will be used.
 
 Within each configuration file, the ```[ModelSettings]``` section specifies both the *NVT* physical parameters of the 
-simulation and the range of the initial particle positions. `number_of_particles` is an `int` that represents number of 
-particles.  `size_of_particle_space` represents the size and dimensions of the spaces on which each particle exits and 
+simulation and the range of the initial particle positions. `number_of_particles` is an `int` that represents the number of 
+particles.  `size_of_particle_space` represents the size and dimensions of the spaces on which each particle exists and 
 is either `None`, a `float` or a Python `list` of `None` or `float` values (`None` corresponds to the whole real line). 
 `range_of_initial_particle_positions` represents the range of the initial position of each particle and is either a 
 `float`, a one-dimensional Python `list` of length `len(range_of_initial_particle_positions)` and composed of `float` 
@@ -146,7 +146,7 @@ noise_distribution = some_noise_distribution
 
 where the ellipsis accounts for further pairs of properties and values that do not correspond to other classes. The 
 first / second example therefore also requires the sections `[SomePotential]`, `[SomeSampler]` and `[SomeKineticEnergy]`
-/ `[SomeNoiseDistribution]`. The first / second example must correspond to some form of Hamiltonian Monte Carlo 
+/ `[SomeNoiseDistribution]`. The first example must correspond to some form of Hamiltonian Monte Carlo 
 simulation (as it selects a [`kinetic_energy`](src/kinetic_energy)) while the second must correspond to a Metropolis 
 Monte Carlo simulation (as it selects a [`noise_distribution`](src/noise_distribution)). Note that additional examples 
 are also possible (e.g., one may choose to construct an event-chain Monte Carlo simulation).
