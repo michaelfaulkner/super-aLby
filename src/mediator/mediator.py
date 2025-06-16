@@ -10,6 +10,7 @@ import numpy as np
 import os
 from model_settings import number_of_particles, system_volume
 
+
 class Mediator(metaclass=ABCMeta):
     """Abstract Mediator class."""
 
@@ -101,12 +102,13 @@ class Mediator(metaclass=ABCMeta):
                                               number_of_temperature_increments)
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
-        self._number_of_observations_between_screen_prints_for_clock = int(number_of_observations / 10)
         self._total_number_of_iterations = number_of_equilibration_iterations + number_of_observations
+        self._number_of_observations_between_screen_prints_for_clock = int(self._total_number_of_iterations / 10)
         """The following objects are set in self._reset_arrays_and_counters()"""
+        self._momenta = None
         self._positions = None
         self._samples = None
-        self._initial_samples= None
+        self._initial_samples = None
         self._checkpoint_index = None
 
     def generate_sample(self, restart_flag):
@@ -140,10 +142,10 @@ class Mediator(metaclass=ABCMeta):
 
     def _print_sample_progress(self, markov_chain_index):
         """Prints (to screen) details of the current sampling process."""
-        if (markov_chain_index) % self._number_of_observations_between_screen_prints_for_clock == 0 and markov_chain_index != 0:
-            print(f"{markov_chain_index} observations drawn out of a total of "
-                  f"{self._total_number_of_iterations} (including {self._number_of_equilibration_iterations} "
-                  f"equilibration observations).")
+        if (markov_chain_index % self._number_of_observations_between_screen_prints_for_clock == 0 and
+                markov_chain_index != 0):
+            print(f"{markov_chain_index} observations drawn out of a total of {self._total_number_of_iterations} "
+                  f"(including {self._number_of_equilibration_iterations} equilibration observations).")
 
     def _reload_configuration_from_file_and_reset(self):
         """Reloads position data from a previous sub-run in the case of checkpointing."""
@@ -173,11 +175,10 @@ class Mediator(metaclass=ABCMeta):
         self._initial_samples = [sampler.get_empty_sample_array(1) for sampler in self._samplers]
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
-                self._initial_samples[sampler_index][0, :] = number_of_particles / system_volume  # use ideal-gas pressure
+                self._initial_samples[sampler_index][0, :] = number_of_particles / system_volume  # ideal-gas pressure
             else:
                 self._initial_samples[sampler_index][0, :] = sampler.get_observation(self._momenta, self._positions,
-                                                                                    self._potential)
-
+                                                                                     self._potential)
 
     @abstractmethod
     def _generate_sample_at_current_temperature(self, temperature_index, temperature, restart_flag):

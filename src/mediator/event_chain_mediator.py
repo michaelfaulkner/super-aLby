@@ -121,7 +121,6 @@ class EventChainMediator(Mediator):
     def _reset_arrays_and_counters(self, temperature, restart_flag):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
         super()._reset_arrays_and_counters(temperature, restart_flag)
-        self._momenta = None
         if not restart_flag:
             self._get_initial_sample()
         
