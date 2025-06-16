@@ -6,13 +6,13 @@ import numpy as np
 
 class UnboundedDiscreteNoiseDistribution(NoiseDistribution):
     r"""
-    Class for generating a change of \pm 1 in each Cartesian component of the active-particle position.
-    Unbounded position space.
+    This class provides functionality for noise distributions that propose a change of \pm 1 in each Cartesian
+        component of the active-particle position on a discrete unbounded particle space.
     """
 
     def __init__(self, initial_width_of_noise_distribution=None):
         """
-        The constructor of the DiscreteNoiseDistribution class.
+        The constructor of the UnboundedDiscreteNoiseDistribution class.
 
         Parameters
         ----------

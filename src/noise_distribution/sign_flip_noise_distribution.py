@@ -4,8 +4,9 @@ from .noise_distribution import NoiseDistribution
 
 class SignFlipNoiseDistribution(NoiseDistribution):
     r"""
-    Class for flipping the sign of each Cartesian component of the active-particle position.
-    Unbounded position space."""
+    This class provides functionality for noise distributions that flip the sign of each Cartesian component of the
+        active-particle position.
+    """
 
     def __init__(self, initial_width_of_noise_distribution=None):
         """

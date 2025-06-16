@@ -7,13 +7,13 @@ from base.vectors import get_shortest_vectors_on_torus
 
 class ToroidalUniformNoiseDistribution(ContinuousNoiseDistribution):
     """
-    This class is used to generate a proposed discrete change in position for each active particle using a uniform
-    noise distribution. It assumes a toroidal poition space.
+    This class provides functionality for noise distributions that propose discrete changes in the position of the
+        active particle (on a toroidal Euclidean particle space) using a uniform noise distribution.
     """
 
     def __init__(self, initial_width_of_noise_distribution: float = 0.1):
         """
-        The constructor of the UniformNoiseDistribution class.
+        The constructor of the ToroidalUniformNoiseDistribution class.
 
         Parameters
         ----------
