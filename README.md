@@ -83,27 +83,26 @@ machines).
 Additional mediators are present in the [`mediator`](src/mediator) package.  Each is an abstract parent class from 
 which one of the above mediators inherits.  We use this same inheritance structure in the following packages:
 
-1. [`kinetic_energy`](src/kinetic_energy) which provides functionality for various kinetic energies used in 
-Hamiltonian Monte Carlo.
-2. [`noise_distribution`](src/noise_distribution) which provides functionality for various noise distributions used in 
-Metropolis Monte Carlo.
+1. [`kinetic_energy`](src/kinetic_energy) which provides functionality for various kinetic energies used in Hamiltonian Monte Carlo.
+2. [`noise_distribution`](src/noise_distribution) which provides functionality for various noise distributions used in Metropolis Monte 
+Carlo.
 3. [`potential`](src/potential) which provides functionality for the potential (energy) function that defines the model.
 4. [`sampler`](src/sampler) which provides functionality for sampling various system observables.
 
 The mediator interacts with (instances of) classes contained in each of these packages, such that the classes never 
 interact with each other.  In addition, some [`potential`](src/potential) classes instantiate classes contained in the 
-[`linked_lists`](src/linked_lists) package.  This provides linked-list functionality for cell-based evaluation of 
-certain multi-particle models defined on the two- or three-dimensional torus.  Below we detail how the configuration 
-file chooses the classes that will be used.
+[`linked_lists`](src/linked_lists) package.  This provides linked-list functionality for cell-based evaluation of certain 
+multi-particle models defined on the two- or three-dimensional torus.  Below we detail how the configuration file 
+chooses the classes that will be used.
 
 Within each configuration file, the ```[ModelSettings]``` section specifies both the *NVT* physical parameters of the 
-simulation and the range of the initial particle positions. `number_of_particles` is an `int` that represents the number of 
-particles.  `size_of_particle_space` represents the size and dimensions of the spaces on which each particle exists and 
-is either `None`, a `float` or a Python `list` of `None` or `float` values (`None` corresponds to the whole real line). 
-`range_of_initial_particle_positions` represents the range of the initial position of each particle and is either a 
-`float`, a one-dimensional Python `list` of length `len(range_of_initial_particle_positions)` and composed of `float` 
-values, or a two-dimensional Python `list` of size `(len(range_of_initial_particle_positions), 2)` and composed of 
-`float` values. The above example represents a two-particle system in which each particle exists on the entire real 
+simulation and the range of the initial particle positions. `number_of_particles` is an `int` that represents the 
+number of particles.  `size_of_particle_space` represents the size and dimensions of the spaces on which each particle 
+exists and is either `None`, a `float` or a Python `list` of `None` or `float` values (`None` corresponds to the whole 
+real line). `range_of_initial_particle_positions` represents the range of the initial position of each particle and is 
+either a `float`, a one-dimensional Python `list` of length `len(range_of_initial_particle_positions)` and composed of 
+`float` values, or a two-dimensional Python `list` of size `(len(range_of_initial_particle_positions), 2)` and composed 
+of `float` values. The above example represents a two-particle system in which each particle exists on the entire real 
 line and has initial position *1.0*, while
 
 ```INI
@@ -146,17 +145,17 @@ noise_distribution = some_noise_distribution
 
 where the ellipsis accounts for further pairs of properties and values that do not correspond to other classes. The 
 first / second example therefore also requires the sections `[SomePotential]`, `[SomeSampler]` and `[SomeKineticEnergy]`
-/ `[SomeNoiseDistribution]`. The first example must correspond to some form of Hamiltonian Monte Carlo 
-simulation (as it selects a [`kinetic_energy`](src/kinetic_energy)) while the second must correspond to a Metropolis 
-Monte Carlo simulation (as it selects a [`noise_distribution`](src/noise_distribution)). Note that additional examples 
-are also possible (e.g., one may choose to construct an event-chain Monte Carlo simulation).
+/ `[SomeNoiseDistribution]`. The first example must correspond to some form of Hamiltonian Monte Carlo simulation (as 
+it selects a [`kinetic_energy`](src/kinetic_energy)) while the second must correspond to a Metropolis Monte Carlo simulation (as it 
+selects a [`noise_distribution`](src/noise_distribution)). Note that additional examples are also possible (e.g. one may choose to 
+construct an event-chain Monte Carlo simulation).
 
-Some example configuration files are located in the [`src/config_files`](src/config_files) directory. To get a feel for 
-the application, run `python run.py 
+Some example configuration files are located in the [`src/config_files`](src/config_files) directory. To get a feel for the 
+application, run `python run.py 
 config_files/convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini`, 
 before running `python sample_analysis/test_convergence.py 
-config_files/convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini` 
-once the simulation has finished. 
+config_files/convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini` once 
+the simulation has finished. 
 
 
 ## *Emergent electrostatics in planar XY spin models* [\[Faulkner2025\]](https://doi.org/10.1088/1367-2630/add7fd)
