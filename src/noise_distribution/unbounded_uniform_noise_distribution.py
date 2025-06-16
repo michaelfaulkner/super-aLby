@@ -1,18 +1,18 @@
-"""Module for the UniformNoiseDistribution class."""
+"""Module for the UnboundedUniformNoiseDistribution class."""
 from .continuous_noise_distribution import ContinuousNoiseDistribution
 from model_settings import dimensionality_of_particle_space
 import numpy as np
 
 
-class UniformNoiseDistribution(ContinuousNoiseDistribution):
+class UnboundedUniformNoiseDistribution(ContinuousNoiseDistribution):
     """
-    This class is used to generate a proposed discrete change in position for each active particle using a uniform
-    noise distribution. Unbounded position space.
+    This class provides functionality for noise distributions that propose discrete changes in the position of the
+        active particle (on an unbounded Euclidean particle space) using a uniform noise distribution.
     """
 
     def __init__(self, initial_width_of_noise_distribution: float = 0.1):
         """
-        The constructor of the UniformNoiseDistribution class.
+        The constructor of the UnboundedUniformNoiseDistribution class.
 
         Parameters
         ----------
