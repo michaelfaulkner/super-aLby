@@ -90,9 +90,8 @@ class ReversibleMediator(Mediator, metaclass=ABCMeta):
             if markov_chain_index == self._number_of_equilibration_iterations:
                 self._number_of_accepted_trajectories = 0
             self._generate_single_observation(markov_chain_index, temperature)
-            if (self._proposal_dynamics_adaptor_is_on and
-                    markov_chain_index < self._number_of_equilibration_iterations and
-                    (markov_chain_index) % 100 == 0):
+            if (self._proposal_dynamics_adaptor_is_on and markov_chain_index < self._number_of_equilibration_iterations
+                    and markov_chain_index % 100 == 0):
                 self._proposal_dynamics_adaptor()
                 self._number_of_accepted_trajectories = 0
             super()._print_sample_progress(markov_chain_index)
