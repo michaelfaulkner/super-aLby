@@ -167,7 +167,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
         shortest_distance_to_next_factor_event, vetoing_index = \
             self._get_distance_to_next_kinetic_event_and_veto_index(positions, active_particle_index,
                                                                     movement_direction, worldline_neighbours)
-        #shortest_distance_to_next_factor_event = 1.0e10
+        # shortest_distance_to_next_factor_event = 1.0e10
         distance_to_next_potential_event = 1.0e10
         potential_veto_index = None
         initial_position = positions[active_particle_index].item()
@@ -178,19 +178,6 @@ class QuantumHardDiskPotential(WorldlinePotential):
                 epsilon = 1.0e-12
                 distance_to_next_particle = get_shortest_vectors_on_torus(neighbour_quantum_particle_position -
                                                                           initial_position) + epsilon
-                init_dist = distance_to_next_particle.copy()[0]
-                # print(f"active {active_particle_index}, initial: {initial_position},"
-                #        f"neighbour: {neighbour_quantum_particle_position}")
-                
-                
-                # if np.abs(distance_to_next_particle)[0] < 2.0 * self._disk_radius:
-                #     leftover = 2.0 * self._disk_radius - \
-                #         np.abs(distance_to_next_particle)[0]
-                #     raise Exception(f"Particles overlapped, active: {initial_position}, neighbour: {neighbour_quantum_particle_position}, dist: {np.abs(distance_to_next_particle)[0]}"
-                #                   f", leftover: {leftover}, active {active_particle_index}")
-                    
-
-
                 if distance_to_next_particle < 0.0:  # we need to move in direction +1
                     distance_to_next_particle += size_of_particle_space
 
@@ -198,19 +185,15 @@ class QuantumHardDiskPotential(WorldlinePotential):
                 if distance_to_next_particle < 0.0:
                     raise Exception(f"Negative distance to next particle, {distance_to_next_particle}")
 
-                # print(f"potential: separation: {distance_to_next_particle[0]}")
-
                 if distance_to_next_particle < distance_to_next_potential_event:
                     distance_to_next_potential_event = distance_to_next_particle
                     potential_veto_index = quantum_particle_neighbour
                     
         if distance_to_next_potential_event < shortest_distance_to_next_factor_event:
-            # print(f"dist: {distance_to_next_potential_event}, potential event")
             vetoing_index = potential_veto_index
             shortest_distance_to_next_factor_event = distance_to_next_potential_event
         else:
             pass
-            # print(f"dist: {shortest_distance_to_next_factor_event}, kinetic event")
 
         return shortest_distance_to_next_factor_event, vetoing_index
 

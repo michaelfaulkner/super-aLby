@@ -70,6 +70,10 @@ def main(config_file_string):
         if not (len(samplers) == 1 and samplers[0] == "pressure_sampler"):
             raise ValueError("Hard-disk model reference data only available for PressureSampler. Please give only this "
                              "value for samplers in the Mediator section.")
+    elif potential == "quantum_hard_disk_potential":
+        if not (len(samplers) == 1 and samplers[0] == "position_sampler"):
+            raise ValueError("Quantum hard-disk model reference data only available for PositionSampler. Please give" \
+            "only this value for samplers in the Mediator section.")
     else:
         raise ValueError("Reference data not provided for this potential.")
 
@@ -234,6 +238,10 @@ def main(config_file_string):
     elif "quantum_harmonic_oscillator_potential" in potential:
         reference_sample = np.load(
         "permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_reference_sample.npy").flatten()
+    elif "quantum_hard_disk_potential" in potential:
+        reference_sample = np.load(
+        "output/convergence_tests/quantum_hard_disk_potential/metropolis/" \
+        "temperature_00_checkpoint_00_sample_of_positions.npy").flatten()
 
     if "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
         disk_radius = 1.0
