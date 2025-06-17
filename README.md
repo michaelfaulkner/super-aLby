@@ -95,8 +95,8 @@ interact with each other.  In addition, some [`potential`](src/potential) classe
 multi-particle models defined on the two- or three-dimensional torus.  Below we detail how the configuration file 
 chooses the classes that will be used.
 
-Within each configuration file, the ```[ModelSettings]``` section specifies both the *NVT* physical parameters of the 
-simulation and the range of the initial particle positions:
+Within each configuration file, the ```[ModelSettings]``` section specifies some global model parameters and the 
+possible initial particle positions:
 
 - `number_of_particles` is an `int` that represents the number of particles.  For any model that is not a Wick-rotated 
 quantum action, this should be set in the ```[ModelSettings]``` section.  Unless otherwise stated, we assume this type 
@@ -134,32 +134,72 @@ provided for all properties that do not have a default value; for each property 
 property-value pair may be given. Properties and values should be given in snake_case; sections should be given in 
 CamelCase. If a value corresponds to the instance of another class, then a corresponding section is required. 
 
-In our example `[Run]` section above, the first of the remaining sections might therefore be of the form
+Building on our example `[Run]` section above, configuration files might be of the form
 
 ```INI
+[Run]
+mediator = some_mediator
+number_of_jobs = 1
+max_number_of_cpus = 1
+
 [SomeMediator]
 potential = some_potential
 sampler = some_sampler
 kinetic_energy = some_kinetic_energy
 ...
+
+[SomePotential]
+...
+
+[SomeSampler]
+...
+
+[SomeKineticEnergy]
+...
+
+[ModelSettings]
+number_of_particles = 2
+size_of_particle_space = None
+range_of_initial_particle_positions = 1.0
 ```
 
 or of the form
 
 ```INI
+[Run]
+mediator = some_mediator
+number_of_jobs = 1
+max_number_of_cpus = 1
+
 [SomeMediator]
 potential = some_potential
 sampler = some_sampler
 noise_distribution = some_noise_distribution
 ...
+
+[SomePotential]
+...
+
+[SomeSampler]
+...
+
+[SomeNoiseDistribution]
+...
+
+[ModelSettings]
+number_of_particles = 2
+size_of_particle_space = None
+range_of_initial_particle_positions = 1.0
 ```
 
-where the ellipsis accounts for further pairs of properties and values that do not correspond to other classes. The 
-first / second example therefore also requires the sections `[SomePotential]`, `[SomeSampler]` and `[SomeKineticEnergy]`
-/ `[SomeNoiseDistribution]`. The first example must correspond to some form of Hamiltonian Monte Carlo simulation (as 
-it selects a [`kinetic_energy`](src/kinetic_energy)) while the second must correspond to a Metropolis Monte Carlo simulation (as it 
-selects a [`noise_distribution`](src/noise_distribution)). Note that additional examples are also possible (e.g. one may choose to 
-construct an event-chain Monte Carlo simulation).
+where the ellipsis accounts for further property-value pairs that do not correspond to other classes. The 
+first / second example requires the sections `[SomePotential]`, `[SomeSampler]` and `[SomeKineticEnergy]` 
+/ `[SomeNoiseDistribution]` because the `[SomeMediator]` section provides [`potential`](src/potential),
+[`sampler`](src/sampler) and [`kinetic_energy`](src/kinetic_energy) / [`noise_distribution`](src/noise_distribution) property-value pairs.
+The first example must correspond to some form of Hamiltonian Monte Carlo simulation (as it selects a 
+[`kinetic_energy`](src/kinetic_energy)) while the second must correspond to a Metropolis Monte Carlo simulation (as it selects a 
+[`noise_distribution`](src/noise_distribution)). Note that additional examples are also possible (e.g. one may choose to construct an 
+event-chain Monte Carlo simulation).
 
 Some example configuration files are located in the [`src/config_files`](src/config_files) directory. To get a feel for the 
 application, run `python run.py 
