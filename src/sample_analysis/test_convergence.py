@@ -1,5 +1,5 @@
 from configparser import NoOptionError
-from markov_chain_diagnostics import get_cumulative_distribution, get_sample_mean_and_error
+from markov_chain_diagnostics import get_cumulative_distribution, get_sample_mean_and_error, get_effective_sample_size
 import importlib
 import matplotlib
 import matplotlib.pyplot as plt
@@ -258,6 +258,7 @@ def main(config_file_string):
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
         sample_cdf = get_cumulative_distribution(sample)
+        effective_sample_size = get_effective_sample_size(sample)
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
         plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label=f'super-aLby data N_eff={effective_sample_size:.2f}')
