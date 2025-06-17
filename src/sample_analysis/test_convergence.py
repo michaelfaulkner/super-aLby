@@ -261,7 +261,7 @@ def main(config_file_string):
         sample_cdf = get_cumulative_distribution(sample)
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
-        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-aLby data')
+        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label=f'super-aLby data N_eff={effective_sample_size:.2f}')
 
         plt.xlabel(r"$x$", fontsize=15, labelpad=10)
         plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)

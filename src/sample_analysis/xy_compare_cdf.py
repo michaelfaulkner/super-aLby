@@ -15,7 +15,7 @@ helper_methods = importlib.import_module("helper_methods")
 
 plt.style.use('ggplot')
 
-def main(config_file_string):
+def main(config_file_string, reference_sample_path):
     """
     Test convergence of XY model simulation by comparing CDF with reference data.
     
@@ -29,7 +29,7 @@ def main(config_file_string):
     (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
      _, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
 
-    reference_cdf = np.load('permanent_data/reference_data/xy_8x8_T=0.8_magnetisation_norm.npy')
+    reference_sample = np.load(reference_sample_path).flatten()
     
     directory_path = sample_directories[0]
     file_path = os.path.join(directory_path, 'temperature_00_checkpoint_*_sample_of_magnetisation_norm.npy') # Creates wildcard condition
@@ -43,18 +43,19 @@ def main(config_file_string):
     sample = np.concatenate(sample)
 
     sample_cdf = get_cumulative_distribution(sample)
+    reference_cdf = get_cumulative_distribution(reference_sample)
     
     eff_sample_size = get_effective_sample_size(sample)
-    print(eff_sample_size)
+    reference_eff_sample_size = get_effective_sample_size(reference_sample)
 
     fig, ax = plt.subplots(figsize=(10, 8))
-    ax.plot(sample_cdf[0], sample_cdf[1], color='k', linestyle='-', alpha=0.8, label='Simulation')
-    ax.plot(reference_cdf[0], reference_cdf[1], color='firebrick', linestyle='--', alpha=0.8, label='Reference')
+    ax.plot(sample_cdf[0], sample_cdf[1], color='k', linestyle='-', alpha=0.8, label=f'Simulation\nN_eff={eff_sample_size:.2f}')
+    ax.plot(reference_cdf[0], reference_cdf[1], color='firebrick', linestyle='--', alpha=0.8, label=f'Reference\nN_eff={reference_eff_sample_size:.2f}')
     ax.legend(frameon=True, facecolor='white', edgecolor='none', fontsize=10, loc='lower right')
     ax.set_title(file_path, fontsize=10)
     plt.savefig(os.path.join(directory_path, f'compare_cdf_{just_file_path}.png'))
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2])
 
 
