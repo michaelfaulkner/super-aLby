@@ -70,17 +70,17 @@ class DiffusiveMediator(ReversibleMediator, metaclass=ABCMeta):
                          number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations,
                          proposal_dynamics_adaptor_is_on, **kwargs)
 
-    def _reset_arrays_and_counters(self, temperature):
+    def _reset_arrays_and_counters(self, temperature, restart_flag):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
-        super()._reset_arrays_and_counters(temperature)
-        for sampler_index, sampler in enumerate(self._samplers):
-            self._samples[sampler_index][0, :] = sampler.get_observation(None, self._positions, self._potential)
+        super()._reset_arrays_and_counters(temperature, restart_flag)
+        if not restart_flag:
+            self._get_initial_sample()
 
     def _generate_single_observation(self, markov_chain_step_index, temperature):
         """Advances the Markov chain by one step and adds a single observation to the sample."""
         self._advance_markov_chain(markov_chain_step_index, temperature)
         for sampler_index, sampler in enumerate(self._samplers):
-            self._samples[sampler_index][markov_chain_step_index + 1, :] = sampler.get_observation(
+            self._samples[sampler_index][markov_chain_step_index, :] = sampler.get_observation(
                 None, self._positions, self._potential)
 
     @abstractmethod

@@ -132,18 +132,16 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
         self._target_acceptance_rate = 0.85  # TODO add functionality so the user can set self._target_acceptance_rate
         """The following objects are set in self._reset_arrays_and_counters()"""
-        self._momenta = None
         self._current_potential = None
         self._number_of_unstable_trajectories = None
 
-    def _reset_arrays_and_counters(self, temperature):
+    def _reset_arrays_and_counters(self, temperature, restart_flag):
         """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
-        super()._reset_arrays_and_counters(temperature)
+        super()._reset_arrays_and_counters(temperature, restart_flag)
         self._momenta = self._kinetic_energy.get_momentum_observations(temperature)
         self._current_potential = self._potential.get_value(self._positions)
-        for sampler_index, sampler in enumerate(self._samplers):
-            self._samples[sampler_index][0, :] = sampler.get_observation(self._momenta, self._positions,
-                                                                         self._potential)
+        if not restart_flag:
+            self._get_initial_sample()
         self._number_of_unstable_trajectories = 0
 
     def _generate_single_observation(self, markov_chain_step_index, temperature):
@@ -163,7 +161,7 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
             self._update_system_state(candidate_momenta, candidate_positions, candidate_potential)
         self._momenta = self._kinetic_energy.get_momentum_observations(temperature)
         for sampler_index, sampler in enumerate(self._samplers):
-            self._samples[sampler_index][markov_chain_step_index + 1, :] = sampler.get_observation(
+            self._samples[sampler_index][markov_chain_step_index, :] = sampler.get_observation(
                 self._momenta, self._positions, self._potential)
 
     @abstractmethod

@@ -1,15 +1,18 @@
-"""Module for the abstract DiscreteNoiseDistribution class."""
+"""Module for the UnboundedDiscreteNoiseDistribution class."""
 from .noise_distribution import NoiseDistribution
 from model_settings import dimensionality_of_particle_space
 import numpy as np
 
 
-class DiscreteNoiseDistribution(NoiseDistribution):
-    r"""Class for generating a change of \pm 1 in each Cartesian component of the active-particle position."""
+class UnboundedDiscreteNoiseDistribution(NoiseDistribution):
+    r"""
+    This class provides functionality for noise distributions that propose a change of \pm 1 in each Cartesian
+        component of the active-particle position on a discrete unbounded particle space.
+    """
 
     def __init__(self, initial_width_of_noise_distribution=None):
         """
-        The constructor of the DiscreteNoiseDistribution class.
+        The constructor of the UnboundedDiscreteNoiseDistribution class.
 
         Parameters
         ----------
