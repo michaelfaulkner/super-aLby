@@ -96,13 +96,21 @@ multi-particle models defined on the two- or three-dimensional torus.  Below we 
 chooses the classes that will be used.
 
 Within each configuration file, the ```[ModelSettings]``` section specifies both the *NVT* physical parameters of the 
-simulation and the range of the initial particle positions. `number_of_particles` is an `int` that represents the 
-number of particles.  `size_of_particle_space` represents the size and dimensions of the spaces on which each particle 
-exists and is either `None`, a `float` or a Python `list` of `None` or `float` values (`None` corresponds to the whole 
-real line). `range_of_initial_particle_positions` represents the range of the initial position of each particle and is 
-either a `float`, a one-dimensional Python `list` of length `len(range_of_initial_particle_positions)` and composed of 
-`float` values, or a two-dimensional Python `list` of size `(len(range_of_initial_particle_positions), 2)` and composed 
-of `float` values. The above example represents a two-particle system in which each particle exists on the entire real 
+simulation and the range of the initial particle positions:
+
+- `number_of_particles` is an `int` that represents the number of particles.  This appears for all models that are not 
+Wick-rotated quantum actions.  For Wick-rotated quantum actions, `number_of_quantum_particles` and 
+`number_of_timeslices` appear instead (both of which are `int` types).  The function `get_basic_config_data()` in 
+[`helper_methods.py`](src/helper_methods.py) then sets 
+`number_of_particles = number_of_quantum_particles * number_of_timeslices`. 
+- `size_of_particle_space` represents the size and dimensions of the spaces on which each particle exists.  It is 
+either `None`, a `float` or a Python `list` of `None` or `float` values (`None` corresponds to the whole real line).
+- `range_of_initial_particle_positions` represents the range of the initial position of each particle.  It is either a 
+`float`, a one-dimensional Python `list` of length `len(range_of_initial_particle_positions)` and composed of `float` 
+values, or a two-dimensional Python `list` of size `(len(range_of_initial_particle_positions), 2)` and composed 
+of `float` values.
+
+The above example represents a two-particle system in which each particle exists on the entire real 
 line and has initial position *1.0*, while
 
 ```INI
