@@ -71,7 +71,7 @@ def main(config_file_string):
             raise ValueError("Hard-disk model reference data only available for PressureSampler. Please give only this "
                              "value for samplers in the Mediator section.")
     elif potential == "quantum_hard_disk_potential":
-        if not (len(samplers) == 1 and samplers[0] == "position_sampler"):
+        if not (len(samplers) == 1 and samplers[0] == "standard_position_sampler"):
             raise ValueError("Quantum hard-disk model reference data only available for PositionSampler. Please give" \
             "only this value for samplers in the Mediator section.")
     else:

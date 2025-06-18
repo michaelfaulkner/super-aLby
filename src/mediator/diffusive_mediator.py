@@ -76,7 +76,7 @@ class DiffusiveMediator(ReversibleMediator, metaclass=ABCMeta):
         if not restart_flag:
             self._get_initial_sample()
 
-    def _generate_single_observation(self, markov_chain_step_index, temperature, restart_flag):
+    def _generate_single_observation(self, markov_chain_step_index, temperature):
         """Advances the Markov chain by one step and adds a single observation to the sample."""
         self._advance_markov_chain(markov_chain_step_index, temperature)
         for sampler_index, sampler in enumerate(self._samplers):

@@ -54,16 +54,18 @@ class QuantumHardDiskPotential(WorldlinePotential):
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
 
-        # distance_between_particles = size_of_particle_space / number_of_quantum_particles
+        
         # positions = np.zeros((number_of_particles, 1))
         # for particle_index in range(number_of_particles):
         #     quantum_particle_index = particle_index % number_of_quantum_particles
         #     positions[particle_index] = get_shortest_vectors_on_torus(
         #         quantum_particle_index * distance_between_particles)
         positions = np.zeros((number_of_particles, 1))
+        distance_between_particles = size_of_particle_space / number_of_quantum_particles - 2 * self._disk_radius
         for particle_index in range(number_of_particles):
             quantum_particle_index = particle_index % number_of_quantum_particles
-            positions[particle_index] = get_shortest_vectors_on_torus(quantum_particle_index * 2.0 * self._disk_radius)
+            positions[particle_index] = get_shortest_vectors_on_torus(2 * quantum_particle_index * self._disk_radius +
+                                                                      quantum_particle_index * distance_between_particles)
             # self._disk_radius + quantum_particle_index * 0.5 * self._disk_radius
         # print(positions)
         return positions
