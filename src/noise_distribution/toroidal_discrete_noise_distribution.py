@@ -1,16 +1,19 @@
-"""Module for the SignFlipNoiseDistribution class."""
+"""Module for the ToroidalDiscreteNoiseDistribution class."""
 from .noise_distribution import NoiseDistribution
+from model_settings import dimensionality_of_particle_space
+import numpy as np
+from base.vectors import get_shortest_vectors_on_torus
 
 
-class SignFlipNoiseDistribution(NoiseDistribution):
+class ToroidalDiscreteNoiseDistribution(NoiseDistribution):
     r"""
-    This class provides functionality for noise distributions that flip the sign of each Cartesian component of the
-        active-particle position.
+    This class provides functionality for noise distributions that propose a change of \pm 1 in each Cartesian
+        component of the active-particle position on a discrete toroidal particle space.
     """
 
     def __init__(self, initial_width_of_noise_distribution=None):
         """
-        The constructor of the SignFlipNoiseDistribution class.
+        The constructor of the ToroidalDiscreteNoiseDistribution class.
 
         Parameters
         ----------
@@ -37,4 +40,5 @@ class SignFlipNoiseDistribution(NoiseDistribution):
             A one-dimensional numpy array of length dimensionality_of_particle_space; each element is an int and
             represents one Cartesian component of the proposed position of the active particle.
         """
-        return - positions[active_particle_index]
+        return get_shortest_vectors_on_torus(positions[active_particle_index] +
+                                             np.random.choice([-1, 1], size=dimensionality_of_particle_space))

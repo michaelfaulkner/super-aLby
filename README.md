@@ -16,7 +16,7 @@ To install super-aLby, clone this repository.
 super-aLby was written using Python 3.8 but is likely to support any Python version >= 3.6 (though we need to check 
 this). It has been tested with CPython.
 
-super-aLby depends on [`numpy`](https://numpy.org). Some of the sample-analysis code (i.e., scripts contained in the 
+super-aLby depends on [`numpy`](https://numpy.org). Some of the sample-analysis code (i.e. scripts contained in the 
 [`sample_analysis`](src/sample_analysis) directory) also depends on [`matplotlib`](https://matplotlib.org).
 
 ## Implementation
@@ -59,8 +59,11 @@ size_of_particle_space = None
 range_of_initial_particle_positions = 1.0
 ```
 
-`some_mediator` corresponds the mediator used (for this particular simulation) in the `run.py` file. The mediator 
-serves as the central hub of the application and also hosts the Markov process. We provide multiple mediators:
+### The mediator
+
+In the above `[Run]` section, `some_mediator` corresponds to the mediator used (for this particular simulation) in the `run.py` file. The mediator 
+serves as the central hub of the application and also hosts the Markov process. We provide multiple mediators in the 
+[`mediator`](src/mediator) package:
 
 1. [`event_chain_mediator`](src/mediator/event_chain_mediator.py) implements event-chain Monte Carlo.
 2. [`metropolis_mediator`](src/mediator/metropolis_mediator.py) implements Metropolis Monte Carlo.
@@ -75,35 +78,48 @@ at each Metropolis step, hence _lazy_)).
 
 (Note that any reference to a torus is to the [flat torus](https://en.wikipedia.org/wiki/Torus#Flat_torus).)
 
-`number_of_jobs` and `max_number_of_cpus` are `int` values and should also specified in the `[Run]` section. They 
-correspond (respectively) to the number of independent realisations of the same process (i.e., simulation) and the 
-maximum number of CPUs that should be simultaneously used for each of these realisations (to avoid overloading personal 
-machines). 
-
 Additional mediators are present in the [`mediator`](src/mediator) package.  Each is an abstract parent class from 
 which one of the above mediators inherits.  We use this same inheritance structure in the following packages:
 
-1. [`kinetic_energy`](src/kinetic_energy) which provides functionality for various kinetic energies used in 
-Hamiltonian Monte Carlo.
-2. [`noise_distribution`](src/noise_distribution) which provides functionality for various noise distributions used in 
-Metropolis Monte Carlo.
+1. [`kinetic_energy`](src/kinetic_energy) which provides functionality for various kinetic energies used in Hamiltonian Monte Carlo.
+2. [`noise_distribution`](src/noise_distribution) which provides functionality for various noise distributions used in Metropolis Monte 
+Carlo.
 3. [`potential`](src/potential) which provides functionality for the potential (energy) function that defines the model.
 4. [`sampler`](src/sampler) which provides functionality for sampling various system observables.
 
 The mediator interacts with (instances of) classes contained in each of these packages, such that the classes never 
 interact with each other.  In addition, some [`potential`](src/potential) classes instantiate classes contained in the 
-[`linked_lists`](src/linked_lists) package.  This provides linked-list functionality for cell-based evaluation of 
-certain multi-particle models defined on the two- or three-dimensional torus.  Below we detail how the configuration 
-file chooses the classes that will be used.
+[`linked_lists`](src/linked_lists) package.  This provides linked-list functionality for cell-based evaluation of certain 
+multi-particle models defined on the two- or three-dimensional torus.  Below we detail how the configuration file 
+chooses the classes that will be used.
 
-Within each configuration file, the ```[ModelSettings]``` section specifies both the *NVT* physical parameters of the 
-simulation and the range of the initial particle positions. `number_of_particles` is an `int` that represents number of 
-particles.  `size_of_particle_space` represents the size and dimensions of the spaces on which each particle exits and 
-is either `None`, a `float` or a Python `list` of `None` or `float` values (`None` corresponds to the whole real line). 
-`range_of_initial_particle_positions` represents the range of the initial position of each particle and is either a 
-`float`, a one-dimensional Python `list` of length `len(range_of_initial_particle_positions)` and composed of `float` 
-values, or a two-dimensional Python `list` of size `(len(range_of_initial_particle_positions), 2)` and composed of 
-`float` values. The above example represents a two-particle system in which each particle exists on the entire real 
+### Rest of [Run] section
+
+`number_of_jobs` and `max_number_of_cpus` are `int` values and should also be specified in the `[Run]` section. They 
+correspond, respectively, to the number of independent realisations of the same process (i.e. simulation) and the 
+maximum number of CPUs that should be simultaneously used for each of these realisations (to avoid overloading personal 
+machines). 
+
+### Model settings
+
+The ```[ModelSettings]``` section specifies some global model parameters and the possible initial particle positions:
+
+- `number_of_particles` is an `int` that represents the number of particles.  For any model that is not a Wick-rotated 
+quantum action, this should be set in the ```[ModelSettings]``` section.  Unless otherwise stated, we assume this type 
+of model throughout this README.   
+- For Wick-rotated quantum actions, `number_of_quantum_particles` and `number_of_timeslices` should be set in the 
+```[ModelSettings]``` section.  Both are `int` types and the function `get_basic_config_data()` in 
+[`helper_methods.py`](src/helper_methods.py) sets 
+`number_of_particles = number_of_quantum_particles * number_of_timeslices`. 
+- `size_of_particle_space` represents the size and dimensions of the spaces on which each particle exists (or each 
+quantum particle for Wick-rotated quantum actions).  It is either `None`, a `float` or a Python `list` of `None` or 
+`float` values (`None` corresponds to the whole real line).
+- `range_of_initial_particle_positions` represents the range of the initial position of each particle (or each quantum 
+particle for Wick-rotated quantum actions).  It is either a `float`, a one-dimensional Python `list` of length 
+`len(range_of_initial_particle_positions)` and composed of `float` values, or a two-dimensional Python `list` of size 
+`(len(range_of_initial_particle_positions), 2)` and composed of `float` values.
+
+The above example represents a two-particle system in which each particle exists on the entire real 
 line and has initial position *1.0*, while
 
 ```INI
@@ -116,47 +132,91 @@ range_of_initial_particle_positions = [[-0.5, 0.5], [-0.5, 0.5]]
 represents a four-particle system in which each particle exists on the two-dimensional torus (of volume *1.0 x 1.0*) 
 and takes an initial position anywhere on that torus.
 
-The remaining sections of the configuration file correspond to the different classes chosen for the simulation (i.e., 
-the mediator and each of the classes with which it interacts - and possibly also a [`linked_lists`](src/linked_lists) 
-class). Each section contains pairs of properties and values. Each property corresponds to the name of an argument in 
-the `__init__` method of the corresponding class, and its value provides the argument. Property-value pairs must be 
-provided for all properties that do not have a default value; for each property that does have a default value, a 
-property-value pair may be given. Properties and values should be given in snake_case; sections should be given in 
-CamelCase. If a value corresponds to the instance of another class, then a corresponding section is required. 
+### Remaining sections
 
-In our example `[Run]` section above, the first of the remaining sections might therefore be of the form
+The remaining sections of the configuration file correspond to the different classes chosen for the simulation (i.e. 
+the mediator and each of the classes with which it interacts). Each section contains pairs of properties and values. 
+Each property corresponds to the name of an argument in the `__init__()` method of the corresponding class, and its 
+value provides the argument. Property-value pairs must be provided for all properties that do not have a default value; 
+for each property that does have a default value, a property-value pair may be given. Properties and values should be 
+given in snake_case; sections should be given in CamelCase. If a value corresponds to the instance of another class, 
+then a corresponding section is required. 
+
+### Examples
+
+Building on our example `[Run]` section above, configuration files might be of the form
 
 ```INI
+[Run]
+mediator = some_mediator
+number_of_jobs = 1
+max_number_of_cpus = 1
+
 [SomeMediator]
 potential = some_potential
 sampler = some_sampler
 kinetic_energy = some_kinetic_energy
 ...
+
+[SomePotential]
+...
+
+[SomeSampler]
+...
+
+[SomeKineticEnergy]
+...
+
+[ModelSettings]
+number_of_particles = 2
+size_of_particle_space = None
+range_of_initial_particle_positions = 1.0
 ```
 
 or of the form
 
 ```INI
+[Run]
+mediator = some_mediator
+number_of_jobs = 1
+max_number_of_cpus = 1
+
 [SomeMediator]
 potential = some_potential
 sampler = some_sampler
 noise_distribution = some_noise_distribution
 ...
+
+[SomePotential]
+...
+
+[SomeSampler]
+...
+
+[SomeNoiseDistribution]
+...
+
+[ModelSettings]
+number_of_particles = 2
+size_of_particle_space = None
+range_of_initial_particle_positions = 1.0
 ```
 
-where the ellipsis accounts for further pairs of properties and values that do not correspond to other classes. The 
-first / second example therefore also requires the sections `[SomePotential]`, `[SomeSampler]` and `[SomeKineticEnergy]`
-/ `[SomeNoiseDistribution]`. The first / second example must correspond to some form of Hamiltonian Monte Carlo 
-simulation (as it selects a [`kinetic_energy`](src/kinetic_energy)) while the second must correspond to a Metropolis 
-Monte Carlo simulation (as it selects a [`noise_distribution`](src/noise_distribution)). Note that additional examples 
-are also possible (e.g., one may choose to construct an event-chain Monte Carlo simulation).
+where the ellipsis accounts for further property-value pairs that do not correspond to other classes. The 
+first / second example requires the sections `[SomePotential]`, `[SomeSampler]` and `[SomeKineticEnergy]` 
+/ `[SomeNoiseDistribution]` because the `[SomeMediator]` section provides [`potential`](src/potential),
+[`sampler`](src/sampler) and [`kinetic_energy`](src/kinetic_energy) / [`noise_distribution`](src/noise_distribution) property-value pairs.
+The first example must correspond to some form of Hamiltonian Monte Carlo simulation (as it selects a 
+[`kinetic_energy`](src/kinetic_energy)) while the second must correspond to a Metropolis Monte Carlo simulation (as it selects a 
+[`noise_distribution`](src/noise_distribution)). Note that additional examples are also possible (e.g. one may choose to construct an 
+event-chain Monte Carlo simulation).
 
-Some example configuration files are located in the [`src/config_files`](src/config_files) directory. To get a feel for 
-the application, run `python run.py 
+Some example configuration files are located in the [`src/config_files`](src/config_files) directory. To get a feel for the 
+application, run `python run.py 
 config_files/convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini`, 
 before running `python sample_analysis/test_convergence.py 
-config_files/convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini` 
-once the simulation has finished. 
+config_files/convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini` once 
+the simulation has finished. 
 
 
 ## *Emergent electrostatics in planar XY spin models* [\[Faulkner2025\]](https://doi.org/10.1088/1367-2630/add7fd)
