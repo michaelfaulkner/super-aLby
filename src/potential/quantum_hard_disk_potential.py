@@ -53,21 +53,17 @@ class QuantumHardDiskPotential(WorldlinePotential):
             particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
-
-        
-        # positions = np.zeros((number_of_particles, 1))
-        # for particle_index in range(number_of_particles):
-        #     quantum_particle_index = particle_index % number_of_quantum_particles
-        #     positions[particle_index] = get_shortest_vectors_on_torus(
-        #         quantum_particle_index * distance_between_particles)
         positions = np.zeros((number_of_particles, 1))
-        distance_between_particles = size_of_particle_space / number_of_quantum_particles - 2 * self._disk_radius
+        distance_between_particles = 0.1 * self._disk_radius
+        if distance_between_particles * number_of_quantum_particles + \
+            number_of_quantum_particles * 2 * self._disk_radius >= size_of_particle_space:
+            raise ConfigurationError(f"Cannot fit {number_of_quantum_particles} of radius {self._disk_radius} on "
+                                     f"particle space of size {size_of_particle_space}. N.B. particles may not touch in"
+                                     "initial configuration.")
         for particle_index in range(number_of_particles):
             quantum_particle_index = particle_index % number_of_quantum_particles
             positions[particle_index] = get_shortest_vectors_on_torus(2 * quantum_particle_index * self._disk_radius +
                                                                       quantum_particle_index * distance_between_particles)
-            # self._disk_radius + quantum_particle_index * 0.5 * self._disk_radius
-        # print(positions)
         return positions
 
     @staticmethod
@@ -172,14 +168,13 @@ class QuantumHardDiskPotential(WorldlinePotential):
         # shortest_distance_to_next_factor_event = 1.0e10
         distance_to_next_potential_event = 1.0e10
         potential_veto_index = None
-        initial_position = positions[active_particle_index].item()
+        initial_position = positions[active_particle_index][0]
 
         for quantum_particle_neighbour in quantum_particle_neighbours:
             if quantum_particle_neighbour != active_particle_index:
-                neighbour_quantum_particle_position = positions[quantum_particle_neighbour].item()
+                neighbour_quantum_particle_position = positions[quantum_particle_neighbour][0]
                 epsilon = 1.0e-12
-                distance_to_next_particle = get_shortest_vectors_on_torus(neighbour_quantum_particle_position -
-                                                                          initial_position) + epsilon
+                distance_to_next_particle = neighbour_quantum_particle_position - initial_position + epsilon
                 if distance_to_next_particle < 0.0:  # we need to move in direction +1
                     distance_to_next_particle += size_of_particle_space
 
