@@ -75,14 +75,13 @@ def get_autocorrelation(sample):
     if len(np.atleast_2d(sample)) > 1:
         raise Exception("Error: the sample passed to markov_chain_diagnostics.get_autocorrelation() must be a sample "
                         "of a scalar quantity.")
-    mean_zero_sample = sample - np.mean(sample)
-    full_acf = np.correlate(mean_zero_sample, mean_zero_sample, mode='full')
-    """np.correlate() is symmetric about t = 0 when mode='full' - full_acf[full_acf.size // 2:] returns t >= 0 values"""
-    acf = full_acf[full_acf.size // 2:]
-    if acf[0] < 1.0e-12:
-        return acf 
-    acf /= acf[0]  # Normalise
-    return acf
+    n = len(sample)
+    sample = sample - np.mean(sample)
+    f = np.fft.fft(np.hstack([sample, np.zeros(n)]))
+    aco = np.fft.ifft(f * np.conj(f))[:n].real
+    aco /= np.arange(n, 0, -1)
+    aco /= aco[0]
+    return aco
 
 
 def get_iact_and_acf(sample, cutoff=math.e ** (-2)):
@@ -95,7 +94,7 @@ def get_iact_and_acf(sample, cutoff=math.e ** (-2)):
     sample : numpy.ndarray
         Sample to be analysed.
     cutoff : float
-        Cutoff value for the autocorrelation function. The default value is e^(-4).
+        Cutoff value for the autocorrelation function. The default value is e^(-2).
 
     Returns
     -------
@@ -127,3 +126,9 @@ def get_effective_sample_size(sample):
     
     iact = get_iact_and_acf(sample, cutoff=math.e ** (-2))[0]
     return len(sample) / iact
+
+
+def get_ks_test(sample, reference_sample):
+    from scipy.stats import ks_2samp
+    ks_test = ks_2samp(sample, reference_sample)
+    return ks_test.statistic, ks_test.pvalue

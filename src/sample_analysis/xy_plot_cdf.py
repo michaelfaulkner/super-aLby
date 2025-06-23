@@ -48,7 +48,10 @@ def main(config_file_string):
     ax.plot(sample_cdf[0], sample_cdf[1], color='k', linestyle='-', alpha=0.8, label=f'Simulation\nN_eff={eff_sample_size:.2f}')
     ax.legend(frameon=True, facecolor='white', edgecolor='none', fontsize=10, loc='lower right')
     ax.set_title(file_path, fontsize=10)
-    plt.savefig(os.path.join(directory_path, f'compare_cdf_{just_file_path}.png'))
+    file_path = os.path.join(directory_path, f'compare_cdf_{just_file_path}.png')
+    plt.savefig(file_path)
+
+    print(f'CDF plot saved {file_path}.')
 
 if __name__ == '__main__':
     main(sys.argv[1])

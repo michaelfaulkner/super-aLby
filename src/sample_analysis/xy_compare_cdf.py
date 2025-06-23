@@ -5,7 +5,7 @@ import glob
 import importlib
 import numpy as np
 import matplotlib.pyplot as plt
-from markov_chain_diagnostics import get_cumulative_distribution, get_effective_sample_size
+from markov_chain_diagnostics import get_cumulative_distribution, get_effective_sample_size, get_ks_test
 
 this_directory = os.path.dirname(os.path.abspath(__file__))
 src_directory = os.path.abspath(this_directory + "/../")
@@ -32,9 +32,9 @@ def main(config_file_string, reference_sample_path):
     reference_sample = np.load(reference_sample_path).flatten()
     
     directory_path = sample_directories[0]
-    file_path = os.path.join(directory_path, 'temperature_00_checkpoint_*_sample_of_magnetisation_norm.npy') # Creates wildcard condition
+    file_path = os.path.join(directory_path, 'temperature_00_checkpoint_*_sample_of_magnetisation_norm.npy') 
     just_file_path = file_path.split('/')[-1].split('.')[0]
-    sample_paths = glob.glob(file_path) # Finds all filepaths satisfying wildcard condition 
+    sample_paths = glob.glob(file_path)
     sample_paths = sorted(sample_paths, key=lambda fname: int(re.search(r"checkpoint_(\d{2})", fname).group(1)))
 
     sample = []
@@ -47,13 +47,19 @@ def main(config_file_string, reference_sample_path):
     
     eff_sample_size = get_effective_sample_size(sample)
     reference_eff_sample_size = get_effective_sample_size(reference_sample)
+    
+    ks_test_statistic, ks_test_pvalue = get_ks_test(sample, reference_sample)
 
     fig, ax = plt.subplots(figsize=(10, 8))
     ax.plot(sample_cdf[0], sample_cdf[1], color='k', linestyle='-', alpha=0.8, label=f'Simulation\nN_eff={eff_sample_size:.2f}')
-    ax.plot(reference_cdf[0], reference_cdf[1], color='firebrick', linestyle='--', alpha=0.8, label=f'Reference\nN_eff={reference_eff_sample_size:.2f}')
+    ax.plot(reference_cdf[0], reference_cdf[1], color='firebrick', linestyle='--', alpha=0.8, 
+            label=f'Reference\nN_eff={reference_eff_sample_size:.2f}\nKS statistic {ks_test_statistic:.2g}')
     ax.legend(frameon=True, facecolor='white', edgecolor='none', fontsize=10, loc='lower right')
     ax.set_title(file_path, fontsize=10)
-    plt.savefig(os.path.join(directory_path, f'compare_cdf_{just_file_path}.png'))
+    filename = os.path.join(directory_path, f'compare_cdf_{just_file_path}.png')
+    plt.savefig(filename)
+
+    print(f'Compare CDF plot saved to {filename}.')
 
 if __name__ == '__main__':
     main(sys.argv[1], sys.argv[2])

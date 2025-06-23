@@ -46,7 +46,10 @@ def main(config_file_string, temperature_index='00'):
     ax.axvline(x=number_of_equilibration_iterations, alpha=0.6, label='Burn-in', color='k', linestyle='--')
     ax.legend(frameon=True, facecolor='white', edgecolor='none', fontsize=10, loc='lower right')
     ax.set_title(file_path, fontsize=10)
-    plt.savefig(os.path.join(directory_path, f'{just_file_path}.png'))
+    filename = os.path.join(directory_path, f'{just_file_path}.png')
+    plt.savefig(filename)
+
+    print(f'Samples plot saved to {filename}')
 
 if __name__ == '__main__':
     main(sys.argv[1])
