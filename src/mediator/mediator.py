@@ -103,7 +103,7 @@ class Mediator(metaclass=ABCMeta):
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
         self._total_number_of_iterations = number_of_equilibration_iterations + number_of_observations
-        self._number_of_observations_between_screen_prints_for_clock = int(self._total_number_of_iterations / 10)
+        self._number_of_observations_between_screen_prints_for_clock = 1#int(self._total_number_of_iterations / 10)
         """The following objects are set in self._reset_arrays_and_counters()"""
         self._momenta = None
         self._positions = None

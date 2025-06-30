@@ -189,7 +189,9 @@ class QuantumHardDiskPotential(WorldlinePotential):
         if distance_to_next_potential_event < shortest_distance_to_next_factor_event:
             vetoing_index = potential_veto_index
             shortest_distance_to_next_factor_event = distance_to_next_potential_event
+            print("proposed collision")
         else:
+            print("proposed kinetic event")
             pass
 
         return shortest_distance_to_next_factor_event, vetoing_index
