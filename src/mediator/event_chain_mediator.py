@@ -72,7 +72,7 @@ class EventChainMediator(Mediator):
         if normalised_distance_between_measurements <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 as normalised_distance_between_measurements in "
                                      f"{self.__class__.__name__}.")
-        if "HardDiskPotential" in str(potential) and "QuantumHardDiskPotential" not in str(potential):
+        if "HardDiskPotential" in str(potential):
             self._distance_between_measurements = (normalised_distance_between_measurements * number_of_particles *
                                                    np.min(size_of_particle_space))
         else:
@@ -86,32 +86,21 @@ class EventChainMediator(Mediator):
     def _generate_sample_at_current_temperature(self, temperature_index, temperature, restart_flag):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         self._total_number_of_events = 0
-        #######################
-        #testing
-        ########################
-        positions_arr = np.zeros((10000000, number_of_particles, 1))
-        sample_info = np.zeros(10000000)
-        index = 0
-        ##########################
         super()._generate_sample_at_current_temperature(temperature_index, temperature, restart_flag)
         for markov_chain_index in range(self.number_of_markov_iterations):
             active_particle_index = np.random.randint(0, number_of_particles)
             movement_direction = self._potential.get_random_event_chain_velocity()
             distance_to_next_measurement = self._distance_between_measurements
             while True:
-                print(f"active, v: {active_particle_index}, {movement_direction}")
                 distance_to_next_event, vetoing_index = self._potential.get_distance_to_next_event_and_veto_index(
                     self._positions, active_particle_index, temperature, movement_direction)
                 if distance_to_next_measurement < distance_to_next_event:
                     self._potential.update_position(self._positions, distance_to_next_measurement,
                                                     active_particle_index, movement_direction)
                     self._potential.cell_boundary_event = False
-                    positions_arr[index, :,:] = self._positions.copy()
-                    sample_info[index] = 1
                     for sampler_index, sampler in enumerate(self._samplers):
                         self._samples[sampler_index][markov_chain_index, :] = sampler.get_observation(
                             None, self._positions, self._potential)
-                    print("not accepted - measurement event")
                     break
                 else:
                     distance_to_next_measurement -= distance_to_next_event
@@ -120,21 +109,8 @@ class EventChainMediator(Mediator):
                     active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                         self._positions, active_particle_index, movement_direction, vetoing_index)
                     self._total_number_of_events += 1
-                    print("accepted")
-                    positions_arr[index, :, :] = self._positions.copy()
-                    sample_info[index] = 0
-
-                index += 1
-                   
     
             super()._print_sample_progress(markov_chain_index)
-
-        positions_arr = np.trim_zeros(positions_arr, trim='b')
-        sample_info = sample_info[:len(positions_arr)]
-        np.save("output/convergence_tests/quantum_hard_disk_potential/event_chain/positions_testing.npy", positions_arr)
-        np.save("output/convergence_tests/quantum_hard_disk_potential/event_chain/sample_info.npy", sample_info)
-
-
 
 
     def _print_markov_chain_summary(self):

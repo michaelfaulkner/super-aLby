@@ -54,16 +54,16 @@ class QuantumHardDiskPotential(WorldlinePotential):
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
         positions = np.zeros((number_of_particles, 1))
-        distance_between_particles = 0.1 * self._disk_radius
-        if distance_between_particles * number_of_quantum_particles + \
-            number_of_quantum_particles * 2 * self._disk_radius >= size_of_particle_space:
+        distance_between_particles = size_of_particle_space / number_of_quantum_particles
+        print(distance_between_particles)
+        if distance_between_particles < 2 * self._disk_radius + 10e-3:
             raise ConfigurationError(f"Cannot fit {number_of_quantum_particles} of radius {self._disk_radius} on "
                                      f"particle space of size {size_of_particle_space}. N.B. particles may not touch in"
                                      "initial configuration.")
         for particle_index in range(number_of_particles):
             quantum_particle_index = particle_index % number_of_quantum_particles
-            positions[particle_index] = get_shortest_vectors_on_torus(2 * quantum_particle_index * self._disk_radius +
-                                                                      quantum_particle_index * distance_between_particles)
+            positions[particle_index] = \
+                                    get_shortest_vectors_on_torus(quantum_particle_index * distance_between_particles)
         return positions
 
     @staticmethod
@@ -165,7 +165,6 @@ class QuantumHardDiskPotential(WorldlinePotential):
         shortest_distance_to_next_factor_event, vetoing_index = \
             self._get_distance_to_next_kinetic_event_and_veto_index(positions, active_particle_index,
                                                                     movement_direction, worldline_neighbours)
-        # shortest_distance_to_next_factor_event = 1.0e10
         distance_to_next_potential_event = 1.0e10
         potential_veto_index = None
         initial_position = positions[active_particle_index][0]
@@ -189,10 +188,6 @@ class QuantumHardDiskPotential(WorldlinePotential):
         if distance_to_next_potential_event < shortest_distance_to_next_factor_event:
             vetoing_index = potential_veto_index
             shortest_distance_to_next_factor_event = distance_to_next_potential_event
-            print("proposed collision")
-        else:
-            print("proposed kinetic event")
-            pass
 
         return shortest_distance_to_next_factor_event, vetoing_index
 
@@ -239,14 +234,10 @@ class QuantumHardDiskPotential(WorldlinePotential):
             The updated position of the active particle
         """
 
-        old_position = np.copy(positions[active_particle_index])
-
         positions[active_particle_index] += displacement_distance * \
             movement_direction
         positions[active_particle_index] = get_shortest_vectors_on_torus(
             positions[active_particle_index])
-
-        # print(f"displacement: {displacement_distance} moved particle {active_particle_index} at {old_position} to {positions[active_particle_index]}")
 
     @staticmethod
     def get_quantum_particles_at_timeslice(active_particle_index, number_of_quantum_particles):
@@ -258,17 +249,3 @@ class QuantumHardDiskPotential(WorldlinePotential):
             quantum_particle_index = number_of_quantum_particles * timeslice_index + index
             quantum_particles_at_timeslice[index] = quantum_particle_index
         return quantum_particles_at_timeslice.astype(int)
-
-    def _remove_overlap(self, active_particle_position, neighbour_particle_position, displacement):
-        """Checks if moving a given displacement in the +1 direction would create an overlap, and is so, returns the
-        maximum displacement that can be moved without creating an overlap"""
-        init_displacement = displacement.copy()
-        separation = np.abs(get_shortest_vectors_on_torus(active_particle_position +
-                                                          displacement) - neighbour_particle_position)
-        if separation < 2.0 * self._disk_radius:
-            displacement -= (2.0 * self._disk_radius - separation)
-            if displacement < 0.0:
-                displacement = 0.0
-            # print(f"fixed overlap (separation {separation}), changed {init_displacement} to {displacement}")
-
-        return displacement
