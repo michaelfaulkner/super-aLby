@@ -40,7 +40,7 @@ class Mediator(metaclass=ABCMeta):
         number_of_equilibration_iterations : int, optional
             Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
-            Number of sample observations, i.e., the sample size. This is equal to the number of post-equilibration
+            Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
@@ -166,7 +166,7 @@ class Mediator(metaclass=ABCMeta):
 
     @abstractmethod
     def _reset_arrays_and_counters(self, temperature, restart_flag):
-        """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
+        """Sets or resets the arrays (e.g. the sample array) and counters before each temperature iteration."""
         self._positions = self._potential.get_initial_positions()
         self._samples = [sampler.get_empty_sample_array(self._total_number_of_iterations) for sampler in self._samplers]
         self._checkpoint_index = 0

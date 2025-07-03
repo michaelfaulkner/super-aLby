@@ -5,7 +5,7 @@ from base.vectors import get_shortest_vectors_on_torus
 
 class ToroidalPositionSampler(PositionSampler):
     """
-    Class for taking observations of particle positions on the torus, i.e., corrected for periodic boundaries.
+    Class for taking observations of particle positions on the torus, i.e. corrected for periodic boundaries.
     """
 
     def __init__(self, output_directory: str):

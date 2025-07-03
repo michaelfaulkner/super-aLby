@@ -6,7 +6,7 @@ import numpy as np
 
 class ToroidalMeanPositionSampler(MeanPositionSampler):
     """
-    Class for taking observations of mean particle positions on the torus, i.e., corrected for periodic boundaries.
+    Class for taking observations of mean particle positions on the torus, i.e. corrected for periodic boundaries.
     """
 
     def __init__(self, output_directory: str):
