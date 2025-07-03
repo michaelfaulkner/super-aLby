@@ -2,8 +2,6 @@
 import numpy as np
 from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError
-from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
-from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
 from helper_methods import get_initial_positions_of_smooth_potential
 
 
@@ -72,10 +70,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         """
         return self._mass / self._timestep * (
                 (2.0 + self._timestep ** 2 * self._omega ** 2) * positions[active_particle_index] -
-                positions[get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                       number_of_quantum_particles)] -
-                positions[get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                       number_of_quantum_particles)]).item()
+                positions[self._get_west_worldline_neighbour(active_particle_index)] -
+                positions[self._get_east_worldline_neighbour(active_particle_index)]).item()
 
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
         """
@@ -134,16 +130,13 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             The index of the particle that triggers the event.
         """
         
-        worldline_neighbours = [get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                             number_of_quantum_particles),
-                                get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                             number_of_quantum_particles)]
-
-        shortest_distance_to_next_factor_event, vetoing_index = \
-            self._get_distance_to_next_kinetic_event_and_veto_index(positions, active_particle_index,
-                                                                    movement_direction, worldline_neighbours)
+        worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
+                                self._get_east_worldline_neighbour(active_particle_index)]
+        (shortest_distance_to_next_factor_event, vetoing_index
+         ) = self._get_distance_to_next_kinetic_event_and_veto_index(positions, active_particle_index,
+                                                                     movement_direction, worldline_neighbours)
         # consider x^2 term
-        initial_position = initial_position = positions[active_particle_index].item()
+        initial_position = positions[active_particle_index].item()
         uphill_energy = - np.log(np.random.uniform(0, 1))
         bottom_of_well = 0.0
         if (((movement_direction > 0) and (initial_position < bottom_of_well)) or
@@ -203,7 +196,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
 
     def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
         """
-        Updates position of the active particle following an event.
+        Updates the position of the active particle following an event.
 
         Parameters
         ----------

@@ -77,7 +77,7 @@ class EventChainMediator(Mediator):
                                                    np.min(size_of_particle_space))
         else:
             self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
-        print(f"distance between measurements: {self._distance_between_measurements}")
+        print(f"Distance between measurements = {self._distance_between_measurements}")
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements

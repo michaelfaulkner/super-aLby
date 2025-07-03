@@ -5,7 +5,6 @@ from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
 from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
 from model_settings import dimensionality_of_particle_space
-from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
 
 
 class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
@@ -70,8 +69,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             """NB, this is one of the cases that prevents dimensionality_of_particle_space > 1 (see __init__())."""
             dimensionless_action += self._get_pairwise_dimensionless_action(
                 positions, particle_index, positions[particle_index, 0],
-                positions[get_east_neighbour_worldline(particle_index, number_of_timeslices,
-                                                       number_of_quantum_particles), 0])
+                positions[self._get_east_worldline_neighbour(particle_index), 0])
         return dimensionless_action
     
     def get_gradient(self, positions):
@@ -118,33 +116,21 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             The dimensionless-action difference.
         """
         current_dimensionless_action = (
-                self._get_pairwise_dimensionless_action(positions,
-                                                        get_west_neighbour_worldline(
-                                                            active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles),
-                                                        positions[get_west_neighbour_worldline(
-                                                            active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles)],
-                                                        positions[active_particle_index]) +
-                self._get_pairwise_dimensionless_action(positions, active_particle_index,
-                                                        positions[active_particle_index],
-                                                        positions[get_east_neighbour_worldline(
-                                                            active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles)]))
+                self._get_pairwise_dimensionless_action(
+                    positions, self._get_west_worldline_neighbour(active_particle_index),
+                    positions[self._get_west_worldline_neighbour(active_particle_index)],
+                    positions[active_particle_index]) +
+                self._get_pairwise_dimensionless_action(
+                    positions, active_particle_index, positions[active_particle_index],
+                    positions[self._get_east_worldline_neighbour(active_particle_index)]))
         
         candidate_dimensionless_action = (
-                self._get_pairwise_dimensionless_action(positions,
-                                                        get_west_neighbour_worldline(
-                                                            active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles),
-                                                        positions[get_west_neighbour_worldline(
-                                                            active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles)],
-                                                        candidate_position) +
-                self._get_pairwise_dimensionless_action(positions, active_particle_index, candidate_position,
-                                                        positions[get_east_neighbour_worldline(
-                                                            active_particle_index, number_of_timeslices,
-                                                            number_of_quantum_particles)]))
+                self._get_pairwise_dimensionless_action(
+                    positions, self._get_west_worldline_neighbour(active_particle_index),
+                    positions[self._get_west_worldline_neighbour(active_particle_index)], candidate_position) +
+                self._get_pairwise_dimensionless_action(
+                    positions, active_particle_index, candidate_position,
+                    positions[self._get_east_worldline_neighbour(active_particle_index)]))
         return candidate_dimensionless_action - current_dimensionless_action
 
     def _get_pairwise_dimensionless_action(self, positions, active_particle_index, position_at_active_particle_index,
@@ -225,9 +211,8 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             The active particle index (i.e., the discretised-time index).
         movement_direction : int
             The direction of movement of the active particle.
-        worldline_neighbours : numpy.ndarray
-            A one-dimensional array containing the indices of the neighbouring worldline points for the current active
-            particle index.
+        worldline_neighbours : List[int]
+            A one-dimensional list containing the particles indices of the worldline neighbours of the active particle.
         
         Returns
         ----------
@@ -292,7 +277,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     @abstractmethod
     def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
         """
-        Updates position of the active particle following an event.
+        Updates the position of the active particle following an event.
         Parameters
         ----------
         positions : numpy.ndarray
@@ -334,3 +319,17 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             return roots[0]
         else:
             return roots[1]
+
+    @staticmethod
+    def _get_east_worldline_neighbour(lattice_site_index):
+        """Returns the eastwards timeslice neighbour of lattice_site_index."""
+        # todo do we definitely need the 1.0e-12 correction? Doesn't appear in analogous Ising functions...
+        return int((lattice_site_index + number_of_quantum_particles) %
+                   (number_of_timeslices * number_of_quantum_particles) + 1.0e-12)
+
+    @staticmethod
+    def _get_west_worldline_neighbour(lattice_site_index):
+        """Returns the westwards timeslice neighbour of lattice_site_index."""
+        # todo do we definitely need the 1.0e-12 correction? Doesn't appear in analogous Ising functions...
+        return int((lattice_site_index - number_of_quantum_particles) %
+                   (number_of_timeslices * number_of_quantum_particles) + 1.0e-12)

@@ -1,17 +1,17 @@
 """Module for the QuantumHardDiskPotential class"""
 import numpy as np
 from .worldline_potential import WorldlinePotential
-from base.exceptions import ConfigurationError
+from base.exceptions import ConfigurationError, MediatorError
 from base.vectors import get_shortest_vectors_on_torus
-from model_settings import size_of_particle_space, number_of_quantum_particles, number_of_timeslices
+from model_settings import size_of_particle_space, number_of_quantum_particles
 from model_settings import number_of_particles
-from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
 
 
 class QuantumHardDiskPotential(WorldlinePotential):
     r"""
-    This class implements a N-body quantum hard disk model in the worldline formalism.
-    The potential corresponds to the dimensionless action,
+    This class implements the quantum hard disk model in the worldline formalism.
+
+    The Boltzmann potential corresponds to the dimensionless action,
         \delta\tau \sum_{i=1}^{N_{\tau}}[0.5 * m(x_{i+1} - x_i)^2 / (\delta\tau)^2 + V(r)],
         where m and \omega are the mass and frequency, respectively, and V(r) is the hard disk potential.
 
@@ -59,15 +59,14 @@ class QuantumHardDiskPotential(WorldlinePotential):
         """
         positions = np.zeros((number_of_particles, 1))
         distance_between_particles = size_of_particle_space / number_of_quantum_particles
-        print(distance_between_particles)
         if distance_between_particles < 2 * self._disk_radius + 10e-3:
             raise ConfigurationError(f"Cannot fit {number_of_quantum_particles} of radius {self._disk_radius} on "
                                      f"particle space of size {size_of_particle_space}. N.B. particles may not touch in"
                                      "initial configuration.")
         for particle_index in range(number_of_particles):
             quantum_particle_index = particle_index % number_of_quantum_particles
-            positions[particle_index] = \
-                                    get_shortest_vectors_on_torus(quantum_particle_index * distance_between_particles)
+            positions[particle_index] = get_shortest_vectors_on_torus(quantum_particle_index *
+                                                                      distance_between_particles)
         return positions
 
     @staticmethod
@@ -88,7 +87,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
 
     def _get_gradient_at_index(self, positions, particle_index):
         """
-        Returns the gradient of the dimensionless action with respect to the particle position at particle_index.
+        Throws an error if used in this case.  The method is only valid for smooth potential functions.
 
         Parameters
         ----------
@@ -97,12 +96,14 @@ class QuantumHardDiskPotential(WorldlinePotential):
             is a float and represents the position of the worldline at that time step.
         particle_index : int
             The particle index (i.e., the discretised-time index).
+
         Returns
         -------
         float
             The dimensionless-action gradient at particle_index.
         """
-        pass
+        raise MediatorError(f"get_gradient() is not a valid method for {self.__class__.__name__} as this is not a "
+                            f"smooth potential function.")
 
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
         r"""
@@ -126,12 +127,11 @@ class QuantumHardDiskPotential(WorldlinePotential):
         float
             The potential energy contribution to the pairwise dimensionless action.
         """
-        quantum_particles_at_timeslice = self.get_quantum_particles_at_timeslice(active_particle_index,
-                                                                                 number_of_quantum_particles)
-        for quantum_particle in quantum_particles_at_timeslice:
-            if quantum_particle != active_particle_index:
+        quantum_particles_at_timeslice = self._get_quantum_particles_at_timeslice(active_particle_index)
+        for quantum_particle_index in quantum_particles_at_timeslice:
+            if quantum_particle_index != active_particle_index:
                 distance = np.abs(get_shortest_vectors_on_torus(position_at_active_particle_index -
-                                                                positions[quantum_particle]))
+                                                                positions[quantum_particle_index]))
                 if distance + 1.0e-12 < 2 * self._disk_radius:
                     return 1.0e10  # infinite potential
         return 0.0
@@ -160,15 +160,12 @@ class QuantumHardDiskPotential(WorldlinePotential):
         vetoing_index : int
             The index of the particle that triggers the event.
             """
-        worldline_neighbours = [get_west_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                             number_of_quantum_particles),
-                                get_east_neighbour_worldline(active_particle_index, number_of_timeslices,
-                                                             number_of_quantum_particles)]
-        quantum_particle_neighbours = self.get_quantum_particles_at_timeslice(active_particle_index,
-                                                                              number_of_quantum_particles)
-        shortest_distance_to_next_factor_event, vetoing_index = \
-            self._get_distance_to_next_kinetic_event_and_veto_index(positions, active_particle_index,
-                                                                    movement_direction, worldline_neighbours)
+        worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
+                                self._get_east_worldline_neighbour(active_particle_index)]
+        quantum_particle_neighbours = self._get_quantum_particles_at_timeslice(active_particle_index)
+        (shortest_distance_to_next_factor_event, vetoing_index
+         ) = self._get_distance_to_next_kinetic_event_and_veto_index(positions, active_particle_index,
+                                                                     movement_direction, worldline_neighbours)
         distance_to_next_potential_event = 1.0e10
         potential_veto_index = None
         initial_position = positions[active_particle_index][0]
@@ -220,7 +217,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
 
     def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
         """
-        Updates position of the active particle following an event.
+        Updates the position of the active particle following an event.
         Parameters
         ----------
         positions : numpy.ndarray
@@ -238,15 +235,12 @@ class QuantumHardDiskPotential(WorldlinePotential):
             The updated position of the active particle
         """
 
-        positions[active_particle_index] += displacement_distance * \
-            movement_direction
-        positions[active_particle_index] = get_shortest_vectors_on_torus(
-            positions[active_particle_index])
+        positions[active_particle_index] += displacement_distance * movement_direction
+        positions[active_particle_index] = get_shortest_vectors_on_torus(positions[active_particle_index])
 
     @staticmethod
-    def get_quantum_particles_at_timeslice(active_particle_index, number_of_quantum_particles):
+    def _get_quantum_particles_at_timeslice(active_particle_index):
         """ Returns the indices of all quantum particles at current timeslice."""
-        quantum_particle_index = active_particle_index % number_of_quantum_particles
         timeslice_index = active_particle_index // number_of_quantum_particles
         quantum_particles_at_timeslice = np.zeros(number_of_quantum_particles)
         for index in range(number_of_quantum_particles):

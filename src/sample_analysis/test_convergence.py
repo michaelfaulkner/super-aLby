@@ -239,9 +239,8 @@ def main(config_file_string):
         reference_sample = np.load(
         "permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_reference_sample.npy").flatten()
     elif "quantum_hard_disk_potential" in potential:
-        reference_sample = np.load(
-        "output/convergence_tests/quantum_hard_disk_potential/metropolis/" \
-        "temperature_00_checkpoint_00_sample_of_positions.npy").flatten()
+        reference_sample = np.load("output/convergence_tests/quantum_hard_disk_potential/metropolis/"
+                                   "temperature_00_checkpoint_00_sample_of_positions.npy").flatten()
 
     if "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
         disk_radius = 1.0
@@ -276,8 +275,8 @@ def main(config_file_string):
         legend.get_frame().set_edgecolor('k')
         legend.get_frame().set_lw(1.5)
         plt.tight_layout()
-        #plt.show()
-        plt.savefig("convergence.png")
+        plt.show()
+        # plt.savefig("convergence.png")
 
 
 if __name__ == '__main__':
