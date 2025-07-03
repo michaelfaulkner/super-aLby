@@ -7,17 +7,17 @@ from model_settings import size_of_particle_space, number_of_quantum_particles, 
 from model_settings import number_of_particles
 from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
 
-"""
-N.B. The behaviour of the quantum hard disk potential is not yet well understood. At present there are issues with 
-mixing, and we have not been able to fully characterise the required values of 
-eg. sampling distance/equilibriation steps/timestep/packing fraction to give sensible behaviour.
-"""
+
 class QuantumHardDiskPotential(WorldlinePotential):
     r"""
-    This class implements a 2-body quantum hard disk model in the worldline formalism.
+    This class implements a N-body quantum hard disk model in the worldline formalism.
     The potential corresponds to the dimensionless action,
         \delta\tau \sum_{i=1}^{N_{\tau}}[0.5 * m(x_{i+1} - x_i)^2 / (\delta\tau)^2 + V(r)],
         where m and \omega are the mass and frequency, respectively, and V(r) is the hard disk potential.
+
+    N.B. The behaviour of the quantum hard disk potential is not yet well understood. At present there are issues with
+        mixing at low disk density.  We think this is due to the quantum kinetic energy dominating.  Factor fields
+        along the position dimension may fix the issue.
     """
 
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0,
