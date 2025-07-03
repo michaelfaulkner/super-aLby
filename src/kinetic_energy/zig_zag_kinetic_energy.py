@@ -80,7 +80,7 @@ class ZigZagKineticEnergy(KineticEnergy, metaclass=ABCMeta):
     def _get_distance_from_origin_to_next_event(self, temperature):
         r"""
         Returns the distance $|\eta|$ travelled (before the next zig-zag event) through the uphill part of
-        one-dimensional momentum space, i.e., from the origin to $\eta$. This is calculated by inverting
+        one-dimensional momentum space, i.e. from the origin to $\eta$. This is calculated by inverting
 
             $ \rand(0.0, 1.0) =
                 \exp \left[- \int_0^{\eta} \left(\frac{\partial K}{\partial p}\right)^+ dp / temperature \right] $

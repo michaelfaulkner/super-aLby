@@ -46,7 +46,7 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
         number_of_equilibration_iterations : int, optional
             Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
-            Number of sample observations, i.e., the sample size. This is equal to the number of post-equilibration
+            Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
         proposal_dynamics_adaptor_is_on : bool, optional
             When True, the step size of the integrator is tuned during the equilibration process.
@@ -136,7 +136,7 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
         self._number_of_unstable_trajectories = None
 
     def _reset_arrays_and_counters(self, temperature, restart_flag):
-        """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
+        """Sets or resets the arrays (e.g. the sample array) and counters before each temperature iteration."""
         super()._reset_arrays_and_counters(temperature, restart_flag)
         self._momenta = self._kinetic_energy.get_momentum_observations(temperature)
         self._current_potential = self._potential.get_value(self._positions)

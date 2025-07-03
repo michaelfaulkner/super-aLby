@@ -53,7 +53,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
         -------
         numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle, e.g., three
+            is a float and represents one Cartesian component of the position of a single particle, e.g. three
             particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
@@ -95,7 +95,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
             A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
             is a float and represents the position of the worldline at that time step.
         particle_index : int
-            The particle index (i.e., the discretised-time index).
+            The particle index (i.e. the discretised-time index).
 
         Returns
         -------
@@ -147,7 +147,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
             A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
             is a float and represents the position of the worldline at that time step.
         active_particle_index : int
-            The active particle index (i.e., the discretised-time index).
+            The active particle index (i.e. the discretised-time index).
         temperature : float
             The sampling temperature.  NB, we set temperature = 1.0 (for QHO) as this quantity is for stat-phys models.
         movement_direction : int
@@ -201,7 +201,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
             A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
             is a float and represents the position of the worldline at that time step.
         active_particle_index : int
-            The active particle index (i.e., the discretised-time index).
+            The active particle index (i.e. the discretised-time index).
         movement_direction : int
             The direction of movement of the active particle.
         veto_index : int
@@ -209,7 +209,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
         Returns
         -------
         new_active_particle_index : int
-            The next active particle index (i.e., the discretised-time index) in the event chain.
+            The next active particle index (i.e. the discretised-time index) in the event chain.
         new_movement_direction : int
             The direction of movement of the next active particle.
         """
@@ -226,7 +226,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
         displacement_distance : float
             The displacement that the current position of the active particle will be updated using.
         active_particle_index : int
-            The active particle index (i.e., the discretised-time index).
+            The active particle index (i.e. the discretised-time index).
         movement_direction : int
             The direction of movement of the active particle.
         Returns

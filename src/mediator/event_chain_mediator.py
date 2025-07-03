@@ -37,7 +37,7 @@ class EventChainMediator(Mediator):
         number_of_equilibration_iterations : int, optional
             Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
-            Number of sample observations, i.e., the sample size. This is equal to the number of post-equilibration
+            Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
         normalised_distance_between_measurements : float, optional
             Total distance through state space between samples (normalised as indicated by operations below).
@@ -119,7 +119,7 @@ class EventChainMediator(Mediator):
               f"{self._total_number_of_events / self._number_of_observations / number_of_particles}")
 
     def _reset_arrays_and_counters(self, temperature, restart_flag):
-        """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
+        """Sets or resets the arrays (e.g. the sample array) and counters before each temperature iteration."""
         super()._reset_arrays_and_counters(temperature, restart_flag)
         if not restart_flag:
             self._get_initial_sample()

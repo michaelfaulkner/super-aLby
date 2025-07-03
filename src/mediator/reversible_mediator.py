@@ -37,7 +37,7 @@ class ReversibleMediator(Mediator, metaclass=ABCMeta):
         number_of_equilibration_iterations : int, optional
             Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
-            Number of sample observations, i.e., the sample size. This is equal to the number of post-equilibration
+            Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
         proposal_dynamics_adaptor_is_on : bool, optional
             When True, the size of either the numerical integration step (DeterministicMediator) or the width of the
@@ -80,7 +80,7 @@ class ReversibleMediator(Mediator, metaclass=ABCMeta):
 
     @abstractmethod
     def _reset_arrays_and_counters(self, temperature, restart_flag):
-        """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
+        """Sets or resets the arrays (e.g. the sample array) and counters before each temperature iteration."""
         super()._reset_arrays_and_counters(temperature, restart_flag)
         self._number_of_accepted_trajectories = 0
 

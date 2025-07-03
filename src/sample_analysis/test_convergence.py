@@ -38,7 +38,7 @@ def main(config_file_string):
         potential_prefactor = 1.0  # set as default value
     combined_potential_prefactor = potential_prefactor / temperatures[0]
     """n.b., potentials may include additional prefactors (to beta (1 / temperature) and potential_prefactor in their 
-        definitions, e.g., the definitions of ExponentialPowerPotential and GaussianPotential include additional 
+        definitions, e.g. the definitions of ExponentialPowerPotential and GaussianPotential include additional 
         prefactors of 1/power and 1/2, respectively - potential_prefactor defines the relative weight of the potential 
         in question when included in the sum of a more complex model (though multi-sub-potential functionality has not 
         yet been integrated into super-aLby)"""

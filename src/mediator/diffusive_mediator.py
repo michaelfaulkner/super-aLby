@@ -36,7 +36,7 @@ class DiffusiveMediator(ReversibleMediator, metaclass=ABCMeta):
         number_of_equilibration_iterations : int, optional
             Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
-            Number of sample observations, i.e., the sample size. This is equal to the number of post-equilibration
+            Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
         proposal_dynamics_adaptor_is_on : bool, optional
             When True, the step size of the integrator is tuned during the equilibration process.
@@ -71,7 +71,7 @@ class DiffusiveMediator(ReversibleMediator, metaclass=ABCMeta):
                          proposal_dynamics_adaptor_is_on, **kwargs)
 
     def _reset_arrays_and_counters(self, temperature, restart_flag):
-        """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
+        """Sets or resets the arrays (e.g. the sample array) and counters before each temperature iteration."""
         super()._reset_arrays_and_counters(temperature, restart_flag)
         if not restart_flag:
             self._get_initial_sample()

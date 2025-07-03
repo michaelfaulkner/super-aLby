@@ -208,7 +208,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
             is a float and represents the position of the worldline at that time step.
         active_particle_index : int
-            The active particle index (i.e., the discretised-time index).
+            The active particle index (i.e. the discretised-time index).
         movement_direction : int
             The direction of movement of the active particle.
         worldline_neighbours : List[int]
@@ -260,7 +260,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
             is a float and represents the position of the worldline at that time step.
         active_particle_index : int
-            The active particle index (i.e., the discretised-time index).
+            The active particle index (i.e. the discretised-time index).
         movement_direction : int
             The direction of movement of the active particle.
         veto_index : int
@@ -268,7 +268,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         Returns
         -------
         new_active_particle_index : int
-            The next active particle index (i.e., the discretised-time index) in the event chain.
+            The next active particle index (i.e. the discretised-time index) in the event chain.
         new_movement_direction : int
             The direction of movement of the next active particle.
         """
@@ -286,7 +286,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         displacement_distance : float
             The displacement that the current position of the active particle will be updated using.
         active_particle_index : int
-            The active particle index (i.e., the discretised-time index).
+            The active particle index (i.e. the discretised-time index).
         movement_direction : int
             The direction of movement of the active particle.
         Returns
