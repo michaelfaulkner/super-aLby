@@ -1,6 +1,7 @@
 """Module for the UnboundedUniformNoiseDistribution class."""
 from .continuous_noise_distribution import ContinuousNoiseDistribution
-from model_settings import dimensionality_of_particle_space
+from model_settings import dimensionality_of_particle_space, toroidal_geometry
+from base.vectors import get_shortest_vectors_on_torus
 import numpy as np
 
 
@@ -41,6 +42,13 @@ class UnboundedUniformNoiseDistribution(ContinuousNoiseDistribution):
             A one-dimensional numpy array of length dimensionality_of_particle_space; each element is a float and
             represents one Cartesian component of the proposed position of the active particle.
         """
-        return (positions[active_particle_index] +
-                np.random.uniform(-0.5 * self.width_of_noise_distribution, 0.5 * self.width_of_noise_distribution,
-                                  size=dimensionality_of_particle_space))
+        if toroidal_geometry:
+            return get_shortest_vectors_on_torus((positions[active_particle_index] +
+                                                np.random.uniform(-0.5 * self.width_of_noise_distribution,
+                                                                0.5 * self.width_of_noise_distribution, 
+                                                                size=dimensionality_of_particle_space)))
+        else:
+            return (positions[active_particle_index] +
+                    np.random.uniform(-0.5 * self.width_of_noise_distribution,
+                                    0.5 * self.width_of_noise_distribution,
+                                    size=dimensionality_of_particle_space))

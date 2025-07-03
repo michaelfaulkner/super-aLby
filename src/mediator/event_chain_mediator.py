@@ -77,15 +77,17 @@ class EventChainMediator(Mediator):
                                                    np.min(size_of_particle_space))
         else:
             self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
+        print(f"distance between measurements: {self._distance_between_measurements}")
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
         self._total_number_of_events = 0
 
-    def _generate_sample_at_current_temperature(self, temperature_index, temperature):
+    def _generate_sample_at_current_temperature(self, temperature_index, temperature, restart_flag):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         self._total_number_of_events = 0
-        for markov_chain_index in range(self._total_number_of_iterations):
+        super()._generate_sample_at_current_temperature(temperature_index, temperature, restart_flag)
+        for markov_chain_index in range(self.number_of_markov_iterations):
             active_particle_index = np.random.randint(0, number_of_particles)
             movement_direction = self._potential.get_random_event_chain_velocity()
             distance_to_next_measurement = self._distance_between_measurements
@@ -107,7 +109,9 @@ class EventChainMediator(Mediator):
                     active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                         self._positions, active_particle_index, movement_direction, vetoing_index)
                     self._total_number_of_events += 1
+    
             super()._print_sample_progress(markov_chain_index)
+
 
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""

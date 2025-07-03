@@ -7,6 +7,6 @@ All additional contributing authors are listed below in chronological order.
 
 ## Chronological list of additional contributors
 
-[Rachel Kane](https://github.com/raichkel)
+[Rachel Kane](https://github.com/rachel-kane)
 
 [James Gulliford](https://github.com/jamesgulliford57)

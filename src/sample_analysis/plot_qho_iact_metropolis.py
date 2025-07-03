@@ -19,19 +19,23 @@ def main(iact_data_path, N):
         iact_data = iact_data[argsorted_data] 
         storage_arr[:, index] = iact_data
 
+    print(sorted_timestep)
+    print(np.nonzero(sorted_timestep >= 0.05))
+    print(storage_arr[np.nonzero(sorted_timestep >= 0.05)])
 
 
-    iact_mean_arr = np.mean(storage_arr, axis = 1)
-    err = np.std(storage_arr, axis=1)
 
+    iact_mean_arr = np.mean(storage_arr[np.nonzero(sorted_timestep >= 0.05)], axis = 1)
+    err = np.std(storage_arr[np.nonzero(sorted_timestep >= 0.05)], axis=1)
+    
     fig, ax = plt.subplots(1, 1)
     #ax.scatter(timestep_data_0, iact_mean_arr)
-    ax.errorbar(sorted_timestep, iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="orange")
+    ax.errorbar(sorted_timestep[np.nonzero(sorted_timestep >= 0.05)], iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="orange")
     ax.set_xlabel(r"$\delta \tau$", fontsize=16, labelpad=-10)
     ax.set_ylabel("IACT", fontsize=15, labelpad=0)
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.set_ylim(1e3, 1e7)
+    #ax.set_ylim(1e3, 1e7)
    
 
 

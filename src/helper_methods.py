@@ -51,7 +51,7 @@ def get_basic_config_data(config_file_string):
     for possible_mediator in possible_mediators:
         try:
             potential = config.get(possible_mediator, "potential")
-            if "hard_disk_potential" in str(potential):
+            if "hard_disk_potential" in str(potential) and "quantum_hard_disk_potential" not in str(potential):
                 number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
                 packing_fraction = parsing.get_value(config, "HardDiskPotential", "packing_fraction")
                 disk_radius = parsing.get_value(config, "HardDiskPotential", "disk_radius")
@@ -193,3 +193,17 @@ def get_initial_positions_of_smooth_potential(potential_class):
         else:
             return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]
                              for _ in range(number_of_particles)])
+
+
+def get_east_neighbour_worldline(lattice_site_index, number_of_timeslices, number_of_quantum_particles):
+    """Returns the eastwards timeslice neighbour of lattice_site_index in the quantum hard disks model"""
+    # todo do we definitely need the 1.0e-12 correction? Doesn't appear in analogous Ising functions...
+    return int((lattice_site_index + number_of_quantum_particles) %
+               (number_of_timeslices * number_of_quantum_particles) + 1.0e-12)
+
+
+def get_west_neighbour_worldline(lattice_site_index, number_of_timeslices, number_of_quantum_particles):
+    """Returns the eastwards timeslice neighbour of lattice_site_index in the quantum hard disks model"""
+    # todo do we definitely need the 1.0e-12 correction? Doesn't appear in analogous Ising functions...
+    return int((lattice_site_index - number_of_quantum_particles) %
+               (number_of_timeslices * number_of_quantum_particles) + 1.0e-12)
