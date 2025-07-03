@@ -7,7 +7,11 @@ from model_settings import size_of_particle_space, number_of_quantum_particles, 
 from model_settings import number_of_particles
 from helper_methods import get_east_neighbour_worldline, get_west_neighbour_worldline
 
-
+"""
+N.B. The behaviour of the quantum hard disk potential is not yet well understood. At present there are issues with 
+mixing, and we have not been able to fully characterise the required values of 
+eg. sampling distance/equilibriation steps/timestep/packing fraction to give sensible behaviour.
+"""
 class QuantumHardDiskPotential(WorldlinePotential):
     r"""
     This class implements a 2-body quantum hard disk model in the worldline formalism.
