@@ -1,7 +1,6 @@
 """Module for the UnboundedDiscreteNoiseDistribution class."""
 from .noise_distribution import NoiseDistribution
-from model_settings import dimensionality_of_particle_space, toroidal_geometry
-from base.vectors import get_shortest_vectors_on_torus
+from model_settings import dimensionality_of_particle_space
 import numpy as np
 
 
@@ -40,8 +39,4 @@ class UnboundedDiscreteNoiseDistribution(NoiseDistribution):
             A one-dimensional numpy array of length dimensionality_of_particle_space; each element is an int and
             represents one Cartesian component of the proposed position of the active particle.
         """
-        if toroidal_geometry:
-            return get_shortest_vectors_on_torus(positions[active_particle_index] + np.random.choice([-1, 1],
-                                                                                 size=dimensionality_of_particle_space))
-        else:
-            return positions[active_particle_index] + np.random.choice([-1, 1], size=dimensionality_of_particle_space)
+        return positions[active_particle_index] + np.random.choice([-1, 1], size=dimensionality_of_particle_space)
