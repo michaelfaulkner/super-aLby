@@ -119,7 +119,7 @@ class Mediator(metaclass=ABCMeta):
             if restart_flag:
                 self._reload_configuration_from_file_and_reset()
                 self._get_checkpoint_index()
-            self._generate_sample_at_current_temperature(temperature_index, temperature)
+            self._generate_sample_at_current_temperature(temperature_index, temperature, restart_flag)
             if not restart_flag:
                 self._samples = [np.concatenate((self._initial_samples[sampler_index], self._samples[sampler_index])) 
                                  for sampler_index, sampler in enumerate(self._samplers)]
@@ -151,7 +151,6 @@ class Mediator(metaclass=ABCMeta):
         """Reloads position data from a previous sub-run in the case of checkpointing."""
         self._positions = np.load(os.path.join(os.getcwd(), self._samplers[0].output_directory,
                                                "configuration_at_checkpoint.npy"))
-        self._samples = [sampler.get_empty_sample_array(self._total_number_of_iterations) for sampler in self._samplers]
     
     def _get_checkpoint_index(self):
         """Finds run index if checkpointing is being used."""
@@ -182,9 +181,13 @@ class Mediator(metaclass=ABCMeta):
                                                                                      self._potential)
 
     @abstractmethod
-    def _generate_sample_at_current_temperature(self, temperature_index, temperature):
+    def _generate_sample_at_current_temperature(self, temperature_index, temperature, restart_flag):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
-        raise NotImplementedError
+        if restart_flag:
+            self.number_of_markov_iterations = self._total_number_of_iterations + 1
+        else:
+            self.number_of_markov_iterations = self._total_number_of_iterations
+        
 
     @abstractmethod
     def _print_markov_chain_summary(self):

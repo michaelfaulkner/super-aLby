@@ -51,7 +51,7 @@ def get_basic_config_data(config_file_string):
     for possible_mediator in possible_mediators:
         try:
             potential = config.get(possible_mediator, "potential")
-            if "hard_disk_potential" in str(potential):
+            if "hard_disk_potential" in str(potential) and "quantum_hard_disk_potential" not in str(potential):
                 number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
                 packing_fraction = parsing.get_value(config, "HardDiskPotential", "packing_fraction")
                 disk_radius = parsing.get_value(config, "HardDiskPotential", "disk_radius")

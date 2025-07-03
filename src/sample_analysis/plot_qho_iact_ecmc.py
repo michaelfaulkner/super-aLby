@@ -33,7 +33,7 @@ def main(iact_data_path, N):
     ax.set_ylabel("IACT", fontsize=15, labelpad=0)
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.set_ylim(1e3, 1e7)
+    #ax.set_ylim(1e3, 1e7)
    
 
 
