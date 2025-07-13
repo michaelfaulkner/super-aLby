@@ -51,7 +51,7 @@ def get_basic_config_data(config_file_string):
     for possible_mediator in possible_mediators:
         try:
             potential = config.get(possible_mediator, "potential")
-            if "hard_disk_potential" in str(potential):
+            if "hard_disk_potential" in str(potential) and "quantum_hard_disk_potential" not in str(potential):
                 number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
                 packing_fraction = parsing.get_value(config, "HardDiskPotential", "packing_fraction")
                 disk_radius = parsing.get_value(config, "HardDiskPotential", "disk_radius")
@@ -142,7 +142,7 @@ def get_initial_positions_of_smooth_potential(potential_class):
     -------
     numpy.ndarray
         A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-        is a float and represents one Cartesian component of the position of a single particle, e.g., two particles
+        is a float and represents one Cartesian component of the position of a single particle, e.g. two particles
         (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
         particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
         represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].

@@ -90,7 +90,7 @@ class SoftMatterPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         -------
         numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle, e.g., two particles
+            is a float and represents one Cartesian component of the position of a single particle, e.g. two particles
             (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
             particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].

@@ -38,7 +38,7 @@ class EventChainMediator(Mediator):
         number_of_equilibration_iterations : int, optional
             Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
-            Number of sample observations, i.e., the sample size. This is equal to the number of post-equilibration
+            Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
         normalised_distance_between_measurements : float, optional
             Total distance through state space between samples (normalised as indicated by operations below).
@@ -78,6 +78,7 @@ class EventChainMediator(Mediator):
                                                    np.min(size_of_particle_space))
         else:
             self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
+        print(f"Distance between measurements = {self._distance_between_measurements}")
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
@@ -85,7 +86,7 @@ class EventChainMediator(Mediator):
         self._total_number_of_events = 0
         self._teleportation_portal = teleportation_portal
 
-    def _generate_sample_at_current_temperature(self, temperature_index, temperature):
+    def _generate_sample_at_current_temperature(self, temperature_index, temperature, restart_flag):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         self._total_number_of_events = 0
         portal_events_accepted = 0
@@ -123,7 +124,7 @@ class EventChainMediator(Mediator):
                     self._potential.update_position(self._positions, distance_to_next_event,
                                                             active_particle_index, movement_direction)
                     if self._teleportation_portal:
-                        portal_candidate = self._potential.teleportation_portal(self._positions, active_particle_index, 
+                        portal_candidate = self._potential.teleportation_portal(self._positions, active_particle_index,
                                                                                 vetoing_index, movement_direction)
                         potential_difference = self._potential.get_potential_difference(active_particle_index, portal_candidate,
                                                                             self._positions)
@@ -139,9 +140,10 @@ class EventChainMediator(Mediator):
                     self._total_number_of_events += 1
                     distance_to_next_measurement -= distance_to_next_event
                     distance_to_next_velocity_refreshment -= distance_to_next_event
-                
+
             super()._print_sample_progress(markov_chain_index)
         print(f'Portal acceptance probability: {portal_events_accepted / self._total_number_of_events}')
+
 
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
@@ -149,8 +151,8 @@ class EventChainMediator(Mediator):
               f"{self._total_number_of_events / self._number_of_observations / number_of_particles}")
 
     def _reset_arrays_and_counters(self, temperature, restart_flag):
-        """Sets or resets the arrays (e.g., the sample array) and counters before each temperature iteration."""
+        """Sets or resets the arrays (e.g. the sample array) and counters before each temperature iteration."""
         super()._reset_arrays_and_counters(temperature, restart_flag)
         if not restart_flag:
             self._get_initial_sample()
-        
+

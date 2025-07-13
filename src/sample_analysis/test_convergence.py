@@ -38,7 +38,7 @@ def main(config_file_string):
         potential_prefactor = 1.0  # set as default value
     combined_potential_prefactor = potential_prefactor / temperatures[0]
     """n.b., potentials may include additional prefactors (to beta (1 / temperature) and potential_prefactor in their 
-        definitions, e.g., the definitions of ExponentialPowerPotential and GaussianPotential include additional 
+        definitions, e.g. the definitions of ExponentialPowerPotential and GaussianPotential include additional 
         prefactors of 1/power and 1/2, respectively - potential_prefactor defines the relative weight of the potential 
         in question when included in the sum of a more complex model (though multi-sub-potential functionality has not 
         yet been integrated into super-aLby)"""
@@ -70,6 +70,10 @@ def main(config_file_string):
         if not (len(samplers) == 1 and samplers[0] == "pressure_sampler"):
             raise ValueError("Hard-disk model reference data only available for PressureSampler. Please give only this "
                              "value for samplers in the Mediator section.")
+    elif potential == "quantum_hard_disk_potential":
+        if not (len(samplers) == 1 and samplers[0] == "standard_position_sampler"):
+            raise ValueError("Quantum hard-disk model reference data only available for PositionSampler. Please give" \
+            "only this value for samplers in the Mediator section.")
     else:
         raise ValueError("Reference data not provided for this potential.")
 
@@ -233,8 +237,10 @@ def main(config_file_string):
             "permanent_data/reference_data/xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
     elif "quantum_harmonic_oscillator_potential" in potential:
         reference_sample = np.load(
-            "permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_reference_sample.npy"
-        ).flatten()
+        "permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_reference_sample.npy").flatten()
+    elif "quantum_hard_disk_potential" in potential:
+        reference_sample = np.load("output/convergence_tests/quantum_hard_disk_potential/metropolis/"
+                                   "temperature_00_checkpoint_00_sample_of_positions.npy").flatten()
 
     if "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
         disk_radius = 1.0

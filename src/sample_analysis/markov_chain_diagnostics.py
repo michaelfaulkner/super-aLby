@@ -32,7 +32,7 @@ def get_thinned_sample(sample, thinning_level):
     sample : numpy.ndarray
         Sample to be thinned.
     thinning_level : int
-        The level of thinning, i.e., keep every nth element of the sample.
+        The level of thinning, i.e. keep every nth element of the sample.
     """
     sample_indices_to_keep = np.array([i for i in range(len(sample)) if i % thinning_level == 0])
     return np.take(sample, sample_indices_to_keep)
