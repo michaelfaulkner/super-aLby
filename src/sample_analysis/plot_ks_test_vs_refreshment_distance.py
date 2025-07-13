@@ -1,11 +1,11 @@
 import re
-import os 
+import os
 import sys
-import glob 
+import glob
 import importlib
-import numpy as np 
+import numpy as np
 import configparser
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 from markov_chain_diagnostics import get_ks_test
 
 this_directory = os.path.dirname(os.path.abspath(__file__))
@@ -21,7 +21,7 @@ def extract_index(path):
 def main(config_directory_path, reference_sample_path):
     distance_between_velocity_refreshments = []
     config = configparser.ConfigParser()
-    config.optionxform = str  
+    config.optionxform = str
     config_directories = [d for d in glob.glob(f"{config_directory_path}/*")]
     config_directories = sorted(config_directories, key=extract_index)
     for config_directory in config_directories:
@@ -45,12 +45,12 @@ def main(config_directory_path, reference_sample_path):
                 samples = np.load(os.path.join(subdirectory, 'temperature_00_checkpoint_00_sample_of_magnetisation_norm.npy')).flatten()
                 samples = samples[number_of_equilibration_iterations:]
                 all_subdirectoy_samples.append(samples)
-            except IOError: 
+            except IOError:
                 pass
         all_samples.append(all_subdirectoy_samples)
 
     reference_sample = np.load(reference_sample_path).flatten()
-    
+
     ks_tests = []
     for samples in all_samples:
         samples_ks_tests = []
