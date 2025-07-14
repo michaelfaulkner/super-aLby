@@ -210,7 +210,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         active_particle_index : int
             The active particle index (i.e. the discretised-time index).
         movement_direction : int
-            The direction of movement of the active particle.
+            The active-particle direction of motion.
         worldline_neighbours : List[int]
             A one-dimensional list containing the particles indices of the worldline neighbours of the active particle.
         
@@ -253,7 +253,8 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     @abstractmethod
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """
-        Chooses the index and direction for the next active particle in the markov chain.
+        Chooses the index and direction of motion of the next active particle in ECMC.
+
         Parameters
         ----------
         positions : numpy.ndarray
@@ -262,15 +263,16 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         active_particle_index : int
             The active particle index (i.e. the discretised-time index).
         movement_direction : int
-            The direction of movement of the active particle.
+            The active-particle direction of motion.
         veto_index : int
             The particle index responsible for the event. 
+
         Returns
         -------
-        new_active_particle_index : int
-            The next active particle index (i.e. the discretised-time index) in the event chain.
-        new_movement_direction : int
-            The direction of movement of the next active particle.
+        active_particle_index: int
+            The index of the next active particle.
+        movement_direction : int
+            The next active-particle direction of motion.
         """
         raise NotImplementedError
     
@@ -288,7 +290,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         active_particle_index : int
             The active particle index (i.e. the discretised-time index).
         movement_direction : int
-            The direction of movement of the active particle.
+            The active-particle direction of motion.
         Returns
         -------
         new_position : float
@@ -304,7 +306,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         Parameters
         ----------
         movement_direction : int
-            The direction of movement of the active particle.
+            The active-particle direction of motion.
         roots : numpy.ndarray
             Array of roots of the quadratic equation given by the kinetic term of the action.
         Returns

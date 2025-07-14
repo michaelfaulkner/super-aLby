@@ -92,7 +92,7 @@ class EventChainMediator(Mediator):
             movement_direction = self._potential.get_random_event_chain_velocity()
             distance_to_next_measurement = self._distance_between_measurements
             while True:
-                distance_to_next_event, vetoing_index = self._potential.get_distance_to_next_event_and_veto_index(
+                distance_to_next_event, vetoing_index = self._potential.get_next_event(
                     self._positions, active_particle_index, temperature, movement_direction)
                 if distance_to_next_measurement < distance_to_next_event:
                     self._potential.update_position(self._positions, distance_to_next_measurement,
@@ -123,4 +123,3 @@ class EventChainMediator(Mediator):
         super()._reset_arrays_and_counters(temperature, restart_flag)
         if not restart_flag:
             self._get_initial_sample()
-        
