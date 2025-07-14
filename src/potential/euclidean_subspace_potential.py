@@ -79,8 +79,7 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
         raise NotImplementedError
     
     @abstractmethod
-    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
-                                                  movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -94,7 +93,7 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
         temperature : float
             The sampling temperature.
         movement_direction : int
-            The direction of movement of the active particle.
+            The active-particle direction of motion.
         
         Returns
         ----------
@@ -108,7 +107,8 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
     @abstractmethod
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """
-        Chooses the index and direction for the next active particle in the markov chain for ECMC.
+        Chooses the index and direction of motion of the next active particle in ECMC.
+
         Parameters
         ----------
         positions : numpy.ndarray
@@ -117,14 +117,21 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
         active_particle_index : int
             The active particle index
         movement_direction : int
-            The direction of movement of the active particle.
+            The active-particle direction of motion.
         veto_index : int
-            The particle index responsible for the event. 
+            The particle index responsible for the event.
+
+        Returns
+        -------
+        active_particle_index: int
+            The index of the next active particle.
+        movement_direction : int
+            The next active-particle direction of motion.
         """
         raise NotImplementedError
 
     @staticmethod
     @abstractmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
-        """ Updates position of the active particle following an event."""
+        """Updates the position of the active particle following an event."""
         raise NotImplementedError
