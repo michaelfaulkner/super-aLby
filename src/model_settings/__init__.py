@@ -65,16 +65,6 @@ with open(args.config_file) as config_file:
     else:
         number_of_quantum_particles = None
         number_of_timeslices = None
-if (dimensionality_of_particle_space == 1 and type(size_of_particle_space) is float or
-        (dimensionality_of_particle_space > 1 and type(size_of_particle_space) is list and
-         type(size_of_particle_space[0]) is float)):
-    size_of_particle_space_over_two = 0.5 * np.atleast_1d(size_of_particle_space)
-elif (dimensionality_of_particle_space == 1 and type(size_of_particle_space) is int or
-        (dimensionality_of_particle_space > 1 and type(size_of_particle_space) is list and
-         type(size_of_particle_space[0]) is int)):
-    size_of_particle_space_over_two = np.int64(0.5 * np.atleast_1d(size_of_particle_space))
-else:
-    size_of_particle_space_over_two = np.atleast_1d(size_of_particle_space)
-size_of_particle_space_over_two.flags.writeable = False
+
 size_of_particle_space = np.atleast_1d(size_of_particle_space)
 size_of_particle_space.flags.writeable = False
