@@ -136,8 +136,8 @@ class QuantumHardDiskPotential(WorldlinePotential):
                     return 1.0e10  # infinite potential
         return 0.0
 
-    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
-                                                  movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature,
+                       movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -151,7 +151,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
         temperature : float
             The sampling temperature.  NB, we set temperature = 1.0 (for QHO) as this quantity is for stat-phys models.
         movement_direction : int
-            The direction of movement of the active particle.
+            The active-particle direction of motion.
 
         Returns
         ----------
@@ -194,7 +194,8 @@ class QuantumHardDiskPotential(WorldlinePotential):
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """
-        Chooses the index and direction for the next active particle in the markov chain.
+        Chooses the index and direction of motion of the next active particle in ECMC.
+
         Parameters
         ----------
         positions : numpy.ndarray
@@ -203,15 +204,16 @@ class QuantumHardDiskPotential(WorldlinePotential):
         active_particle_index : int
             The active particle index (i.e. the discretised-time index).
         movement_direction : int
-            The direction of movement of the active particle.
+            The active-particle direction of motion.
         veto_index : int
             The particle index responsible for the event. 
+
         Returns
         -------
-        new_active_particle_index : int
-            The next active particle index (i.e. the discretised-time index) in the event chain.
-        new_movement_direction : int
-            The direction of movement of the next active particle.
+        active_particle_index: int
+            The index of the next active particle.
+        movement_direction : int
+            The next active-particle direction of motion.
         """
         return veto_index, movement_direction
 
@@ -228,7 +230,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
         active_particle_index : int
             The active particle index (i.e. the discretised-time index).
         movement_direction : int
-            The direction of movement of the active particle.
+            The active-particle direction of motion.
         Returns
         -------
         new_position : float

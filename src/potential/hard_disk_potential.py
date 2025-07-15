@@ -171,8 +171,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
             return np.array([1, 0])
         return np.array([0, 1])
 
-    def get_distance_to_next_event_and_veto_index(self, positions, active_particle_index, temperature,
-                                                  movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature,
+                       movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -242,12 +242,33 @@ class HardDiskPotential(EuclideanSubspacePotential):
         return shortest_distance_to_next_event, vetoing_particle_index
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
-        """Chooses the index and direction for the next active particle in the markov chain"""
+        """
+        Chooses the index and direction of motion of the next active particle in ECMC.
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the spin angle of its corresponding particle.
+        active_particle_index : int
+            The active particle index
+        movement_direction : int
+            The active-particle direction of motion.
+        veto_index : int
+            The particle index responsible for the event.
+
+        Returns
+        -------
+        active_particle_index: int
+            The index of the next active particle.
+        movement_direction : int
+            The next active-particle direction of motion.
+        """
         return veto_index, movement_direction
 
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
-        """ Updates position of the active particle."""
+        """ Updates the position of the active particle."""
         positions[active_particle_index] += displacement_distance * movement_direction
         positions[active_particle_index] = get_shortest_vectors_on_torus(positions[active_particle_index])
 
