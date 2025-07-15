@@ -171,8 +171,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
             return np.array([1, 0])
         return np.array([0, 1])
 
-    def get_next_event(self, positions, active_particle_index, temperature,
-                       movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -284,8 +283,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
 
     @staticmethod
     def _get_motion_index_and_other_index(movement_direction):
-        motion_index = 0  # assume that active particle is advancing in x direction
+        motion_index = 0  # assume that the active particle is advancing in x direction
         if movement_direction[0] == 0:
-            motion_index = 1  # active particle is actually advancing in y direction
+            motion_index = 1  # the active particle is actually advancing in y direction
         other_index = 1 - motion_index
         return motion_index, other_index

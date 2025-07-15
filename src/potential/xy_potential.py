@@ -150,8 +150,7 @@ class XyPotential(EuclideanSubspacePotential):
         """
         return 1
 
-    def get_next_event(self, positions, active_particle_index, temperature,
-                       movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -205,8 +204,7 @@ class XyPotential(EuclideanSubspacePotential):
 
         return shortest_distance_to_next_factor_event, vetoing_spin_index
 
-    def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
-                                    veto_index):
+    def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """
         Chooses the index and direction of motion of the next active particle in ECMC.
 

@@ -15,9 +15,9 @@ class QuantumHardDiskPotential(WorldlinePotential):
         \delta\tau \sum_{i=1}^{N_{\tau}}[0.5 * m(x_{i+1} - x_i)^2 / (\delta\tau)^2 + V(r)],
         where m and \omega are the mass and frequency, respectively, and V(r) is the hard disk potential.
 
-    N.B. The behaviour of the quantum hard disk potential is not yet well understood. At present there are issues with
-        mixing at low disk density.  We think this is due to the quantum kinetic energy dominating.  Factor fields
-        along the position dimension may fix the issue.
+    N.B. The behaviour of the quantum hard-disk model is not yet well understood. At present there are issues with
+        both Metropolis and event-chain mixing at low disk density.  We think this is due to the quantum kinetic energy
+        dominating.  Factor fields along the position dimension may fix the issue.
     """
 
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0,
@@ -72,7 +72,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
     @staticmethod
     def get_random_event_chain_velocity():
         """
-        Uniformly samples a direction of motion for the active particle from chosen velocity distribution.
+        Uniformly samples a direction of motion for the active particle from the chosen velocity distribution.
 
         Returns
         ----------
@@ -82,7 +82,6 @@ class QuantumHardDiskPotential(WorldlinePotential):
             numpy array (of integers) of length dimensionality_of_particle_space, where the nth component represents the
             velocity of the active particle along the nth Cartesian direction.
         """
-
         return 1.0
 
     def _get_gradient_at_index(self, positions, particle_index):
@@ -92,10 +91,10 @@ class QuantumHardDiskPotential(WorldlinePotential):
         Parameters
         ----------
         positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the position of a single quantum particle.
         particle_index : int
-            The particle index (i.e. the discretised-time index).
+            The index of the particle whose gradient is to be calculated.
 
         Returns
         -------
@@ -107,16 +106,15 @@ class QuantumHardDiskPotential(WorldlinePotential):
 
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
         r"""
-        Returns the hard disk potential which goes as:
-            V(r) = \inf ir r < \sigma
-                    0 if r \geq \sigma
-            where r = |x_i - y_j| and \sigma is the disk radius
+        Returns the hard disk potential due to the active particle.  This quantity is infinite if any r_{ai} < \sigma
+            and 0 otherwise, where \sigma is the disk radius and r_{ai} is the shortest distance between the active
+            particle and some other particle i.
 
         Parameters
         ----------
         positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the position of a single quantum particle.
         active_particle_index : int
             The index of the active particle.
         position_at_active_particle_index : float
@@ -136,20 +134,19 @@ class QuantumHardDiskPotential(WorldlinePotential):
                     return 1.0e10  # infinite potential
         return 0.0
 
-    def get_next_event(self, positions, active_particle_index, temperature,
-                       movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
         Parameters
         ----------
         positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the position of a single quantum particle.
         active_particle_index : int
-            The active particle index (i.e. the discretised-time index).
+            The index of the active particle.
         temperature : float
-            The sampling temperature.  NB, we set temperature = 1.0 (for QHO) as this quantity is for stat-phys models.
+            The sampling temperature.  N.B. we set temperature = 1.0 (for QHO) as this quantity is for stat-phys models.
         movement_direction : int
             The active-particle direction of motion.
 
@@ -159,13 +156,13 @@ class QuantumHardDiskPotential(WorldlinePotential):
             The distance to the next particle event
         vetoing_index : int
             The index of the particle that triggers the event.
-            """
+        """
         worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
                                 self._get_east_worldline_neighbour(active_particle_index)]
         quantum_particle_neighbours = self._get_quantum_particles_at_timeslice(active_particle_index)
+
         (shortest_distance_to_next_factor_event, vetoing_index
-         ) = self._get_distance_to_next_kinetic_event_and_veto_index(positions, active_particle_index,
-                                                                     movement_direction, worldline_neighbours)
+         ) = self._get_next_kinetic_event(positions, active_particle_index, movement_direction, worldline_neighbours)
         distance_to_next_potential_event = 1.0e10
         potential_veto_index = None
         initial_position = positions[active_particle_index][0]
@@ -199,10 +196,10 @@ class QuantumHardDiskPotential(WorldlinePotential):
         Parameters
         ----------
         positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the position of a single quantum particle.
         active_particle_index : int
-            The active particle index (i.e. the discretised-time index).
+            The index of the active particle.
         movement_direction : int
             The active-particle direction of motion.
         veto_index : int
@@ -223,20 +220,15 @@ class QuantumHardDiskPotential(WorldlinePotential):
         Parameters
         ----------
         positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the position of a single quantum particle.
         displacement_distance : float
-            The displacement that the current position of the active particle will be updated using.
+            The displacement distance of the active particle to the next event.
         active_particle_index : int
-            The active particle index (i.e. the discretised-time index).
+            The index of the active particle.
         movement_direction : int
             The active-particle direction of motion.
-        Returns
-        -------
-        new_position : float
-            The updated position of the active particle
         """
-
         positions[active_particle_index] += displacement_distance * movement_direction
         positions[active_particle_index] = get_shortest_vectors_on_torus(positions[active_particle_index])
 
