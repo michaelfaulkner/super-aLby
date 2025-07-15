@@ -137,7 +137,7 @@ class InversePowerPotential(EuclideanSubspacePotential):
             velocity of the active particle along the nth Cartesian direction.
         """
         raise SystemError(f"The get_random_event_chain_velocity method has not been written.")
-    
+
     def get_next_event(self, positions, active_particle_index, temperature,
                        movement_direction):
         """
@@ -154,7 +154,7 @@ class InversePowerPotential(EuclideanSubspacePotential):
             The sampling temperature.
         movement_direction : int
             The direction of movement of the particle, either 1 or -1.
-        
+
         Returns
         ----------
         distance_to_next_event : float
@@ -194,3 +194,9 @@ class InversePowerPotential(EuclideanSubspacePotential):
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """Updates the position of the active particle following an event."""
         raise SystemError(f"The update_position method has not been written.")
+
+    def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
+        """
+        Propose candidate via teleportation portal kernel.
+        """
+        raise SystemError(f"The get_portal_candidate method of {self.__class__.__name__} has not been written.")

@@ -121,9 +121,9 @@ class Mediator(metaclass=ABCMeta):
                 self._get_checkpoint_index()
             else:
                 self._get_initial_sample()
-            self._generate_sample_at_current_temperature(temperature_index, temperature)
+            self._generate_sample_at_current_temperature(temperature_index, temperature, restart_flag)
             if not restart_flag:
-                self._samples = [np.concatenate((self._initial_samples[sampler_index], self._samples[sampler_index])) 
+                self._samples = [np.concatenate((self._initial_samples[sampler_index], self._samples[sampler_index]))
                                  for sampler_index, sampler in enumerate(self._samplers)]
             [sampler.output_sample(self._samples[sampler_index], temperature_index, self._checkpoint_index)
              for sampler_index, sampler in enumerate(self._samplers)]
@@ -169,7 +169,7 @@ class Mediator(metaclass=ABCMeta):
                                                                                      self._potential)
 
     @abstractmethod
-    def _generate_sample_at_current_temperature(self, temperature_index, temperature):
+    def _generate_sample_at_current_temperature(self, temperature_index, temperature, restart_flag):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         raise NotImplementedError
 

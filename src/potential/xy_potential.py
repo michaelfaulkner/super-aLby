@@ -10,7 +10,7 @@ class XyPotential(EuclideanSubspacePotential):
     This class implements the 2DXY model potential.
     """
 
-    def __init__(self, prefactor: float = 1.0,  lattice_dimensionality: int = 2): 
+    def __init__(self, prefactor: float = 1.0,  lattice_dimensionality: int = 2):
         """
         The constructor of the XyPotential class.
 
@@ -62,7 +62,7 @@ class XyPotential(EuclideanSubspacePotential):
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents the spin angle of its corresponding particle.
-        
+
         Returns
         -------
         float
@@ -166,7 +166,7 @@ class XyPotential(EuclideanSubspacePotential):
             The sampling temperature.
         movement_direction : int
             The active-particle direction of motion.
-        
+
         Returns
         ----------
         distance_to_next_event : float
@@ -181,7 +181,7 @@ class XyPotential(EuclideanSubspacePotential):
         for neighbouring_spin_index in get_neighbours(active_particle_index, self._lattice_length):
             non_active_spin_value = positions[neighbouring_spin_index, 0]
             initial_spin_value_difference = self._get_spin_difference(active_spin_value, non_active_spin_value)
-            uphill_energy = - temperature * np.log(1.0 - np.random.rand())
+            uphill_energy = - temperature / self.potential_constant * np.log(1.0 - np.random.rand())
 
             if initial_spin_value_difference > 0.0:
                 initial_two_spin_potential = 1.0 - np.cos(initial_spin_value_difference)
@@ -240,3 +240,7 @@ class XyPotential(EuclideanSubspacePotential):
     def _get_spin_difference(spin_value_one, spin_value_two):
         """ returns the difference between two spin angles"""
         return (spin_value_one - spin_value_two + np.pi) % (2.0 * np.pi) - np.pi
+
+    def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
+        """ Propose candidate via teleportation portal kernel."""
+        return (2.0 * positions[veto_index] - positions[active_particle_index]) % (2.0 * np.pi)
