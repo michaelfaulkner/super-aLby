@@ -101,7 +101,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
         float
             The potential difference resulting from moving the single active particle to candidate_position.
         """
-        pass
+        raise SystemError(f"The get_gradient method of {self.__class__.__name__} has not been written.")
 
     def get_gradient(self, positions):
         """
