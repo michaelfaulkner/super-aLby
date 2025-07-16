@@ -123,7 +123,7 @@ class Mediator(metaclass=ABCMeta):
                 self._get_initial_sample()
             self._generate_sample_at_current_temperature(temperature_index, temperature)
             if not restart_flag:
-                self._samples = [np.concatenate((self._initial_samples[sampler_index], self._samples[sampler_index])) 
+                self._samples = [np.concatenate((self._initial_samples[sampler_index], self._samples[sampler_index]))
                                  for sampler_index, sampler in enumerate(self._samplers)]
             [sampler.output_sample(self._samples[sampler_index], temperature_index, self._checkpoint_index)
              for sampler_index, sampler in enumerate(self._samplers)]

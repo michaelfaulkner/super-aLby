@@ -143,7 +143,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
         for index_x in range(max_index):
             for index_y in range(max_index):
                 if index_x + index_y * max_index + 1 > number_of_particles:
-                    """abort to correct for using max_index = int(number_of_particles ** 0.5 + 1) - which we use as 
+                    """abort to correct for using max_index = int(number_of_particles ** 0.5 + 1) - which we use as
                         int(number_of_particles ** 0.5) is too small for a non-square number_of_particles"""
                     continue
                 positions[index_x + index_y * max_index, 0] = (index_x * delta_x + index_y * delta_y[0]
@@ -289,3 +289,9 @@ class HardDiskPotential(EuclideanSubspacePotential):
             motion_index = 1  # active particle is actually advancing in y direction
         other_index = 1 - motion_index
         return motion_index, other_index
+
+    def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
+        """
+        Propose candidate via teleportation portal kernel.
+        """
+        raise SystemError(f"The get_portal_candidate method of {self.__class__.__name__} has not been written.")
