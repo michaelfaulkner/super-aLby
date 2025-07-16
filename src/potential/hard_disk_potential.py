@@ -146,7 +146,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
                     """abort to correct for using max_index[1] = int(number_of_particles ** 0.5 + 2) - which we use as 
                         int(number_of_particles ** 0.5) is too small for a non-square number_of_particles"""
                     continue
-                print(index_x, index_y, index_x + index_y * max_index[0])
                 positions[index_x + index_y * max_index[0], 0] = (index_x * delta_x + index_y * delta_y[0]
                                                                   ) % size_of_particle_space[0]
                 positions[index_x + index_y * max_index[0], 1] = (index_y * delta_y[1]) % size_of_particle_space[1]
