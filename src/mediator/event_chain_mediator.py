@@ -41,7 +41,12 @@ class EventChainMediator(Mediator):
             Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
         normalised_distance_between_measurements : float, optional
-            Total distance through state space between samples (normalised as indicated by operations below).
+            Total distance through state space between samples (normalised as indicated by the operations below).
+        normalised_distance_between_velocity_refreshments : float, optional
+            Total distance through state space between velocity refreshments (normalised as indicated by the operations
+            below).
+        teleportation_portal : bool, optional
+            When True, a teleportation portal is attempted at each event induced by the potential.
 
         Raises
         ------
@@ -65,6 +70,8 @@ class EventChainMediator(Mediator):
             If number_of_observations is not greater than 0.
         base.exceptions.ConfigurationError
             If normalised_distance_between_measurements is not greater than 0.0.
+        base.exceptions.ConfigurationError
+            If normalised_distance_between_velocity_refreshments is not greater than 0.0.
         """
         super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
                          number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations)
@@ -73,17 +80,20 @@ class EventChainMediator(Mediator):
         if normalised_distance_between_measurements <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 as normalised_distance_between_measurements in "
                                      f"{self.__class__.__name__}.")
+        if normalised_distance_between_velocity_refreshments <= 0.0:
+            raise ConfigurationError(f"Give a value greater than 0.0 as "
+                                     f"normalised_distance_between_velocity_refreshments in {self.__class__.__name__}.")
+        self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
+        self._distance_between_velocity_refreshments = (normalised_distance_between_velocity_refreshments *
+                                                        number_of_particles)
         if "HardDiskPotential" in str(potential):
-            self._distance_between_measurements = (normalised_distance_between_measurements * number_of_particles *
-                                                   np.min(size_of_particle_space))
-        else:
-            self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
+            self._distance_between_measurements *= np.min(size_of_particle_space)
+            self._distance_between_velocity_refreshments *= np.min(size_of_particle_space)
         print(f"Distance between event-chain measurements is {self._distance_between_measurements}")
+        print(f"Distance between event-chain velocity refreshments is {self._distance_between_measurements}")
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
-        self._distance_between_velocity_refreshments = (normalised_distance_between_velocity_refreshments
-                                                        * number_of_particles)
         """The following object is set in self._reset_arrays_and_counters()"""
         self._total_number_of_events = None
         self._teleportation_portal = teleportation_portal
