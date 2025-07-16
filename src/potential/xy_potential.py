@@ -242,5 +242,5 @@ class XyPotential(EuclideanSubspacePotential):
         return (spin_value_one - spin_value_two + np.pi) % (2.0 * np.pi) - np.pi
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
-        """ Propose candidate via teleportation portal kernel."""
+        """Propose candidate via teleportation portal kernel."""
         return (2.0 * positions[veto_index] - positions[active_particle_index]) % (2.0 * np.pi)
