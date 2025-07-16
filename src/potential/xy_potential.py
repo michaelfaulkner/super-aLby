@@ -21,6 +21,11 @@ class XyPotential(EuclideanSubspacePotential):
         lattice_dimensionality : int
             The dimensionality of the lattice on which the XY model is defined.  We currently only provide functionality
             for the 2DXY model, i.e. for lattice_dimensionality equal to two.
+
+        Raises
+        ------
+        base.exceptions.ConfigurationError
+            If prefactor is not greater than 0.0.
         """
         super().__init__(prefactor=prefactor)
         if lattice_dimensionality != 2:

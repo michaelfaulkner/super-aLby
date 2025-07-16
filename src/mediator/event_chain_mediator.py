@@ -4,6 +4,7 @@ import numpy as np
 from base.exceptions import ConfigurationError
 from .mediator import Mediator
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
+from factor_field.factor_field import FactorField
 from sampler.sampler import Sampler
 from typing import Sequence
 from model_settings import number_of_particles, size_of_particle_space, system_volume
@@ -14,7 +15,7 @@ class EventChainMediator(Mediator):
     """The EventChainMediator class provides functionality for the event-chain Monte Carlo algorithm."""
 
     def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
-                 minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
+                 factor_field: FactorField = None, minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
                  number_of_temperature_increments: int = 0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, normalised_distance_between_measurements: float = 1.0,
                  normalised_distance_between_velocity_refreshments: float = 1.0, teleportation_portal: bool = False):
@@ -86,6 +87,7 @@ class EventChainMediator(Mediator):
                                                         * number_of_particles)
         """The following object is set in self._reset_arrays_and_counters()"""
         self._total_number_of_events = None
+        self._factor_field = factor_field
         self._teleportation_portal = teleportation_portal
 
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
@@ -96,8 +98,11 @@ class EventChainMediator(Mediator):
         for markov_chain_index in range(self._total_number_of_iterations):
             distance_to_next_measurement = self._distance_between_measurements
             while True:
-                distance_to_next_event, vetoing_index = self._potential.get_next_event(
-                    self._positions, active_particle_index, temperature, movement_direction)
+                candidate_events = [self._potential.get_next_event(
+                    self._positions, active_particle_index, temperature, movement_direction),
+                    self._factor_field.get_next_event(
+                    self._positions, active_particle_index, temperature, movement_direction)]
+                distance_to_next_event, vetoing_index = min(candidate_events)
                 if (distance_to_next_measurement < distance_to_next_event and
                         distance_to_next_measurement < distance_to_next_velocity_refreshment):
                     self._potential.update_position(self._positions, distance_to_next_measurement,
