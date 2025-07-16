@@ -136,19 +136,20 @@ class HardDiskPotential(EuclideanSubspacePotential):
             particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
-        max_index = int(number_of_particles ** 0.5 + 1)
+        max_index = [int(number_of_particles ** 0.5), int(number_of_particles ** 0.5 + 2)]
         delta_x = 1.00001 * 2.0 * self._disk_radius
         delta_y = [1.00001 * self._disk_radius, 1.00001 * self._disk_radius * 3.0 ** 0.5]
         positions = np.zeros((number_of_particles, 2))
-        for index_x in range(max_index):
-            for index_y in range(max_index):
-                if index_x + index_y * max_index + 1 > number_of_particles:
-                    """abort to correct for using max_index = int(number_of_particles ** 0.5 + 1) - which we use as 
+        for index_x in range(max_index[0]):
+            for index_y in range(max_index[1]):
+                if index_x + index_y * max_index[0] + 1 > number_of_particles:
+                    """abort to correct for using max_index[1] = int(number_of_particles ** 0.5 + 2) - which we use as 
                         int(number_of_particles ** 0.5) is too small for a non-square number_of_particles"""
                     continue
-                positions[index_x + index_y * max_index, 0] = (index_x * delta_x + index_y * delta_y[0]
-                                                               ) % size_of_particle_space[0]
-                positions[index_x + index_y * max_index, 1] = (index_y * delta_y[1]) % size_of_particle_space[1]
+                print(index_x, index_y, index_x + index_y * max_index[0])
+                positions[index_x + index_y * max_index[0], 0] = (index_x * delta_x + index_y * delta_y[0]
+                                                                  ) % size_of_particle_space[0]
+                positions[index_x + index_y * max_index[0], 1] = (index_y * delta_y[1]) % size_of_particle_space[1]
         positions = get_shortest_vectors_on_torus(positions)
         self._check_for_disk_overlaps(positions)
         self._linked_lists.reset_linked_lists(positions)
