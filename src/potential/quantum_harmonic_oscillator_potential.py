@@ -214,3 +214,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             The active-particle direction of motion.
         """
         positions[active_particle_index] += displacement_distance * movement_direction
+
+    def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
+        """Propose candidate via teleportation portal kernel."""
+        raise SystemError(f"The get_portal_candidate method of {self.__class__.__name__} has not been written.")

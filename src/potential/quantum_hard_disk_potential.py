@@ -241,3 +241,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
             quantum_particle_index = number_of_quantum_particles * timeslice_index + index
             quantum_particles_at_timeslice[index] = quantum_particle_index
         return quantum_particles_at_timeslice.astype(int)
+
+    def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
+        """Propose candidate via teleportation portal kernel."""
+        raise SystemError(f"The get_portal_candidate method of {self.__class__.__name__} has not been written.")
