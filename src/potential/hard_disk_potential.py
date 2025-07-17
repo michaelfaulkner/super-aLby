@@ -217,8 +217,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
         """
         active_particle_position = positions[active_particle_index]
         if self.cell_boundary_event:
-            # self._linked_lists.reset_linked_lists(positions)
-            """NB, O(1) method below produces a pressure estimate ~99.6% of that with line above (N = 8; phi = 0.656)"""
             self._linked_lists.move_particle_to_new_cell(active_particle_position, active_particle_index,
                                                          self._active_cell_index)
         self.cell_boundary_event = True
