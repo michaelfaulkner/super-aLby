@@ -11,9 +11,29 @@ from model_settings import size_of_particle_space, number_of_particles
 
 class HardDiskPotential(EuclideanSubspacePotential):
     r"""
-    This class implements the potential functionality for event-chain simulation of the hard-disk model.  Some abstract
-        methods from SoftMatterPotential are not relevant due to the non-smooth nature of the 'potential' function.
-        We include these methods as dummy methods.
+    This class implements the potential functionality for event-chain simulations of the hard-disk model.  Functionality
+        is currently provided only for hard disks in a 2D box with a (1:1) aspect ratio.  N.B. some abstract methods
+        from SoftMatterPotential are not relevant due to the non-smooth nature of the 'potential' function.  We include
+        these methods as dummy methods.
+
+    For 72 hard disks in a 2D box with a (1:1) aspect ratio, the simulations defined in config_files/hard_disk_tests
+        tested the event-chain code against data provided at the following URL:
+
+        https://github.com/jellyfysh/HistoricDisks/blob/master/DigitizedData/ThisWork.csv
+
+        1) config_files/hard_disk_tests/packing_fraction_point_688 predicted
+            \beta P (2 \sigma)^2 = 8.399524559268 +- 0.041014715535, compared with 8.39654 +- 0.00040 at the URL.
+
+        2) config_files/hard_disk_tests/packing_fraction_point_698 predicted
+            \beta P (2 \sigma)^2 = 8.549714630637 +- 0.066880400368, compared with 8.5118 +- 0.0010 at the URL.
+
+        3) config_files/hard_disk_tests/packing_fraction_point_698 predicted
+            \beta P (2 \sigma)^2 = 8.629918598453 +- 0.052206594950, compared with 8.55170 +- 0.00059 at the URL.
+
+        The first two simulations agreed (with the published data) within the simulation error.  The latter resulted in
+            a minor discrepancy, but its packing fraction was close to the liquid-hexatic transition (see fig. 2 of
+            Phys. Rev. Lett. 107, 155704 (2011)).  Given that these tests were run before any code optimisation, we were
+            therefore happy to conclude that the code is working correctly.
     """
 
     def __init__(self, prefactor: float = 1.0, disk_radius: float = 1.0, packing_fraction: float = 0.5):
