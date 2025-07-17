@@ -11,9 +11,29 @@ from model_settings import size_of_particle_space, number_of_particles
 
 class HardDiskPotential(EuclideanSubspacePotential):
     r"""
-    This class implements the potential functionality for event-chain simulation of the hard-disk model.  Some abstract
-        methods from SoftMatterPotential are not relevant due to the non-smooth nature of the 'potential' function.
-        We include these methods as dummy methods.
+    This class implements the potential functionality for event-chain simulations of the hard-disk model.  Functionality
+        is currently provided only for hard disks in a 2D box with a (1:1) aspect ratio.  N.B. some abstract methods
+        from SoftMatterPotential are not relevant due to the non-smooth nature of the 'potential' function.  We include
+        these methods as dummy methods.
+
+    For 72 hard disks in a 2D box with a (1:1) aspect ratio, the simulations defined in config_files/hard_disk_tests
+        tested the event-chain code against data provided at the following URL:
+
+        https://github.com/jellyfysh/HistoricDisks/blob/master/DigitizedData/ThisWork.csv
+
+        1) config_files/hard_disk_tests/packing_fraction_point_688 predicted
+            \beta P (2 \sigma)^2 = 8.399524559268 +- 0.041014715535, compared with 8.39654 +- 0.00040 at the URL.
+
+        2) config_files/hard_disk_tests/packing_fraction_point_698 predicted
+            \beta P (2 \sigma)^2 = 8.549714630637 +- 0.066880400368, compared with 8.5118 +- 0.0010 at the URL.
+
+        3) config_files/hard_disk_tests/packing_fraction_point_698 predicted
+            \beta P (2 \sigma)^2 = 8.629918598453 +- 0.052206594950, compared with 8.55170 +- 0.00059 at the URL.
+
+        The first two simulations agreed (with the published data) within the simulation error.  The latter resulted in
+            a minor discrepancy, but its packing fraction was close to the liquid-hexatic transition (see fig. 2 of
+            Phys. Rev. Lett. 107, 155704 (2011)).  Given that these tests were run before any code optimisation or
+            equilibration checks, we were therefore happy to conclude that the code is working correctly.
     """
 
     def __init__(self, prefactor: float = 1.0, disk_radius: float = 1.0, packing_fraction: float = 0.5):
@@ -101,7 +121,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
         float
             The potential difference resulting from moving the single active particle to candidate_position.
         """
-        pass
+        raise SystemError(f"The get_gradient method of {self.__class__.__name__} has not been written.")
 
     def get_gradient(self, positions):
         """
@@ -136,19 +156,19 @@ class HardDiskPotential(EuclideanSubspacePotential):
             particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
-        max_index = int(number_of_particles ** 0.5 + 1)
+        index_range = [int(number_of_particles ** 0.5), int(number_of_particles ** 0.5 + 2)]
         delta_x = 1.00001 * 2.0 * self._disk_radius
         delta_y = [1.00001 * self._disk_radius, 1.00001 * self._disk_radius * 3.0 ** 0.5]
         positions = np.zeros((number_of_particles, 2))
-        for index_x in range(max_index):
-            for index_y in range(max_index):
-                if index_x + index_y * max_index + 1 > number_of_particles:
-                    """abort to correct for using max_index = int(number_of_particles ** 0.5 + 1) - which we use as
+        for index_x in range(index_range[0]):
+            for index_y in range(index_range[1]):
+                if index_x + index_y * index_range[0] + 1 > number_of_particles:
+                    """pass to correct for using index_range[1] = int(number_of_particles ** 0.5 + 2) - which we use as 
                         int(number_of_particles ** 0.5) is too small for a non-square number_of_particles"""
                     continue
-                positions[index_x + index_y * max_index, 0] = (index_x * delta_x + index_y * delta_y[0]
-                                                               ) % size_of_particle_space[0]
-                positions[index_x + index_y * max_index, 1] = (index_y * delta_y[1]) % size_of_particle_space[1]
+                positions[index_x + index_y * index_range[0], 0] = (index_x * delta_x + index_y * delta_y[0]
+                                                                    ) % size_of_particle_space[0]
+                positions[index_x + index_y * index_range[0], 1] = (index_y * delta_y[1]) % size_of_particle_space[1]
         positions = get_shortest_vectors_on_torus(positions)
         self._check_for_disk_overlaps(positions)
         self._linked_lists.reset_linked_lists(positions)
@@ -171,8 +191,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
             return np.array([1, 0])
         return np.array([0, 1])
 
-    def get_next_event(self, positions, active_particle_index, temperature,
-                       movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -198,8 +217,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
         """
         active_particle_position = positions[active_particle_index]
         if self.cell_boundary_event:
-            # self._linked_lists.reset_linked_lists(positions)
-            """NB, O(1) method below produces a pressure estimate ~99.6% of that with line above (N = 8; phi = 0.656)"""
             self._linked_lists.move_particle_to_new_cell(active_particle_position, active_particle_index,
                                                          self._active_cell_index)
         self.cell_boundary_event = True
@@ -280,18 +297,21 @@ class HardDiskPotential(EuclideanSubspacePotential):
                 if (minimal_separation_distance < 2.0 * self._disk_radius and not
                         abs(minimal_separation_distance - 2.0 * self._disk_radius) < 1.0e-12):
                     raise ValueError(f"Disks {particle_index_1} and {particle_index_2} are overlapping.  Their minimal "
-                                     f"separation distance is {minimal_separation_distance}.")
+                                     f"separation distance is {minimal_separation_distance}.  NOTE: If this error was "
+                                     f"thrown due to the initial configuration, consider increasing the number of "
+                                     f"particles.  We have found that packing is challenging in some cases, e.g. we "
+                                     f"believe that number_of_particles should be greater than 33 to guarantee a valid "
+                                     f"initial configuration for packing_fraction = 0.688 (though a thorough analysis "
+                                     f"is required).")
 
     @staticmethod
     def _get_motion_index_and_other_index(movement_direction):
-        motion_index = 0  # assume that active particle is advancing in x direction
+        motion_index = 0  # assume that the active particle is advancing in x direction
         if movement_direction[0] == 0:
-            motion_index = 1  # active particle is actually advancing in y direction
+            motion_index = 1  # the active particle is actually advancing in y direction
         other_index = 1 - motion_index
         return motion_index, other_index
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
-        """
-        Propose candidate via teleportation portal kernel.
-        """
+        """Propose candidate via teleportation portal kernel."""
         raise SystemError(f"The get_portal_candidate method of {self.__class__.__name__} has not been written.")
