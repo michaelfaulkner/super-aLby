@@ -243,13 +243,19 @@ def main(config_file_string):
                                    "temperature_00_checkpoint_00_sample_of_positions.npy").flatten()
 
     if "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
+        reference_sample = np.load("permanent_data/reference_data/"
+                                   "eight_2d_hard_disks_particles_packing_fraction_point_688_reference_sample.npy")
+        """the following code was used when testing the hard-disk code against published at the URL below:
+            https://github.com/jellyfysh/HistoricDisks/blob/master/DigitizedData/ThisWork.csv"""
+        """
         disk_radius = 1.0
         sample = sample_getter.get_pressure(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                             number_of_equilibration_iterations).flatten()
         sample_mean, sample_error = get_sample_mean_and_error(sample)
         print(f"Pressure = {sample_mean * (2.0 * disk_radius) ** 2} +- {sample_error * (2.0 * disk_radius) ** 2}")
+        """
 
-    elif potential != "ising_potential":
+    if "ising_potential" not in potential:
         reference_cdf = get_cumulative_distribution(reference_sample)
         if "coulomb" in potential or "lennard_jones" in potential:
             sample = sample_getter.get_particle_separations(sample_directories[0], temperatures[0], 0, 0,
@@ -262,6 +268,10 @@ def main(config_file_string):
             sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperatures[0], 0, 0,
                                                               number_of_particles, number_of_equilibration_iterations
                                                               ).flatten()
+        elif "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
+            sample = sample_getter.get_pressure(
+                sample_directories[0], temperatures[0], 0, 0, number_of_particles,
+                number_of_equilibration_iterations).flatten()
         else:
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
