@@ -32,8 +32,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
 
         The first two simulations agreed (with the published data) within the simulation error.  The latter resulted in
             a minor discrepancy, but its packing fraction was close to the liquid-hexatic transition (see fig. 2 of
-            Phys. Rev. Lett. 107, 155704 (2011)).  Given that these tests were run before any code optimisation, we were
-            therefore happy to conclude that the code is working correctly.
+            Phys. Rev. Lett. 107, 155704 (2011)).  Given that these tests were run before any code optimisation or
+            equilibration checks, we were therefore happy to conclude that the code is working correctly.
     """
 
     def __init__(self, prefactor: float = 1.0, disk_radius: float = 1.0, packing_fraction: float = 0.5):
