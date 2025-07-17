@@ -71,9 +71,12 @@ def main(config_file_string):
             raise ValueError("Hard-disk model reference data only available for PressureSampler. Please give only this "
                              "value for samplers in the Mediator section.")
     elif potential == "quantum_hard_disk_potential":
+        if not (config_file_mediator == "event_chain_mediator" or config_file_mediator == "metropolis_mediator"):
+            raise ValueError("Reference data for the quantum hard-disk model is only available for EventChainMediator "
+                             "and MetropolisMediator.  Please choose only one of these mediators in the Run section.")
         if not (len(samplers) == 1 and samplers[0] == "standard_position_sampler"):
-            raise ValueError("Quantum hard-disk model reference data only available for PositionSampler. Please give" \
-            "only this value for samplers in the Mediator section.")
+            raise ValueError("Reference data for the quantum hard-disk model is only available for PositionSampler.  "
+                             "Please give only this value for samplers in the Mediator section.")
     else:
         raise ValueError("Reference data not provided for this potential.")
 
@@ -238,11 +241,7 @@ def main(config_file_string):
     elif "quantum_harmonic_oscillator_potential" in potential:
         reference_sample = np.load(
         "permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_reference_sample.npy").flatten()
-    elif "quantum_hard_disk_potential" in potential:
-        reference_sample = np.load("output/convergence_tests/quantum_hard_disk_potential/metropolis/"
-                                   "temperature_00_checkpoint_00_sample_of_positions.npy").flatten()
-
-    if "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
+    elif "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
         reference_sample = np.load("permanent_data/reference_data/"
                                    "eight_2d_hard_disks_particles_packing_fraction_point_688_reference_sample.npy")
         """the following code was used when testing the hard-disk code against published at the URL below:
@@ -254,6 +253,12 @@ def main(config_file_string):
         sample_mean, sample_error = get_sample_mean_and_error(sample)
         print(f"Pressure = {sample_mean * (2.0 * disk_radius) ** 2} +- {sample_error * (2.0 * disk_radius) ** 2}")
         """
+    elif "quantum_hard_disk_potential" in potential and "event_chain_mediator" in config_file_mediator:
+        reference_sample = np.load("permanent_data/reference_data/ten_quantum_hard_disks_two_timeslices_"
+                                   "packing_fraction_point_97_event_chain_reference_sample.npy")
+    elif "quantum_hard_disk_potential" in potential and "metropolis_mediator" in config_file_mediator:
+        reference_sample = np.load("permanent_data/reference_data/ten_quantum_hard_disks_two_timeslices_"
+                                   "packing_fraction_point_9_metropolis_reference_sample.npy")
 
     if "ising_potential" not in potential:
         reference_cdf = get_cumulative_distribution(reference_sample)

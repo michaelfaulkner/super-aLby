@@ -21,7 +21,7 @@ class QuantumHardDiskPotential(WorldlinePotential):
     """
 
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0,
-                 timestep: float = 0.1, disk_radius: float = 1.0):
+                 timestep: float = 0.1, disk_radius: float = 1.0, packing_fraction: float = 0.5):
         r"""
         The constructor of the QuantumHarmonicHardDiskPotential class
 
@@ -37,13 +37,20 @@ class QuantumHardDiskPotential(WorldlinePotential):
             The size of the time step, \delta \tau.
         disk_radius : float, optional
             The radius of each disk.
+        packing_fraction : float, optional
+            The packing fraction of the disks (i.e. the quantum particles).  This corresponds to the mean disk density.
         """
         super().__init__(prefactor=prefactor, lattice_dimensionality=lattice_dimensionality, mass=mass,
                          timestep=timestep)
         if prefactor != 1.0:
             raise ConfigurationError(f"Give a value of 1.0 for prefactor in {self.__class__.__name__} - functionality "
                                      f"for other values is not yet provided.")
+        if not (0.0 < packing_fraction <= 0.999999):
+            raise ConfigurationError(f"Give a value not less than 0.1 and not greater than 1.0 for packing_fraction in "
+                                     f"{self.__class__.__name__}.")
         self._disk_radius = disk_radius
+        self._packing_fraction = packing_fraction
+        print(f"System length is {size_of_particle_space}.")
 
     def get_initial_positions(self):
         """
