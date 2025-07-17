@@ -27,7 +27,8 @@ number_of_momenta_components = number_of_particles * dimensionality_of_particle_
 
 with open(args.config_file) as config_file:
     config_file_as_str = config_file.read()
-    if "HardDiskPotential" in config_file_as_str and "QuantumHardDiskPotential" not in config_file_as_str:
+    config = read_config(args.config_file)
+    if "HardDiskPotential" in config_file_as_str:
         if ("size_of_particle_space" in config_file_as_str or
                 "range_of_initial_particle_positions" in config_file_as_str):
             raise ConfigurationError(
@@ -36,7 +37,6 @@ with open(args.config_file) as config_file:
                 f"size_of_particle_space is set by packing_fraction and number_of_particles; the initial disk "
                 f"positions must be ordered to avoid disk overlaps.")
     else:
-        config = read_config(args.config_file)
         range_of_initial_particle_positions = get_value(config, "ModelSettings", "range_of_initial_particle_positions")
         if dimensionality_of_particle_space == 1 and size_of_particle_space is not None:
             if type(range_of_initial_particle_positions) is float or type(range_of_initial_particle_positions) is int \
