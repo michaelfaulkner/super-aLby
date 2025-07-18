@@ -24,21 +24,6 @@ class NoFactorField(FactorField):
         """
         super().__init__(prefactor)
 
-    @staticmethod
-    def get_random_event_chain_velocity():
-        """
-        Uniformly samples a direction of motion for the active particle from chosen velocity distribution.
-
-        Returns
-        ----------
-        random_event_chain_velocity : int or numpy.ndarray
-            The uniformly sampled event-chain velocity of the active particle.  If the state space of each particle is
-            a subset of the real line, the method should output an integer; otherwise it should output a one-dimensional
-            numpy array (of integers) of length dimensionality_of_particle_space, where the nth component represents the
-            velocity of the active particle along the nth Cartesian direction.
-        """
-        return 1
-
     def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.

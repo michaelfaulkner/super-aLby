@@ -127,3 +127,8 @@ def get_effective_sample_size(sample):
     """
     iact = get_iact_and_acf(sample, cutoff=math.e ** (-2))[0]
     return len(sample) / iact
+
+def get_ks_test(sample, reference_sample):
+    from scipy.stats import ks_2samp
+    ks_test = ks_2samp(sample, reference_sample)
+    return ks_test.statistic, ks_test.pvalue

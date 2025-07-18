@@ -1,5 +1,5 @@
 from configparser import NoOptionError
-from markov_chain_diagnostics import get_cumulative_distribution, get_sample_mean_and_error
+from markov_chain_diagnostics import get_cumulative_distribution, get_sample_mean_and_error, get_effective_sample_size
 import importlib
 import matplotlib
 import matplotlib.pyplot as plt
@@ -22,7 +22,7 @@ def main(config_file_string):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     """nb, argument of parsing.parse_options() must be of type Sequence[str]"""
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-    (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
+    (config_file_mediator, potential, _, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
      _, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
     if potential == "ising_potential":
         if not (len(temperatures) == 2 and temperatures[0] == 1.2 and temperatures[1] == 3.0):
@@ -264,9 +264,11 @@ def main(config_file_string):
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
         sample_cdf = get_cumulative_distribution(sample)
+        eff_sample_size = get_effective_sample_size(sample)
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
-        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-aLby data')
+        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-',
+                 label=f'super-aLby data\nN_eff={eff_sample_size}')
 
         plt.xlabel(r"$x$", fontsize=15, labelpad=10)
         plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)
