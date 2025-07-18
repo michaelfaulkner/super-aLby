@@ -24,7 +24,7 @@ import math
 from operator import itemgetter
 import random
 from typing import List, Sequence
-from model_settings import size_of_particle_space, size_of_particle_space_over_two
+from model_settings import size_of_particle_space
 
 
 def norm(vector: Sequence[float]) -> float:
@@ -278,4 +278,5 @@ def get_shortest_vectors_on_torus(vectors):
     numpy.ndarray
         The vector or vectors corrected for periodic boundaries; a numpy array of floats.
     """
-    return (vectors + size_of_particle_space_over_two) % size_of_particle_space - size_of_particle_space_over_two
+    return ((vectors + 0.5 * size_of_particle_space + 1.0e-12) % size_of_particle_space -
+            (0.5 * size_of_particle_space + 1.0e-12))

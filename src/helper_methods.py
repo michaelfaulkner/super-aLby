@@ -45,9 +45,9 @@ def get_basic_config_data(config_file_string):
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     possible_mediators = ["UnboundedLeapfrogMediator", "ToroidalLeapfrogMediator", "LazyToroidalLeapfrogMediator",
                           "MetropolisMediator", "SwendsenWangMediator", "WolffMediator", "EventChainMediator"]
-    (config_file_mediator, potential, samplers, temperatures, number_of_equilibration_iterations,
+    (config_file_mediator, potential, factor_field, samplers, temperatures, number_of_equilibration_iterations,
      number_of_observations, number_of_particles, size_of_particle_space) = (None, None, None, None, None, None, None,
-                                                                             None)
+                                                                             None, None)
     for possible_mediator in possible_mediators:
         try:
             potential = config.get(possible_mediator, "potential")
@@ -57,6 +57,11 @@ def get_basic_config_data(config_file_string):
                 disk_radius = parsing.get_value(config, "HardDiskPotential", "disk_radius")
                 linear_system_size = math.sqrt(number_of_particles * math.pi / packing_fraction) * disk_radius
                 size_of_particle_space = [linear_system_size, linear_system_size]
+            elif "quantum_hard_disk_potential" in str(potential):
+                number_of_quantum_particles = parsing.get_value(config, "ModelSettings", "number_of_quantum_particles")
+                packing_fraction = parsing.get_value(config, "QuantumHardDiskPotential", "packing_fraction")
+                disk_radius = parsing.get_value(config, "QuantumHardDiskPotential", "disk_radius")
+                size_of_particle_space = 2.0 * disk_radius * number_of_quantum_particles / packing_fraction
             else:
                 size_of_particle_space = parsing.get_value(config, "ModelSettings", "size_of_particle_space")
             if ("quantum_hard_disk_potential" in str(potential) or
@@ -73,6 +78,7 @@ def get_basic_config_data(config_file_string):
                 number_of_particles = number_of_quantum_particles * number_of_timeslices
             else:
                 number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
+            factor_field = config.get(possible_mediator, "factor_field")
             samplers = config.get(possible_mediator, "samplers").replace(" ", "").split(",")
             temperatures = get_temperatures(parsing.get_value(config, possible_mediator, "minimum_temperature"),
                                             parsing.get_value(config, possible_mediator, "maximum_temperature"),
@@ -90,9 +96,50 @@ def get_basic_config_data(config_file_string):
                                  "LazyToroidalLeapfrogMediator, MetropolisMediator, SwendsenWangMediator, "
                                  "WolffMediator or EventChainMediator.")
     sample_directories = [config.get(strings.to_camel_case(sampler), "output_directory") for sampler in samplers]
-    return (config_file_mediator, potential, samplers, sample_directories, temperatures,
+    return (config_file_mediator, potential, factor_field, samplers, sample_directories, temperatures,
             number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space,
             parsing.get_value(config, "Run", "number_of_jobs"), parsing.get_value(config, "Run", "max_number_of_cpus"))
+
+
+def check_model_settings_of_soft_matter_potential(size_of_particle_space, dimensionality_of_particle_space,
+                                                  range_of_initial_particle_positions, class_name):
+    if dimensionality_of_particle_space == 1:
+        if not type(size_of_particle_space) is np.float64:
+            raise ConfigurationError(
+                f"Give a float (representing the volume of the one-dimensional particle space) for the value of "
+                f"size_of_particle_space in the ModelSettings section when using {class_name} (or any child class of "
+                f"SoftMatterPotential) with a one-dimensional particle space.")
+    else:
+        if not (type(size_of_particle_space) is np.ndarray and
+                dimensionality_of_particle_space == len(size_of_particle_space) and
+                [type(component) is np.float64 for component in size_of_particle_space]):
+            raise ConfigurationError(
+                f"Give a list of dimensionality_of_particle_space floats (each representing the length of the "
+                f"corresponding Cartesian dimension of the dimensionality_of_particle_space-dimensional particle space)"
+                f"for the value of size_of_particle_space in the ModelSettings section when using {class_name} (or any "
+                f"child class of SoftMatterPotential) with a particle space of dimension "
+                f"dimensionality_of_particle_space.")
+    if dimensionality_of_particle_space == 1:
+        if not (type(range_of_initial_particle_positions) is list and
+                len(range_of_initial_particle_positions) == 2 and
+                [type(bound) is float for bound in range_of_initial_particle_positions]):
+            raise ConfigurationError(
+                f"Give a list of two floats (representing the bounds of the interval from which each particle position "
+                f"is chosen) for the value of range_of_initial_particle_positions in the ModelSettings section when "
+                f"using {class_name} (or any child class of SoftMatterPotential) with a one-dimensional particle "
+                f"space.")
+    else:
+        if not (type(range_of_initial_particle_positions) is list and
+                (len(range_of_initial_particle_positions) == dimensionality_of_particle_space and
+                 [type(component) is list and len(component) == 2 and type(bound) is float
+                  for component in range_of_initial_particle_positions for bound in component])):
+            raise ConfigurationError(
+                f"Give a list of dimensionality_of_particle_space lists of two floats for the value of "
+                f"range_of_initial_particle_positions in the ModelSettings section when using {class_name} (or any "
+                f"child class of SoftMatterPotential) with a particle space of dimension "
+                f"dimensionality_of_particle_space.  Each element of the list corresponds to a Cartesian component of "
+                f"each particle position and each sub-list represents the bounds of the interval from which the "
+                f"corresponding initial Cartesian component is randomly chosen.")
 
 
 def get_neighbours(lattice_site_index, lattice_length):
@@ -148,8 +195,8 @@ def get_initial_positions_of_smooth_potential(potential_class):
         represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
     """
     """NB, we import from model_settings within this function to avoid circular imports."""
-    from model_settings import dimensionality_of_particle_space, number_of_particles, \
-        range_of_initial_particle_positions
+    from model_settings import (dimensionality_of_particle_space, number_of_particles,
+                                range_of_initial_particle_positions)
     if dimensionality_of_particle_space == 1:
         if not (range_of_initial_particle_positions is None or type(range_of_initial_particle_positions) is float or
                 (type(range_of_initial_particle_positions) is list and

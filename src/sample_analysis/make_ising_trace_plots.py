@@ -25,7 +25,7 @@ def main(sampling_algos_paper=True, number_of_system_sizes=5):
     else:
         config_file_4x4_cluster = ["config_files/emergent_electrostatics_ising_figs/4x4_swendsen_wang.ini"]
     config_file_4x4_metrop = ["config_files/sampling_algos_ising_figs/4x4_metropolis.ini"]
-    (cluster_mediator, _, samplers, sample_directories_4x4_cluster, temperatures, number_of_equilibration_iterations,
+    (cluster_mediator, _, _, samplers, sample_directories_4x4_cluster, temperatures, number_of_equilibration_iterations,
      number_of_observations, _, _, number_of_jobs, max_number_of_cpus) = helper_methods.get_basic_config_data(
         config_file_4x4_cluster)
     metrop_mediator = helper_methods.get_basic_config_data(config_file_4x4_metrop)[0]
@@ -276,7 +276,7 @@ def plot_magnetic_density_vs_time(axis, mediator, output_directory, sample_direc
             f"reduced_magnetic_density_sample_{mediator.replace('_mediator', '')}_algorithm.npy")
     except IOError:
         reduced_magnetic_density_sample = sample_getter.get_magnetic_density(
-            sample_directory, temperature, temperature_index, lattice_length ** 2,
+            sample_directory, temperature, temperature_index, 0, lattice_length ** 2,
             number_of_equilibration_iterations)[:150].flatten()
         np.save(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_temperature_{temperature_index:02d}_"
                 f"reduced_magnetic_density_sample_{mediator.replace('_mediator', '')}_algorithm.npy",

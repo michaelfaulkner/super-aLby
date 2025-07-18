@@ -77,7 +77,7 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
             velocity of the active particle along the nth Cartesian direction.
         """
         raise NotImplementedError
-    
+
     @abstractmethod
     def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
@@ -94,7 +94,7 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
             The sampling temperature.
         movement_direction : int
             The active-particle direction of motion.
-        
+
         Returns
         ----------
         distance_to_next_event : float
@@ -134,4 +134,9 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
     @abstractmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """Updates the position of the active particle following an event."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
+        """Propose candidate via teleportation portal kernel."""
         raise NotImplementedError

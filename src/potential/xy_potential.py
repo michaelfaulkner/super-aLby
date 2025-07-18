@@ -10,7 +10,7 @@ class XyPotential(EuclideanSubspacePotential):
     This class implements the 2DXY model potential.
     """
 
-    def __init__(self, prefactor: float = 1.0,  lattice_dimensionality: int = 2): 
+    def __init__(self, prefactor: float = 1.0,  lattice_dimensionality: int = 2):
         """
         The constructor of the XyPotential class.
 
@@ -62,7 +62,7 @@ class XyPotential(EuclideanSubspacePotential):
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents the spin angle of its corresponding particle.
-        
+
         Returns
         -------
         float
@@ -150,8 +150,7 @@ class XyPotential(EuclideanSubspacePotential):
         """
         return 1
 
-    def get_next_event(self, positions, active_particle_index, temperature,
-                       movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -166,7 +165,7 @@ class XyPotential(EuclideanSubspacePotential):
             The sampling temperature.
         movement_direction : int
             The active-particle direction of motion.
-        
+
         Returns
         ----------
         distance_to_next_event : float
@@ -181,7 +180,7 @@ class XyPotential(EuclideanSubspacePotential):
         for neighbouring_spin_index in get_neighbours(active_particle_index, self._lattice_length):
             non_active_spin_value = positions[neighbouring_spin_index, 0]
             initial_spin_value_difference = self._get_spin_difference(active_spin_value, non_active_spin_value)
-            uphill_energy = - temperature * np.log(1.0 - np.random.rand())
+            uphill_energy = - temperature / self.potential_constant * np.log(1.0 - np.random.rand())
 
             if initial_spin_value_difference > 0.0:
                 initial_two_spin_potential = 1.0 - np.cos(initial_spin_value_difference)
@@ -205,8 +204,7 @@ class XyPotential(EuclideanSubspacePotential):
 
         return shortest_distance_to_next_factor_event, vetoing_spin_index
 
-    def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
-                                    veto_index):
+    def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """
         Chooses the index and direction of motion of the next active particle in ECMC.
 
@@ -233,10 +231,14 @@ class XyPotential(EuclideanSubspacePotential):
 
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
-        """ Updates position of the active particle."""
+        """Updates the position of the active particle."""
         positions[active_particle_index] = (positions[active_particle_index] + displacement_distance) % (2.0 * np.pi)
 
     @staticmethod
     def _get_spin_difference(spin_value_one, spin_value_two):
-        """ returns the difference between two spin angles"""
-        return (spin_value_one - spin_value_two + np.pi) % (2.0 * np.pi) - np.pi
+        """Returns the difference between two spin angles"""
+        return (spin_value_one - spin_value_two + np.pi + 1.0e-12) % (2.0 * np.pi) - (np.pi + 1.0e-12)
+
+    def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
+        """Propose candidate via teleportation portal kernel."""
+        return (2.0 * positions[veto_index] - positions[active_particle_index]) % (2.0 * np.pi)

@@ -10,7 +10,7 @@ def get_sample_mean_and_error(sample):
     ----------
     sample : numpy.ndarray
         Sample to be analysed.
-    
+
     Returns
     -------
     list
@@ -26,13 +26,13 @@ def get_sample_mean_and_error(sample):
 def get_thinned_sample(sample, thinning_level):
     """
     Get a thinned sample from sample by keeping every nth element, where n is determined by the thinning level.
-    
+
     Parameters
     ----------
     sample : numpy.ndarray
         Sample to be thinned.
     thinning_level : int
-        The level of thinning, i.e. keep every nth element of the sample.
+        The level of thinning, i.e., keep every nth element of the sample.
     """
     sample_indices_to_keep = np.array([i for i in range(len(sample)) if i % thinning_level == 0])
     return np.take(sample, sample_indices_to_keep)
@@ -41,7 +41,7 @@ def get_thinned_sample(sample, thinning_level):
 def get_cumulative_distribution(sample):
     """
     Calculate empirical cdf of a sample.  The elements of sample must be scalar quantities.
-    
+
     Parameters
     ----------
     sample : numpy.ndarray
@@ -75,12 +75,13 @@ def get_autocorrelation(sample):
     if len(np.atleast_2d(sample)) > 1:
         raise Exception("Error: the sample passed to markov_chain_diagnostics.get_autocorrelation() must be a sample "
                         "of a scalar quantity.")
-    mean_zero_sample = sample - np.mean(sample)
-    full_acf = np.correlate(mean_zero_sample, mean_zero_sample, mode='full')
-    """np.correlate() is symmetric about t = 0 when mode='full' - full_acf[full_acf.size // 2:] returns t >= 0 values"""
-    acf = full_acf[full_acf.size // 2:]
+    n = len(sample)
+    sample = sample - np.mean(sample)
+    f = np.fft.fft(np.hstack([sample, np.zeros(n)]))
+    acf = np.fft.ifft(f * np.conj(f))[:n].real
+    acf /= np.arange(n, 0, -1)
     if acf[0] < 1.0e-12:
-        return acf 
+        return acf
     acf /= acf[0]  # Normalise
     return acf
 
@@ -89,13 +90,13 @@ def get_iact_and_acf(sample, cutoff=math.e ** (-2)):
     """
     Calculate the integrated autocorrelation time and autocorrelation function of sample.  The elements of sample must
         be scalar quantities.
-    
+
     Parameters
     ----------
     sample : numpy.ndarray
         Sample to be analysed.
     cutoff : float
-        Cutoff value for the autocorrelation function. The default value is e^(-4).
+        Cutoff value for the autocorrelation function. The default value is e^(-2).
 
     Returns
     -------
@@ -113,7 +114,7 @@ def get_iact_and_acf(sample, cutoff=math.e ** (-2)):
 def get_effective_sample_size(sample):
     """
     Calculate the effective sample size of an MCMC sample.  The elements of sample must be scalar quantities.
-    
+
     Parameters
     ----------
     sample : numpy.ndarray
@@ -124,6 +125,5 @@ def get_effective_sample_size(sample):
     float
         Effective sample size.
     """
-    
     iact = get_iact_and_acf(sample, cutoff=math.e ** (-2))[0]
     return len(sample) / iact
