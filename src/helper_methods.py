@@ -100,6 +100,47 @@ def get_basic_config_data(config_file_string):
             parsing.get_value(config, "Run", "number_of_jobs"), parsing.get_value(config, "Run", "max_number_of_cpus"))
 
 
+def check_model_settings_of_soft_matter_potential(size_of_particle_space, dimensionality_of_particle_space,
+                                                  range_of_initial_particle_positions, class_name):
+    if dimensionality_of_particle_space == 1:
+        if not type(size_of_particle_space) is np.float64:
+            raise ConfigurationError(
+                f"Give a float (representing the volume of the one-dimensional particle space) for the value of "
+                f"size_of_particle_space in the ModelSettings section when using {class_name} (or any child class of "
+                f"SoftMatterPotential) with a one-dimensional particle space.")
+    else:
+        if not (type(size_of_particle_space) is np.ndarray and
+                dimensionality_of_particle_space == len(size_of_particle_space) and
+                [type(component) is np.float64 for component in size_of_particle_space]):
+            raise ConfigurationError(
+                f"Give a list of dimensionality_of_particle_space floats (each representing the length of the "
+                f"corresponding Cartesian dimension of the dimensionality_of_particle_space-dimensional particle space)"
+                f"for the value of size_of_particle_space in the ModelSettings section when using {class_name} (or any "
+                f"child class of SoftMatterPotential) with a particle space of dimension "
+                f"dimensionality_of_particle_space.")
+    if dimensionality_of_particle_space == 1:
+        if not (type(range_of_initial_particle_positions) is list and
+                len(range_of_initial_particle_positions) == 2 and
+                [type(bound) is float for bound in range_of_initial_particle_positions]):
+            raise ConfigurationError(
+                f"Give a list of two floats (representing the bounds of the interval from which each particle position "
+                f"is chosen) for the value of range_of_initial_particle_positions in the ModelSettings section when "
+                f"using {class_name} (or any child class of SoftMatterPotential) with a one-dimensional particle "
+                f"space.")
+    else:
+        if not (type(range_of_initial_particle_positions) is list and
+                (len(range_of_initial_particle_positions) == dimensionality_of_particle_space and
+                 [type(component) is list and len(component) == 2 and type(bound) is float
+                  for component in range_of_initial_particle_positions for bound in component])):
+            raise ConfigurationError(
+                f"Give a list of dimensionality_of_particle_space lists of two floats for the value of "
+                f"range_of_initial_particle_positions in the ModelSettings section when using {class_name} (or any "
+                f"child class of SoftMatterPotential) with a particle space of dimension "
+                f"dimensionality_of_particle_space.  Each element of the list corresponds to a Cartesian component of "
+                f"each particle position and each sub-list represents the bounds of the interval from which the "
+                f"corresponding initial Cartesian component is randomly chosen.")
+
+
 def get_neighbours(lattice_site_index, lattice_length):
     """Returns a list of the four neighbours (on the 2D lattice) of lattice_site_index"""
     return [get_east_neighbour(lattice_site_index, lattice_length),
@@ -153,8 +194,8 @@ def get_initial_positions_of_smooth_potential(potential_class):
         represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
     """
     """NB, we import from model_settings within this function to avoid circular imports."""
-    from model_settings import dimensionality_of_particle_space, number_of_particles, \
-        range_of_initial_particle_positions
+    from model_settings import (dimensionality_of_particle_space, number_of_particles,
+                                range_of_initial_particle_positions)
     if dimensionality_of_particle_space == 1:
         if not (range_of_initial_particle_positions is None or type(range_of_initial_particle_positions) is float or
                 (type(range_of_initial_particle_positions) is list and

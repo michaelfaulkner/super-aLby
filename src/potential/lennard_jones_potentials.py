@@ -1,10 +1,12 @@
 """Module for the LennardJonesPotential class."""
-from .soft_matter_potential import SoftMatterPotential
-from base.exceptions import ConfigurationError
 from abc import ABCMeta
+from .euclidean_subspace_potential import EuclideanSubspacePotential
+from base.exceptions import ConfigurationError
+from helper_methods import get_initial_positions_of_smooth_potential, check_model_settings_of_soft_matter_potential
+from model_settings import dimensionality_of_particle_space, size_of_particle_space, range_of_initial_particle_positions
 
 
-class LennardJonesPotentials(SoftMatterPotential, metaclass=ABCMeta):
+class LennardJonesPotentials(EuclideanSubspacePotential, metaclass=ABCMeta):
     r"""
     Abstract class for Lennard-Jones potentials
 
@@ -58,6 +60,8 @@ class LennardJonesPotentials(SoftMatterPotential, metaclass=ABCMeta):
             If characteristic_length is less than 0.5.
         """
         super().__init__(prefactor)
+        check_model_settings_of_soft_matter_potential(size_of_particle_space, dimensionality_of_particle_space,
+                                                      range_of_initial_particle_positions, self.__class__.__name__)
         if characteristic_length < 0.5:
             raise ConfigurationError(f"Give a value not less than 0.5 for characteristic_length in "
                                      f"{self.__class__.__name__}.")
@@ -106,3 +110,18 @@ class LennardJonesPotentials(SoftMatterPotential, metaclass=ABCMeta):
         """
         return - separation_vector * (self._gradient_12_constant * separation_distance ** (- 14.0) -
                                       self._gradient_6_constant * separation_distance ** (- 8.0))
+
+    def get_initial_positions(self):
+        """
+        Returns the initial positions array.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle, e.g. two particles
+            (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
+            particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
+            represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
+        """
+        return get_initial_positions_of_smooth_potential(self.__class__.__name__)
