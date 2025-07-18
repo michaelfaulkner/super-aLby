@@ -145,12 +145,12 @@ then a corresponding section is required.
 ### Checkpointing
 The super-aLby application also provides checkpointing functionality, allowing simulations to be restarted from some 
 previous configuration. The final configuration of the simulated system is saved at 
-`path\to\output_directory\configuration_at_checkpoint.npy`, alongside the index of the checkpoint, starting from 0 for 
-a system that has not been restarted, saved at `path\to\output_directory\checkpoint_index.txt`. When these files are
+`path/to/output_directory/configuration_at_checkpoint.npy`, alongside the index of the checkpoint, starting from 0 for 
+a system that has not been restarted, saved at `path/to/output_directory/checkpoint_index.txt`. When these files are
 present in the output directory, i.e. from a previous simulation of the same config file, the application will load them
 and start from that point.
 
-N.B. That unlike some methods of cheeckpointing where the sample is periodically outputted throughout the duration of
+N.B. That unlike some methods of checkpointing where the sample is periodically outputted throughout the duration of
 the simulation,  in super-aLby the sample is only outputted when the simulation finishes. Therefore, the expected usage
 is to run, for example, 10 consecutive simulations with 10,000 samples, as opposed to running a simulation of length
 100,000, if simulating for 100,000 samples is likely to fail on the relevant HPC architecture.
