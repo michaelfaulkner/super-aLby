@@ -24,7 +24,7 @@ else:
     system_volume = None
 dimensionality_of_momenta_array = (number_of_particles, dimensionality_of_particle_space)
 number_of_momenta_components = number_of_particles * dimensionality_of_particle_space
-if "xy_factor_field" in factor_field and "xy_potential" not in potential:
+if factor_field is not None and "xy_factor_field" in factor_field and "xy_potential" not in potential:
     raise ConfigurationError(f"XyFactorField can only be combined with XyPotential. Selected: {potential}")
 
 with open(args.config_file) as config_file:
