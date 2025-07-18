@@ -45,9 +45,9 @@ def get_basic_config_data(config_file_string):
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     possible_mediators = ["UnboundedLeapfrogMediator", "ToroidalLeapfrogMediator", "LazyToroidalLeapfrogMediator",
                           "MetropolisMediator", "SwendsenWangMediator", "WolffMediator", "EventChainMediator"]
-    (config_file_mediator, potential, samplers, temperatures, number_of_equilibration_iterations,
+    (config_file_mediator, potential, factor_field, samplers, temperatures, number_of_equilibration_iterations,
      number_of_observations, number_of_particles, size_of_particle_space) = (None, None, None, None, None, None, None,
-                                                                             None)
+                                                                             None, None)
     for possible_mediator in possible_mediators:
         try:
             potential = config.get(possible_mediator, "potential")
@@ -78,6 +78,7 @@ def get_basic_config_data(config_file_string):
                 number_of_particles = number_of_quantum_particles * number_of_timeslices
             else:
                 number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
+            factor_field = config.get(possible_mediator, "factor_field")
             samplers = config.get(possible_mediator, "samplers").replace(" ", "").split(",")
             temperatures = get_temperatures(parsing.get_value(config, possible_mediator, "minimum_temperature"),
                                             parsing.get_value(config, possible_mediator, "maximum_temperature"),
@@ -95,7 +96,7 @@ def get_basic_config_data(config_file_string):
                                  "LazyToroidalLeapfrogMediator, MetropolisMediator, SwendsenWangMediator, "
                                  "WolffMediator or EventChainMediator.")
     sample_directories = [config.get(strings.to_camel_case(sampler), "output_directory") for sampler in samplers]
-    return (config_file_mediator, potential, samplers, sample_directories, temperatures,
+    return (config_file_mediator, potential, factor_field, samplers, sample_directories, temperatures,
             number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space,
             parsing.get_value(config, "Run", "number_of_jobs"), parsing.get_value(config, "Run", "max_number_of_cpus"))
 

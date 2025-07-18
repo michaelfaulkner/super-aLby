@@ -20,7 +20,7 @@ strings = importlib.import_module("base.strings")
 def main(config_file_string):
     initial_t = time.time()
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-    (config_file_mediator, potential, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
+    (config_file_mediator, potential, _, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
     number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
     
     mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")

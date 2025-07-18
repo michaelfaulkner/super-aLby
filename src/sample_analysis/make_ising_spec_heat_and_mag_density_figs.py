@@ -44,11 +44,11 @@ def main(sampling_algos_paper=True, number_of_system_sizes=5):
     else:
         lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
         config_file_4x4_wolff = ["config_files/sampling_algos_ising_figs/4x4_wolff.ini"]
-        (mediator_wolff, _, samplers, sample_directories_4x4_wolff, temperatures_wolff,
+        (mediator_wolff, _, _, samplers, sample_directories_4x4_wolff, temperatures_wolff,
          number_of_equilibration_iterations_wolff, number_of_observations_wolff, _, _, number_of_jobs_wolff,
          max_number_of_cpus_wolff) = helper_methods.get_basic_config_data(config_file_4x4_wolff)
         config_file_metrop = "config_files/sampling_algos_ising_figs/64x64_metropolis_supplementary_fig.ini"
-        (mediator_metrop, _, _, sample_directories_metrop, temperatures_metrop,
+        (mediator_metrop, _, _, _, sample_directories_metrop, temperatures_metrop,
          number_of_equilibration_iterations_metrop, number_of_observations_metrop, _, _, number_of_jobs_metrop,
          max_number_of_cpus_metrop) = helper_methods.get_basic_config_data(config_file_metrop)
         output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
