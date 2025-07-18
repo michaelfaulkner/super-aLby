@@ -7,7 +7,7 @@ helper_methods = importlib.import_module("helper_methods")
 
 
 args = parse_options(sys.argv[1:])
-(_, _, _, _, _, _, _, number_of_particles, size_of_particle_space, _, _
+(_, potential, factor_field, _, _, _, _, _, number_of_particles, size_of_particle_space, _, _
  ) = helper_methods.get_basic_config_data(args.config_file)
 number_of_particle_pairs = int(number_of_particles * (number_of_particles - 1) / 2)
 if size_of_particle_space is None or type(size_of_particle_space) is float or type(size_of_particle_space) is int:
@@ -24,6 +24,8 @@ else:
     system_volume = None
 dimensionality_of_momenta_array = (number_of_particles, dimensionality_of_particle_space)
 number_of_momenta_components = number_of_particles * dimensionality_of_particle_space
+if "xy_factor_field" in factor_field and "xy_potential" not in potential:
+    raise ConfigurationError(f"XyFactorField can only be combined with XyPotential. Selected: {potential}")
 
 with open(args.config_file) as config_file:
     config_file_as_str = config_file.read()

@@ -20,7 +20,7 @@ def main(config_folder):
     for index, file in enumerate(os.listdir(config_folder)):
         config_file_string = os.path.join(config_folder, file)
         config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-        (config_file_mediator, potential, samplers, sample_directories, temperatures,
+        (config_file_mediator, potential, _, samplers, sample_directories, temperatures,
          number_of_equilibration_iterations, number_of_observations, number_of_particles,
          _, _, _) = helper_methods.get_basic_config_data(config_file_string)
         
