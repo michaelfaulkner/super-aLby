@@ -4,6 +4,7 @@ import numpy as np
 from base.exceptions import ConfigurationError
 from .mediator import Mediator
 from factor_field.factor_field import FactorField
+from factor_field.no_factor_field import NoFactorField
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from sampler.sampler import Sampler
 from typing import Sequence
@@ -14,10 +15,11 @@ parsing = importlib.import_module("base.parsing")
 class EventChainMediator(Mediator):
     """The EventChainMediator class provides functionality for the event-chain Monte Carlo algorithm."""
 
-    def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler], factor_field: FactorField,
-                 minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
-                 number_of_temperature_increments: int = 0, number_of_equilibration_iterations: int = 10000,
-                 number_of_observations: int = 100000, normalised_distance_between_measurements: float = 1.0,
+    def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
+                 factor_field: FactorField = NoFactorField(), minimum_temperature: float = 1.0,
+                 maximum_temperature: float = 1.0, number_of_temperature_increments: int = 0,
+                 number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
+                 normalised_distance_between_measurements: float = 1.0,
                  normalised_distance_between_velocity_refreshments: float = 1.0, teleportation_portal: bool = False):
         r"""
         Constructor of the EventChainMediator class.
