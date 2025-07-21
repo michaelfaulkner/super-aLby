@@ -154,7 +154,7 @@ max_number_of_cpus = 1
 
 [SomeMediator]
 potential = some_potential
-sampler = some_sampler
+samplers = some_sampler
 kinetic_energy = some_kinetic_energy
 ...
 
@@ -183,7 +183,7 @@ max_number_of_cpus = 1
 
 [SomeMediator]
 potential = some_potential
-sampler = some_sampler
+samplers = some_sampler, some_other_sampler
 noise_distribution = some_noise_distribution
 ...
 
@@ -191,6 +191,9 @@ noise_distribution = some_noise_distribution
 ...
 
 [SomeSampler]
+...
+
+[SomeOtherSampler]
 ...
 
 [SomeNoiseDistribution]
