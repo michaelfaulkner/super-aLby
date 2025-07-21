@@ -146,12 +146,14 @@ class HardDiskPotential(EuclideanSubspacePotential):
 
     def get_initial_positions(self):
         """
-        Returns the initial positions array.  Creates a close-packed configuration.
+        Returns the initial positions array.  This is a close-packed configuration as described in
+            self._get_candidate_initial_positions()
 
-        NOTE: We provide two different attempts at creating a close-packed configuration with no overlaps.  For a
-            simulation box with a (1:1) aspect ratio, packing is challenging in some cases, e.g. for the primary
-            attempt, we believe that number_of_particles should be greater than 32 to guarantee a valid initial
-            configuration for packing_fraction = 0.688 (though a thorough analysis is required).
+        N.B. As it is challenging to generate close-packed configurations of hard disks, we provide two different
+            attempts at creating a close-packed configuration with no overlaps, via
+            self._get_candidate_initial_positions().  We recommend choosing number_of_particles equal to either a
+            square number or the product of two adjacent integers.  This avoids non-complete rows or columns of disks
+            (in the closed-packed configuration).
 
         Returns
         -------
@@ -165,15 +167,48 @@ class HardDiskPotential(EuclideanSubspacePotential):
             index_range = [int(number_of_particles ** 0.5), int(number_of_particles ** 0.5 + 2)]
             positions = self._get_candidate_initial_positions(index_range)
             self._check_for_disk_overlaps(positions)
+            print("Using the primary method for generating initial hard-disk configurations (see "
+                  "HardDiskPotential.get_initial_positions()).")
         except ValueError:
-            print("Using the alternative initial configuration (due to overlaps induced by the primary method).")
-            index_range = [int(number_of_particles ** 0.5 + 1), int(number_of_particles ** 0.5 + 1)]
-            positions = self._get_candidate_initial_positions(index_range)
-            self._check_for_disk_overlaps(positions)
+            try:
+                index_range = [int(number_of_particles ** 0.5 + 1), int(number_of_particles ** 0.5 + 1)]
+                positions = self._get_candidate_initial_positions(index_range)
+                self._check_for_disk_overlaps(positions)
+                print("Using the alternative method for generating initial hard-disk configurations (due to overlaps "
+                      "induced by the primary method - see HardDiskPotential.get_initial_positions()).")
+            except ValueError:
+                raise ConfigurationError(
+                    f"Both methods for generating initial hard-disk configurations have failed (see "
+                    f"HardDiskPotential.get_initial_positions()).  As it is challenging to generate close-packed "
+                    f"configurations of hard disks, we recommend choosing number_of_particles equal to either a square "
+                    f"number or the product of two adjacent integers.  This avoids non-complete rows or columns of "
+                    f"disks (in the closed-packed configuration).  Alternatively, consider increasing "
+                    f"number_of_particles or decreasing packing_fraction, e.g. for a (1:1) aspect ratio with the "
+                    f"primary initial-configuration method, we believe that number_of_particles should be greater than "
+                    f"32 to guarantee a valid initial configuration for packing_fraction = 0.688 (though a thorough "
+                    f"analysis is required).")
         self._linked_lists.reset_linked_lists(positions)
         return positions
 
     def _get_candidate_initial_positions(self, index_range):
+        """
+        Returns a candidate for the initial positions array.  The function creates a close-packed configuration on a
+            [hexagonal lattice](https://en.wikipedia.org/wiki/Hexagonal_lattice) with index_range[0] the maximum number
+            of disks along any row and index_range[1] the total number of rows.  This reflects the fully packed
+            configuration presented in figure 4 of Statist. Sci. 39, 137 (2024).
+
+        N.B. As it is challenging to generate close-packed configurations of hard disks, we recommend choosing
+            number_of_particles equal to either a square number or the product of two adjacent integers.  This avoids
+            non-complete rows of disks (in the closed-packed configuration).
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle, e.g. three
+            particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
+            represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
+        """
         delta_x = 1.00001 * 2.0 * self._disk_radius
         delta_y = [1.00001 * self._disk_radius, 1.00001 * self._disk_radius * 3.0 ** 0.5]
         positions = np.zeros((number_of_particles, 2))
@@ -313,13 +348,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
                         abs(minimal_separation_distance - 2.0 * self._disk_radius) < 1.0e-12):
                     raise ValueError(
                         f"Disks {particle_index_1} and {particle_index_2} are overlapping.  Their minimal separation "
-                        f"distance is {minimal_separation_distance}.  NOTE: If this error was thrown due to the initial"
-                        f"configuration, consider increasing number_of_particles and/or choosing a square "
-                        f"number_of_particles.  For a simulation box with a (1:1) aspect ratio, packing is challenging "
-                        f"in some cases, e.g. for the primary initial-configuration method (see "
-                        f"HardDiskPotential.get_initial_positions() we believe that number_of_particles should be "
-                        f"greater than 32 to guarantee a valid initial configuration for packing_fraction = 0.688 "
-                        f"(though a thorough analysis is required).")
+                        f"distance is {minimal_separation_distance}.")
 
     @staticmethod
     def _get_motion_index_and_other_index(movement_direction):
