@@ -21,9 +21,9 @@ def main(number_of_system_sizes=5):
     lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
     config_file_4x4_wolff = ["config_files/sampling_algos_ising_figs/4x4_wolff.ini"]
     config_file_4x4_metrop = ["config_files/sampling_algos_ising_figs/4x4_metropolis.ini"]
-    (wolff_mediator, _, _, samplers, sample_directories_4x4_wolff, temperatures,
-     number_of_equilibration_iterations, number_of_observations, _, _,
-     number_of_jobs, max_number_of_cpus) = helper_methods.get_basic_config_data(config_file_4x4_wolff)
+    (wolff_mediator, _, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
+     number_of_observations, _, _, number_of_jobs, max_number_of_cpus) = helper_methods.get_basic_config_data(
+        config_file_4x4_wolff)
     metrop_mediator = helper_methods.get_basic_config_data(config_file_4x4_metrop)[0]
     output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
     sample_directories_wolff = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]

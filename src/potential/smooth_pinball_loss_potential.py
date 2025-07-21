@@ -142,8 +142,7 @@ class SmoothPinballLossPotential(OneDimEuclideanParticleSpacePotential):
         """
         raise SystemError(f"The get_random_event_chain_velocity method has not been written.")
 
-    def get_next_event(self, positions, active_particle_index, temperature,
-                       movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 

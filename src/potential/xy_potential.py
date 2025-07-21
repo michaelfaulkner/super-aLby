@@ -155,8 +155,7 @@ class XyPotential(EuclideanSubspacePotential):
         """
         return 1
 
-    def get_next_event(self, positions, active_particle_index, temperature,
-                       movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -210,8 +209,7 @@ class XyPotential(EuclideanSubspacePotential):
 
         return shortest_distance_to_next_factor_event, vetoing_spin_index
 
-    def choose_next_active_particle(self, positions, active_particle_index, movement_direction,
-                                    veto_index):
+    def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """
         Chooses the index and direction of motion of the next active particle in ECMC.
 
@@ -238,13 +236,13 @@ class XyPotential(EuclideanSubspacePotential):
 
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
-        """ Updates position of the active particle."""
+        """Updates the position of the active particle."""
         positions[active_particle_index] = (positions[active_particle_index] + displacement_distance) % (2.0 * np.pi)
 
     @staticmethod
     def _get_spin_difference(spin_value_one, spin_value_two):
-        """ returns the difference between two spin angles"""
-        return (spin_value_one - spin_value_two + np.pi) % (2.0 * np.pi) - np.pi
+        """Returns the difference between two spin angles"""
+        return (spin_value_one - spin_value_two + np.pi + 1.0e-12) % (2.0 * np.pi) - (np.pi + 1.0e-12)
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""

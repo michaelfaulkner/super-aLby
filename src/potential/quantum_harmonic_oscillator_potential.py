@@ -59,14 +59,15 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         Parameters
         ----------
         positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the position of a single quantum particle.
         active_particle_index : int
-            The particle index (i.e. the discretised-time index).
+            The index of the active particle.
+
         Returns
         -------
         float
-            The dimensionless-action gradient at particle_index.
+            The dimensionless-action gradient at active_particle_index.
         """
         return self._mass / self._timestep * (
                 (2.0 + self._timestep ** 2 * self._omega ** 2) * positions[active_particle_index] -
@@ -75,14 +76,18 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
 
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
         """
-        Returns the potential energy contribution to teh pairwise dimensionless action
+        Returns the potential energy contribution to the pairwise dimensionless action
 
         Parameters
         ----------
-        position_at_index : float or numpy.ndarray
-            The position of the particle at some particle index.
-        position_at_east_index : float or numpy.ndarray
-            The position of the particle at the site east of the particle index.
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the position of a single quantum particle.
+        active_particle_index : int
+            The index of the active particle.
+        position_at_active_particle_index : float or numpy.ndarray
+            The position of the active particle.
+
         Returns
         -------
         float
@@ -105,20 +110,19 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         """
         return np.random.choice((-1, 1))
 
-    def get_next_event(self, positions, active_particle_index, temperature,
-                       movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
         Parameters
         ----------
         positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the position of a single quantum particle.
         active_particle_index : int
-            The active particle index (i.e. the discretised-time index).
+            The index of the active particle.
         temperature : float
-            The sampling temperature.  NB, we set temperature = 1.0 (for QHO) as this quantity is for stat-phys models.
+            The sampling temperature.  N.B. we set temperature = 1.0 (for QHO) as this quantity is for stat-phys models.
         movement_direction : int
             The active-particle direction of motion.
         
@@ -129,19 +133,18 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         vetoing_particle_index : int
             The index of the particle that triggers the event.
         """
-        
         worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
                                 self._get_east_worldline_neighbour(active_particle_index)]
+
         (shortest_distance_to_next_factor_event, vetoing_index
-         ) = self._get_distance_to_next_kinetic_event_and_veto_index(positions, active_particle_index,
-                                                                     movement_direction, worldline_neighbours)
-        # consider x^2 term
+         ) = self._get_next_kinetic_event(positions, active_particle_index, movement_direction, worldline_neighbours)
+        """now consider the potential part of the action"""
         initial_position = positions[active_particle_index].item()
         uphill_energy = - np.log(np.random.uniform(0, 1))
         bottom_of_well = 0.0
         if (((movement_direction > 0) and (initial_position < bottom_of_well)) or
                 ((movement_direction < 0) and (initial_position > bottom_of_well))):
-            """advance to the bottom of the well"""
+            """advance to the bottom of the potential well"""
             intermediate_position = bottom_of_well
         else:
             intermediate_position = initial_position
@@ -166,10 +169,10 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         Parameters
         ----------
         positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the position of a single quantum particle.
         active_particle_index : int
-            The active particle index (i.e. the discretised-time index).
+            The index of the active particle.
         movement_direction : int
             The active-particle direction of motion.
         veto_index : int
@@ -201,19 +204,14 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         Parameters
         ----------
         positions : numpy.ndarray
-            A one-dimensional numpy array of size (number_of_particles), indexed by time step; each element
-            is a float and represents the position of the worldline at that time step.
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the position of a single quantum particle.
         displacement_distance : float
-            The displacement that the current position of the active particle will be updated using.
+            The displacement distance of the active particle to the next event.
         active_particle_index : int
-            The active particle index (i.e. the discretised-time index).
+            The index of the active particle.
         movement_direction : int
             The active-particle direction of motion.
-
-        Returns
-        -------
-        new_position : float
-            The updated position of the active particle
         """
         positions[active_particle_index] += displacement_distance * movement_direction
 

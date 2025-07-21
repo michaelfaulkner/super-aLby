@@ -276,7 +276,7 @@ def plot_magnetic_density_vs_time(axis, mediator, output_directory, sample_direc
             f"reduced_magnetic_density_sample_{mediator.replace('_mediator', '')}_algorithm.npy")
     except IOError:
         reduced_magnetic_density_sample = sample_getter.get_magnetic_density(
-            sample_directory, temperature, temperature_index, lattice_length ** 2,
+            sample_directory, temperature, temperature_index, 0, lattice_length ** 2,
             number_of_equilibration_iterations)[:150].flatten()
         np.save(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_temperature_{temperature_index:02d}_"
                 f"reduced_magnetic_density_sample_{mediator.replace('_mediator', '')}_algorithm.npy",
