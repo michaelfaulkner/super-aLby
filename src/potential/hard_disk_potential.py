@@ -147,13 +147,15 @@ class HardDiskPotential(EuclideanSubspacePotential):
     def get_initial_positions(self):
         """
         Returns the initial positions array.  This is a close-packed configuration as described in
-            self._get_candidate_initial_positions()
+            self._get_candidate_initial_positions().
 
-        N.B. As it is challenging to generate close-packed configurations of hard disks, we provide two different
+        N.B. as it is challenging to generate close-packed configurations of hard disks, we provide two different
             attempts at creating a close-packed configuration with no overlaps, via
             self._get_candidate_initial_positions().  We recommend choosing number_of_particles equal to either a
             square number or the product of two adjacent integers.  This avoids non-complete rows or columns of disks
             (in the closed-packed configuration).
+
+        N.B. for a (2:3^0.5) aspect ratio, the high-packing limit is 0.906899682117 (12 significant figures).
 
         Returns
         -------
@@ -265,6 +267,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
         vetoing_particle_index : int
             The index of the particle that triggers the event.
         """
+        self.pointer_hop_distance = 0.0
         active_particle_position = positions[active_particle_index]
         if self.cell_boundary_event:
             self._linked_lists.move_particle_to_new_cell(active_particle_position, active_particle_index,
@@ -303,9 +306,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
                         self.cell_boundary_event = False
                         shortest_distance_to_next_event = distance_to_possible_collision
                         vetoing_particle_index = candidate_particle_index
-                        pointer_hop_distance = candidate_pointer_hop_distance
+                        self.pointer_hop_distance = candidate_pointer_hop_distance
                 candidate_particle_index = self._linked_lists.next_particle_in_same_cell[candidate_particle_index]
-        self.aggregate_pointer_hop_distance += pointer_hop_distance
         return shortest_distance_to_next_event, vetoing_particle_index
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
