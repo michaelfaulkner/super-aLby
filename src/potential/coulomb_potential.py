@@ -1,13 +1,15 @@
 """Module for the CoulombPotential class."""
-from .soft_matter_potential import SoftMatterPotential
-from base.exceptions import ConfigurationError
-from base.vectors import get_shortest_vectors_on_torus, get_permuted_3d_vector
-from model_settings import dimensionality_of_particle_space, number_of_particles, size_of_particle_space
 import math
 import numpy as np
+from .euclidean_subspace_potential import EuclideanSubspacePotential
+from base.exceptions import ConfigurationError
+from base.vectors import get_shortest_vectors_on_torus, get_permuted_3d_vector
+from helper_methods import get_initial_positions_of_smooth_potential, check_model_settings_of_soft_matter_potential
+from model_settings import (dimensionality_of_particle_space, number_of_particles, size_of_particle_space,
+                            range_of_initial_particle_positions)
 
 
-class CoulombPotential(SoftMatterPotential):
+class CoulombPotential(EuclideanSubspacePotential):
     # todo add functionality for non-like charges
     r"""
     This class implements the machine-precise Coulomb potential
@@ -68,6 +70,8 @@ class CoulombPotential(SoftMatterPotential):
             If the cutoff in position space is less than 0.
         """
         super().__init__(prefactor)
+        check_model_settings_of_soft_matter_potential(size_of_particle_space, dimensionality_of_particle_space,
+                                                      range_of_initial_particle_positions, self.__class__.__name__)
         if dimensionality_of_particle_space != 3:
             raise ConfigurationError(f"For size_of_particle_space, give a list of length 3, where each component is a "
                                      f"list of two float values, when using {self.__class__.__name__}.")
@@ -194,8 +198,7 @@ class CoulombPotential(SoftMatterPotential):
         """
         raise SystemError(f"The get_random_event_chain_velocity method has not been written.")
 
-    def get_next_event(self, positions, active_particle_index, temperature,
-                       movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -367,6 +370,21 @@ class CoulombPotential(SoftMatterPotential):
             cos[2] = 1.0
             sin[2] = 0.0
         return cos, sin
+
+    def get_initial_positions(self):
+        """
+        Returns the initial positions array.
+
+        Returns
+        -------
+        numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle, e.g. two particles
+            (confined to one-dimensional space) at positions 0.0 and 1.0 is represented by [[0.0] [1.0]]; three
+            particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
+            represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
+        """
+        return get_initial_positions_of_smooth_potential(self.__class__.__name__)
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""

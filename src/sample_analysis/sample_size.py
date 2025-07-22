@@ -1,12 +1,7 @@
 import numpy as np
 import os
-from scipy.stats import norm 
 import importlib
-import matplotlib
-import matplotlib.pyplot as plt
-import sample_getter
 import sys
-from configparser import NoOptionError
 
 this_directory = os.path.dirname(os.path.abspath(__file__))
 src_directory = os.path.abspath(this_directory + "/../")

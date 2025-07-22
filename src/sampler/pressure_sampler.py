@@ -68,7 +68,6 @@ class PressureSampler(Sampler):
                              f"get_observation() method of {self.__class__.__name__}.")
         aggregate_pointer_hop_distance = potential.aggregate_pointer_hop_distance
         potential.aggregate_pointer_hop_distance = 0.0
-        # todo test this new method!!!
         return (number_of_particles * (1.0 + aggregate_pointer_hop_distance / self.distance_between_measurements) /
                 system_volume)
 

@@ -3,6 +3,8 @@ import importlib
 import numpy as np
 from base.exceptions import ConfigurationError
 from .mediator import Mediator
+from factor_field.factor_field import FactorField
+from factor_field.no_factor_field import NoFactorField
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from factor_field.factor_field import FactorField
 from sampler.sampler import Sampler
@@ -15,9 +17,10 @@ class EventChainMediator(Mediator):
     """The EventChainMediator class provides functionality for the event-chain Monte Carlo algorithm."""
 
     def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
-                 factor_field: FactorField = None, minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
-                 number_of_temperature_increments: int = 0, number_of_equilibration_iterations: int = 10000,
-                 number_of_observations: int = 100000, normalised_distance_between_measurements: float = 1.0,
+                 factor_field: FactorField = NoFactorField(), minimum_temperature: float = 1.0,
+                 maximum_temperature: float = 1.0, number_of_temperature_increments: int = 0,
+                 number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
+                 normalised_distance_between_measurements: float = 1.0,
                  normalised_distance_between_velocity_refreshments: float = 1.0, teleportation_portal: bool = False):
         r"""
         Constructor of the EventChainMediator class.
@@ -28,6 +31,9 @@ class EventChainMediator(Mediator):
             Instance of the chosen child class of potential.euclidean_subspace_potential.EuclideanSubspacePotential.
         samplers : Sequence[sampler.sampler.Sampler]
             Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
+        factor_field : factor_field.factor_field.FactorField
+            Instance of the chosen child class of factor_field.factor_field.FactorField.  Choose no_factor_field in the
+            configuration file if you do not want to use a factor field.
         minimum_temperature : float, optional
             The minimum value of the model temperature, n.b., the temperature is the reciprocal of the inverse
             temperature, beta (up to a proportionality constant).
@@ -42,7 +48,12 @@ class EventChainMediator(Mediator):
             Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
         normalised_distance_between_measurements : float, optional
-            Total distance through state space between samples (normalised as indicated by operations below).
+            Total distance through state space between samples (normalised as indicated by the operations below).
+        normalised_distance_between_velocity_refreshments : float, optional
+            Total distance through state space between velocity refreshments (normalised as indicated by the operations
+            below).
+        teleportation_portal : bool, optional
+            When True, a teleportation portal is attempted at each event induced by the potential.
 
         Raises
         ------
@@ -66,6 +77,8 @@ class EventChainMediator(Mediator):
             If number_of_observations is not greater than 0.
         base.exceptions.ConfigurationError
             If normalised_distance_between_measurements is not greater than 0.0.
+        base.exceptions.ConfigurationError
+            If normalised_distance_between_velocity_refreshments is not greater than 0.0.
         """
         super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
                          number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations)
@@ -74,17 +87,20 @@ class EventChainMediator(Mediator):
         if normalised_distance_between_measurements <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 as normalised_distance_between_measurements in "
                                      f"{self.__class__.__name__}.")
+        if normalised_distance_between_velocity_refreshments <= 0.0:
+            raise ConfigurationError(f"Give a value greater than 0.0 as "
+                                     f"normalised_distance_between_velocity_refreshments in {self.__class__.__name__}.")
+        self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
+        self._distance_between_velocity_refreshments = (normalised_distance_between_velocity_refreshments *
+                                                        number_of_particles)
         if "HardDiskPotential" in str(potential):
-            self._distance_between_measurements = (normalised_distance_between_measurements * number_of_particles *
-                                                   np.min(size_of_particle_space))
-        else:
-            self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
-        print(f"Distance between measurements = {self._distance_between_measurements}")
+            self._distance_between_measurements *= np.min(size_of_particle_space)
+            self._distance_between_velocity_refreshments *= np.min(size_of_particle_space)
+        print(f"Distance between event-chain measurements is {self._distance_between_measurements}")
+        print(f"Distance between event-chain velocity refreshments is {self._distance_between_measurements}")
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
-        self._distance_between_velocity_refreshments = (normalised_distance_between_velocity_refreshments
-                                                        * number_of_particles)
         """The following object is set in self._reset_arrays_and_counters()"""
         self._total_number_of_events = None
         self._factor_field = factor_field
@@ -99,9 +115,9 @@ class EventChainMediator(Mediator):
             distance_to_next_measurement = self._distance_between_measurements
             while True:
                 candidate_events = [self._potential.get_next_event(
-                    self._positions, active_particle_index, temperature, movement_direction),
-                    self._factor_field.get_next_event(
-                    self._positions, active_particle_index, temperature, movement_direction)]
+                                        self._positions, active_particle_index, temperature, movement_direction),
+                                    self._factor_field.get_next_event(
+                                        self._positions, active_particle_index, temperature, movement_direction)]
                 distance_to_next_event, vetoing_index = min(candidate_events)
 
                 if (distance_to_next_measurement < distance_to_next_event and
