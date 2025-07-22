@@ -22,7 +22,8 @@ class EventChainMediator(Mediator):
                  normalised_distance_between_measurements: float = 1.0,
                  normalised_distance_between_velocity_refreshments: float = 1.0, teleportation_portal: bool = False):
         r"""
-        Constructor of the EventChainMediator class.
+        Constructor of the EventChainMediator class.  Note that this class works only with potential classes that
+            inherit from EuclideanSubspacePotential (essentially continuous spaces).
 
         Parameters
         ----------
