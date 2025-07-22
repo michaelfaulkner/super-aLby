@@ -12,9 +12,10 @@ from model_settings import size_of_particle_space, number_of_particles
 class HardDiskPotential(EuclideanSubspacePotential):
     r"""
     This class implements the potential functionality for event-chain simulations of the hard-disk model.  Functionality
-        is currently provided only for hard disks in a 2D box with a (1:1) aspect ratio.  N.B. some abstract methods
-        from SoftMatterPotential are not relevant due to the non-smooth nature of the 'potential' function.  We include
-        these methods as dummy methods.
+        is currently provided only for hard disks in a 2D box with a (1:1) aspect ratio.
+
+    N.B. the abstract get_gradient() method (defined in EuclideanSubspacePotential) is not relevant due to the
+        non-smooth nature of the 'potential' function.
 
     For 72 hard disks in a 2D box with a (1:1) aspect ratio, the simulations defined in config_files/hard_disk_tests
         tested the event-chain code against data provided at the following URL:
