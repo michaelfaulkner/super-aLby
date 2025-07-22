@@ -243,4 +243,3 @@ def get_initial_positions_of_smooth_potential(potential_class):
         else:
             return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]
                              for _ in range(number_of_particles)])
-

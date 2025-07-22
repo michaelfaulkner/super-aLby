@@ -45,7 +45,7 @@ def main(number_of_system_sizes=5):
         wolff_iacts_vs_temp = get_observable_iact_and_acf_vs_temperature(
             "magnetic_norm_density", wolff_mediator, output_directory, sample_directories_wolff[lattice_length_index],
             temperatures, lattice_length, number_of_equilibration_iterations, number_of_observations, number_of_jobs)[0]
-        """Now also compute the IACTs and ACFs of the observables we don't use in the figure, in case the information 
+        """Now also compute the IACTs and ACFs of the observables we don't use in the figure, in case the information
             is needed in future"""
         [get_observable_iact_and_acf_vs_temperature(
             observable_string, metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
