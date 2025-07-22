@@ -103,7 +103,7 @@ class EventChainMediator(Mediator):
                 if (abs(normalised_distance_between_measurements -
                         normalised_distance_between_velocity_refreshments) > 1.0e-12 and
                         normalised_distance_between_measurements > normalised_distance_between_velocity_refreshments):
-                    raise ConfigurationError(f"Give a value greater than normalised_distance_between_measurements for "
+                    raise ConfigurationError(f"Give a value not less than normalised_distance_between_measurements for "
                                              f"normalised_distance_between_velocity_refreshments in "
                                              f"{self.__class__.__name__}.  This is to avoid errors due to the subtle "
                                              f"calculation of pressure estimates made via the pointer-hop distance "
