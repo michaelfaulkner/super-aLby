@@ -83,8 +83,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
 
     def get_value(self, positions):
         """
-        This is a dummy method as it is not relevant to hard-sphere models.  For a smooth potential function, the
-            functionality provides Mediator with the current value of the potential.
+        For hard-sphere models, this method throws a ValueError if there are disk overlaps and returns 0.0 otherwise.
 
         Parameters
         ----------
@@ -97,7 +96,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
         float
             The potential function.
         """
-        pass
+        self._check_for_disk_overlaps(positions)
+        return 0.0
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
         """
@@ -148,6 +148,11 @@ class HardDiskPotential(EuclideanSubspacePotential):
         """
         Returns the initial positions array.  Creates a close-packed configuration.
 
+        NOTE: We provide two different attempts at creating a close-packed configuration with no overlaps.  For a
+            simulation box with a (1:1) aspect ratio, packing is challenging in some cases, e.g. for the primary
+            attempt, we believe that number_of_particles should be greater than 32 to guarantee a valid initial
+            configuration for packing_fraction = 0.688 (though a thorough analysis is required).
+
         Returns
         -------
         numpy.ndarray
@@ -156,7 +161,19 @@ class HardDiskPotential(EuclideanSubspacePotential):
             particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
-        index_range = [int(number_of_particles ** 0.5), int(number_of_particles ** 0.5 + 2)]
+        try:
+            index_range = [int(number_of_particles ** 0.5), int(number_of_particles ** 0.5 + 2)]
+            positions = self._get_candidate_initial_positions(index_range)
+            self._check_for_disk_overlaps(positions)
+        except ValueError:
+            print("Using the alternative initial configuration (due to overlaps induced by the primary method).")
+            index_range = [int(number_of_particles ** 0.5 + 1), int(number_of_particles ** 0.5 + 1)]
+            positions = self._get_candidate_initial_positions(index_range)
+            self._check_for_disk_overlaps(positions)
+        self._linked_lists.reset_linked_lists(positions)
+        return positions
+
+    def _get_candidate_initial_positions(self, index_range):
         delta_x = 1.00001 * 2.0 * self._disk_radius
         delta_y = [1.00001 * self._disk_radius, 1.00001 * self._disk_radius * 3.0 ** 0.5]
         positions = np.zeros((number_of_particles, 2))
@@ -170,8 +187,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                                                     ) % size_of_particle_space[0]
                 positions[index_x + index_y * index_range[0], 1] = (index_y * delta_y[1]) % size_of_particle_space[1]
         positions = get_shortest_vectors_on_torus(positions)
-        self._check_for_disk_overlaps(positions)
-        self._linked_lists.reset_linked_lists(positions)
         return positions
 
     @staticmethod
@@ -296,13 +311,15 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                                                                            positions[particle_index_2]))
                 if (minimal_separation_distance < 2.0 * self._disk_radius and not
                         abs(minimal_separation_distance - 2.0 * self._disk_radius) < 1.0e-12):
-                    raise ValueError(f"Disks {particle_index_1} and {particle_index_2} are overlapping.  Their minimal "
-                                     f"separation distance is {minimal_separation_distance}.  NOTE: If this error was "
-                                     f"thrown due to the initial configuration, consider increasing the number of "
-                                     f"particles.  We have found that packing is challenging in some cases, e.g. we "
-                                     f"believe that number_of_particles should be greater than 33 to guarantee a valid "
-                                     f"initial configuration for packing_fraction = 0.688 (though a thorough analysis "
-                                     f"is required).")
+                    raise ValueError(
+                        f"Disks {particle_index_1} and {particle_index_2} are overlapping.  Their minimal separation "
+                        f"distance is {minimal_separation_distance}.  NOTE: If this error was thrown due to the initial"
+                        f"configuration, consider increasing number_of_particles and/or choosing a square "
+                        f"number_of_particles.  For a simulation box with a (1:1) aspect ratio, packing is challenging "
+                        f"in some cases, e.g. for the primary initial-configuration method (see "
+                        f"HardDiskPotential.get_initial_positions() we believe that number_of_particles should be "
+                        f"greater than 32 to guarantee a valid initial configuration for packing_fraction = 0.688 "
+                        f"(though a thorough analysis is required).")
 
     @staticmethod
     def _get_motion_index_and_other_index(movement_direction):

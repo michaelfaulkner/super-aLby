@@ -78,9 +78,9 @@ def get_basic_config_data(config_file_string):
                 number_of_particles = number_of_quantum_particles * number_of_timeslices
             else:
                 number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
-            if "MetropolisMediator" not in possible_mediator:
+            if "factor_field" in config:
                 factor_field = config.get(possible_mediator, "factor_field")
-            else: 
+            else:
                 factor_field = "no_factor_field"
             samplers = config.get(possible_mediator, "samplers").replace(" ", "").split(",")
             temperatures = get_temperatures(parsing.get_value(config, possible_mediator, "minimum_temperature"),
