@@ -27,7 +27,8 @@ class FactorField(metaclass=ABCMeta):
         """
         if prefactor == 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 as prefactor for {self.__class__.__name__}.")
-        self._prefactor = prefactor
+        self.soft_wins = 0
+        self.total = 0
 
     @abstractmethod
     def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
@@ -46,11 +47,41 @@ class FactorField(metaclass=ABCMeta):
         movement_direction : int
             The active-particle direction of motion.
 
+
         Returns
         ----------
         distance_to_next_event : float
             The distance to the next particle event
         veto_index : int
             The particle index responsible for the event.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def choose_next_active_particle(self, positions, active_particle_index, temperature, movement_direction,
+                                    veto_index):
+        """
+        Chooses the index and direction of motion of the next active particle in ECMC.
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the spin angle of its corresponding particle.
+        active_particle_index : int
+            The active particle index
+        temperature : float
+            The sampling temperature.
+        movement_direction : int
+            The active-particle direction of motion.
+        veto_index : int
+            The particle index responsible for the event.
+
+        Returns
+        -------
+        active_particle_index: int
+            The index of the next active particle.
+        movement_direction : int
+            The next active-particle direction of motion.
         """
         raise NotImplementedError

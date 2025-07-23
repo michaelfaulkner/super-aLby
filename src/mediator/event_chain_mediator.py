@@ -3,7 +3,6 @@ import importlib
 import numpy as np
 from base.exceptions import ConfigurationError
 from .mediator import Mediator
-from factor_field.factor_field import FactorField
 from factor_field.no_factor_field import NoFactorField
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from factor_field.factor_field import FactorField
@@ -97,7 +96,7 @@ class EventChainMediator(Mediator):
             self._distance_between_measurements *= np.min(size_of_particle_space)
             self._distance_between_velocity_refreshments *= np.min(size_of_particle_space)
         print(f"Distance between event-chain measurements is {self._distance_between_measurements}")
-        print(f"Distance between event-chain velocity refreshments is {self._distance_between_measurements}")
+        print(f"Distance between event-chain velocity refreshments is {self._distance_between_velocity_refreshments}")
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
@@ -105,12 +104,15 @@ class EventChainMediator(Mediator):
         self._total_number_of_events = None
         self._factor_field = factor_field
         self._teleportation_portal = teleportation_portal
+        self._event_type = 0
 
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         active_particle_index = np.random.randint(0, number_of_particles)
         movement_direction = self._potential.get_random_event_chain_velocity()
         distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
+        ff_events = 0
+        total_events = 0
         for markov_chain_index in range(self._total_number_of_iterations):
             distance_to_next_measurement = self._distance_between_measurements
             while True:
@@ -119,6 +121,10 @@ class EventChainMediator(Mediator):
                                     self._factor_field.get_next_event(
                                         self._positions, active_particle_index, temperature, movement_direction)]
                 distance_to_next_event, vetoing_index = min(candidate_events)
+                self._event_type = candidate_events.index((distance_to_next_event, vetoing_index))
+                if self._event_type == 1:
+                    ff_events += 1
+                total_events += 1
 
                 if (distance_to_next_measurement < distance_to_next_event and
                         distance_to_next_measurement < distance_to_next_velocity_refreshment):
@@ -143,7 +149,7 @@ class EventChainMediator(Mediator):
                 else:
                     self._potential.update_position(self._positions, distance_to_next_event,
                                                     active_particle_index, movement_direction)
-                    if self._teleportation_portal:
+                    if self._teleportation_portal and self._event_type == 0:
                         portal_candidate = self._potential.get_portal_candidate(self._positions, active_particle_index,
                                                                                 vetoing_index, movement_direction)
                         potential_difference = self._potential.get_potential_difference(active_particle_index,
@@ -153,16 +159,18 @@ class EventChainMediator(Mediator):
                                 < np.exp(- potential_difference / temperature)):
                             self._positions[active_particle_index] = portal_candidate
                         else:
-                            active_particle_index, movement_direction = self._potential.choose_next_active_particle(
-                                self._positions, active_particle_index, movement_direction, vetoing_index)
+                            active_particle_index, movement_direction = self._choose_next_active_particle(
+                                active_particle_index, temperature, movement_direction, vetoing_index)
                     else:
-                        active_particle_index, movement_direction = self._potential.choose_next_active_particle(
-                            self._positions, active_particle_index, movement_direction, vetoing_index)
+                        active_particle_index, movement_direction = self._choose_next_active_particle(
+                            active_particle_index, temperature, movement_direction, vetoing_index)
                     self._total_number_of_events += 1
                     distance_to_next_measurement -= distance_to_next_event
                     distance_to_next_velocity_refreshment -= distance_to_next_event
 
             super()._print_sample_progress(markov_chain_index)
+        print(f'FF prop: {ff_events / total_events}')
+        print(f'Ratio of soft {self._factor_field.soft_wins / self._factor_field.total}')
 
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
@@ -173,3 +181,12 @@ class EventChainMediator(Mediator):
         """Sets or resets the arrays (e.g. the sample array) and counters before each temperature iteration."""
         super()._reset_arrays_and_counters(temperature)
         self._total_number_of_events = 0
+
+    def _choose_next_active_particle(self, active_particle_index, temperature, movement_direction, vetoing_index):
+        """Select choose next active particle function based on the type of event.
+        0 = normal ECMC event. 1 = factor field event."""
+        if self._event_type == 0:
+            return self._potential.choose_next_active_particle(self._positions, active_particle_index,
+                                                               movement_direction, vetoing_index)
+        return self._factor_field.choose_next_active_particle(self._positions, active_particle_index, temperature,
+                                                              movement_direction, vetoing_index)

@@ -48,3 +48,31 @@ class NoFactorField(FactorField):
             The particle index responsible for the event.
         """
         return float('inf'), None
+
+    def choose_next_active_particle(self, positions, active_particle_index, temperature, movement_direction,
+                                    veto_index):
+        """
+        Chooses the index and direction of motion of the next active particle in ECMC.
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the spin angle of its corresponding particle.
+        active_particle_index : int
+            The active particle index
+        temperature : float
+            The sampling temperature.
+        movement_direction : int
+            The active-particle direction of motion.
+        veto_index : int
+            The particle index responsible for the event.
+
+        Returns
+        -------
+        active_particle_index: int
+            The index of the next active particle.
+        movement_direction : int
+            The next active-particle direction of motion.
+        """
+        return

@@ -285,7 +285,7 @@ def main(config_file_string):
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
         plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-',
-                 label=f'super-aLby data\nN_eff={eff_sample_size}')
+                 label=f'super-aLby data\nN_eff={eff_sample_size:.0f}')
 
         plt.xlabel(r"$x$", fontsize=15, labelpad=10)
         plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)
