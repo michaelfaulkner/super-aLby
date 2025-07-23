@@ -156,8 +156,8 @@ class Mediator(metaclass=ABCMeta):
 
     def get_checkpoint_index(self):
         """Finds run index if checkpointing is being used."""
-        return int(np.loadtxt(os.path.join(os.getcwd(), self._samplers[0].output_directory,
-                                                             "checkpoint_index.txt"), dtype='int')) + 1
+        return int(np.loadtxt(os.path.join(os.getcwd(), self._samplers[0].output_directory, "checkpoint_index.txt"),
+                              dtype='int')) + 1
 
     def _get_initial_sample(self):
         self._initial_samples = [sampler.get_empty_sample_array(1) for sampler in self._samplers]
