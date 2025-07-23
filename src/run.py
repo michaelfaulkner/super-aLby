@@ -6,6 +6,7 @@ from base.logging import set_up_logging, print_and_log
 from base.parsing import get_value, parse_options, read_config
 from base.strings import to_camel_case
 from base.uuid import get_uuid
+from helper_methods import get_basic_config_data
 from version import version
 from typing import Sequence, Union
 import fileinput
@@ -107,24 +108,29 @@ def run_single_simulation(config_file_location: str, job_number: Union[int, None
     
     config = read_config(args.config_file)
     mediator = factory.build_from_config(config, to_camel_case(config.get("Run", "mediator")), "mediator")
-    restart_flag = os.path.isfile(os.path.join(os.getcwd(), mediator._samplers[0].output_directory, 
-                                                                                        "checkpoint_index.txt"))
+    output_directory = get_basic_config_data(config_file_location)[4][0]
+    restart_flag = os.path.isfile(os.path.join(os.getcwd(), output_directory, "checkpoint_index.txt"))
+
     if job_number is None:
         if restart_flag:
-            print_and_log(logger, f"Restarting the single run from checkpoint {mediator.get_checkpoint_index() -1} "
-                          f"based on the final configuration file \n {os.path.join(os.getcwd(), 
-                                        mediator._samplers[0].output_directory, "configuration_at_checkpoint.npy")}")
+            print_and_log(logger,
+                          f"Restarting the single simulation (based on the configuration file {args.config_file}) "
+                          f"from checkpoint {mediator.get_checkpoint_index() - 1} using the checkpoint configuration "
+                          f"saved at {os.path.join(os.getcwd(), output_directory, "configuration_at_checkpoint.npy")}")
         else:
-            print_and_log(logger, f"Setting up the single run based on the configuration file {args.config_file}.")
+            print_and_log(logger,
+                          f"Setting up the single simulation based on the configuration file {args.config_file}.")
     else:
         if restart_flag:
-            print_and_log(logger, f"Restarting the {get_ordinal(job_number + 1)} of {number_of_jobs} runs from"
-                          f"checkpoint {mediator.get_checkpoint_index() -1} based on the final configuration file"
-                          f"\n {os.path.join(os.getcwd(), mediator._samplers[0].output_directory,
-                                           "configuration_at_checkpoint.npy")}")
+            print_and_log(logger,
+                          f"Restarting the {get_ordinal(job_number + 1)} of {number_of_jobs} simulations "
+                          f"(based on the configuration file {args.config_file}) from checkpoint "
+                          f"{mediator.get_checkpoint_index() - 1} using the checkpoint configuration saved at "
+                          f"{os.path.join(os.getcwd(), output_directory, "configuration_at_checkpoint.npy")}")
         else:
-            print_and_log(logger, f"Setting up the {get_ordinal(job_number + 1)} of {number_of_jobs} runs based on the "
-                              f"configuration file {args.config_file}.")
+            print_and_log(logger,
+                          f"Setting up the {get_ordinal(job_number + 1)} of {number_of_jobs} simulations "
+                          f"based on the configuration file {args.config_file}.")
 
 
     used_sections = factory.used_sections
