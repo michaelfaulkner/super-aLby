@@ -118,7 +118,7 @@ class Mediator(metaclass=ABCMeta):
             self._reset_arrays_and_counters(temperature)
             if restart_flag:
                 self._reload_configuration_from_file_and_reset()
-                self._get_checkpoint_index()
+                self._checkpoint_index = self.get_checkpoint_index()
             else:
                 self._get_initial_sample()
             self._generate_sample_at_current_temperature(temperature_index, temperature)
@@ -154,10 +154,10 @@ class Mediator(metaclass=ABCMeta):
         self._positions = np.load(os.path.join(os.getcwd(), self._samplers[0].output_directory,
                                                "configuration_at_checkpoint.npy"))
 
-    def _get_checkpoint_index(self):
+    def get_checkpoint_index(self):
         """Finds run index if checkpointing is being used."""
-        self._checkpoint_index = int(np.loadtxt(os.path.join(os.getcwd(), self._samplers[0].output_directory,
-                                                             "checkpoint_index.txt"), dtype='int')) + 1
+        return int(np.loadtxt(os.path.join(os.getcwd(), self._samplers[0].output_directory, "checkpoint_index.txt"),
+                              dtype='int')) + 1
 
     def _get_initial_sample(self):
         self._initial_samples = [sampler.get_empty_sample_array(1) for sampler in self._samplers]
