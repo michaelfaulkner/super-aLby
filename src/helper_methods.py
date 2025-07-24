@@ -243,3 +243,14 @@ def get_initial_positions_of_smooth_potential(potential_class):
         else:
             return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]
                              for _ in range(number_of_particles)])
+
+
+def get_east_worldline_neighbour(lattice_site_index, number_of_quantum_particles, number_of_timeslices):
+        """Returns the eastwards timeslice neighbour of lattice_site_index."""
+        return int((lattice_site_index + number_of_quantum_particles) %
+                   (number_of_timeslices * number_of_quantum_particles))
+
+def get_west_worldline_neighbour(lattice_site_index, number_of_quantum_particles, number_of_timeslices):
+    """Returns the westwards timeslice neighbour of lattice_site_index."""
+    return int((lattice_site_index - number_of_quantum_particles) %
+                (number_of_timeslices * number_of_quantum_particles))

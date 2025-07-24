@@ -3,9 +3,9 @@ import numpy as np
 from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError, MediatorError
 from base.vectors import get_shortest_vectors_on_torus
-from model_settings import size_of_particle_space, number_of_quantum_particles
+from model_settings import size_of_particle_space, number_of_quantum_particles, number_of_timeslices
 from model_settings import number_of_particles
-
+from helper_methods import get_east_worldline_neighbour, get_west_worldline_neighbour
 
 class QuantumHardDiskPotential(WorldlinePotential):
     r"""
@@ -164,8 +164,10 @@ class QuantumHardDiskPotential(WorldlinePotential):
         vetoing_index : int
             The index of the particle that triggers the event.
         """
-        worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
-                                self._get_east_worldline_neighbour(active_particle_index)]
+        worldline_neighbours = [get_west_worldline_neighbour(active_particle_index, number_of_quantum_particles,
+                                                             number_of_timeslices),
+                                get_east_worldline_neighbour(active_particle_index,  number_of_quantum_particles,
+                                                             number_of_timeslices)]
         quantum_particle_neighbours = self._get_quantum_particles_at_timeslice(active_particle_index)
 
         (shortest_distance_to_next_factor_event, vetoing_index

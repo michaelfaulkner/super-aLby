@@ -3,8 +3,8 @@ import numpy as np
 from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError
 from helper_methods import get_initial_positions_of_smooth_potential
-
-
+from helper_methods import get_east_worldline_neighbour, get_west_worldline_neighbour
+from model_settings import number_of_quantum_particles, number_of_timeslices
 class QuantumHarmonicOscillatorPotential(WorldlinePotential):
     r"""
     This class implements the (currently one-dimensional) potential for the quantum harmonic oscillator resulting
@@ -71,8 +71,10 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         """
         return self._mass / self._timestep * (
                 (2.0 + self._timestep ** 2 * self._omega ** 2) * positions[active_particle_index] -
-                positions[self._get_west_worldline_neighbour(active_particle_index)] -
-                positions[self._get_east_worldline_neighbour(active_particle_index)]).item()
+                positions[get_west_worldline_neighbour(active_particle_index, number_of_quantum_particles,
+                                                             number_of_timeslices)] -
+                positions[get_east_worldline_neighbour(active_particle_index, number_of_quantum_particles,
+                                                             number_of_timeslices)]).item()
 
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
         """
@@ -133,11 +135,13 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         vetoing_particle_index : int
             The index of the particle that triggers the event.
         """
-        worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
-                                self._get_east_worldline_neighbour(active_particle_index)]
+        worldline_neighbours = [get_west_worldline_neighbour(active_particle_index, number_of_quantum_particles,
+                                                             number_of_timeslices),
+                                get_east_worldline_neighbour(active_particle_index, number_of_quantum_particles,
+                                                             number_of_timeslices)]
 
-        (shortest_distance_to_next_factor_event, vetoing_index
-         ) = self._get_next_kinetic_event(positions, active_particle_index, movement_direction, worldline_neighbours)
+        (shortest_distance_to_next_factor_event, vetoing_index) = \
+            self._get_next_kinetic_event(positions, active_particle_index, movement_direction, worldline_neighbours)
         """now consider the potential part of the action"""
         initial_position = positions[active_particle_index].item()
         uphill_energy = - np.log(np.random.uniform(0, 1))

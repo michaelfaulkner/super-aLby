@@ -24,7 +24,6 @@ class XyFactorField(FactorField):
             The dimensionality of the lattice on which the XY model is defined.  We currently only provide functionality
             for the 2DXY model, i.e. for lattice_dimensionality equal to two.
 
-
         Raises
         ------
         base.exceptions.ConfigurationError
