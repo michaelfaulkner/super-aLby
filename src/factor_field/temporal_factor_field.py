@@ -12,7 +12,7 @@ class TemporalFactorField(FactorField):
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1):
 
         """
-        The constructor of the FactorField class.
+        The constructor of the TemporalFactorField class.
 
         Parameters
         ----------
@@ -30,9 +30,9 @@ class TemporalFactorField(FactorField):
 
         Parameters
         ----------
-        positions : numpy.ndarray
+          positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents the spin angle of its corresponding particle.
+            is a float and represents the position of a single quantum particle.
         active_particle_index : int
             The active particle index
         temperature : float
