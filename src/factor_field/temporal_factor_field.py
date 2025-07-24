@@ -1,16 +1,15 @@
-"""Module for the abstract FactorField class."""
-from base.exceptions import ConfigurationError
-from abc import ABCMeta, abstractmethod
+"""Module for the TemporalFactorField class."""
+from .factor_field import FactorField
+import numpy as np
 
-
-class FactorField(metaclass=ABCMeta):
+class TemporalFactorField(FactorField):
     """
-    This abstract class allows the implementation of factor fields ECMC (Lei, Krauth, Maggs, 2019).
-
+    This class implements factor fields along the Euclidean time axis for worldline-type models.
     """
 
-    def __init__(self, prefactor: float = 1.0, **kwargs):
-        """
+    def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1):
+
+         """
         The constructor of the FactorField class.
 
         Parameters
@@ -25,11 +24,9 @@ class FactorField(metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If prefactor is not greater than 0.0.
         """
-        if prefactor == 0.0:
-            raise ConfigurationError(f"Give a value greater than 0.0 as prefactor for {self.__class__.__name__}.")
-        self._prefactor = prefactor
+         
 
-    @abstractmethod
+         
     def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
@@ -53,4 +50,3 @@ class FactorField(metaclass=ABCMeta):
         veto_index : int
             The particle index responsible for the event.
         """
-        raise NotImplementedError
