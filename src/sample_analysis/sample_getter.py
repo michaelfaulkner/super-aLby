@@ -561,6 +561,43 @@ def get_xy_magnetisation_norm(sample_directory, temperature, temperature_index, 
         np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
                 f"sample_of_magnetisation_norm.npy"), number_of_equilibration_iterations, thinning_level)
 
+def get_active_particle(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+                       number_of_equilibration_iterations=None, thinning_level=None):
+    """
+    Returns the sample of the mean particle positions (where each position may be corrected for periodic boundaries).
+
+    Parameters
+    ----------
+    sample_directory : str
+        The location of the directory containing the sample(s).
+    temperature : float
+        The sampling temperature.
+    temperature_index : int
+        The index of the current sampling temperature within the configuration file.
+    checkpoint_index : int
+        The index of the data file created as part of the checkpointing process.
+    number_of_particles : int
+        The total number of particles.
+    number_of_equilibration_iterations : None or int, optional
+        The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
+    thinning_level : None or int, optional
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
+        all observations are retained.
+
+    Returns
+    -------
+    numpy.ndarray
+        The sample of the mean particle positions.  A two-dimensional numpy array of shape
+        (L, dimensionality_of_particle_space) where the maximum value of L is number_of_observations +
+        number_of_equilibration_iterations + 1 (the 1 is for the observation of the initial system state) but L is
+        shortened if number_of_equilibration_iterations and/or thinning_level is not None.  The nth element is a
+        dimensionality_of_particle_space-length numpy array corresponding to the observation n; the ith element of each
+        sub-array is the ith Cartesian component the mean particle position at observation n.
+    """
+    return get_reduced_sample(
+        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
+                f"sample_of_active_particles.npy"), number_of_equilibration_iterations, thinning_level)
+
 
 """helper methods"""
 
