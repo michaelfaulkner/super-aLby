@@ -5,6 +5,7 @@ from base.exceptions import ConfigurationError
 from .mediator import Mediator
 from factor_field.factor_field import FactorField
 from factor_field.no_factor_field import NoFactorField
+from sampler.active_particle_sampler import ActiveParticleSampler
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from sampler.sampler import Sampler
 from typing import Sequence
@@ -104,6 +105,8 @@ class EventChainMediator(Mediator):
         self._total_number_of_events = None
         self._factor_field = factor_field
         self._teleportation_portal = teleportation_portal
+        self.active_particle_index = None # this is set in self._generate_sample_at_current_temperature()
+        self._index_of_current_active_particle_sample = 0
 
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
@@ -113,6 +116,12 @@ class EventChainMediator(Mediator):
         for markov_chain_index in range(self._total_number_of_iterations):
             distance_to_next_measurement = self._distance_between_measurements
             while True:
+                for sampler_index, sampler in enumerate(self._samplers):
+                    if isinstance(sampler, ActiveParticleSampler):
+                        self._samples[self._active_particle_sampler_index][
+                            self._index_of_current_active_particle_sample, :] = \
+                            sampler.get_observation(None, self._positions, self._potential, self)
+                        
                 candidate_events = [self._potential.get_next_event(
                                         self._positions, self.active_particle_index, temperature, movement_direction),
                                     self._factor_field.get_next_event(
@@ -126,8 +135,10 @@ class EventChainMediator(Mediator):
                     self._potential.cell_boundary_event = False
                     distance_to_next_velocity_refreshment -= distance_to_next_measurement
                     for sampler_index, sampler in enumerate(self._samplers):
-                        self._samples[sampler_index][markov_chain_index, :] = sampler.get_observation(
-                            None, self._positions, self._potential)
+                        if not isinstance(sampler, ActiveParticleSampler):
+                            self._samples[sampler_index][markov_chain_index, :] = sampler.get_observation(
+                                None, self._positions, self._potential)
+                    self._index_of_current_active_particle_sample += 1
                     break
 
                 elif distance_to_next_velocity_refreshment < distance_to_next_event:
@@ -160,6 +171,7 @@ class EventChainMediator(Mediator):
                     self._total_number_of_events += 1
                     distance_to_next_measurement -= distance_to_next_event
                     distance_to_next_velocity_refreshment -= distance_to_next_event
+                self._index_of_current_active_particle_sample += 1
 
             super()._print_sample_progress(markov_chain_index)
 

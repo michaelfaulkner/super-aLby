@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
 from helper_methods import get_temperatures
 from potential.potential import Potential
+from sampler.active_particle_sampler import ActiveParticleSampler
 from run import get_ordinal
 from sampler.sampler import Sampler
 from typing import Sequence
@@ -110,6 +111,8 @@ class Mediator(metaclass=ABCMeta):
         self._samples = None
         self._initial_samples = None
         self._checkpoint_index = None
+        # """Set in self._get_initial_sample if ActiveParticleSampler is used"""
+        # self._active_particle_sampler_index = None 
 
     def generate_sample(self, restart_flag):
         """Iterates through temperatures, generating a sample at each."""
@@ -122,6 +125,8 @@ class Mediator(metaclass=ABCMeta):
             else:
                 self._get_initial_sample()
             self._generate_sample_at_current_temperature(temperature_index, temperature)
+
+            self._samples[self._active_particle_sampler_index]= np.trim_zeros(self._samples[self._active_particle_sampler_index])
             if not restart_flag:
                 self._samples = [np.concatenate((self._initial_samples[sampler_index], self._samples[sampler_index]))
                                  for sampler_index, sampler in enumerate(self._samplers)]
@@ -162,11 +167,16 @@ class Mediator(metaclass=ABCMeta):
     def _get_initial_sample(self):
         self._initial_samples = [sampler.get_empty_sample_array(1) for sampler in self._samplers]
         for sampler_index, sampler in enumerate(self._samplers):
-            if "PressureSampler" in str(sampler):
-                self._initial_samples[sampler_index][0, :] = number_of_particles / system_volume  # ideal-gas pressure
+            if not isinstance(sampler, ActiveParticleSampler):
+                if "PressureSampler" in str(sampler):
+                    self._initial_samples[sampler_index][0, :] = number_of_particles / system_volume  # ideal-gas pressure
+                else:
+                    self._initial_samples[sampler_index][0, :] = sampler.get_observation(self._momenta, self._positions,
+                                                                                        self._potential)
             else:
-                self._initial_samples[sampler_index][0, :] = sampler.get_observation(self._momenta, self._positions,
-                                                                                     self._potential)
+                self._active_particle_sampler_index = sampler_index
+                self._initial_samples[self._active_particle_sampler_index] = np.zeros((1,1))
+    
 
     @abstractmethod
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
