@@ -280,11 +280,12 @@ def main(config_file_string):
         else:
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
+        sample = sample[number_of_equilibration_iterations:]
         sample_cdf = get_cumulative_distribution(sample)
         eff_sample_size = get_effective_sample_size(sample)
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
-        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-',
+        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=3, linestyle='-',
                  label=f'super-aLby data\nN_eff={eff_sample_size:.0f}')
 
         plt.xlabel(r"$x$", fontsize=15, labelpad=10)

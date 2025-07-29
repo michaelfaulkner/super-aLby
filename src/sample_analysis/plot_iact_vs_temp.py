@@ -42,7 +42,7 @@ def main(config_directory_path):
         all_subdirectoy_samples = []
         for subdirectory in subdirectories:
             try:
-                samples = np.load(os.path.join(subdirectory, 'temperature_00_checkpoint_00_sample_of_magnetisation_norm.npy')).flatten()
+                samples = np.load(os.path.join(subdirectory, 'xy_16x16_T=1.1_mag_norm_ref.npy')).flatten()
                 samples = samples[number_of_equilibration_iterations:]
                 all_subdirectoy_samples.append(samples)
             except IOError:

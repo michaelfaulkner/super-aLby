@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 from .euclidean_subspace_potential import EuclideanSubspacePotential
 from model_settings import number_of_particles
 from base.exceptions import ConfigurationError
@@ -232,12 +233,19 @@ class XyPotential(EuclideanSubspacePotential):
         movement_direction : int
             The next active-particle direction of motion.
         """
+        if veto_index is None:
+            displacement_distance, veto_index = min(positions)[0], np.argmin(positions)
+            self._update_global_position(positions, displacement_distance, -movement_direction)
         return veto_index, movement_direction
 
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """Updates the position of the active particle."""
         positions[active_particle_index] = (positions[active_particle_index] + displacement_distance) % (2.0 * np.pi)
+        if (positions[active_particle_index] > (2.0 * np.pi + 1.0e-12)
+                or positions[active_particle_index] < (0.0 * np.pi)):
+            print(f'Spin > 2.0 pi, {positions[active_particle_index] - 2.0 * np.pi} exiting...')
+            sys.exit()
 
     @staticmethod
     def _get_spin_difference(spin_value_one, spin_value_two):
@@ -247,3 +255,8 @@ class XyPotential(EuclideanSubspacePotential):
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""
         return (2.0 * positions[veto_index] - positions[active_particle_index]) % (2.0 * np.pi)
+
+    @staticmethod
+    def _update_global_position(positions, displacement_distance, movement_direction):
+        """Updates the position of all particles"""
+        positions[:] = positions + movement_direction * displacement_distance + 1.0e-12

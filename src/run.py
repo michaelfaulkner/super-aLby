@@ -116,7 +116,7 @@ def run_single_simulation(config_file_location: str, job_number: Union[int, None
             print_and_log(logger,
                           f"Restarting the single simulation (based on the configuration file {args.config_file}) "
                           f"from checkpoint {mediator.get_checkpoint_index() - 1} using the checkpoint configuration "
-                          f"saved at {os.path.join(os.getcwd(), output_directory, "configuration_at_checkpoint.npy")}")
+                          f"saved at {os.path.join(os.getcwd(), output_directory, 'configuration_at_checkpoint.npy')}")
         else:
             print_and_log(logger,
                           f"Setting up the single simulation based on the configuration file {args.config_file}.")
@@ -126,12 +126,11 @@ def run_single_simulation(config_file_location: str, job_number: Union[int, None
                           f"Restarting the {get_ordinal(job_number + 1)} of {number_of_jobs} simulations "
                           f"(based on the configuration file {args.config_file}) from checkpoint "
                           f"{mediator.get_checkpoint_index() - 1} using the checkpoint configuration saved at "
-                          f"{os.path.join(os.getcwd(), output_directory, "configuration_at_checkpoint.npy")}")
+                          f"{os.path.join(os.getcwd(), output_directory, 'configuration_at_checkpoint.npy')}")
         else:
             print_and_log(logger,
                           f"Setting up the {get_ordinal(job_number + 1)} of {number_of_jobs} simulations "
                           f"based on the configuration file {args.config_file}.")
-
 
     used_sections = factory.used_sections
     for section in config.sections():

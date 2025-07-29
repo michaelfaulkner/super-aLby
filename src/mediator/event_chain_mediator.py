@@ -1,6 +1,7 @@
 """Module for EventChainMediator class"""
 import importlib
 import numpy as np
+import matplotlib.pyplot as plt
 from base.exceptions import ConfigurationError
 from .mediator import Mediator
 from factor_field.no_factor_field import NoFactorField
@@ -20,7 +21,8 @@ class EventChainMediator(Mediator):
                  maximum_temperature: float = 1.0, number_of_temperature_increments: int = 0,
                  number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
                  normalised_distance_between_measurements: float = 1.0,
-                 normalised_distance_between_velocity_refreshments: float = 1.0, teleportation_portal: bool = False):
+                 normalised_distance_between_velocity_refreshments: float = 1.0, teleportation_portal: bool = False,
+                 boundary_events: bool = False):
         r"""
         Constructor of the EventChainMediator class.
 
@@ -53,6 +55,8 @@ class EventChainMediator(Mediator):
             below).
         teleportation_portal : bool, optional
             When True, a teleportation portal is attempted at each event induced by the potential.
+        boundary_events : bool, optional
+            When True, a boundary event is attempted at each event.
 
         Raises
         ------
@@ -105,6 +109,7 @@ class EventChainMediator(Mediator):
         self._factor_field = factor_field
         self._teleportation_portal = teleportation_portal
         self._event_type = 0
+        self._boundary_events = boundary_events
 
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
@@ -112,7 +117,7 @@ class EventChainMediator(Mediator):
         movement_direction = self._potential.get_random_event_chain_velocity()
         distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
         ff_events = 0
-        total_events = 0
+        boundary_events = 0
         for markov_chain_index in range(self._total_number_of_iterations):
             distance_to_next_measurement = self._distance_between_measurements
             while True:
@@ -122,9 +127,14 @@ class EventChainMediator(Mediator):
                                         self._positions, active_particle_index, temperature, movement_direction)]
                 distance_to_next_event, vetoing_index = min(candidate_events)
                 self._event_type = candidate_events.index((distance_to_next_event, vetoing_index))
+                if self._boundary_events:
+                    distance_to_next_event, vetoing_index, self._event_type = (
+                        min([(distance_to_next_event, vetoing_index, self._event_type),
+                             (size_of_particle_space - self._positions[active_particle_index, 0], None, 0)]))
+                if vetoing_index is None:
+                    boundary_events += 1
                 if self._event_type == 1:
                     ff_events += 1
-                total_events += 1
 
                 if (distance_to_next_measurement < distance_to_next_event and
                         distance_to_next_measurement < distance_to_next_velocity_refreshment):
@@ -164,13 +174,13 @@ class EventChainMediator(Mediator):
                     else:
                         active_particle_index, movement_direction = self._choose_next_active_particle(
                             active_particle_index, temperature, movement_direction, vetoing_index)
-                    self._total_number_of_events += 1
                     distance_to_next_measurement -= distance_to_next_event
                     distance_to_next_velocity_refreshment -= distance_to_next_event
+                    self._total_number_of_events += 1
 
             super()._print_sample_progress(markov_chain_index)
-        print(f'FF prop: {ff_events / total_events}')
-        print(f'Ratio of soft {self._factor_field.soft_wins / self._factor_field.total}')
+        print(f'Boundary prop: {boundary_events / self._total_number_of_events}')
+        print(f'FF prop: {ff_events / self._total_number_of_events}')
 
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
