@@ -268,7 +268,7 @@ def main(config_file_string):
                                                             number_of_equilibration_iterations).flatten()
         elif "xy" in potential:
             sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperatures[0], 0, 0,
-                                                             number_of_particles).flatten()
+                                                             number_of_particles, number_of_equilibration_iterations).flatten()
         elif "quantum_harmonic_oscillator_potential" in potential:
             sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperatures[0], 0, 0,
                                                               number_of_particles, number_of_equilibration_iterations
@@ -280,7 +280,6 @@ def main(config_file_string):
         else:
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
-        sample = sample[number_of_equilibration_iterations:]
         sample_cdf = get_cumulative_distribution(sample)
         eff_sample_size = get_effective_sample_size(sample)
 
