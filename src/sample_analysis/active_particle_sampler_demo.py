@@ -31,7 +31,7 @@ def main(config_file):
     active_particle_sample = sample_getter.get_active_particle(sample_directory, temperatures[temperature_index],
                     temperature_index, 0, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
     
-    plt.plot(np.arange(len(active_particle_sample[:1000])), active_particle_sample[:1000])
+    plt.plot(np.arange(len(active_particle_sample[:100])), active_particle_sample[:100])
     plt.savefig("test.png")
 
 if __name__ == '__main__':
