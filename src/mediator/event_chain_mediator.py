@@ -108,7 +108,6 @@ class EventChainMediator(Mediator):
         self._total_number_of_events = None
         self._factor_field = factor_field
         self._teleportation_portal = teleportation_portal
-        self._event_type = 0
         self._boundary_events = boundary_events
 
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
@@ -126,14 +125,14 @@ class EventChainMediator(Mediator):
                                     self._factor_field.get_next_event(
                                         self._positions, active_particle_index, temperature, movement_direction)]
                 distance_to_next_event, vetoing_index = min(candidate_events)
-                self._event_type = candidate_events.index((distance_to_next_event, vetoing_index))
+                event_type = candidate_events.index((distance_to_next_event, vetoing_index))
                 if self._boundary_events:
-                    distance_to_next_event, vetoing_index, self._event_type = (
-                        min([(distance_to_next_event, vetoing_index, self._event_type),
+                    distance_to_next_event, vetoing_index, event_type = (
+                        min([(distance_to_next_event, vetoing_index, event_type),
                              (size_of_particle_space - self._positions[active_particle_index, 0], None, 0)]))
                 if vetoing_index is None:
                     boundary_events += 1
-                if self._event_type == 1:
+                if event_type == 1:
                     ff_events += 1
 
                 if (distance_to_next_measurement < distance_to_next_event and
@@ -159,7 +158,7 @@ class EventChainMediator(Mediator):
                 else:
                     self._potential.update_position(self._positions, distance_to_next_event,
                                                     active_particle_index, movement_direction)
-                    if self._teleportation_portal and self._event_type == 0:
+                    if self._teleportation_portal and event_type == 0:
                         portal_candidate = self._potential.get_portal_candidate(self._positions, active_particle_index,
                                                                                 vetoing_index, movement_direction)
                         potential_difference = self._potential.get_potential_difference(active_particle_index,
@@ -192,10 +191,11 @@ class EventChainMediator(Mediator):
         super()._reset_arrays_and_counters(temperature)
         self._total_number_of_events = 0
 
-    def _choose_next_active_particle(self, active_particle_index, temperature, movement_direction, vetoing_index):
+    def _choose_next_active_particle(self, active_particle_index, temperature, movement_direction, vetoing_index,
+                                     event_type):
         """Select choose next active particle function based on the type of event.
         0 = normal ECMC event. 1 = factor field event."""
-        if self._event_type == 0:
+        if event_type == 0:
             return self._potential.choose_next_active_particle(self._positions, active_particle_index,
                                                                movement_direction, vetoing_index)
         return self._factor_field.choose_next_active_particle(self._positions, active_particle_index, temperature,
