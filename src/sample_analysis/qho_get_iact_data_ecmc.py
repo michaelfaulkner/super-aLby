@@ -20,6 +20,7 @@ strings = importlib.import_module("base.strings")
 def main(config_folder, min, max, min_timestep):
     min = int(min)
     max = int(max)
+    min_timestep = float(min_timestep)
 
     for i in range(min, max):
 
@@ -52,9 +53,13 @@ def main(config_folder, min, max, min_timestep):
                     sub_arr_len = number_of_equilibration_iterations + number_of_observations
                     mean_sample = np.zeros(sub_arr_len * (checkpointing_index + 1))
                     for i in range(checkpointing_index + 1):
-                        mean_sample[i * sub_arr_len : (i+1) * sub_arr_len + 1] = sample_getter.get_mean_squared_positions(
+                        sub_arr = sample_getter.get_mean_squared_positions(
                             sample_directory, temperatures[temperature_index], temperature_index, i, number_of_particles, 
                             None, thinning_level=thinning_level)[:, 0]
+                        try:
+                            mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = sub_arr
+                        except:
+                            mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = sub_arr[1:]
                         
                     mean_sample = mean_sample[3000:]
                         
@@ -62,9 +67,12 @@ def main(config_folder, min, max, min_timestep):
                     mean_sample = sample_getter.get_mean_squared_positions(sample_directory, temperatures[temperature_index],
                                     temperature_index, 0, number_of_particles, number_of_equilibration_iterations,
                                     thinning_level=thinning_level)
+                
+                if len(np.shape(mean_sample)) > 1:
+                    mean_sample = mean_sample[:,0]
         
 
-                iact, acf = get_iact_and_acf(mean_sample[:, 0])
+                iact, acf = get_iact_and_acf(mean_sample[:])
 
                 iact_arr[index] = iact
 
