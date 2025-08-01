@@ -99,6 +99,7 @@ def main(values_filepath, config_folder):
         mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
                                                        temperature_index, number_of_particles,
                                                        number_of_equilibration_iterations, thinning_level)
+        mean_sample = np.load(os.path.join(sample_directory, ))
         mean_sample = mean_sample[:30000]
 
         mean_sample_mean = get_sample_mean_and_error(mean_sample)
