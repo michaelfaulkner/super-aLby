@@ -22,14 +22,14 @@ def main(config_folder, min, max, min_timestep):
     max = int(max)
     min_timestep = float(min_timestep)
 
-    for i in range(min, max):
+    for iact_index in range(min, max):
 
         iact_arr = np.zeros(len(os.listdir(config_folder)))
         timestep_arr = np.zeros(len(os.listdir(config_folder)))
 
         for index, folder in enumerate(os.listdir(config_folder)):
             config_file_string = os.path.join(
-                config_folder, folder, f"{i}.ini")
+                config_folder, folder, f"{iact_index}.ini")
             print(config_file_string)
             config = parsing.read_config(
                 parsing.parse_options([config_file_string]).config_file)
@@ -80,7 +80,7 @@ def main(config_folder, min, max, min_timestep):
         save_arr[:, 0] = iact_arr
         save_arr[:, 1] = timestep_arr
 
-        np.save(f"output/iact_ecmc_{i}.npy", save_arr)
+        np.save(f"output/iact_ecmc_{iact_index}.npy", save_arr)
 
 
 if __name__ == '__main__':
