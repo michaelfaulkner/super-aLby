@@ -243,7 +243,7 @@ def main(config_file_string):
         "permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_reference_sample.npy").flatten()
     elif "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
         reference_sample = np.load("permanent_data/reference_data/"
-                                   "eight_2d_hard_disks_particles_packing_fraction_point_688_reference_sample.npy")
+                                   "nine_2d_hard_disks_particles_packing_fraction_point_688_reference_sample.npy")
     elif "quantum_hard_disk_potential" in potential and "event_chain_mediator" in config_file_mediator:
         reference_sample = np.load("permanent_data/reference_data/ten_quantum_hard_disks_two_timeslices_"
                                    "packing_fraction_point_97_event_chain_reference_sample.npy")
