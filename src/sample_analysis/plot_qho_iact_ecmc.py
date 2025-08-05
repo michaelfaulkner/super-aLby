@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 import sys
 import os
+matplotlib.rcParams['mathtext.fontset'] = 'cm'
 
 def main(iact_data_path, N):
 
@@ -19,19 +21,16 @@ def main(iact_data_path, N):
         iact_data = iact_data[argsorted_data] 
         storage_arr[:, index] = iact_data
 
-    print(sorted_timestep)
-    print(np.nonzero(sorted_timestep >= 0.05))
-    print(storage_arr[np.nonzero(sorted_timestep >= 0.05)])
-
 
 
     iact_mean_arr = np.mean(storage_arr[np.nonzero(sorted_timestep >= 0.05)], axis = 1)
     err = np.std(storage_arr[np.nonzero(sorted_timestep >= 0.05)], axis=1)
+    sorted_N = 120 / sorted_timestep[np.nonzero(sorted_timestep >= 0.05)]
     
     fig, ax = plt.subplots(1, 1)
     #ax.scatter(timestep_data_0, iact_mean_arr)
-    ax.errorbar(sorted_timestep[np.nonzero(sorted_timestep >= 0.05)], iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="#ed1171ff")
-    ax.set_xlabel(r"$\delta \tau$", fontsize=16, labelpad=-10)
+    ax.errorbar(sorted_N, iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="#ed1171ff")
+    ax.set_xlabel(r"$N_{\tau}$", fontsize=20, labelpad=-10)
     ax.set_ylabel("IACT", fontsize=15, labelpad=0)
     ax.set_xscale("log")
     ax.set_yscale("log")
