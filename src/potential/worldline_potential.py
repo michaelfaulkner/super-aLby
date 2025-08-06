@@ -13,7 +13,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         of the system.
     """
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0,
-                 timestep: float = 1.0, **kwargs):
+                 timestep: float = 1.0, west_boundary: float = 0.0, east_boundary: float = 1.0, **kwargs):
         """
         The constructor of the WorldlinePotential class.
 
@@ -28,6 +28,10 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             The number of Cartesian dimensions of the lattice.
         timestep : float
             The size of the time step
+        west_boundary: float
+            The fixed western position boundary for the worldline.
+        east_boundary: float
+            The fixed eastern position boundary for the worldline.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
 
@@ -47,6 +51,12 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         self._mass = mass
         self._timestep = timestep
         self._omega = mass
+
+                
+        self._west_boundary = west_boundary
+        self._east_boundary = east_boundary
+        self.length_scale = np.abs(self._west_boundary - self._east_boundary) # will be used by factor fields class
+        print(f"west BC: {self._west_boundary}, east BC: {self._east_boundary}, L = {self.length_scale}")
 
     def get_value(self, positions):
         """
@@ -231,7 +241,14 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         for worldline_neighbour in worldline_neighbours:
             if worldline_neighbour != active_particle_index:
                 uphill_energy = - np.log(np.random.uniform(0, 1))
-                neighbour_position = positions[worldline_neighbour].item()
+                try:
+                    neighbour_position = positions[worldline_neighbour].item()
+                except: #NOTE not generalised for multiple quantum particles yet
+                    if worldline_neighbour == number_of_timeslices:
+                        neighbour_position = self._west_boundary
+                    elif worldline_neighbour == number_of_timeslices + 1:
+                        neighbour_position = self._east_boundary
+
                 bottom_of_well = neighbour_position
                 if ((movement_direction > 0 and initial_position < bottom_of_well) or
                         (movement_direction < 0 and initial_position > bottom_of_well)):

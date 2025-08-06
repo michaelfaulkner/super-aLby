@@ -14,7 +14,7 @@ class OpenQuantumHarmonicOscillatorPotential(WorldlinePotential):
         where m and \omega are the mass and frequency, respectively.
     """
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0,
-                 timestep: float = 0.1, west_boundary: float = 0.0, east_boundary: float = 1.0):
+                 timestep: float = 0.1):
         r"""
         The constructor of the QuantumHarmonicOscillatorPotential class
 
@@ -28,10 +28,6 @@ class OpenQuantumHarmonicOscillatorPotential(WorldlinePotential):
             The mass of the particle.
         timestep : float
             The size of the time step, \delta \tau.
-        west_boundary: float
-            The fixed western position boundary for the worldline.
-        east_boundary: float
-            The fixed eastern position boundary for the worldline.
         """
         super().__init__(prefactor=prefactor, lattice_dimensionality=lattice_dimensionality, mass=mass,
                          timestep=timestep)
@@ -41,11 +37,7 @@ class OpenQuantumHarmonicOscillatorPotential(WorldlinePotential):
         if lattice_dimensionality != 1:
             raise ConfigurationError(f"Give a value of 1 for lattice_dimensionality in {self.__class__.__name__} - "
                                      f"functionality for other dimensions not yet provided.")
-        
-        self._west_boundary = west_boundary
-        self._east_boundary = east_boundary
-        self.length_scale = np.abs(self._west_boundary - self._east_boundary) # will be used by factor fields class
-        print(f"west BC: {self._west_boundary}, east BC: {self._east_boundary}, L = {self.length_scale}")
+
 
         
     def get_initial_positions(self):
@@ -156,11 +148,11 @@ class OpenQuantumHarmonicOscillatorPotential(WorldlinePotential):
             if active_particle_index == 0:
                 (shortest_distance_to_next_factor_event, vetoing_index
                     ) = self._get_next_kinetic_event(positions, active_particle_index, movement_direction,
-                                                    [self._west_boundary])
+                                                    [number_of_timeslices]) # west boundary
             elif active_particle_index == number_of_timeslices - 1:
                 (shortest_distance_to_next_factor_event, vetoing_index
                     ) = self._get_next_kinetic_event(positions, active_particle_index, movement_direction,
-                                                    [self._east_boundary])
+                                                    [number_of_timeslices+1]) # east boundary
                 
         """now consider the potential part of the action"""
         initial_position = positions[active_particle_index].item()
@@ -211,11 +203,18 @@ class OpenQuantumHarmonicOscillatorPotential(WorldlinePotential):
         """
         initial_a = active_particle_index
         initial_v = movement_direction
-  
-        if veto_index == active_particle_index:
-            movement_direction = movement_direction * -1
-        else:
-            active_particle_index = veto_index
+        if veto_index < number_of_timeslices:
+            if veto_index == active_particle_index:
+                movement_direction = movement_direction * -1
+            else:
+                active_particle_index = veto_index
+        else: 
+            if veto_index == number_of_timeslices: # west boundary
+                active_particle_index = 1
+            elif veto_index == number_of_timeslices + 1: # east boundary
+                active_particle_index = number_of_timeslices - 2
+            else:
+                raise Exception("went out of bounds")
         if active_particle_index == initial_a and movement_direction == initial_v:
             raise Exception("The same combination of active particle index and direction of motion has been chosen "
                             "twice in a row.")
