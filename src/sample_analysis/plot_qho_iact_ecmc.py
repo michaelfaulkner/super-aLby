@@ -26,10 +26,16 @@ def main(iact_data_path, N):
     iact_mean_arr = np.mean(storage_arr[np.nonzero(sorted_timestep >= 0.05)], axis = 1)
     err = np.std(storage_arr[np.nonzero(sorted_timestep >= 0.05)], axis=1)
     sorted_N = 120 / sorted_timestep[np.nonzero(sorted_timestep >= 0.05)]
-    
+    print(len(sorted_N))
+    e_coeffs = np.polyfit(np.log(sorted_N[:-10]), np.log(iact_mean_arr[:-10]), deg=1)
+    fitted_e = e_coeffs[1] + np.multiply(np.log(sorted_N[:-10]), e_coeffs[0])
+    print(e_coeffs)
+
     fig, ax = plt.subplots(1, 1)
     #ax.scatter(timestep_data_0, iact_mean_arr)
     ax.errorbar(sorted_N, iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="#ed1171ff")
+    ax.plot(sorted_N[:-10], np.exp(fitted_e), color="#d97dd9ff")
+
     ax.set_xlabel(r"$N_{\tau}$", fontsize=20, labelpad=-10)
     ax.set_ylabel("IACT", fontsize=15, labelpad=0)
     ax.set_xscale("log")
