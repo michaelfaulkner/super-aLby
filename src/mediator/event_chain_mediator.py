@@ -128,8 +128,8 @@ class EventChainMediator(Mediator):
                 event_type = candidate_events.index((distance_to_next_event, vetoing_index))
                 if self._boundary_events:
                     distance_to_next_event, vetoing_index, event_type = (
-                        min([(distance_to_next_event, vetoing_index, event_type),
-                             (size_of_particle_space - self._positions[active_particle_index, 0], None, 0)]))
+                        min((distance_to_next_event, vetoing_index, event_type),
+                            (size_of_particle_space - self._positions[active_particle_index, 0], None, 0)))
                 if vetoing_index is None:
                     boundary_events += 1
                 if event_type == 1:
@@ -169,10 +169,10 @@ class EventChainMediator(Mediator):
                             self._positions[active_particle_index] = portal_candidate
                         else:
                             active_particle_index, movement_direction = self._choose_next_active_particle(
-                                active_particle_index, temperature, movement_direction, vetoing_index)
+                                active_particle_index, temperature, movement_direction, vetoing_index, event_type)
                     else:
                         active_particle_index, movement_direction = self._choose_next_active_particle(
-                            active_particle_index, temperature, movement_direction, vetoing_index)
+                            active_particle_index, temperature, movement_direction, vetoing_index, event_type)
                     distance_to_next_measurement -= distance_to_next_event
                     distance_to_next_velocity_refreshment -= distance_to_next_event
                     self._total_number_of_events += 1

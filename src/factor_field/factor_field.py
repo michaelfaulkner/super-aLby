@@ -27,8 +27,6 @@ class FactorField(metaclass=ABCMeta):
         """
         if prefactor == 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 as prefactor for {self.__class__.__name__}.")
-        self.soft_wins = 0
-        self.total = 0
 
     @abstractmethod
     def get_next_event(self, positions, active_particle_index, temperature, movement_direction):

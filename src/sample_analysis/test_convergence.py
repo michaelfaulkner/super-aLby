@@ -1,5 +1,5 @@
 from configparser import NoOptionError
-from markov_chain_diagnostics import get_cumulative_distribution, get_sample_mean_and_error, get_effective_sample_size
+from markov_chain_diagnostics import get_cumulative_distribution, get_sample_mean_and_error, get_effective_sample_size, get_iact_and_acf
 import importlib
 import matplotlib
 import matplotlib.pyplot as plt
@@ -282,10 +282,11 @@ def main(config_file_string):
                                                  number_of_equilibration_iterations).flatten()
         sample_cdf = get_cumulative_distribution(sample)
         eff_sample_size = get_effective_sample_size(sample)
+        iact = get_iact_and_acf(sample)[0]
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
         plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=3, linestyle='-',
-                 label=f'super-aLby data\nN_eff={eff_sample_size:.0f}')
+                 label=f'super-aLby data\nN_eff={eff_sample_size:.0f}\nIACT={iact}')
 
         plt.xlabel(r"$x$", fontsize=15, labelpad=10)
         plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)
