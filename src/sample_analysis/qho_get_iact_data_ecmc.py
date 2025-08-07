@@ -50,17 +50,26 @@ def main(config_folder, min, max, min_timestep):
 
                 checkpointing_index = sample_getter.get_checkpointing_indices(sample_directory)
                 if checkpointing_index != 0:
-                    sub_arr_len = number_of_equilibration_iterations + number_of_observations
-                    mean_sample = np.zeros(sub_arr_len * (checkpointing_index + 1))
+                    max_len = 0
+                    for i in range(checkpointing_index + 1):
+                        new_len = len(sample_getter.get_mean_squared_positions(
+                            sample_directory, temperatures[temperature_index], temperature_index, i, number_of_particles, 
+                            None, thinning_level=thinning_level)[:, 0])
+                        if new_len > max_len:
+                            max_len = new_len
+                        
+                    #sub_arr_len = number_of_equilibration_iterations + number_of_observations
+                    mean_sample = np.zeros(max_len * (checkpointing_index + 1))
                     for i in range(checkpointing_index + 1):
                         sub_arr = sample_getter.get_mean_squared_positions(
                             sample_directory, temperatures[temperature_index], temperature_index, i, number_of_particles, 
                             None, thinning_level=thinning_level)[:, 0]
                         try:
-                            mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = sub_arr
+                            mean_sample[i * max_len : (i) * max_len + len(sub_arr)] = sub_arr
                         except:
-                            mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = sub_arr[1:]
-                        
+                            mean_sample[i * max_len : (i) * max_len + len(sub_arr)] = sub_arr[1:]
+                    
+                    mean_sample = mean_sample[np.nonzero(mean_sample)]
                     mean_sample = mean_sample[3000:]
                         
                 else:
