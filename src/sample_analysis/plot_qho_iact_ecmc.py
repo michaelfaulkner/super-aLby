@@ -9,10 +9,11 @@ def main(iact_data_path, N):
 
     N = int(N)
     timestep_data = np.load(os.path.join(iact_data_path, "iact_ecmc_0.npy"))[:, 1]
-    storage_arr = np.zeros((len(timestep_data), N))
     sorted_timestep = timestep_data[np.argsort(timestep_data)]
+    storage_arr = np.zeros((len(timestep_data), N))
 
     for index in range(N):
+     
         iact_timestep =  np.load(os.path.join(iact_data_path, f"iact_ecmc_{index}.npy"))
         iact_data = iact_timestep[:, 0] 
         timestep_data = iact_timestep[:, 1] 
@@ -20,21 +21,24 @@ def main(iact_data_path, N):
         timestep_argsorted = timestep_data[argsorted_data]
         iact_data = iact_data[argsorted_data] 
         storage_arr[:, index] = iact_data
+    
 
+    min = 0.01
+    fit_index = -12
 
+    sorted_timestep = np.trim_zeros(sorted_timestep, trim="f")
+    iact_mean_arr = np.mean(storage_arr[np.nonzero(sorted_timestep >= min)], axis = 1)
 
-    iact_mean_arr = np.mean(storage_arr[np.nonzero(sorted_timestep >= 0.05)], axis = 1)
-    err = np.std(storage_arr[np.nonzero(sorted_timestep >= 0.05)], axis=1)
-    sorted_N = 120 / sorted_timestep[np.nonzero(sorted_timestep >= 0.05)]
-    print(len(sorted_N))
-    e_coeffs = np.polyfit(np.log(sorted_N[:-10]), np.log(iact_mean_arr[:-10]), deg=1)
-    fitted_e = e_coeffs[1] + np.multiply(np.log(sorted_N[:-10]), e_coeffs[0])
+    err = np.std(storage_arr[np.nonzero(sorted_timestep >= min)], axis=1)
+    sorted_N = 120 / sorted_timestep[np.nonzero(sorted_timestep >= min)]
+    e_coeffs = np.polyfit(np.log(sorted_N[:fit_index]), np.log(iact_mean_arr[:fit_index]), deg=1)
+    fitted_e = e_coeffs[1] + np.multiply(np.log(sorted_N[:fit_index]), e_coeffs[0])
     print(e_coeffs)
 
     fig, ax = plt.subplots(1, 1)
     #ax.scatter(timestep_data_0, iact_mean_arr)
     ax.errorbar(sorted_N, iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="#ed1171ff")
-    ax.plot(sorted_N[:-10], np.exp(fitted_e), color="#d97dd9ff")
+    ax.plot(sorted_N[:fit_index], np.exp(fitted_e), color="#d97dd9ff")
 
     ax.set_xlabel(r"$N_{\tau}$", fontsize=20, labelpad=-10)
     ax.set_ylabel("IACT", fontsize=15, labelpad=0)
@@ -42,8 +46,8 @@ def main(iact_data_path, N):
     ax.set_yscale("log")
     #ax.set_ylim(1e3, 1e7)
    
-    plt.savefig("iact_ff.pdf")
-    plt.clf()
+    #plt.savefig("iact_ff_b_1.pdf")
+    #plt.clf()
 
 
 
