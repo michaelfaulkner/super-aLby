@@ -562,6 +562,43 @@ def get_xy_magnetisation_norm(sample_directory, temperature, temperature_index, 
                 f"sample_of_magnetisation_norm.npy"), number_of_equilibration_iterations, thinning_level)
 
 
+def get_neighbour_displacement_squared(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+                              number_of_equilibration_iterations=None, thinning_level=None):
+    """
+    Returns the sample of (x_i+1 - x_i)^2.
+
+    Parameters
+    ----------
+    sample_directory : str
+        The location of the directory containing the sample(s).
+    temperature : float
+        The sampling temperature.
+    temperature_index : int
+        The index of the current sampling temperature within the configuration file.
+    checkpoint_index : int
+        The index of the data file created as part of the checkpointing process.
+    number_of_particles : int
+        The total number of particles.
+    number_of_equilibration_iterations : None or int, optional
+        The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
+    thinning_level : None or int, optional
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
+        all observations are retained.
+
+    Returns
+    -------
+    numpy.ndarray
+        A one-dimensional numpy array of length number_of_observations.  The nth
+        element is a float corresponding to (x_i+1 - x_i)^2 measured at observation n.
+    """
+    return get_reduced_sample(
+        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
+                f"sample_of_neighbour_displacement_squared.npy"), number_of_equilibration_iterations, thinning_level)
+
+
+
+
+
 """helper methods"""
 
 
