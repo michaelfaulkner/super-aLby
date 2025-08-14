@@ -24,10 +24,12 @@ def main(iact_data_path, N):
     
 
     min = 0.01
-    fit_index = -12
+    fit_index = -13
 
     sorted_timestep = np.trim_zeros(sorted_timestep, trim="f")
     iact_mean_arr = np.mean(storage_arr[np.nonzero(sorted_timestep >= min)], axis = 1)
+    print(sorted_timestep)
+    print(iact_mean_arr)
 
     err = np.std(storage_arr[np.nonzero(sorted_timestep >= min)], axis=1)
     sorted_N = 120 / sorted_timestep[np.nonzero(sorted_timestep >= min)]
@@ -36,7 +38,6 @@ def main(iact_data_path, N):
     print(e_coeffs)
 
     fig, ax = plt.subplots(1, 1)
-    #ax.scatter(timestep_data_0, iact_mean_arr)
     ax.errorbar(sorted_N, iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="#ed1171ff")
     ax.plot(sorted_N[:fit_index], np.exp(fitted_e), color="#d97dd9ff")
 
@@ -44,10 +45,12 @@ def main(iact_data_path, N):
     ax.set_ylabel("IACT", fontsize=15, labelpad=0)
     ax.set_xscale("log")
     ax.set_yscale("log")
-    #ax.set_ylim(1e3, 1e7)
+    #print(ax.get_ylim())
+    ax.set_ylim(10.0, 432.23)
+    ax.set_xlim(38, 13000)
    
-    #plt.savefig("iact_ff_b_1.pdf")
-    #plt.clf()
+    plt.savefig("iact_ff_b_05.pdf")
+    plt.clf()
 
 
 
