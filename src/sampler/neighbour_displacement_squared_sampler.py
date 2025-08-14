@@ -62,11 +62,12 @@ class  NeighbourDisplacementSquaredSampler(Sampler):
             The observation.
         """
 
-        sample = np.zeros(number_of_particles)
+        sample = np.zeros((number_of_particles,1))
         for i in range(number_of_particles): #TODO can probably vectorise this
             displacement = get_east_worldline_neighbour(i, number_of_quantum_particles, number_of_timeslices) - \
                             positions[i]
             sample[i] = displacement**2
+        return sample
     
     def output_sample(self, sample, temperature_index, checkpoint_index):
         """
