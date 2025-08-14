@@ -241,7 +241,7 @@ class XyPotential(EuclideanSubspacePotential):
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """Updates the position of the active particle."""
-        positions[active_particle_index] = (positions[active_particle_index] + displacement_distance)
+        positions[active_particle_index] = (positions[active_particle_index] + displacement_distance) % (2.0 * np.pi)
         if (positions[active_particle_index] > (2.0 * np.pi + 1.0e-12)
                 or positions[active_particle_index] < (0.0 * np.pi)):
             print(f'Spin > 2.0 pi, {positions[active_particle_index] - 2.0 * np.pi} exiting...')

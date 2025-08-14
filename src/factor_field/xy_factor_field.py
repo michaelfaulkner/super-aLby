@@ -1,7 +1,7 @@
 """Module for the XyFactorField class."""
 from .factor_field import FactorField
 import numpy as np
-from helper_methods import get_north_neighbour
+from helper_methods import get_east_neighbour, get_west_neighbour
 from model_settings import number_of_particles
 
 
@@ -58,9 +58,20 @@ class XyFactorField(FactorField):
             The particle index responsible for the event.
         """
         distance_to_next_factor_event = 1.0e10
+        active_row = positions[active_particle_index - (active_particle_index % self._lattice_length):
+                               active_particle_index - (active_particle_index % self._lattice_length) +
+                               self._lattice_length]
+        winding_number = sum(self._get_spin_difference(active_row[(i+1) % self._lattice_length], active_row[i])[0]
+                             for i in range(self._lattice_length))
+        if winding_number < 1.0e-12:
+            return np.inf, None
+        prefactor = self._prefactor * abs(winding_number) / (2.0 * np.pi)
         uphill_energy = - temperature * np.log(1.0 - np.random.rand())
-        distance_to_next_factor_event = uphill_energy / self._prefactor
-        veto_index = get_north_neighbour(active_particle_index, self._lattice_length)
+        distance_to_next_factor_event = uphill_energy / prefactor
+        if winding_number < 0:
+            veto_index = get_east_neighbour(active_particle_index, self._lattice_length)
+        else:
+            veto_index = get_west_neighbour(active_particle_index, self._lattice_length)
         return distance_to_next_factor_event, veto_index
 
     def choose_next_active_particle(self, positions, active_particle_index, temperature, movement_direction,
@@ -94,7 +105,7 @@ class XyFactorField(FactorField):
     @staticmethod
     def _get_spin_difference(spin_value_one, spin_value_two):
         """Returns the difference between two spin angles"""
-        return (spin_value_one - spin_value_two + 1.0e-12) % (2.0 * np.pi)
+        return (spin_value_one - spin_value_two + np.pi + 1.0e-12) % (2.0 * np.pi) - (np.pi + 1.0e-12)
 
     @staticmethod
     def _update_global_position(positions, displacement_distance, movement_direction):

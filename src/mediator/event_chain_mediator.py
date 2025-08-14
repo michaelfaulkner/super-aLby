@@ -125,6 +125,7 @@ class EventChainMediator(Mediator):
                                     self._factor_field.get_next_event(
                                         self._positions, active_particle_index, temperature, movement_direction)]
                 distance_to_next_event, vetoing_index = min(candidate_events)
+                # print(candidate_events)
                 event_type = candidate_events.index((distance_to_next_event, vetoing_index))
                 if self._boundary_events:
                     distance_to_next_event, vetoing_index, event_type = (
