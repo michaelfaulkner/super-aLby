@@ -37,6 +37,7 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
         """
         super().__init__(prefactor, **kwargs)
         """the following are currently only used for ECMC in HardDiskPotential - see main docstring above for details"""
+        self.pointer_hop_distance = 0.0
         self.aggregate_pointer_hop_distance = 0.0
         self.cell_boundary_event = False
 

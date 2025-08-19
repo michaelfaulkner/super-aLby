@@ -23,7 +23,8 @@ class EventChainMediator(Mediator):
                  normalised_distance_between_velocity_refreshments: float = 1.0, teleportation_portal: bool = False,
                  boundary_events: bool = False):
         r"""
-        Constructor of the EventChainMediator class.
+        Constructor of the EventChainMediator class.  Note that this class works only with potential classes that
+            inherit from EuclideanSubspacePotential (essentially continuous spaces).
 
         Parameters
         ----------
@@ -87,10 +88,10 @@ class EventChainMediator(Mediator):
         """Re-instantiate self._potential as EuclideanSubspacePotential contains additional abstract methods."""
         self._potential = potential
         if normalised_distance_between_measurements <= 0.0:
-            raise ConfigurationError(f"Give a value greater than 0.0 as normalised_distance_between_measurements in "
+            raise ConfigurationError(f"Give a value greater than 0.0 for normalised_distance_between_measurements in "
                                      f"{self.__class__.__name__}.")
         if normalised_distance_between_velocity_refreshments <= 0.0:
-            raise ConfigurationError(f"Give a value greater than 0.0 as "
+            raise ConfigurationError(f"Give a value greater than 0.0 for "
                                      f"normalised_distance_between_velocity_refreshments in {self.__class__.__name__}.")
         self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
         self._distance_between_velocity_refreshments = (normalised_distance_between_velocity_refreshments *
@@ -103,6 +104,14 @@ class EventChainMediator(Mediator):
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
+                if (abs(normalised_distance_between_measurements -
+                        normalised_distance_between_velocity_refreshments) > 1.0e-12 and
+                        normalised_distance_between_measurements > normalised_distance_between_velocity_refreshments):
+                    raise ConfigurationError(f"Give a value not less than normalised_distance_between_measurements for "
+                                             f"normalised_distance_between_velocity_refreshments in "
+                                             f"{self.__class__.__name__}.  This is to avoid errors due to the subtle "
+                                             f"calculation of pressure estimates made via the pointer-hop distance "
+                                             f"(though this is not fully understood).")
         """The following object is set in self._reset_arrays_and_counters()"""
         self._total_number_of_events = None
         self._factor_field = factor_field
