@@ -1,7 +1,6 @@
 """Module for EventChainMediator class"""
 import importlib
 import numpy as np
-import matplotlib.pyplot as plt
 from base.exceptions import ConfigurationError
 from .mediator import Mediator
 from factor_field.no_factor_field import NoFactorField
@@ -116,7 +115,6 @@ class EventChainMediator(Mediator):
         movement_direction = self._potential.get_random_event_chain_velocity()
         distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
         ff_events = 0
-        boundary_events = 0
         for markov_chain_index in range(self._total_number_of_iterations):
             distance_to_next_measurement = self._distance_between_measurements
             while True:
@@ -125,14 +123,11 @@ class EventChainMediator(Mediator):
                                     self._factor_field.get_next_event(
                                         self._positions, active_particle_index, temperature, movement_direction)]
                 distance_to_next_event, vetoing_index = min(candidate_events)
-                # print(candidate_events)
                 event_type = candidate_events.index((distance_to_next_event, vetoing_index))
                 if self._boundary_events:
                     distance_to_next_event, vetoing_index, event_type = (
                         min((distance_to_next_event, vetoing_index, event_type),
-                            (size_of_particle_space - self._positions[active_particle_index, 0], None, 0)))
-                if vetoing_index is None:
-                    boundary_events += 1
+                            (size_of_particle_space - self._positions[active_particle_index, 0], active_particle_index, 0)))
                 if event_type == 1:
                     ff_events += 1
 
@@ -179,7 +174,6 @@ class EventChainMediator(Mediator):
                     self._total_number_of_events += 1
 
             super()._print_sample_progress(markov_chain_index)
-        print(f'Boundary prop: {boundary_events / self._total_number_of_events}')
         print(f'FF prop: {ff_events / self._total_number_of_events}')
 
     def _print_markov_chain_summary(self):

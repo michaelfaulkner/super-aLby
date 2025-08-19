@@ -43,7 +43,8 @@ def main(config_directory_path):
         all_subdirectoy_samples = []
         for subdirectory in subdirectories:
             try:
-                samples = np.load(os.path.join(subdirectory, 'xy_16x16_T=1.1_mag_norm_ref.npy')).flatten()
+                samples = np.load(os.path.join(
+                    subdirectory, 'temperature_00_checkpoint_00_sample_of_magnetisation_norm.npy')).flatten()
                 samples = samples[number_of_equilibration_iterations:]
                 all_subdirectoy_samples.append(samples)
             except IOError:
@@ -51,12 +52,14 @@ def main(config_directory_path):
         all_samples.append(all_subdirectoy_samples)
 
     iacts = []
+    iact_errors = []
     for samples in all_samples:
         samples_iacts = []
         for sample in samples:
             iact = get_iact_and_acf(sample)[0]
             samples_iacts.append(iact)
         iacts.append(np.mean(samples_iacts))
+        iact_errors.append(np.std(samples_iacts) / np.sqrt(len(samples_iacts)))
     iacts = np.array(iacts)
 
     temp = float(config.get("EventChainMediator", "minimum_temperature"))
@@ -64,6 +67,7 @@ def main(config_directory_path):
     np.save(os.path.join(output_directory_path, "iact_vs_prefactor.npy"), np.vstack([prefactors, iacts]))
 
     plt.scatter(prefactors, iacts, color='firebrick', label=f'{L}x{L}\nT={temp}')
+    plt.errorbar(prefactors, iact_errors)
     plt.xlabel('L * Prefactor')
     plt.ylabel('IACT')
     plt.title('Optimising Factor Field Prefactor')

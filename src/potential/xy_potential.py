@@ -233,19 +233,15 @@ class XyPotential(EuclideanSubspacePotential):
         movement_direction : int
             The next active-particle direction of motion.
         """
-        if veto_index is None:
-            displacement_distance, veto_index = min(positions)[0], np.argmin(positions)
-            self._update_global_position(positions, displacement_distance, -movement_direction)
+        # if veto_index is None:  # Global moves (turned off)
+        #    displacement_distance, veto_index = min(positions)[0], np.argmin(positions)
+        #    self._update_global_position(positions, displacement_distance, -movement_direction)
         return veto_index, movement_direction
 
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """Updates the position of the active particle."""
         positions[active_particle_index] = (positions[active_particle_index] + displacement_distance) % (2.0 * np.pi)
-        if (positions[active_particle_index] > (2.0 * np.pi + 1.0e-12)
-                or positions[active_particle_index] < (0.0 * np.pi)):
-            print(f'Spin > 2.0 pi, {positions[active_particle_index] - 2.0 * np.pi} exiting...')
-            sys.exit()
 
     @staticmethod
     def _get_spin_difference(spin_value_one, spin_value_two):
