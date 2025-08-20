@@ -126,7 +126,6 @@ class EventChainMediator(Mediator):
                                         self._positions, active_particle_index, temperature, movement_direction),
                                     self._factor_field.get_next_event(
                                         self._positions, active_particle_index, temperature, movement_direction)]
-                # print(candidate_events)
                 distance_to_next_event, vetoing_index = min(candidate_events)
 
                 if (distance_to_next_measurement < distance_to_next_event and
