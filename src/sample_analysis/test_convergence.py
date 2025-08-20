@@ -1,5 +1,5 @@
 from configparser import NoOptionError
-from markov_chain_diagnostics import get_cumulative_distribution, get_sample_mean_and_error
+from markov_chain_diagnostics import get_cumulative_distribution, get_sample_mean_and_error, get_iact_and_acf
 import importlib
 import matplotlib
 import matplotlib.pyplot as plt
@@ -60,7 +60,9 @@ def main(config_file_string):
     elif potential == "xy_potential":
         if not (len(samplers) == 1 and samplers[0] == "xy_magnetisation_norm_sampler"):
             raise ValueError("XY model reference data only available for XyMagnetisationNormSampler."
-                             "  Please give only this value for samplers in the Mediator section.")     
+                             "  Please give only this value for samplers in the Mediator section.")
+    elif potential == "harmonic_chain_potential":
+        pass
     elif potential == "quantum_harmonic_oscillator_potential":
         if not (len(samplers) == 1 and samplers[0] == "mean_squared_position_sampler"):
             raise ValueError("1D quantum harmonic oscillator model reference data only available for "
@@ -238,6 +240,9 @@ def main(config_file_string):
     elif "xy_potential" in potential:
         reference_sample = np.load(
             "permanent_data/reference_data/xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
+    elif "harmonic_chain_potential" in potential:
+        reference_sample = np.load(
+            "permanent_data/reference_data/harmonic_chain/mean_particle_separation_temp_1_N_8_L_16.npy").flatten()
     elif "quantum_harmonic_oscillator_potential" in potential:
         reference_sample = np.load(
         "permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_reference_sample.npy").flatten()
@@ -260,6 +265,9 @@ def main(config_file_string):
         elif "xy" in potential:
             sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperatures[0], 0, 0,
                                                              number_of_particles).flatten()
+        elif "harmonic_chain" in potential:
+            sample = sample_getter.get_mean_particle_separation(sample_directories[0], temperatures[0], 0, 0,
+                                                 number_of_particles, number_of_equilibration_iterations).flatten()
         elif "quantum_harmonic_oscillator_potential" in potential:
             sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperatures[0], 0, 0,
                                                               number_of_particles, number_of_equilibration_iterations
@@ -271,10 +279,16 @@ def main(config_file_string):
         else:
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
+        print(np.mean(sample))
+        print(np.mean(reference_sample))
         sample_cdf = get_cumulative_distribution(sample)
+        iact = get_iact_and_acf(sample)[0]
+        ref_iact = get_iact_and_acf(reference_sample)[0]
 
-        plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label='reference data')
-        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label='super-aLby data')
+        plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label=f'reference data\n'
+                                                                                                  f'IACT: {ref_iact}')
+        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label=f'super-aLby data\n'
+                                                                                           f'IACT: {iact:.3f}')
 
         plt.xlabel(r"$x$", fontsize=15, labelpad=10)
         plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)

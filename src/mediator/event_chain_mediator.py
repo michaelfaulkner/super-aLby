@@ -97,7 +97,7 @@ class EventChainMediator(Mediator):
             self._distance_between_measurements *= np.min(size_of_particle_space)
             self._distance_between_velocity_refreshments *= np.min(size_of_particle_space)
         print(f"Distance between event-chain measurements is {self._distance_between_measurements}")
-        print(f"Distance between event-chain velocity refreshments is {self._distance_between_measurements}")
+        print(f"Distance between event-chain velocity refreshments is {self._distance_between_velocity_refreshments}")
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
@@ -126,6 +126,7 @@ class EventChainMediator(Mediator):
                                         self._positions, active_particle_index, temperature, movement_direction),
                                     self._factor_field.get_next_event(
                                         self._positions, active_particle_index, temperature, movement_direction)]
+                # print(candidate_events)
                 distance_to_next_event, vetoing_index = min(candidate_events)
 
                 if (distance_to_next_measurement < distance_to_next_event and
