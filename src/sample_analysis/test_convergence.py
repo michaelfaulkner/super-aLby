@@ -242,7 +242,7 @@ def main(config_file_string):
             "permanent_data/reference_data/xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
     elif "harmonic_chain_potential" in potential:
         reference_sample = np.load(
-            "permanent_data/reference_data/harmonic_chain/mean_particle_separation_temp_1_N_8_L_16.npy").flatten()
+            "permanent_data/reference_data/harmonic_chain/structure_factor_temp_1_N_8_L_16.npy").flatten()
     elif "quantum_harmonic_oscillator_potential" in potential:
         reference_sample = np.load(
         "permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_reference_sample.npy").flatten()
@@ -266,8 +266,8 @@ def main(config_file_string):
             sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperatures[0], 0, 0,
                                                              number_of_particles).flatten()
         elif "harmonic_chain" in potential:
-            sample = sample_getter.get_mean_particle_separation(sample_directories[0], temperatures[0], 0, 0,
-                                                 number_of_particles, number_of_equilibration_iterations).flatten()
+            sample = sample_getter.get_structure_factor(sample_directories[0], temperatures[0], 0, 0,
+                                                        number_of_particles, number_of_equilibration_iterations).flatten()
         elif "quantum_harmonic_oscillator_potential" in potential:
             sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperatures[0], 0, 0,
                                                               number_of_particles, number_of_equilibration_iterations

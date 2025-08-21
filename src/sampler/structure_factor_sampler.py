@@ -30,7 +30,7 @@ class StructureFactorSampler(Sampler):
         super().__init__(output_directory)
         if len(size_of_particle_space) != 1:
             raise ConfigurationError(f"{self.__class__.__name__} only supports 1D systems.")
-        self._q = 2.0 * np.pi / float(size_of_particle_space[0])
+        self._q = 2.0 * np.pi / size_of_particle_space
 
     def get_empty_sample_array(self, total_number_of_iterations):
         """
@@ -71,8 +71,7 @@ class StructureFactorSampler(Sampler):
         float
             The observation of the structure factor S(q,t) with q = 2π / L.
         """
-        x = positions[:, 0] if positions.ndim == 2 else np.asarray(positions).reshape(-1)
-        rho_q = np.sum(np.exp(1j * self._q * x))
+        rho_q = np.sum(np.exp(1j * self._q * positions.reshape(-1)))
         return (np.abs(rho_q) ** 2) / float(number_of_particles)
 
     def output_sample(self, sample, temperature_index, checkpoint_index):
