@@ -155,7 +155,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         Return indices of neighbours to active particle.
         """
         neg_neighbour_index, pos_neighbour_index = ((active_particle_index - 1) % number_of_particles,
-                                                      (active_particle_index + 1) % number_of_particles)
+                                                    (active_particle_index + 1) % number_of_particles)
         return neg_neighbour_index, pos_neighbour_index
 
     def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
