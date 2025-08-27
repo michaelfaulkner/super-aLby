@@ -49,7 +49,14 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
-        return np.sort(get_initial_positions_of_smooth_potential(self.__class__.__name__), axis=0)
+        positions = np.sort(get_initial_positions_of_smooth_potential(self.__class__.__name__), axis=0)
+        initial_particle_range = positions[-1] - positions[0]
+        minimum_particle_range = 0.5 * size_of_particle_space - self._equilibrium_length
+        if initial_particle_range < minimum_particle_range:
+            raise ConfigurationError(f'{self.__class__.__name__} requires initial range of particles to be greater '
+                                     f'than size_of_particle_space / 2 - equilibrium_length.\n'
+                                     f'Provided: {initial_particle_range[0]:.3f} < {minimum_particle_range[0]:.3f}')
+        return positions
 
     def get_value(self, positions):
         """
