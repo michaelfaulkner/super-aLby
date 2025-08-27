@@ -118,6 +118,8 @@ class EventChainMediator(Mediator):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         active_particle_index = np.random.randint(0, number_of_particles)
         movement_direction = self._potential.get_random_event_chain_velocity()
+        plus_one = 0
+        minus_one = 0
         distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
         for markov_chain_index in range(self._total_number_of_iterations):
             distance_to_next_measurement = self._distance_between_measurements
@@ -127,6 +129,10 @@ class EventChainMediator(Mediator):
                                     self._factor_field.get_next_event(
                                         self._positions, active_particle_index, temperature, movement_direction)]
                 distance_to_next_event, vetoing_index = min(candidate_events)
+                if vetoing_index - active_particle_index == -1:
+                    minus_one += 1
+                elif vetoing_index - active_particle_index == 1:
+                    plus_one += 1
 
                 if (distance_to_next_measurement < distance_to_next_event and
                         distance_to_next_measurement < distance_to_next_velocity_refreshment):
@@ -172,6 +178,7 @@ class EventChainMediator(Mediator):
                     distance_to_next_velocity_refreshment -= distance_to_next_event
 
             super()._print_sample_progress(markov_chain_index)
+        print(f'Ratio: {plus_one / (plus_one + minus_one)}')
 
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""

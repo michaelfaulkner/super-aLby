@@ -279,6 +279,7 @@ def main(config_file_string):
         else:
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
+
         print(np.mean(sample))
         print(np.mean(reference_sample))
         sample_cdf = get_cumulative_distribution(sample)
@@ -286,9 +287,9 @@ def main(config_file_string):
         ref_iact = get_iact_and_acf(reference_sample)[0]
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label=f'reference data\n'
-                                                                                                  f'IACT: {ref_iact}')
-        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label=f'super-aLby data\n'
-                                                                                           f'IACT: {iact:.3f}')
+                                                                                                  f'IACT: {ref_iact:.3f}')
+        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label=f'super-aLby data\n' 
+                                                                                            f'IACT: {iact:.3f}')
 
         plt.xlabel(r"$x$", fontsize=15, labelpad=10)
         plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)
