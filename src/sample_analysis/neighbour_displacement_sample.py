@@ -6,7 +6,8 @@ import matplotlib
 import sample_getter
 import sys
 from configparser import NoOptionError
-
+import matplotlib
+matplotlib.rcParams['mathtext.fontset'] = 'cm'
 
 this_directory = os.path.dirname(os.path.abspath(__file__))
 src_directory = os.path.abspath(this_directory + "/../")
@@ -34,17 +35,26 @@ def main(config_file_folder):
             neighbour_sample = sample_getter.get_neighbour_displacement_squared(sample_directory, temperatures[temperature_index],
                             temperature_index, 0, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
             mean_neighbour_displacement[index, 0] = np.mean(neighbour_sample)
-            print(np.mean(neighbour_sample))
+            print(np.mean(neighbour_sample), parsing.get_value(config, strings.to_camel_case(potential), "timestep"))
             mean_neighbour_displacement[index, 1] = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
         except:
             print(f"No sample was found for timestep {parsing.get_value(config, strings.to_camel_case(potential),
                             "timestep")}, this value will be skipped")
             
     print(mean_neighbour_displacement)
-    mean_neighbour_displacement = mean_neighbour_displacement[np.nonzero(mean_neighbour_displacement)]
+    print(np.shape(mean_neighbour_displacement))
+    mean_neighbour_displacement = mean_neighbour_displacement[np.nonzero(mean_neighbour_displacement[:,0])]
+    mean_neighbour_displacement = mean_neighbour_displacement[~np.isnan(mean_neighbour_displacement[:,0])]
+
+    print("---------------------------")
     print(mean_neighbour_displacement)
-    plt.scatter(mean_neighbour_displacement[:,1], mean_neighbour_displacement[:,0])
-    plt.savefig("test.pdf")
+    print(np.shape(mean_neighbour_displacement))
+    plt.scatter(120/mean_neighbour_displacement[:,1], mean_neighbour_displacement[:,0], color = "#9e0ebeff")
+    plt.xlabel(r"$N_{\tau}$", fontsize=17)
+    plt.ylabel(r"$<(x_{i+1} - x_i)^2>$", fontsize=17)
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.savefig("neighbour_displacement.pdf")
 
 if __name__ == '__main__':
     main(sys.argv[1])
