@@ -13,7 +13,6 @@ def main(iact_data_path, N):
     storage_arr = np.zeros((len(timestep_data), N))
 
     for index in range(N):
-     
         iact_timestep =  np.load(os.path.join(iact_data_path, f"iact_ecmc_{index}.npy"))
         iact_data = iact_timestep[:, 0] 
         timestep_data = iact_timestep[:, 1] 
@@ -22,9 +21,9 @@ def main(iact_data_path, N):
         iact_data = iact_data[argsorted_data] 
         storage_arr[:, index] = iact_data
     
-
+    print(storage_arr)
     min = 0.01
-    fit_index = -13
+    #fit_index = -1
 
     sorted_timestep = np.trim_zeros(sorted_timestep, trim="f")
     iact_mean_arr = np.mean(storage_arr[np.nonzero(sorted_timestep >= min)], axis = 1)
@@ -33,23 +32,23 @@ def main(iact_data_path, N):
 
     err = np.std(storage_arr[np.nonzero(sorted_timestep >= min)], axis=1)
     sorted_N = 120 / sorted_timestep[np.nonzero(sorted_timestep >= min)]
-    e_coeffs = np.polyfit(np.log(sorted_N[:fit_index]), np.log(iact_mean_arr[:fit_index]), deg=1)
-    fitted_e = e_coeffs[1] + np.multiply(np.log(sorted_N[:fit_index]), e_coeffs[0])
-    print(e_coeffs)
+    #e_coeffs = np.polyfit(np.log(sorted_N[:fit_index]), np.log(iact_mean_arr[:fit_index]), deg=1)
+    #fitted_e = e_coeffs[1] + np.multiply(np.log(sorted_N[:fit_index]), e_coeffs[0])
+    #print(e_coeffs)
 
     fig, ax = plt.subplots(1, 1)
     ax.errorbar(sorted_N, iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="#ed1171ff")
-    ax.plot(sorted_N[:fit_index], np.exp(fitted_e), color="#d97dd9ff")
+    #ax.plot(sorted_N[:fit_index], np.exp(fitted_e), color="#d97dd9ff")
 
     ax.set_xlabel(r"$N_{\tau}$", fontsize=20, labelpad=-10)
     ax.set_ylabel("IACT", fontsize=15, labelpad=0)
     ax.set_xscale("log")
     ax.set_yscale("log")
     #print(ax.get_ylim())
-    ax.set_ylim(10.0, 432.23)
-    ax.set_xlim(38, 13000)
-   
-    plt.savefig("iact_ff_b_05.pdf")
+    #ax.set_ylim(10.0, 432.23)
+    #ax.set_xlim(38, 13000)
+    plt.tight_layout()
+    plt.savefig("iact_ff_b_sqrt_dt_new.pdf")
     plt.clf()
 
 
