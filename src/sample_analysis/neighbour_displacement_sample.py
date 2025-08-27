@@ -45,7 +45,13 @@ def main(config_file_folder):
     print(np.shape(mean_neighbour_displacement))
     mean_neighbour_displacement = mean_neighbour_displacement[np.nonzero(mean_neighbour_displacement[:,0])]
     mean_neighbour_displacement = mean_neighbour_displacement[~np.isnan(mean_neighbour_displacement[:,0])]
+    fit_index = -1
+    e_coeffs = np.polyfit(np.log(120/mean_neighbour_displacement[:fit_index, 1]), np.log(mean_neighbour_displacement[:fit_index, 0]), deg=1)
+    fitted_e = e_coeffs[1] + np.multiply(np.log(120/mean_neighbour_displacement[:fit_index, 1]), e_coeffs[0])
+    print(f"coeffs: {e_coeffs}")
 
+
+    plt.plot(120/mean_neighbour_displacement[:fit_index, 1], np.exp(fitted_e), color="#d97dd9ff")
     print("---------------------------")
     print(mean_neighbour_displacement)
     print(np.shape(mean_neighbour_displacement))
