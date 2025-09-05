@@ -22,8 +22,8 @@ def main(config_file):
     sample_directory = sample_directories[0]
     sample_directory = os.path.join(sample_directory, 'temperature_00_checkpoint_00_sample_of_structure_factor.npy')
     sample = np.load(sample_directory)[:, 0]
-    iact = get_iact_and_acf(sample)[0]
-    print(iact)
+    iact, _, error = get_iact_and_acf(sample)
+    print(f'IACT: {iact:.3f} +- {error:.3f}')
 
 
 if __name__ == '__main__':

@@ -87,28 +87,17 @@ def get_autocorrelation(sample):
 
 
 def get_iact_and_acf(sample, cutoff=math.e ** (-2)):
-    """
-    Calculate the integrated autocorrelation time and autocorrelation function of sample.  The elements of sample must
-        be scalar quantities.
-
-    Parameters
-    ----------
-    sample : numpy.ndarray
-        Sample to be analysed.
-    cutoff : float
-        Cutoff value for the autocorrelation function. The default value is e^(-2).
-
-    Returns
-    -------
-    float
-        Integrated autocorrelation time.
-    numpy.ndarray
-        The autocorrelation function of the sample.
-    """
-    autocorrelation_function = get_autocorrelation(sample)
-    below_cutoff = np.where(autocorrelation_function < cutoff)[0]
-    max_acf_index = below_cutoff[0] - 1
-    return 2.0 * np.sum(autocorrelation_function[1:max_acf_index]) + 1.0, autocorrelation_function
+    acf = get_autocorrelation(sample)
+    N = len(sample)
+    below_cutoff = np.where(acf < cutoff)[0]
+    if below_cutoff.size == 0:
+        M = len(acf) - 1
+    else:
+        M = max(1, below_cutoff[0] - 1)
+    tau_int = 1.0 + 2.0 * np.sum(acf[1:M+1])
+    factor = max(0.0, (4.0 * (M - tau_int)) / max(1, N))
+    tau_err = math.sqrt((tau_int ** 2) * factor)
+    return tau_int, acf, tau_err
 
 
 def get_effective_sample_size(sample):
