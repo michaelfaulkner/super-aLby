@@ -20,8 +20,10 @@ def main(config_file):
      number_of_equilibration_iterations, number_of_observations, number_of_particles,
      _, _, _) = helper_methods.get_basic_config_data(config_file_string)
     sample_directory = sample_directories[0]
-    sample = np.load(sample_directory)
-    print(sample)
+    sample_directory = os.path.join(sample_directory, 'temperature_00_checkpoint_00_sample_of_structure_factor.npy')
+    sample = np.load(sample_directory)[:, 0]
+    iact = get_iact_and_acf(sample)[0]
+    print(iact)
 
 
 if __name__ == '__main__':
