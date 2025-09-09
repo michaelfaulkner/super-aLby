@@ -1,5 +1,6 @@
 """Module for EventChainMediator class"""
 import importlib
+import sys
 import numpy as np
 from base.exceptions import ConfigurationError
 from .mediator import Mediator
@@ -98,6 +99,7 @@ class EventChainMediator(Mediator):
             self._distance_between_velocity_refreshments *= np.min(size_of_particle_space)
         print(f"Distance between event-chain measurements is {self._distance_between_measurements}")
         print(f"Distance between event-chain velocity refreshments is {self._distance_between_velocity_refreshments}")
+        self._event_step_sampler = False
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
@@ -109,6 +111,9 @@ class EventChainMediator(Mediator):
                                              f"{self.__class__.__name__}.  This is to avoid errors due to the subtle "
                                              f"calculation of pressure estimates made via the pointer-hop distance "
                                              f"(though this is not fully understood).")
+            if "EventStepSampler" in str(sampler):
+                self._event_step_sampler = True
+                self._event_step_index = sampler_index
         """The following object is set in self._reset_arrays_and_counters()"""
         self._total_number_of_events = None
         self._factor_field = factor_field
@@ -141,6 +146,8 @@ class EventChainMediator(Mediator):
                     self._potential.cell_boundary_event = False
                     distance_to_next_velocity_refreshment -= distance_to_next_measurement
                     for sampler_index, sampler in enumerate(self._samplers):
+                        if "EventStepSampler" in str(sampler):
+                            continue
                         self._samples[sampler_index][markov_chain_index, :] = sampler.get_observation(
                             None, self._positions, self._potential)
                     break
@@ -157,6 +164,10 @@ class EventChainMediator(Mediator):
                 else:
                     self._potential.update_position(self._positions, distance_to_next_event,
                                                     active_particle_index, movement_direction)
+                    if self._event_step_sampler:
+                        self._samples[self._event_step_index][markov_chain_index, :] = (
+                            self._samplers[self._event_step_index].get_observation(None, self._positions,
+                                                                                   self._potential))
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
                     if self._teleportation_portal:
                         portal_candidate = self._potential.get_portal_candidate(self._positions, active_particle_index,

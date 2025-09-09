@@ -50,12 +50,6 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
         positions = np.sort(get_initial_positions_of_smooth_potential(self.__class__.__name__), axis=0)
-        initial_particle_range = positions[-1] - positions[0]
-        minimum_particle_range = 0.5 * size_of_particle_space - self._equilibrium_length
-        if initial_particle_range < minimum_particle_range:
-            raise ConfigurationError(f'{self.__class__.__name__} requires initial range of particles to be greater '
-                                     f'than size_of_particle_space / 2 - equilibrium_length.\n'
-                                     f'Provided: {initial_particle_range[0]:.3f} < {minimum_particle_range[0]:.3f}')
         return positions
 
     def get_value(self, positions):
@@ -188,19 +182,19 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         vetoing_particle_index : int
             The index of the particle that triggers the event.
         """
+        positions = positions.copy()
         active_particle_position = positions[active_particle_index]
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(active_particle_index)
         neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index],
                                                           positions[pos_neighbour_index])
-        neg_dist_to_eq, pos_dist_to_eq = (get_shortest_vectors_on_torus(neg_neighbour_position
-                                                                        + self._equilibrium_length
-                                                                        - active_particle_position),
-                                          get_shortest_vectors_on_torus(pos_neighbour_position -
-                                                                        self._equilibrium_length -
-                                                                        active_particle_position))
+        if active_particle_index == number_of_particles - 1:
+            pos_neighbour_position += size_of_particle_space
+        elif active_particle_index == 0:
+            neg_neighbour_position -= size_of_particle_space
+        neg_dist_to_eq, pos_dist_to_eq = (neg_neighbour_position + self._equilibrium_length - active_particle_position,
+                                          pos_neighbour_position - self._equilibrium_length - active_particle_position)
         rand_neg, rand_pos = (- temperature * np.log(np.random.uniform(0.0, 1.0)) / self._potential_constant,
                               - temperature * np.log(np.random.uniform(0.0, 1.0)) / self._potential_constant)
-
         distance_to_next_neg_factor_event = neg_dist_to_eq + rand_neg ** 0.5 if neg_dist_to_eq > 0 \
             else neg_dist_to_eq + (rand_neg + (-neg_dist_to_eq) ** 2) ** 0.5
         distance_to_next_pos_factor_event = pos_dist_to_eq + rand_pos ** 0.5 if pos_dist_to_eq > 0 \
