@@ -48,7 +48,7 @@ def main(iact_data_path, N):
     #ax.set_ylim(10.0, 432.23)
     #ax.set_xlim(38, 13000)
     plt.tight_layout()
-    plt.savefig("iact_ff_b_sqrt_dt_new.pdf")
+    plt.savefig("iact_ff_b_1_new.pdf")
     plt.clf()
 
 
