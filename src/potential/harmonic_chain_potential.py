@@ -179,7 +179,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         ----------
         distance_to_next_event : float
             The distance to the next particle event
-        vetoing_particle_index : int
+        vetoing_index : int
             The index of the particle that triggers the event.
         """
         positions = positions.copy()
@@ -187,10 +187,12 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(active_particle_index)
         neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index],
                                                           positions[pos_neighbour_index])
+
         if active_particle_index == number_of_particles - 1:
             pos_neighbour_position += size_of_particle_space
         elif active_particle_index == 0:
             neg_neighbour_position -= size_of_particle_space
+
         neg_dist_to_eq, pos_dist_to_eq = (neg_neighbour_position + self._equilibrium_length - active_particle_position,
                                           pos_neighbour_position - self._equilibrium_length - active_particle_position)
         rand_neg, rand_pos = (- temperature * np.log(np.random.uniform(0.0, 1.0)) / self._potential_constant,
@@ -200,11 +202,11 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         distance_to_next_pos_factor_event = pos_dist_to_eq + rand_pos ** 0.5 if pos_dist_to_eq > 0 \
             else pos_dist_to_eq + (rand_pos + (-pos_dist_to_eq) ** 2) ** 0.5
 
-        shortest_distance_to_next_factor_event, vetoing_particle_index = (
+        shortest_distance_to_next_factor_event, vetoing_index = (
             min((distance_to_next_neg_factor_event, neg_neighbour_index),
                 (distance_to_next_pos_factor_event, pos_neighbour_index)))
 
-        return shortest_distance_to_next_factor_event[0], vetoing_particle_index
+        return shortest_distance_to_next_factor_event[0], vetoing_index
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """
