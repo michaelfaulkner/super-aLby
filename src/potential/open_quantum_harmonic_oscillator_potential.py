@@ -14,7 +14,7 @@ class OpenQuantumHarmonicOscillatorPotential(WorldlinePotential):
         where m and \omega are the mass and frequency, respectively.
     """
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0,
-                 timestep: float = 0.1):
+                 timestep: float = 0.1, west_boundary: float = 0.0, east_boundary: float = 1.0):
         r"""
         The constructor of the QuantumHarmonicOscillatorPotential class
 
@@ -30,7 +30,7 @@ class OpenQuantumHarmonicOscillatorPotential(WorldlinePotential):
             The size of the time step, \delta \tau.
         """
         super().__init__(prefactor=prefactor, lattice_dimensionality=lattice_dimensionality, mass=mass,
-                         timestep=timestep)
+                         timestep=timestep, west_boundary=west_boundary, east_boundary=east_boundary)
         if prefactor != 1.0:
             raise ConfigurationError(f"Give a value of 1.0 for prefactor in {self.__class__.__name__} - functionality "
                                      f"for other values is not yet provided.")

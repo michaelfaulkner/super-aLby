@@ -29,9 +29,9 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         timestep : float
             The size of the time step
         west_boundary: float
-            The fixed western position boundary for the worldline.
+            The fixed western position boundary condition for the worldline.
         east_boundary: float
-            The fixed eastern position boundary for the worldline.
+            The fixed eastern position boundary condition for the worldline.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
 
@@ -52,7 +52,6 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         self._timestep = timestep
         self._omega = mass
 
-                
         self._west_boundary = west_boundary
         self._east_boundary = east_boundary
         self.length_scale = np.abs(self._west_boundary - self._east_boundary) # will be used by factor fields class
@@ -125,7 +124,10 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         float
             The dimensionless-action difference.
         """
-        if active_particle_index < number_of_timeslices:
+        #NOTE does not work for Nq > 1 
+        #NOTE does not work for V(x) =/= QHO
+        if active_particle_index < number_of_timeslices -1 and active_particle_index > 0:
+        # if not at any boundaries
             current_dimensionless_action = (
                     self._get_pairwise_dimensionless_action(
                         positions, self._get_west_worldline_neighbour(active_particle_index),
@@ -142,7 +144,43 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
                     self._get_pairwise_dimensionless_action(
                         positions, active_particle_index, candidate_position,
                         positions[self._get_east_worldline_neighbour(active_particle_index)]))
+            
         elif active_particle_index == 0:
+            # look at west boundary
+            current_dimensionless_action = (
+                    self._get_pairwise_dimensionless_action(
+                        positions, None,
+                        self._west_boundary,
+                        positions[active_particle_index]) +
+                    self._get_pairwise_dimensionless_action(
+                        positions, active_particle_index, positions[active_particle_index],
+                        positions[self._get_east_worldline_neighbour(active_particle_index)]))
+            candidate_dimensionless_action = (
+                    self._get_pairwise_dimensionless_action(
+                        positions, None,
+                        self._west_boundary, candidate_position) +
+                    self._get_pairwise_dimensionless_action(
+                        positions, active_particle_index, candidate_position,
+                        positions[self._get_east_worldline_neighbour(active_particle_index)]))
+
+        elif active_particle_index == number_of_particles - 1:
+            #look at east boundary
+            current_dimensionless_action = (
+                    self._get_pairwise_dimensionless_action(
+                        positions, self._get_west_worldline_neighbour(active_particle_index),
+                        positions[self._get_west_worldline_neighbour(active_particle_index)],
+                        positions[active_particle_index]) +
+                    self._get_pairwise_dimensionless_action(
+                        positions, active_particle_index, positions[active_particle_index],
+                        self._east_boundary))
+            
+            candidate_dimensionless_action = (
+                    self._get_pairwise_dimensionless_action(
+                        positions, self._get_west_worldline_neighbour(active_particle_index),
+                        positions[self._get_west_worldline_neighbour(active_particle_index)], candidate_position) +
+                    self._get_pairwise_dimensionless_action(
+                        positions, active_particle_index, candidate_position,
+                        self._east_boundary))
             
         return candidate_dimensionless_action - current_dimensionless_action
 
