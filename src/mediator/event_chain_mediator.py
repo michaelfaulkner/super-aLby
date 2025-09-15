@@ -152,13 +152,9 @@ class EventChainMediator(Mediator):
                     self._potential.update_position(self._positions, distance_to_next_event,
                                                     active_particle_index, movement_direction)
                     for event_sampler_index, event_sampler in enumerate(self._event_samplers):
-                        if "event_step_sampler" in str(event_sampler):
-                            self._event_samples[event_sampler_index].append(
-                                event_sampler.get_event_observation(None, self._positions, self._potential,
-                                                                    active_particle_index, vetoing_index))
-                        else:
-                            self._event_samples[event_sampler_index].append(event_sampler.get_event_observation
-                                                                            (None, self._positions, self._potential))
+                        self._event_samples[event_sampler_index].append(
+                            event_sampler.get_event_observation(None, self._positions, self._potential,
+                                                                active_particle_index, vetoing_index))
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
                     if self._teleportation_portal:
                         portal_candidate = self._potential.get_portal_candidate(self._positions, active_particle_index,
@@ -180,7 +176,6 @@ class EventChainMediator(Mediator):
                     distance_to_next_velocity_refreshment -= distance_to_next_event
 
             super()._print_sample_progress(markov_chain_index)
-        print(np.mean(self._event_samples[1]))
 
     def _print_markov_chain_summary(self):
         """Prints a summary of the completed Markov process to the screen."""

@@ -52,7 +52,7 @@ class EventStepSampler(EventSampler):
         Returns
         -------
         float
-            The observation of the particle positions at the event time.
+            The observation of the event step.
         """
         raise NotImplementedError(f"Event samplers don't utilise get_observation. Use get_event_observation instead.")
 
@@ -104,6 +104,7 @@ class EventStepSampler(EventSampler):
         checkpoint_index : int
             The index of the iteration through the list sampling checkpoints.
         """
+        sample = np.array(sample)
         self._write_sample_to_file(
             sample[1:],
             f"temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_sample_of_event_step.npy"

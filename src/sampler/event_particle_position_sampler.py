@@ -54,7 +54,7 @@ class EventParticlePositionSampler(EventSampler):
         """
         raise NotImplementedError(f"Event samplers don't utilise get_observation. Use get_event_observation instead.")
 
-    def get_event_observation(self, momenta, positions, potential, modulo_l=False):
+    def get_event_observation(self, momenta, positions, potential, active_particle_index=None, vetoing_index=None):
         """
         Returns an observation of the system at an event for the given particle momenta and positions.
 
@@ -71,16 +71,16 @@ class EventParticlePositionSampler(EventSampler):
         potential : float or potential.potential.Potential
             If a float, the current value of the potential; otherwise, an instance of the chosen child class of
             potential.potential.Potential.
-        modulo_l : bool
-            When True, apply modulo operation to positions on a space of length size_of_particle_space.
+        active_particle_index : int
+            The active particle index
+        vetoing_index : int
+            The index of the particle that triggers the event.
 
         Returns
         -------
         numpy.ndarray
             The observation of the particle positions at the event time.
         """
-        if modulo_l:
-            return positions.copy() % size_of_particle_space
         return positions.copy()
 
     def output_sample(self, sample, temperature_index, checkpoint_index):
@@ -96,6 +96,7 @@ class EventParticlePositionSampler(EventSampler):
         checkpoint_index : int
             The index of the iteration through the list sampling checkpoints.
         """
+        sample = np.array(sample)
         self._write_sample_to_file(
             sample,
             f"temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}"

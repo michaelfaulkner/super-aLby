@@ -111,6 +111,7 @@ class Mediator(metaclass=ABCMeta):
         self._samples = None
         self._event_samples = None
         self._initial_samples = None
+        self._initial_event_samples = None
         self._checkpoint_index = None
 
     def generate_sample(self, restart_flag):
@@ -155,9 +156,8 @@ class Mediator(metaclass=ABCMeta):
         """Sets or resets the arrays (e.g. the sample array) and counters before each temperature iteration."""
         self._positions = self._potential.get_initial_positions()
         self._samples = [sampler.get_empty_sample_array(self._total_number_of_iterations) for sampler in self._samplers]
-        if self._event_samplers is not None:
-            self._event_samples = [event_sampler.get_empty_sample_array(self._total_number_of_iterations)
-                                   for event_sampler in self._event_samplers]
+        self._event_samples = [event_sampler.get_empty_sample_array(self._total_number_of_iterations)
+                               for event_sampler in self._event_samplers]
         self._checkpoint_index = 0
 
     def _reload_configuration_from_file_and_reset(self):
@@ -179,10 +179,9 @@ class Mediator(metaclass=ABCMeta):
             else:
                 self._initial_samples[sampler_index][0, :] = sampler.get_observation(self._momenta, self._positions,
                                                                                      self._potential)
-        if self._event_samplers is not None:
-            for event_sampler_index, event_sampler in enumerate(self._event_samplers):
-                self._initial_event_samples[event_sampler_index].append(
-                    event_sampler.get_event_observation(self._momenta, self._positions, self._potential))
+        for event_sampler_index, event_sampler in enumerate(self._event_samplers):
+            self._initial_event_samples[event_sampler_index].append(
+                event_sampler.get_event_observation(self._momenta, self._positions, self._potential))
 
     @abstractmethod
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):

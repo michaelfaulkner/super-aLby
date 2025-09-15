@@ -55,10 +55,7 @@ class HarmonicChainFactorField(FactorField):
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(active_particle_index)
         vetoing_index, other_index = (pos_neighbour_index, neg_neighbour_index) if movement_direction > 0.0 else \
             (neg_neighbour_index, pos_neighbour_index)
-        distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0)) / self._prefactor
-        if (distance_to_next_factor_event > size_of_particle_space / 2 -
-                get_shortest_vectors_on_torus(positions[other_index] - positions[active_particle_index])):
-            return distance_to_next_factor_event, other_index
+        distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0)) / self._prefactor * temperature
         return distance_to_next_factor_event, vetoing_index
 
     @staticmethod
