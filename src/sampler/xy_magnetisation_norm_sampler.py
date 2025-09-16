@@ -1,9 +1,9 @@
 """Module for the XyMagnetisationNormSampler class."""
-from .sampler import Sampler
+from .observation_sampler import ObservationSampler
 import numpy as np
 
 
-class XyMagnetisationNormSampler(Sampler):
+class XyMagnetisationNormSampler(ObservationSampler):
     """
     Class for taking observations of magnetisation norm in the 2DXY model.
     """

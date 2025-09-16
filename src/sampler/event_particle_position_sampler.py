@@ -29,33 +29,8 @@ class EventParticlePositionSampler(EventSampler):
         """
         super().__init__(output_directory)
 
-    def get_observation(self, momenta, positions, potential):
-        """
-        Returns an observation of the system for the given particle momenta and positions.
-
-        Parameters
-        ----------
-        momenta : None or numpy.ndarray
-            None or a two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each
-            element is a float and represents one Cartesian component of the momentum of a single particle.
-        positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
-            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
-            lattice, the entire positions array corresponds to the entire array of superconducting phase.
-        potential : float or potential.potential.Potential
-            If a float, the current value of the potential; otherwise, an instance of the chosen child class of
-            potential.potential.Potential.
-
-        Returns
-        -------
-        float
-            The observation of the particle positions at the event time.
-        """
-        raise NotImplementedError(f"Event samplers don't utilise get_observation. Use get_event_observation instead.")
-
-    def get_event_observation(self, momenta, positions, potential, active_particle_index=None, vetoing_index=None,
-                              distance_to_next_event=None):
+    def get_observation(self, momenta, positions, potential, active_particle_index=None, vetoing_index=None,
+                        distance_to_next_event=None):
         """
         Returns an observation of the system at an event for the given particle momenta and positions.
 

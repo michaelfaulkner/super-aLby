@@ -1,11 +1,11 @@
 """Module for the StructureFactorSampler class."""
 from base.exceptions import ConfigurationError
 from model_settings import number_of_particles, size_of_particle_space
-from .sampler import Sampler
+from .observation_sampler import ObservationSampler
 import numpy as np
 
 
-class StructureFactorSampler(Sampler):
+class StructureFactorSampler(ObservationSampler):
     """
     Class for taking observations of the structure factor S(q,t).
     """

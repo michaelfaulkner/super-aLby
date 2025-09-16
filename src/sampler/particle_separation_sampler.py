@@ -2,11 +2,11 @@
 from base.exceptions import ConfigurationError
 from base.vectors import get_shortest_vectors_on_torus
 from model_settings import number_of_particle_pairs, number_of_particles, size_of_particle_space
-from .sampler import Sampler
+from .observation_sampler import ObservationSampler
 import numpy as np
 
 
-class ParticleSeparationSampler(Sampler):
+class ParticleSeparationSampler(ObservationSampler):
     """
     Class for taking observations of the particle-particle separation distances.
     """

@@ -117,6 +117,7 @@ class EventChainMediator(Mediator):
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         active_particle_index = np.random.randint(0, number_of_particles)
+        # active_particle_index = 0
         movement_direction = self._potential.get_random_event_chain_velocity()
         distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
         for markov_chain_index in range(self._total_number_of_iterations):
@@ -153,9 +154,9 @@ class EventChainMediator(Mediator):
                                                     active_particle_index, movement_direction)
                     for event_sampler_index, event_sampler in enumerate(self._event_samplers):
                         self._event_samples[event_sampler_index].append(
-                            event_sampler.get_event_observation(None, self._positions, self._potential,
-                                                                active_particle_index, vetoing_index,
-                                                                distance_to_next_event))
+                            event_sampler.get_observation(None, self._positions, self._potential,
+                                                          active_particle_index, vetoing_index,
+                                                          distance_to_next_event))
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
                     if self._teleportation_portal:
                         portal_candidate = self._potential.get_portal_candidate(self._positions, active_particle_index,

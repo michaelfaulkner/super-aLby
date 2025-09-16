@@ -50,6 +50,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
         positions = np.sort(get_initial_positions_of_smooth_potential(self.__class__.__name__), axis=0)
+        # positions = np.arange(0.0, 0.1 * number_of_particles, 0.1).reshape(-1, 1)
         return positions
 
     def get_value(self, positions):

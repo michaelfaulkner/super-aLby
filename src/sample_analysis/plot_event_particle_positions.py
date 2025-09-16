@@ -37,6 +37,7 @@ def main(config_file_string, n, m, vlines=1):
     event_step_index = 0
     event_particle_position_index = 0
     event_active_particle_index_index = 0
+    event_pointer_velocity_index = 0
     for i, sampler in enumerate(samplers):
         if "event_particle_position_sampler" in sampler:
             event_particle_position_index = i
@@ -44,6 +45,8 @@ def main(config_file_string, n, m, vlines=1):
             event_step_index = i
         if "event_active_particle_index" in sampler:
             event_active_particle_index_index = i
+        if "event_pointer_velocity_index" in sampler:
+            event_pointer_velocity_index = i
 
     event_particle_position_directory = sample_directories[event_particle_position_index]
     event_particle_position_path = os.path.join(event_particle_position_directory,
@@ -60,6 +63,14 @@ def main(config_file_string, n, m, vlines=1):
                      'temperature_00_checkpoint_00_sample_of_event_active_particle_index.npy'))
     event_active_particle_index_sample = np.load(event_active_particle_index_path)
 
+    event_pointer_velocity_directory = sample_directories[event_pointer_velocity_index]
+    event_pointer_velocity_path = (
+        os.path.join(event_pointer_velocity_directory,
+                     'temperature_00_checkpoint_00_sample_of_event_pointer_velocity.npy'))
+    event_pointer_velocity_sample = np.load(event_pointer_velocity_path)
+    mean_pointer_velocity = np.mean(event_pointer_velocity_sample)
+    print(mean_pointer_velocity)
+
     n_cols = np.shape(event_particle_position_sample)[1]
 
     mean_chain_length, max_chain_length = find_mean_and_max_chain_length(event_step_sample)
@@ -67,6 +78,7 @@ def main(config_file_string, n, m, vlines=1):
     num_plus = sum(1 if step == 1 else 0 for step in event_step_sample)
     prop_plus = num_plus / len(event_step_sample)
     mean_pointer_velocity = np.mean(event_step_sample)
+    print(mean_pointer_velocity)
 
     fig, ax = plt.subplots(3, 1, sharex=True, figsize=(14, 10))
 

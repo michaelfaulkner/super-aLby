@@ -53,30 +53,10 @@ class Sampler(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def get_observation(self, momenta, positions, potential):
+    def get_observation(self, *args):
         """
-        Returns an observation of the system for the given particle momenta and positions.
-
-        Parameters
-        ----------
-        momenta : None or numpy.ndarray
-            None or a two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each
-            element is a float and represents one Cartesian component of the momentum of a single particle.
-        positions : numpy.ndarray
-            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle. For Bayesian
-            models, the entire positions array corresponds to the parameter; for the Ginzburg-Landau potential on a
-            lattice, the entire positions array corresponds to the entire array of superconducting phase.
-        potential : float or potential.potential.Potential
-            If a float, the current value of the potential; otherwise, an instance of the chosen child class of
-            potential.potential.Potential.
-
-        Returns
-        -------
-        numpy.ndarray
-            The observation.
+        Returns an observation of the state of the system.
         """
-        raise NotImplementedError
 
     @abstractmethod
     def output_sample(self, sample, temperature_index, checkpoint_index):
