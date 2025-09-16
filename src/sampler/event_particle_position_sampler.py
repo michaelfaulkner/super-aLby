@@ -54,7 +54,8 @@ class EventParticlePositionSampler(EventSampler):
         """
         raise NotImplementedError(f"Event samplers don't utilise get_observation. Use get_event_observation instead.")
 
-    def get_event_observation(self, momenta, positions, potential, active_particle_index=None, vetoing_index=None):
+    def get_event_observation(self, momenta, positions, potential, active_particle_index=None, vetoing_index=None,
+                              distance_to_next_event=None):
         """
         Returns an observation of the system at an event for the given particle momenta and positions.
 
@@ -75,6 +76,8 @@ class EventParticlePositionSampler(EventSampler):
             The active particle index
         vetoing_index : int
             The index of the particle that triggers the event.
+        distance_to_next_event : float
+            Distance to next ECMC event.
 
         Returns
         -------

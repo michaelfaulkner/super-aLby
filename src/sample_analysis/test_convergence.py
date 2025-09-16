@@ -242,10 +242,10 @@ def main(config_file_string):
             "permanent_data/reference_data/xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
     elif "harmonic_chain_potential" in potential:
         reference_sample = np.load(
-            "permanent_data/reference_data/harmonic_chain/structure_factor_temp_1_N_8_L_16.npy").flatten()
+            "permanent_data/reference_data/harmonic_chain/ecmc_reference_data_temp_1_N_8_L_16.npy").flatten()
     elif "quantum_harmonic_oscillator_potential" in potential:
         reference_sample = np.load(
-        "permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_reference_sample.npy").flatten()
+            "permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_reference_sample.npy").flatten()
     elif "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
         reference_sample = np.load("permanent_data/reference_data/"
                                    "nine_2d_hard_disks_particles_packing_fraction_point_688_reference_sample.npy")

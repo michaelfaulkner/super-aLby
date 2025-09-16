@@ -28,7 +28,7 @@ def find_mean_and_max_chain_length(event_step_sample):
     return mean_chain_length, max_length
 
 
-def main(config_file_string, n, m):
+def main(config_file_string, n, m, vlines=1):
     """Plot the event particle positions, active particle indices, and event steps from index n to m."""
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     (config_file_mediator, potential, _, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
@@ -37,6 +37,7 @@ def main(config_file_string, n, m):
     event_step_index = 0
     event_particle_position_index = 0
     event_active_particle_index_index = 0
+    event_pointer_velocity_index = 0
     for i, sampler in enumerate(samplers):
         if "event_particle_position_sampler" in sampler:
             event_particle_position_index = i
@@ -44,27 +45,42 @@ def main(config_file_string, n, m):
             event_step_index = i
         if "event_active_particle_index" in sampler:
             event_active_particle_index_index = i
+        if "event_pointer_velocity_index" in sampler:
+            event_pointer_velocity_index = i
+
     event_particle_position_directory = sample_directories[event_particle_position_index]
     event_particle_position_path = os.path.join(event_particle_position_directory,
                                                 'temperature_00_checkpoint_00_sample_of_event_particle_position.npy')
+    event_particle_position_sample = np.load(event_particle_position_path)
+
     event_step_directory = sample_directories[event_step_index]
     event_step_path = os.path.join(event_step_directory, 'temperature_00_checkpoint_00_sample_of_event_step.npy')
+    event_step_sample = np.load(event_step_path)
+
     event_active_particle_index_directory = sample_directories[event_active_particle_index_index]
     event_active_particle_index_path = (
         os.path.join(event_active_particle_index_directory,
                      'temperature_00_checkpoint_00_sample_of_event_active_particle_index.npy'))
-
-    event_particle_position_sample = np.load(event_particle_position_path)
-    event_step_sample = np.load(event_step_path)
     event_active_particle_index_sample = np.load(event_active_particle_index_path)
+
+    event_pointer_velocity_directory = sample_directories[event_pointer_velocity_index]
+    event_pointer_velocity_path = (
+        os.path.join(event_pointer_velocity_directory,
+                     'temperature_00_checkpoint_00_sample_of_event_pointer_velocity.npy'))
+    event_pointer_velocity_sample = np.load(event_pointer_velocity_path)
+    mean_pointer_velocity = np.mean(event_pointer_velocity_sample)
+    print(mean_pointer_velocity)
+
     n_cols = np.shape(event_particle_position_sample)[1]
 
     mean_chain_length, max_chain_length = find_mean_and_max_chain_length(event_step_sample)
 
     num_plus = sum(1 if step == 1 else 0 for step in event_step_sample)
     prop_plus = num_plus / len(event_step_sample)
+    mean_pointer_velocity = np.mean(event_step_sample)
+    print(mean_pointer_velocity)
 
-    fig, ax = plt.subplots(3, 1, sharex=True)
+    fig, ax = plt.subplots(3, 1, sharex=True, figsize=(14, 10))
 
     for i in range(n_cols):
         ax[0].plot(range(n, m+1), event_particle_position_sample[:, i][n:m+1], alpha=0.7, label=f'Particle {i}')
@@ -78,19 +94,21 @@ def main(config_file_string, n, m):
     ax[2].set_ylim(-1.2, 1.2)
     ax[2].set_ylabel('Event Step', fontsize=8)
 
-    for x in range(n, m + 1):
-        for axis in ax:
-            axis.axvline(x, color="black", linestyle=":", linewidth=0.8, alpha=0.4)
+    if vlines == 1:
+        for x in range(n, m + 1):
+            for axis in ax:
+                axis.axvline(x, color="black", linestyle=":", linewidth=0.8, alpha=0.4)
 
     fig.subplots_adjust(hspace=0.0)
-    fig.suptitle(f'Step ratio: {prop_plus:.3f}, Mean chain length: {mean_chain_length:.2f} '
-                 f'Max chain length: {max_chain_length}', y=0.95)
+    fig.suptitle(f'Step ratio: {prop_plus:.3f}, Mean pointer velocity: {mean_pointer_velocity:.5f}, '
+                 f'Mean chain length: {mean_chain_length:.2f}, Max chain length: {max_chain_length}', y=0.95)
 
-    plt.savefig(os.path.join(event_particle_position_directory, 'event_particle_positions.png'))
+    plt.savefig(os.path.join(event_particle_position_directory, f'event_particle_positions_{n}_{m}.png'))
     plt.show()
 
 
 if __name__ == '__main__':
     start = int(sys.argv[2])
     end = int(sys.argv[3])
-    main(sys.argv[1], start, end)
+    vert_lines = int(sys.argv[4])
+    main(sys.argv[1], start, end, vert_lines)

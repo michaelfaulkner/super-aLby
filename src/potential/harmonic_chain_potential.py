@@ -50,17 +50,33 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
         positions = np.sort(get_initial_positions_of_smooth_potential(self.__class__.__name__), axis=0)
-        # positions = np.array([[0.0], [0.1], [0.2], [0.3]])
         return positions
 
     def get_value(self, positions):
         """
         Returns the potential for the given positions.
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle. In this case, the
+            entire positions array corresponds to the Bayesian parameter.
+
+        Returns
+        -------
+        potential : float
+            The potential.
         """
-        potential_value = sum(get_shortest_vectors_on_torus(positions[(i + 1) % number_of_particles] - positions[i]
-                                                            - self._equilibrium_length) ** 2
-                              for i in range(number_of_particles))
-        return self._potential_constant * potential_value
+        positions = positions.copy()
+        potential = 0.0
+        for particle_index in positions:
+            neg_neighbour_index = (particle_index - 1) % number_of_particles
+            neg_neighbour_position = positions[neg_neighbour_index]
+            if particle_index == 0:
+                neg_neighbour_position -= size_of_particle_space
+            potential += (positions[particle_index] - neg_neighbour_position - self._equilibrium_length) ** 2
+        return self._potential_constant * potential
 
     def get_gradient(self, positions):
         """
@@ -79,10 +95,15 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
-        gradient_value = sum(get_shortest_vectors_on_torus(positions[(i + 1) % number_of_particles] - positions[i]
-                                                           - self._equilibrium_length)
-                             for i in range(number_of_particles))
-        return 2.0 * self._potential_constant * gradient_value
+        positions = positions.copy()
+        gradient_value = 0.0
+        for particle_index in positions:
+            neg_neighbour_index = (particle_index - 1) % number_of_particles
+            neg_neighbour_position = positions[neg_neighbour_index]
+            if particle_index == 0:
+                neg_neighbour_position -= size_of_particle_space
+            gradient_value += 2.0 * (positions[particle_index] - neg_neighbour_position - self._equilibrium_length)
+        return self._potential_constant * gradient_value
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
         """
@@ -109,7 +130,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
                 (self._sum_nearest_neighbours(active_particle_index, candidate_position, positions) -
                  self._sum_nearest_neighbours(active_particle_index, positions[active_particle_index], positions)))
 
-    def _sum_nearest_neighbours(self, active_particle_index, active_particle_position, positions):
+    def _sum_nearest_neighbours(self, active_particle_index, candidate_position, positions):
 
         """
         Returns the potential at active_particle_index by performing a sum over nearest neighbours.
@@ -118,10 +139,10 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         ----------
         active_particle_index : int
             The index of the active_particle.
-        active_particle_position : numpy.ndarray
-            A one-dimensional numpy array of length 1 whose sole element is a float and represents the position
-            of the active particle.  This is because the ith component of the positions array is a one-dimensional numpy
-            array of length 1.
+        candidate_position : numpy.ndarray
+            A one-dimensional numpy array of length 1 whose sole element is a float and represents the proposed phase of
+            the spin of the active particle at active_particle_index.  This is a numpy array his is because the ith
+            component of the positions array is a one-dimensional numpy array of length 1.
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the position of a single particle. In this case, the
@@ -131,10 +152,16 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         float
             The potential at lattice_site_index.
         """
+        positions = positions.copy()
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(active_particle_index)
-        neg_displacement = get_shortest_vectors_on_torus(active_particle_position - positions[neg_neighbour_index])
-        pos_displacement = get_shortest_vectors_on_torus(positions[pos_neighbour_index] - active_particle_position)
-        return (pos_displacement - self._equilibrium_length) ** 2 + (neg_displacement - self._equilibrium_length) ** 2
+        neg_neighbour_position, pos_neighbour_position = positions[neg_neighbour_index], positions[pos_neighbour_index]
+        if active_particle_index == number_of_particles - 1:
+            pos_neighbour_position += size_of_particle_space
+        if active_particle_index == 0:
+            neg_neighbour_position -= size_of_particle_space
+        neg_displacement, pos_displacement = (candidate_position - neg_neighbour_position,
+                                              pos_neighbour_position - candidate_position)
+        return (neg_displacement - self._equilibrium_length) ** 2 + (pos_displacement - self._equilibrium_length) ** 2
 
     @staticmethod
     def get_random_event_chain_velocity():
@@ -237,7 +264,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """Updates the position of the active particle following an event."""
-        positions[active_particle_index] = positions[active_particle_index] + displacement_distance
+        positions[active_particle_index] = positions[active_particle_index] + movement_direction * displacement_distance
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""
