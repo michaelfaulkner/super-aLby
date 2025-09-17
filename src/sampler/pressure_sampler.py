@@ -1,11 +1,11 @@
 """Module for the PressureSampler class."""
 import numpy as np
-from .sampler import Sampler
+from .observation_sampler import ObservationSampler
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from model_settings import number_of_particles, system_volume
 
 
-class PressureSampler(Sampler):
+class PressureSampler(ObservationSampler):
     """
     Class for taking observations of the hard-sphere pressure.
     """

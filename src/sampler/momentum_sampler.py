@@ -1,10 +1,10 @@
 """Module for the MomentumSampler class."""
 from model_settings import number_of_particles, dimensionality_of_particle_space
-from .sampler import Sampler
+from .observation_sampler import ObservationSampler
 import numpy as np
 
 
-class MomentumSampler(Sampler):
+class MomentumSampler(ObservationSampler):
     """
     Class for taking observations of the momenta of the system.
     """

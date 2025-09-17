@@ -1,9 +1,9 @@
 """Module for the PotentialSampler class."""
-from .sampler import Sampler
+from .observation_sampler import ObservationSampler
 import numpy as np
 
 
-class PotentialSampler(Sampler):
+class PotentialSampler(ObservationSampler):
     """
     Class for taking observations of the potential.
     """

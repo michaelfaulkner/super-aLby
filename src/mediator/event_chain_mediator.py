@@ -8,7 +8,7 @@ from factor_field.no_factor_field import NoFactorField
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from sampler.sampler import Sampler
 from typing import Sequence
-from model_settings import number_of_particles, size_of_particle_space, system_volume
+from model_settings import number_of_particles, size_of_particle_space
 parsing = importlib.import_module("base.parsing")
 
 
@@ -97,7 +97,7 @@ class EventChainMediator(Mediator):
             self._distance_between_measurements *= np.min(size_of_particle_space)
             self._distance_between_velocity_refreshments *= np.min(size_of_particle_space)
         print(f"Distance between event-chain measurements is {self._distance_between_measurements}")
-        print(f"Distance between event-chain velocity refreshments is {self._distance_between_measurements}")
+        print(f"Distance between event-chain velocity refreshments is {self._distance_between_velocity_refreshments}")
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
@@ -151,6 +151,11 @@ class EventChainMediator(Mediator):
                 else:
                     self._potential.update_position(self._positions, distance_to_next_event,
                                                     active_particle_index, movement_direction)
+                    for event_sampler_index, event_sampler in enumerate(self._event_samplers):
+                        self._event_samples[event_sampler_index].append(
+                            event_sampler.get_observation(None, self._positions, self._potential,
+                                                          active_particle_index, vetoing_index,
+                                                          distance_to_next_event))
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
                     if self._teleportation_portal:
                         portal_candidate = self._potential.get_portal_candidate(self._positions, active_particle_index,

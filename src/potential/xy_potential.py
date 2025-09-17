@@ -232,7 +232,8 @@ class XyPotential(EuclideanSubspacePotential):
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """Updates the position of the active particle."""
-        positions[active_particle_index] = (positions[active_particle_index] + displacement_distance) % (2.0 * np.pi)
+        positions[active_particle_index] = (positions[active_particle_index] +
+                                            movement_direction * displacement_distance) % (2.0 * np.pi)
 
     @staticmethod
     def _get_spin_difference(spin_value_one, spin_value_two):

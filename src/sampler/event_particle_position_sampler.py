@@ -1,19 +1,21 @@
-"""Module for the SingleParticleSeparationSampler class."""
+"""Module for the EventParticlePositionSampler class."""
 from base.exceptions import ConfigurationError
-from base.vectors import get_shortest_vectors_on_torus
-from model_settings import size_of_particle_space
-from .observation_sampler import ObservationSampler
+from model_settings import number_of_particles, size_of_particle_space
+from .event_sampler import EventSampler
 import numpy as np
 
 
-class SingleParticleSeparationSampler(ObservationSampler):
+class EventParticlePositionSampler(EventSampler):
     """
-    Class for taking observations of a single particle-particle separation distance.
+    Class for taking observations of the positions of particles at event times.
     """
 
     def __init__(self, output_directory: str):
         """
-        The constructor of the SingleParticleSeparationSampler class.
+        The constructor of the EventParticlePositionSampler class.
+
+        This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
+        init to the next class in the MRO via super.
 
         Parameters
         ----------
@@ -26,37 +28,14 @@ class SingleParticleSeparationSampler(ObservationSampler):
             If dimensionality_of_particle_space does not equal 1.
         """
         super().__init__(output_directory)
-        for component in np.atleast_1d(size_of_particle_space):
-            if component is None:
-                raise ConfigurationError(f"Give a float for each component of size_of_particle_space in [ModelSettings]"
-                                         f" when using {self.__class__.__name__} as {self.__class__.__name__} is "
-                                         f"designed for toroidal systems.")
 
-    def get_empty_sample_array(self, total_number_of_iterations):
+    def get_observation(self, positions, potential, active_particle_index=None, vetoing_index=None,
+                        distance_to_next_event=None):
         """
-        Generate array that stores the sample.
+        Returns an observation of the system at an event for the given system state.
 
         Parameters
         ----------
-        total_number_of_iterations : int
-            The total number of iterations of the Markov chain.
-
-        Returns
-        -------
-        numpy.ndarray
-            Numpy array of zeros of the required structure.
-        """
-        return np.zeros((total_number_of_iterations, 1))
-
-    def get_observation(self, momenta, positions, potential):
-        """
-        Returns an observation of the system for the given particle momenta and positions.
-
-        Parameters
-        ----------
-        momenta : None or numpy.ndarray
-            None or a two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each
-            element is a float and represents one Cartesian component of the momentum of a single particle.
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the position of a single particle. For Bayesian
@@ -65,13 +44,19 @@ class SingleParticleSeparationSampler(ObservationSampler):
         potential : float or potential.potential.Potential
             If a float, the current value of the potential; otherwise, an instance of the chosen child class of
             potential.potential.Potential.
+        active_particle_index : int
+            The active particle index
+        vetoing_index : int
+            The index of the particle that triggers the event.
+        distance_to_next_event : float
+            Distance to next ECMC event.
 
         Returns
         -------
-        float
-            The observation of the mean of all shortest (on the torus) particle-separation vectors.
+        numpy.ndarray
+            The observation of the particle positions at the event time.
         """
-        return np.linalg.norm(get_shortest_vectors_on_torus(positions[0] - positions[1]))
+        return positions.copy()
 
     def output_sample(self, sample, temperature_index, checkpoint_index):
         """
@@ -86,8 +71,9 @@ class SingleParticleSeparationSampler(ObservationSampler):
         checkpoint_index : int
             The index of the iteration through the list sampling checkpoints.
         """
-        self._write_sample_to_file(sample, f"temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
-                                           f"sample_of_single_particle_separation.npy")
+        sample = np.array(sample)
+        self._write_sample_to_file(sample,f"temperature_{temperature_index:02d}_checkpoint_"
+                                          f"{checkpoint_index:02d}_sample_of_event_particle_position.npy")
 
     def get_sample(self, temperature_index):
         """
@@ -104,4 +90,4 @@ class SingleParticleSeparationSampler(ObservationSampler):
             The sample generated by the Markov chain.
         """
         return self._read_sample_from_file(
-            f"temperature_{temperature_index:02d}_sample_of_single_particle_separation.npy")
+            f"temperature_{temperature_index:02d}_sample_of_event_particle_position.npy")

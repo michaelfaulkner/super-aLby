@@ -1,9 +1,9 @@
 """Module for the MeanSquaredPositionSampler class."""
-from .sampler import Sampler
+from .observation_sampler import ObservationSampler
 import numpy as np
 
 
-class MeanSquaredPositionSampler(Sampler):
+class MeanSquaredPositionSampler(ObservationSampler):
     """
     Class for taking observations of the mean squared particle positions without correcting for periodic boundaries.
     """
