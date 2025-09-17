@@ -36,19 +36,9 @@ class Sampler(metaclass=ABCMeta):
         os.makedirs(self.output_directory, exist_ok=True)
 
     @abstractmethod
-    def get_empty_sample_array(self, total_number_of_iterations):
+    def get_empty_sample_array(self, *args):
         """
-        Generate array that stores the sample.
-
-        Parameters
-        ----------
-        total_number_of_iterations : int
-            The total number of iterations of the Markov chain.
-
-        Returns
-        -------
-        numpy.ndarray
-            Numpy array of zeros of the required structure.
+        Generates a numpy array or Python list to store the sample.
         """
         raise NotImplementedError
 
@@ -57,6 +47,7 @@ class Sampler(metaclass=ABCMeta):
         """
         Returns an observation of the state of the system.
         """
+        raise NotImplementedError
 
     @abstractmethod
     def output_sample(self, sample, temperature_index, checkpoint_index):

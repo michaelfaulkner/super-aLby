@@ -1,8 +1,7 @@
 """Module for the HarmonicChainFactorField class."""
 from .factor_field import FactorField
 import numpy as np
-from model_settings import number_of_particles, size_of_particle_space
-from base.vectors import get_shortest_vectors_on_torus
+from model_settings import number_of_particles
 
 
 class HarmonicChainFactorField(FactorField):

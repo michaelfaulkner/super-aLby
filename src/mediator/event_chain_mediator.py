@@ -8,7 +8,7 @@ from factor_field.no_factor_field import NoFactorField
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from sampler.sampler import Sampler
 from typing import Sequence
-from model_settings import number_of_particles, size_of_particle_space, system_volume
+from model_settings import number_of_particles, size_of_particle_space
 parsing = importlib.import_module("base.parsing")
 
 
@@ -117,7 +117,6 @@ class EventChainMediator(Mediator):
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
         """Runs the Markov process at temperature in order to generate the sample at temperature."""
         active_particle_index = np.random.randint(0, number_of_particles)
-        # active_particle_index = 0
         movement_direction = self._potential.get_random_event_chain_velocity()
         distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
         for markov_chain_index in range(self._total_number_of_iterations):

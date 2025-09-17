@@ -1,8 +1,5 @@
 """Module for the ObservationSampler class."""
-from base.exceptions import ConfigurationError
-from model_settings import number_of_particles, size_of_particle_space
 from .sampler import Sampler
-import numpy as np
 from abc import ABCMeta, abstractmethod
 
 
@@ -33,7 +30,7 @@ class ObservationSampler(Sampler, metaclass=ABCMeta):
     @abstractmethod
     def get_empty_sample_array(self, total_number_of_iterations):
         """
-        Generate array that stores the sample.
+        Generate numpy array to store the sample.
 
         Parameters
         ----------

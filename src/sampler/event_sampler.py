@@ -1,8 +1,5 @@
 """Module for the EventSampler class."""
-from base.exceptions import ConfigurationError
-from model_settings import number_of_particles, size_of_particle_space
 from .sampler import Sampler
-import numpy as np
 from abc import ABCMeta, abstractmethod
 
 
@@ -30,33 +27,24 @@ class EventSampler(Sampler, metaclass=ABCMeta):
         """
         super().__init__(output_directory)
 
-    def get_empty_sample_array(self, total_number_of_iterations):
+    def get_empty_sample_array(self):
         """
-        Generate array that stores the sample.
-
-        Parameters
-        ----------
-        total_number_of_iterations : int
-            The total number of iterations of the Markov chain.
+        Generate a Python list to store the event sample.
 
         Returns
         -------
-        list
-            Variable length array to account for random number of events.
+        Sequence[float or int]
+            Variable length list to account for random number of events.
         """
         return []
 
     @abstractmethod
-    def get_observation(self, momenta, positions, potential, active_particle_index, vetoing_index,
-                        distance_to_next_event):
+    def get_observation(self, positions, potential, active_particle_index, vetoing_index, distance_to_next_event):
         """
-        Returns an observation of the system at an event for the given particle momenta and positions.
+        Returns an observation of the system at an event for the given system state.
 
         Parameters
         ----------
-        momenta : None or numpy.ndarray
-            None or a two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each
-            element is a float and represents one Cartesian component of the momentum of a single particle.
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the position of a single particle. For Bayesian
