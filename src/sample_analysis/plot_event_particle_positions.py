@@ -63,14 +63,6 @@ def main(config_file_string, n, m, vlines=1):
                      'temperature_00_checkpoint_00_sample_of_event_active_particle_index.npy'))
     event_active_particle_index_sample = np.load(event_active_particle_index_path)
 
-    event_pointer_velocity_directory = sample_directories[event_pointer_velocity_index]
-    event_pointer_velocity_path = (
-        os.path.join(event_pointer_velocity_directory,
-                     'temperature_00_checkpoint_00_sample_of_event_pointer_velocity.npy'))
-    event_pointer_velocity_sample = np.load(event_pointer_velocity_path)
-    mean_pointer_velocity = np.mean(event_pointer_velocity_sample)
-    print(mean_pointer_velocity)
-
     n_cols = np.shape(event_particle_position_sample)[1]
 
     mean_chain_length, max_chain_length = find_mean_and_max_chain_length(event_step_sample)

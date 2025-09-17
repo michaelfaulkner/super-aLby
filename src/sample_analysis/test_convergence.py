@@ -282,8 +282,6 @@ def main(config_file_string):
             sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
 
-        print(np.mean(sample))
-        print(np.mean(reference_sample))
         sample_cdf = get_cumulative_distribution(sample)
         iact = get_iact_and_acf(sample)[0]
         ref_iact = get_iact_and_acf(reference_sample)[0]
