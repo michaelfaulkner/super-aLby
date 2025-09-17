@@ -8,8 +8,11 @@ import numpy as np
 
 class HarmonicChainPotential(EuclideanSubspacePotential):
     """
-    This class implements the harmonic chain potential U = prefactor * sum((x[i] - x[i-1]) ** 2) / 2 with periodic
-    boundary conditions such that x[N] = x[0] + L.
+    This class implements the harmonic-chain potential U = prefactor * sum((x[i] - x[i-1]) ** 2) / 2 with periodic
+        boundary conditions such that x[N] = x[0] + L (with each x[i] defined on the entire real line).
+
+    This is equivalent to a model of real-valued springs x_tilde[i] with potential
+        U = prefactor * sum(x_tilde[i] ** 2) / 2 and subject to the constraint sum(x_tilde[i]) = L.
     """
 
     def __init__(self, prefactor: float = 1.0, equilibrium_length: float = 0.0):

@@ -4,8 +4,7 @@ from .factor_field import FactorField
 
 class NoFactorField(FactorField):
     """
-    Class for empty factor field.
-
+    Class for not implementing factor fields in event-chain Monte Carlo.
     """
 
     def __init__(self, prefactor: float = 1.0):

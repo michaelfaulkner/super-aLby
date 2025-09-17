@@ -6,8 +6,7 @@ from model_settings import number_of_particles
 
 class HarmonicChainFactorField(FactorField):
     """
-    Class for factor field for harmonic chain model.
-
+    Class for implementing factor fields (in event-chain Monte Carlo) for the harmonic-chain model.
     """
 
     def __init__(self, prefactor: float = 1.0):

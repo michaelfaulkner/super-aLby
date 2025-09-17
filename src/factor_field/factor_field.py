@@ -5,8 +5,7 @@ from abc import ABCMeta, abstractmethod
 
 class FactorField(metaclass=ABCMeta):
     """
-    Abstract class for factor fields.
-
+    Abstract class for factor-field functionality in event-chain Monte Carlo.
     """
 
     def __init__(self, prefactor: float = 1.0, **kwargs):
