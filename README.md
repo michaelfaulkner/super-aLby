@@ -85,7 +85,8 @@ which one of the above mediators inherits.  We use this same inheritance structu
 2. [`noise_distribution`](src/noise_distribution) which provides functionality for various noise distributions used in Metropolis Monte 
 Carlo.
 3. [`potential`](src/potential) which provides functionality for the potential (energy) function that defines the model.
-4. [`sampler`](src/sampler) which provides functionality for sampling various system observables.
+4. [`sampler`](src/sampler) which provides functionality for sampling various system observables and recording event information
+in event-chain Monte Carlo (the latter inherit from EventSampler, which inherits from Sampler).
 
 The mediator interacts with (instances of) classes contained in each of these packages, such that the classes never 
 interact with each other.  In addition, some [`potential`](src/potential) classes instantiate classes contained in the 
