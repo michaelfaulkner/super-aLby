@@ -71,9 +71,9 @@ class EventActiveParticleIndexSampler(EventSampler):
         checkpoint_index : int
             The index of the iteration through the list sampling checkpoints.
         """
-        sample = np.array(sample, dtype=float)
-        self._write_sample_to_file(sample[1:],f"temperature_{temperature_index:02d}_checkpoint_"
-                                              f"{checkpoint_index:02d}_sample_of_event_active_particle_index.npy")
+        self._write_sample_to_file(np.array(sample[1:], dtype=int),
+                                   f"temperature_{temperature_index:02d}_checkpoint_"
+                                   f"{checkpoint_index:02d}_sample_of_event_active_particle_index.npy")
 
     def get_sample(self, temperature_index):
         """

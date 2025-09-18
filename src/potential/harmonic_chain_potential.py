@@ -264,6 +264,8 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """Updates the position of the active particle following an event."""
         positions[active_particle_index] = positions[active_particle_index] + movement_direction * displacement_distance
+        if positions[active_particle_index] > 1e10:
+            positions -= 10e10
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""

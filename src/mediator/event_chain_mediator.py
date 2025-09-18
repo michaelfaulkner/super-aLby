@@ -153,7 +153,7 @@ class EventChainMediator(Mediator):
                                                     active_particle_index, movement_direction)
                     for event_sampler_index, event_sampler in enumerate(self._event_samplers):
                         self._event_samples[event_sampler_index].append(
-                            event_sampler.get_observation(None, self._positions, self._potential,
+                            event_sampler.get_observation(self._positions, self._potential,
                                                           active_particle_index, vetoing_index,
                                                           distance_to_next_event))
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
