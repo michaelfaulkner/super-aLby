@@ -102,7 +102,7 @@ class Mediator(metaclass=ABCMeta):
         [event_sampler.output_sample(self._event_samples[event_sampler_index], self._checkpoint_index) 
          for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
         self._write_checkpoint_index_and_configuration()
-        self._print_markov_chain_summary()
+        self._print_markov_process_summary()
 
     @abstractmethod
     def _set_arrays_and_counters(self):
@@ -154,6 +154,6 @@ class Mediator(metaclass=ABCMeta):
                 self._positions)
 
     @abstractmethod
-    def _print_markov_chain_summary(self):
+    def _print_markov_process_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
         raise NotImplementedError

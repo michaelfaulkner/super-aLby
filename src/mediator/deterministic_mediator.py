@@ -194,7 +194,7 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
         elif acceptance_rate < 0.95 * self._target_acceptance_rate:
             self._step_size *= 0.9
 
-    def _print_markov_chain_summary(self):
+    def _print_markov_process_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
         if self._use_metropolis_accept_reject:
             acceptance_rate = self._number_of_accepted_trajectories / self._number_of_observations

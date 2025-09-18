@@ -71,7 +71,7 @@ class IsingClusterMediator(DiffusiveMediator, metaclass=ABCMeta):
         """Proposal dynamics cannot be adapted in the Swendsen-Wang of Wolff algorithms."""
         pass
 
-    def _print_markov_chain_summary(self):
+    def _print_markov_process_summary(self):
         """Markov-process summary not printed to screen as neither acceptance rates nor proposal dynamics are
             relevant."""
         pass

@@ -162,7 +162,7 @@ class EventChainMediator(Mediator):
 
             super()._print_sample_progress(markov_chain_index)
 
-    def _print_markov_chain_summary(self):
+    def _print_markov_process_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
         print(f"Mean event rate per particle = "
               f"{self._total_number_of_events / self._number_of_observations / number_of_particles}")
