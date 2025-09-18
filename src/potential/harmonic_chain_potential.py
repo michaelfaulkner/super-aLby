@@ -4,13 +4,15 @@ from base. exceptions import ConfigurationError
 from helper_methods import get_initial_positions_of_smooth_potential
 from model_settings import size_of_particle_space, number_of_particles
 import numpy as np
-from base.vectors import get_shortest_vectors_on_torus
 
 
 class HarmonicChainPotential(EuclideanSubspacePotential):
     """
-    This class implements the harmonic chain potential U = prefactor * sum((x[i] - x[i-1]) ** 2) / 2 with periodic
-    boundary conditions such that x[N] = x[0] + L.
+    This class implements the harmonic-chain potential U = prefactor * sum((x[i] - x[i-1]) ** 2) / 2 with periodic
+        boundary conditions such that x[N] = x[0] + L (with each x[i] defined on the entire real line).
+
+    This is equivalent to a model of real-valued springs x_tilde[i] with potential
+        U = prefactor * sum(x_tilde[i] ** 2) / 2 and subject to the constraint sum(x_tilde[i]) = L.
     """
 
     def __init__(self, prefactor: float = 1.0, equilibrium_length: float = 0.0):
@@ -50,7 +52,6 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
         positions = np.sort(get_initial_positions_of_smooth_potential(self.__class__.__name__), axis=0)
-        # positions = np.arange(0.0, 0.1 * number_of_particles, 0.1).reshape(-1, 1)
         return positions
 
     def get_value(self, positions):
@@ -61,8 +62,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         ----------
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle. In this case, the
-            entire positions array corresponds to the Bayesian parameter.
+            is a float and represents one Cartesian component of the position of a single particle.
 
         Returns
         -------
@@ -87,8 +87,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         ----------
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle. In this case, the
-            entire positions array corresponds to the Bayesian parameter.
+            is a float and represents one Cartesian component of the position of a single particle.
 
         Returns
         -------
@@ -119,8 +118,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             represents one Cartesian component of the proposed position of the active particle.
         positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents one Cartesian component of the position of a single particle. In this case, the
-            entire positions array corresponds to the Bayesian parameter.
+            is a float and represents one Cartesian component of the position of a single particle.
 
         Returns
         -------
@@ -226,10 +224,10 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
                                           pos_neighbour_position - self._equilibrium_length - active_particle_position)
         rand_neg, rand_pos = (- temperature * np.log(np.random.uniform(0.0, 1.0)) / self._potential_constant,
                               - temperature * np.log(np.random.uniform(0.0, 1.0)) / self._potential_constant)
-        distance_to_next_neg_factor_event = neg_dist_to_eq + rand_neg ** 0.5 if neg_dist_to_eq > 0 \
-            else neg_dist_to_eq + (rand_neg + (-neg_dist_to_eq) ** 2) ** 0.5
-        distance_to_next_pos_factor_event = pos_dist_to_eq + rand_pos ** 0.5 if pos_dist_to_eq > 0 \
-            else pos_dist_to_eq + (rand_pos + (-pos_dist_to_eq) ** 2) ** 0.5
+        distance_to_next_neg_factor_event = (neg_dist_to_eq + rand_neg ** 0.5 if neg_dist_to_eq > 0
+                                             else neg_dist_to_eq + (rand_neg + (-neg_dist_to_eq) ** 2) ** 0.5)
+        distance_to_next_pos_factor_event = (pos_dist_to_eq + rand_pos ** 0.5 if pos_dist_to_eq > 0
+                                             else pos_dist_to_eq + (rand_pos + (-pos_dist_to_eq) ** 2) ** 0.5)
 
         shortest_distance_to_next_factor_event, vetoing_index = (
             min((distance_to_next_neg_factor_event, neg_neighbour_index),

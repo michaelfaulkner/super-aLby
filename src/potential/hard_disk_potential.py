@@ -32,7 +32,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
             \beta P (2 \sigma)^2 = 8.548840320398 +- 0.012093065068, compared with 8.55170 +- 0.00059 at the URL.
 
         The final two simulations agreed (with the published data) within the simulation error.  The first resulted in
-            a minor discrepancy.  Given that these metropolis were run before any code optimisation, we were therefore happy
+            a minor discrepancy.  Given that these tests were run before any code optimisation, we were therefore happy
             to conclude that the code is working correctly.  Note that our simulations produced 10^6 samples after
             discarding 10^5 equilibration samples.
     """

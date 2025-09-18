@@ -3,13 +3,12 @@ from .factor_field import FactorField
 import numpy as np
 from helper_methods import get_neighbours
 from model_settings import number_of_particles
-from base.exceptions import ConfigurationError
 
 
 class XyFactorField(FactorField):
     """
-    Class for factor field for XY model.
-
+    Class for implementing factor fields (in event-chain Monte Carlo) for the 2DXY model.  This is currently a work in
+        progress as we have not finalised how to implement factor fields for the 2DXY model.
     """
 
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 2):

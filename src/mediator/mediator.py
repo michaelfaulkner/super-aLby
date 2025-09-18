@@ -156,8 +156,7 @@ class Mediator(metaclass=ABCMeta):
         """Sets or resets the arrays (e.g. the sample array) and counters before each temperature iteration."""
         self._positions = self._potential.get_initial_positions()
         self._samples = [sampler.get_empty_sample_array(self._total_number_of_iterations) for sampler in self._samplers]
-        self._event_samples = [event_sampler.get_empty_sample_array(self._total_number_of_iterations)
-                               for event_sampler in self._event_samplers]
+        self._event_samples = [event_sampler.get_empty_sample_array() for event_sampler in self._event_samplers]
         self._checkpoint_index = 0
 
     def _reload_configuration_from_file_and_reset(self):
@@ -172,7 +171,7 @@ class Mediator(metaclass=ABCMeta):
 
     def _get_initial_sample(self):
         self._initial_samples = [sampler.get_empty_sample_array(1) for sampler in self._samplers]
-        self._initial_event_samples = [event_sampler.get_empty_sample_array(1) for event_sampler in self._event_samplers]
+        self._initial_event_samples = [event_sampler.get_empty_sample_array() for event_sampler in self._event_samplers]
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 self._initial_samples[sampler_index][0, :] = number_of_particles / system_volume  # ideal-gas pressure

@@ -1,14 +1,12 @@
 """Module for the HarmonicChainFactorField class."""
 from .factor_field import FactorField
 import numpy as np
-from model_settings import number_of_particles, size_of_particle_space
-from base.vectors import get_shortest_vectors_on_torus
+from model_settings import number_of_particles
 
 
 class HarmonicChainFactorField(FactorField):
     """
-    Class for factor field for harmonic chain model.
-
+    Class for implementing factor fields (in event-chain Monte Carlo) for the harmonic-chain model.
     """
 
     def __init__(self, prefactor: float = 1.0):

@@ -244,10 +244,10 @@ def main(config_file_string):
             "permanent_data/reference_data/xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
     elif "harmonic_chain_potential" in potential:
         reference_sample = np.load(
-            "permanent_data/reference_data/harmonic_chain/ecmc_reference_data_temp_1_N_8_L_16.npy").flatten()
+            "permanent_data/reference_data/eight_harmonic_chain_particles_temp_1_L_16.npy").flatten()
     elif "quantum_harmonic_oscillator_potential" in potential:
-        reference_sample = np.load(
-            "permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_reference_sample.npy").flatten()
+        reference_sample = np.load("permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_"
+                                   "reference_sample.npy").flatten()
     elif "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
         reference_sample = np.load("permanent_data/reference_data/"
                                    "nine_2d_hard_disks_particles_packing_fraction_point_688_reference_sample.npy")
@@ -286,11 +286,10 @@ def main(config_file_string):
         iact = get_iact_and_acf(sample)[0]
         ref_iact = get_iact_and_acf(reference_sample)[0]
 
-        plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-', label=f'reference data\n'
-                                                                                                  f'IACT: {ref_iact:.3f}')
-        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-', label=f'super-aLby data\n' 
-                                                                                            f'IACT: {iact:.3f}')
-
+        plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-',
+                 label=f'reference data\n IACT: {ref_iact:.3f}')
+        plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-',
+                 label=f'super-aLby data\n IACT: {iact:.3f}')
         plt.xlabel(r"$x$", fontsize=15, labelpad=10)
         plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)
         plt.tick_params(axis='both', which='major', labelsize=14, pad=10)
