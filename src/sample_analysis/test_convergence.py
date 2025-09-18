@@ -22,8 +22,10 @@ def main(config_file_string):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     """nb, argument of parsing.parse_options() must be of type Sequence[str]"""
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-    (config_file_mediator, potential, _, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
+    (config_file_mediator, potential, _, samplers, sample_directories, temperature, number_of_equilibration_iterations,
      _, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
+    # todo need to work out how to adapt previous Ising tests to account for a single temp in config file
+    """
     if potential == "ising_potential":
         if not (len(temperatures) == 2 and temperatures[0] == 1.2 and temperatures[1] == 3.0):
             raise ValueError("IsingPotential reference data only available for models for which two sampling "
@@ -31,12 +33,13 @@ def main(config_file_string):
     elif len(temperatures) > 1:
         raise RuntimeWarning(f"The value of number_of_temperature_increments in the Mediator section is greater than 0."
                              f"  Convergence is therefore tested only for the minimum temperature value.")
+    """
 
     try:
         potential_prefactor = parsing.get_value(config, strings.to_camel_case(potential), "prefactor")
     except (NoOptionError, RuntimeError) as _:
         potential_prefactor = 1.0  # set as default value
-    combined_potential_prefactor = potential_prefactor / temperatures[0]
+    combined_potential_prefactor = potential_prefactor / temperature
     """n.b., potentials may include additional prefactors (to beta (1 / temperature) and potential_prefactor in their 
         definitions, e.g. the definitions of ExponentialPowerPotential and GaussianPotential include additional 
         prefactors of 1/power and 1/2, respectively - potential_prefactor defines the relative weight of the potential 
@@ -168,6 +171,7 @@ def main(config_file_string):
                                  "number_of_particles equals 8, size_of_particle_space equals [8.0, 8.0, 8.0] (n.b., "
                                  "number_of_particles and size_of_particle_space are set in the ModelSettings "
                                  "section).")
+    # todo need to work out how to adapt previous Ising tests to account for a single temp in config file
     elif potential == "ising_potential":
         try:
             lattice_dimensionality = parsing.get_value(config, strings.to_camel_case(potential),
@@ -261,25 +265,25 @@ def main(config_file_string):
     if "ising_potential" not in potential:
         reference_cdf = get_cumulative_distribution(reference_sample)
         if "coulomb" in potential or "lennard_jones" in potential:
-            sample = sample_getter.get_particle_separations(sample_directories[0], temperatures[0], 0, 0,
+            sample = sample_getter.get_particle_separations(sample_directories[0], temperature, 0, 0,
                                                             number_of_particles,
                                                             number_of_equilibration_iterations).flatten()
         elif "xy" in potential:
-            sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperatures[0], 0, 0,
+            sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperature, 0, 0,
                                                              number_of_particles).flatten()
         elif "harmonic_chain" in potential:
-            sample = sample_getter.get_structure_factor(sample_directories[0], temperatures[0], 0, 0,
+            sample = sample_getter.get_structure_factor(sample_directories[0], temperature, 0, 0,
                                                         number_of_particles, number_of_equilibration_iterations).flatten()
         elif "quantum_harmonic_oscillator_potential" in potential:
-            sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperatures[0], 0, 0,
+            sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperature, 0, 0,
                                                               number_of_particles, number_of_equilibration_iterations
                                                               ).flatten()
         elif "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
             sample = sample_getter.get_pressure(
-                sample_directories[0], temperatures[0], 0, 0, number_of_particles,
+                sample_directories[0], temperature, 0, 0, number_of_particles,
                 number_of_equilibration_iterations).flatten()
         else:
-            sample = sample_getter.get_positions(sample_directories[0], temperatures[0], 0, 0, number_of_particles,
+            sample = sample_getter.get_positions(sample_directories[0], temperature, 0, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
 
         sample_cdf = get_cumulative_distribution(sample)

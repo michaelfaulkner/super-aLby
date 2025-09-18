@@ -9,8 +9,7 @@ from typing import Sequence
 class DiffusiveMediator(ReversibleMediator, metaclass=ABCMeta):
     """Abstract DiffusiveMediator class.  This is the parent class for all mediators that use diffusive dynamics."""
 
-    def __init__(self, potential: Potential, samplers: Sequence[Sampler], minimum_temperature: float = 1.0,
-                 maximum_temperature: float = 1.0, number_of_temperature_increments: int = 0,
+    def __init__(self, potential: Potential, samplers: Sequence[Sampler], temperature: float = 1.0,
                  number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
                  proposal_dynamics_adaptor_is_on: bool = True, **kwargs):
         r"""
@@ -25,14 +24,9 @@ class DiffusiveMediator(ReversibleMediator, metaclass=ABCMeta):
             Instance of the chosen child class of potential.potential.Potential.
         samplers : Sequence[sampler.sampler.Sampler]
             Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
-        minimum_temperature : float, optional
-            The minimum value of the model temperature, n.b., the temperature is the reciprocal of the inverse
-            temperature, beta (up to a proportionality constant).
-        maximum_temperature : float, optional
-            The maximum value of the model temperature, n.b., the temperature is the reciprocal of the inverse
-            temperature, beta (up to a proportionality constant).
-        number_of_temperature_increments : int, optional
-            number_of_temperature_increments + 1 is the number of temperature values to iterate over.
+        temperature : float, optional
+            The model temperature, n.b., the temperature is the reciprocal of the inverse temperature, beta (up to a
+            proportionality constant).
         number_of_equilibration_iterations : int, optional
             Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
@@ -50,15 +44,7 @@ class DiffusiveMediator(ReversibleMediator, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If samplers is not a sequence of instances of some child classes of sampler.sampler.Sampler.
         base.exceptions.ConfigurationError
-            If minimum_temperature is less than 0.0.
-        base.exceptions.ConfigurationError
-            If maximum_temperature is less than 0.0.
-        base.exceptions.ConfigurationError
-            If maximum_temperature is less than minimum_temperature.
-        base.exceptions.ConfigurationError
-            If number_of_temperature_increments is less than 0.
-        base.exceptions.ConfigurationError
-            If number_of_temperature_increments is 0 and minimum_temperature does not equal maximum_temperature.
+            If temperature is less than 0.0.
         base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
@@ -66,22 +52,21 @@ class DiffusiveMediator(ReversibleMediator, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If type(proposal_dynamics_adaptor_is_on) is not bool.
         """
-        super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
-                         number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations,
+        super().__init__(potential, samplers, temperature, number_of_equilibration_iterations, number_of_observations,
                          proposal_dynamics_adaptor_is_on, **kwargs)
 
-    def _reset_arrays_and_counters(self, temperature):
-        """Sets or resets the arrays (e.g. the sample array) and counters before each temperature iteration."""
-        super()._reset_arrays_and_counters(temperature)
+    def _set_arrays_and_counters(self):
+        """Sets the arrays (e.g. the sample array) and counters before the Markov process."""
+        super()._set_arrays_and_counters()
 
-    def _generate_single_observation(self, markov_chain_step_index, temperature):
+    def _generate_single_observation(self, markov_chain_step_index):
         """Advances the Markov chain by one step and adds a single observation to the sample."""
-        self._advance_markov_chain(markov_chain_step_index, temperature)
+        self._advance_markov_chain(markov_chain_step_index)
         for sampler_index, sampler in enumerate(self._samplers):
             self._samples[sampler_index][markov_chain_step_index, :] = sampler.get_observation(
                 None, self._positions, self._potential)
 
     @abstractmethod
-    def _advance_markov_chain(self, markov_chain_step_index, temperature):
+    def _advance_markov_chain(self, markov_chain_step_index):
         """Advances the Markov chain by one step."""
         raise NotImplementedError

@@ -48,7 +48,7 @@ def main(argv: Sequence[str]) -> None:
     if number_of_jobs < 1:
         raise ConfigurationError("For the value of number_of_jobs in Run, give an integer not less than one.")
     elif number_of_jobs == 1:
-        print("Running a single Markov process.")
+        print("Setting up a single Markov process.")
         run_single_simulation(base_config_file_location, None, number_of_jobs)
     else:
         number_of_available_cpus = mp.cpu_count()
@@ -57,11 +57,11 @@ def main(argv: Sequence[str]) -> None:
         else:
             number_of_cpus = number_of_available_cpus
         if number_of_jobs < number_of_cpus:
-            print(f"Running {number_of_jobs} Markov processes in parallel on {number_of_jobs} CPUs, where",
+            print(f"Setting up {number_of_jobs} Markov processes in parallel on {number_of_jobs} CPUs, where",
                   f"{number_of_available_cpus} CPUs are available.")
             pool = mp.Pool(number_of_jobs)
         else:
-            print(f"Running {number_of_jobs} Markov processes in parallel on {number_of_cpus} CPUs, where "
+            print(f"Setting up {number_of_jobs} Markov processes in parallel on {number_of_cpus} CPUs, where "
                   f"{number_of_available_cpus} CPUs are available.")
             pool = mp.Pool(number_of_cpus)
         """create directory in which to store temporary copies of the parent config file"""
@@ -145,19 +145,19 @@ def run_single_simulation(config_file_location: str, job_number: Union[int, None
                                      f"configuration file.")
 
     if job_number is None:
-        print_and_log(logger, "Running the single Monte Carlo simulation.")
+        print_and_log(logger, "Running the single Markov process.")
     else:
-        print_and_log(logger, f"Running the {get_ordinal(job_number + 1)} of {number_of_jobs} Monte Carlo simulations.")
+        print_and_log(logger, f"Running the {get_ordinal(job_number + 1)} of {number_of_jobs} Markov processes.")
+    print("-----------------------------------------------------------------------------------------")
     start_time = time.time()
     mediator.generate_sample(restart_flag)
     end_time = time.time()
     print("-----------------------------------------------------------------------------------------")
     if job_number is None:
-        print_and_log(logger,
-                      f"Total runtime of the simulation (of all temperature values) = {end_time - start_time} seconds.")
+        print_and_log(logger,f"Total runtime of the simulation = {end_time - start_time} seconds.")
     else:
-        print_and_log(logger, f"Total runtime of the {get_ordinal(job_number + 1)} of {number_of_jobs} simulations (of "
-                              f"all temperature values) = {end_time - start_time} seconds.")
+        print_and_log(logger, f"Total runtime of the {get_ordinal(job_number + 1)} of {number_of_jobs} "
+        f"simulations = {end_time - start_time} seconds.")
     print("-----------------------------------------------------------------------------------------")
 
 
