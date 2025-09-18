@@ -265,25 +265,25 @@ def main(config_file_string):
     if "ising_potential" not in potential:
         reference_cdf = get_cumulative_distribution(reference_sample)
         if "coulomb" in potential or "lennard_jones" in potential:
-            sample = sample_getter.get_particle_separations(sample_directories[0], temperature, 0, 0,
+            sample = sample_getter.get_particle_separations(sample_directories[0], temperature, 0,
                                                             number_of_particles,
                                                             number_of_equilibration_iterations).flatten()
         elif "xy" in potential:
-            sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperature, 0, 0,
-                                                             number_of_particles).flatten()
+            sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperature, 0,
+                                                             number_of_particles,
+                                                             number_of_equilibration_iterations).flatten()
         elif "harmonic_chain" in potential:
-            sample = sample_getter.get_structure_factor(sample_directories[0], temperature, 0, 0,
-                                                        number_of_particles, number_of_equilibration_iterations).flatten()
+            sample = sample_getter.get_structure_factor(sample_directories[0], temperature, 0, number_of_particles,
+                                                        number_of_equilibration_iterations).flatten()
         elif "quantum_harmonic_oscillator_potential" in potential:
-            sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperature, 0, 0,
+            sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperature, 0,
                                                               number_of_particles, number_of_equilibration_iterations
                                                               ).flatten()
         elif "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
-            sample = sample_getter.get_pressure(
-                sample_directories[0], temperature, 0, 0, number_of_particles,
-                number_of_equilibration_iterations).flatten()
+            sample = sample_getter.get_pressure(sample_directories[0], temperature,0,
+                                                number_of_particles, number_of_equilibration_iterations).flatten()
         else:
-            sample = sample_getter.get_positions(sample_directories[0], temperature, 0, 0, number_of_particles,
+            sample = sample_getter.get_positions(sample_directories[0], temperature, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
 
         sample_cdf = get_cumulative_distribution(sample)
