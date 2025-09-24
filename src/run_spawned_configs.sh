@@ -19,15 +19,15 @@ BASE_DIR="${TEMPLATE_DIRNAME}/${TEMPLATE_BASENAME}"
 
 if [ ! -d "$BASE_DIR" ]; then
     if [ -n "${INCREMENT_TYPE:-}" ]; then
-        python generate_sweep_configs.py "$TEMPLATE_INI" "$NUM_JOBS" "$START" "$END" "$NUM_INCREMENTS" "$CONFIG_HEADER" "$CONFIG_VARIABLE" "$INCREMENT_TYPE" || { echo "Generation failed"; exit 1; }
+        python spawn_configs.py "$TEMPLATE_INI" "$NUM_JOBS" "$START" "$END" "$NUM_INCREMENTS" "$CONFIG_HEADER" "$CONFIG_VARIABLE" "$INCREMENT_TYPE" || { echo "Generation failed"; exit 1; }
     else
-        python generate_sweep_configs.py "$TEMPLATE_INI" "$NUM_JOBS" "$START" "$END" "$NUM_INCREMENTS" "$CONFIG_HEADER" "$CONFIG_VARIABLE" || { echo "Generation failed"; exit 1; }
+        python spawn_configs.py "$TEMPLATE_INI" "$NUM_JOBS" "$START" "$END" "$NUM_INCREMENTS" "$CONFIG_HEADER" "$CONFIG_VARIABLE" || { echo "Generation failed"; exit 1; }
     fi
 fi
 
 run_task() {
     local INCREMENT_ID="$1"
-    local SUBDIR="${BASE_DIR}/${TEMPLATE_BASENAME}_$(printf "%02d" "$INCREMENT_ID")"
+    local SUBDIR="${BASE_DIR}/${TEMPLATE_BASENAME}_${CONFIG_VARIABLE}_$(printf "%02d" "$INCREMENT_ID")"
     local attempts=0
 
     until [ -d "$SUBDIR" ] && compgen -G "$SUBDIR"/*.ini >/dev/null; do

@@ -64,7 +64,8 @@ def main(config_file_location, num_jobs, sweep_start, sweep_end, num_increments,
         increment_config = copy.deepcopy(config)
         increment_config.set(config_header, config_variable, str(increment))
         increment_config_file_path = os.path.join(config_file_directory,
-                                                  f'{config_file_basename.split(".")[0]}_{index:02d}.ini')
+                                                  f'{config_file_basename.split(".")[0]}_{config_variable}'
+                                                  f'_{index:02d}.ini')
         with open(increment_config_file_path, 'w') as f:
             increment_config.write(f)
         spawn_identical_configs(increment_config_file_path, num_jobs)
