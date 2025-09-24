@@ -24,16 +24,31 @@ def main(config_file_string):
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     (config_file_mediator, potential, _, samplers, sample_directories, temperature, number_of_equilibration_iterations,
      _, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
-    # todo need to work out how to adapt previous Ising tests to account for a single temp in config file
-    """
+    temperatures = None
     if potential == "ising_potential":
+        sh_file_string = f"{os.path.splitext(config_file_string)[0]}.sh"
+        sweep_variable = helper_methods.read_variable_from_sh_file(sh_file_string, "CONFIG_VARIABLE")
+        if sweep_variable != "temperature":
+            raise ValueError("IsingPotential reference data only available for temperature sweep. "
+                             f"CONFIG_VARIABLE must be set to temperature. Provided: {sweep_variable}")
+        minimum_temperature, maximum_temperature, number_of_temperature_increments = (
+            float(helper_methods.read_variable_from_sh_file(sh_file_string, "START")),
+            float(helper_methods.read_variable_from_sh_file(sh_file_string, "END")),
+            int(helper_methods.read_variable_from_sh_file(sh_file_string, "NUM_INCREMENTS")))
+        temperatures = helper_methods.get_temperatures(minimum_temperature, maximum_temperature,
+                                                       number_of_temperature_increments)
         if not (len(temperatures) == 2 and temperatures[0] == 1.2 and temperatures[1] == 3.0):
             raise ValueError("IsingPotential reference data only available for models for which two sampling "
-                             "temperatures are given with values 1.2 and 3.0.")
-    elif len(temperatures) > 1:
-        raise RuntimeWarning(f"The value of number_of_temperature_increments in the Mediator section is greater than 0."
-                             f"  Convergence is therefore tested only for the minimum temperature value.")
-    """
+                             "temperatures are given with values 1.2 and 3.")
+        config_file_directory = os.path.splitext(config_file_string)[0]
+        sub_config_files = [os.path.join(x[0], "job_00.ini") for x in os.walk(config_file_directory)][1:]
+        sub_config_files = sorted(sub_config_files, key=helper_methods.extract_index)
+        sample_directories_list, temperatures = [], []
+        for sub_config_file_string in sub_config_files:
+            config = parsing.read_config(parsing.parse_options([sub_config_file_string]).config_file)
+            sample_directories = helper_methods.get_basic_config_data(sub_config_file_string)[4]
+            sample_directories_list.append(sample_directories)
+        sample_directories = sample_directories_list
 
     try:
         potential_prefactor = parsing.get_value(config, strings.to_camel_case(potential), "prefactor")
@@ -200,8 +215,8 @@ def main(config_file_string):
                     if sampler == "standard_mean_position_sampler":
                         # expected magnetic-norm density is E[|m|] où m = sum_i s_i / N
                         magnetic_norm_density_mean_and_error = get_sample_mean_and_error(
-                            sample_getter.get_magnetic_norm_density(sample_directories[sample_index], temperature,
-                                                                    temperature_index, 0, number_of_particles,
+                            sample_getter.get_magnetic_norm_density(sample_directories[temperature_index][sample_index],
+                                                                    temperature,0, number_of_particles,
                                                                     number_of_equilibration_iterations, thinning_level))
                         print(f"Sample estimate of expected magnetic-norm density = "
                               f"{magnetic_norm_density_mean_and_error[0]:.3g} +- "
@@ -211,8 +226,9 @@ def main(config_file_string):
                         # but to compare Swendsen-Wang/Wolff and Metropolis, we estimate beta N Var[|m|] (the expected
                         # magnetic-norm susc (per particle))
                         magnetic_norm_susceptibility_mean_and_error = get_sample_mean_and_error(
-                            sample_getter.get_magnetic_norm_susceptibility(sample_directories[sample_index],
-                                                                           temperature, temperature_index, 0,
+                            sample_getter.get_magnetic_norm_susceptibility(sample_directories[temperature_index]
+                                                                           [sample_index], temperature,
+                                                                           0,
                                                                            number_of_particles,
                                                                            number_of_equilibration_iterations,
                                                                            thinning_level))
@@ -222,7 +238,7 @@ def main(config_file_string):
                               f"{expected_magnetic_norm_susc_per_particle_reference_values[temperature_index]})")
                     elif sampler == "potential_sampler":
                         potential_mean_and_error = get_sample_mean_and_error(sample_getter.get_potential(
-                            sample_directories[sample_index], temperature, temperature_index, 0, number_of_particles,
+                            sample_directories[temperature_index][sample_index], temperature, 0, number_of_particles,
                             number_of_equilibration_iterations, thinning_level))
                         print(f"Sample estimate of expected potential per particle = "
                               f"{potential_mean_and_error[0] / number_of_particles} +- "
@@ -231,7 +247,7 @@ def main(config_file_string):
                         # expected specific heat is \partial_T E[U] = beta^2 Var[U] (a dimensionless quantity) -- we
                         # estimate beta^2 Var[U] / N (the expected specific heat per particle)
                         specific_heat_mean_and_error = get_sample_mean_and_error(sample_getter.get_specific_heat(
-                            sample_directories[sample_index], temperature, temperature_index, 0, number_of_particles,
+                            sample_directories[temperature_index][sample_index], temperature, 0, number_of_particles,
                             number_of_equilibration_iterations, thinning_level))
                         print(f"Sample estimate of expected specific heat per particle = "
                               f"{specific_heat_mean_and_error[0] / number_of_particles} +- "

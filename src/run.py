@@ -132,7 +132,6 @@ def run_single_simulation(config_file_location: str, job_number: Union[int, None
                           f"Setting up the {get_ordinal(job_number + 1)} of {number_of_jobs} simulations "
                           f"based on the configuration file {args.config_file}.")
 
-
     used_sections = factory.used_sections
     for section in config.sections():
         if section not in used_sections and section not in ["Run", "ModelSettings"]:

@@ -240,3 +240,20 @@ def get_initial_positions_of_smooth_potential(potential_class):
         else:
             return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]
                              for _ in range(number_of_particles)])
+
+
+def read_variable_from_sh_file(sh_file_string, variable_name):
+    with open(sh_file_string) as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith("export ") and "=" in line:
+                key, val = line.replace("export ", "", 1).split("=", 1)
+                if key.strip() == variable_name:
+                    return val.strip()
+    raise KeyError(f"{variable_name} not found in {sh_file_string}")
+
+
+def extract_index(path):
+    import re
+    match = re.search(r'_(\d+)/job_', path)
+    return int(match.group(1)) if match else -1
