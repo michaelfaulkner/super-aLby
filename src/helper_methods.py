@@ -97,8 +97,7 @@ def get_basic_config_data(config_file_string):
                                  "WolffMediator or EventChainMediator.")
     sample_directories = [config.get(strings.to_camel_case(sampler), "output_directory") for sampler in samplers]
     return (config_file_mediator, potential, factor_field, samplers, sample_directories, temperature,
-            number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space,
-            parsing.get_value(config, "Run", "number_of_jobs"), parsing.get_value(config, "Run", "max_number_of_cpus"))
+            number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space)
 
 
 def check_model_settings_of_soft_matter_potential(size_of_particle_space, dimensionality_of_particle_space,

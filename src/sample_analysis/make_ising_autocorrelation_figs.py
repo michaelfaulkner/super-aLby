@@ -19,17 +19,23 @@ parsing = importlib.import_module("base.parsing")
 def main(number_of_system_sizes=5):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
-    config_file_4x4_wolff = ["config_files/sampling_algos_ising_figs/4x4_wolff.ini"]
-    config_file_4x4_metrop = ["config_files/sampling_algos_ising_figs/4x4_metropolis.ini"]
-    (wolff_mediator, _, _, samplers, sample_directories_4x4_wolff, temperatures, number_of_equilibration_iterations,
-     number_of_observations, _, _, number_of_jobs, max_number_of_cpus) = helper_methods.get_basic_config_data(
-        config_file_4x4_wolff)
+    config_file_4x4_wolff = "config_files/sampling_algos_ising_figs/4x4_wolff.ini"
+    config_file_4x4_metrop = "config_files/sampling_algos_ising_figs/4x4_metropolis.ini"
+    sh_file_string_4x4_wolff = f"{os.path.splitext(config_file_4x4_wolff)[0]}.sh"
+
+    (wolff_mediator, _, _, samplers, sample_directories_4x4_wolff, _, number_of_equilibration_iterations,
+     number_of_observations, _, _) = helper_methods.get_basic_config_data(config_file_4x4_wolff)
     metrop_mediator = helper_methods.get_basic_config_data(config_file_4x4_metrop)[0]
     output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
     sample_directories_wolff = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]
     sample_directories_metrop = [f"{output_directory}/{length}x{length}_metropolis" for length in lattice_lengths]
-    transition_temperature = 2.0 / math.log(1 + 2 ** 0.5)
+    transition_temperature = 2.0 / math.log(1.0 + 2.0 ** 0.5)
+    temperatures = helper_methods.get_temperatures(
+        float(helper_methods.read_variable_from_sh_file(sh_file_string_4x4_wolff, "START")),
+        float(helper_methods.read_variable_from_sh_file(sh_file_string_4x4_wolff, "END")),
+        int(helper_methods.read_variable_from_sh_file(sh_file_string_4x4_wolff, "NUM_INCREMENTS")))
     reduced_temperatures = [temperature / transition_temperature for temperature in temperatures]
+    number_of_jobs = int(helper_methods.read_variable_from_sh_file(sh_file_string_4x4_wolff, "NUM_JOBS"))
 
     fig_1, axis_1 = make_empty_fig()
     fig_2, axis_2 = make_empty_fig()
@@ -107,6 +113,7 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
             f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_{observable_string}_autocorrelation"
             f"_vs_temperature_{mediator.replace('_mediator', '')}_algorithm_{number_of_jobs}"
             f"x{number_of_observations}_observations.npy")
+        return iact_vs_temperature, acf_vs_temperature
     except IOError:
         try:
             """We now try to load the ACF data only.  This is because past versions of this script did not compute the
@@ -131,8 +138,10 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
             iacts, acfs, acf_errors = [], [], []
             try:
                 for temperature_index, temperature in enumerate(temperatures):
+                    # todo adapt spawning script to remove the following from the string below:
+                    #   {lattice_length}x{lattice_length}_{mediator.replace('_mediator', '')}_
                     iact_vs_job, acf_vs_job = map(list, zip(*[get_iact_and_acf(get_sample_method(
-                        f"{sample_directory}/job_{job_number:02d}", temperature, temperature_index, 0,
+                        f"{sample_directory}/{lattice_length}x{lattice_length}_{mediator.replace('_mediator', '')}_temperature_{temperature_index:02d}/job_{job_number:02d}", temperature, 0,
                         lattice_length ** 2, number_of_equilibration_iterations, thinning_level)) for job_number in
                         range(number_of_jobs)]))
                     iact = np.mean(iact_vs_job)
@@ -156,8 +165,7 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
             except IOError as _:
                 print(f"Failed to load sample.  Please generate samples for the observables.")
                 raise
-
-    return iact_vs_temperature, acf_vs_temperature
+        return iact_vs_temperature, acf_vs_temperature
 
 
 if __name__ == "__main__":

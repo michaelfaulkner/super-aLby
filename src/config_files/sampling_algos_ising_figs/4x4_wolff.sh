@@ -6,6 +6,6 @@ export END=3.6
 export NUM_INCREMENTS=39
 export CONFIG_HEADER=WolffMediator
 export CONFIG_VARIABLE=temperature
-export MAX_CPUS=39
+export MAX_CPUS=28
 
 exec ./run_spawned_configs.sh

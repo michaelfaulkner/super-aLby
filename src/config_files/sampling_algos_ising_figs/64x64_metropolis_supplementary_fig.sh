@@ -6,6 +6,6 @@ export END=2.31
 export NUM_INCREMENTS=10
 export CONFIG_HEADER=MetropolisMediator
 export CONFIG_VARIABLE=temperature
-export MAX_CPUS=10
+export MAX_CPUS=1
 
 exec ./run_spawned_configs.sh

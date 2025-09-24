@@ -23,7 +23,7 @@ def main(config_file_string):
     """nb, argument of parsing.parse_options() must be of type Sequence[str]"""
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     (config_file_mediator, potential, _, samplers, sample_directories, temperature, number_of_equilibration_iterations,
-     _, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
+     _, number_of_particles, _) = helper_methods.get_basic_config_data(config_file_string)
     temperatures = None
     if potential == "ising_potential":
         sh_file_string = f"{os.path.splitext(config_file_string)[0]}.sh"
@@ -43,12 +43,8 @@ def main(config_file_string):
         config_file_directory = os.path.splitext(config_file_string)[0]
         sub_config_files = [os.path.join(x[0], "job_00.ini") for x in os.walk(config_file_directory)][1:]
         sub_config_files = sorted(sub_config_files, key=helper_methods.extract_index)
-        sample_directories_list, temperatures = [], []
-        for sub_config_file_string in sub_config_files:
-            config = parsing.read_config(parsing.parse_options([sub_config_file_string]).config_file)
-            sample_directories = helper_methods.get_basic_config_data(sub_config_file_string)[4]
-            sample_directories_list.append(sample_directories)
-        sample_directories = sample_directories_list
+        sample_directories = [helper_methods.get_basic_config_data(sub_config_file_string)[4]
+                              for sub_config_file_string in sub_config_files]
 
     try:
         potential_prefactor = parsing.get_value(config, strings.to_camel_case(potential), "prefactor")
@@ -186,7 +182,6 @@ def main(config_file_string):
                                  "number_of_particles equals 8, size_of_particle_space equals [8.0, 8.0, 8.0] (n.b., "
                                  "number_of_particles and size_of_particle_space are set in the ModelSettings "
                                  "section).")
-    # todo need to work out how to adapt previous Ising tests to account for a single temp in config file
     elif potential == "ising_potential":
         try:
             lattice_dimensionality = parsing.get_value(config, strings.to_camel_case(potential),

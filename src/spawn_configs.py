@@ -2,7 +2,6 @@ import os
 import sys
 import copy
 import configparser
-import numpy as np
 import fnmatch
 
 
