@@ -9,11 +9,11 @@ from model_settings import dimensionality_of_particle_space
 
 class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     """
-    Abstract class for worldline potentials.  The extra methods provided are those required to calculate the action
+    Abstract class for worldline potentials. The extra methods provided are those required to calculate the action
         of the system.
     """
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0,
-                 timestep: float = 1.0, west_boundary: float = 0.0, east_boundary: float = 1.0, **kwargs):
+                 timestep: float = 1.0, open_worldlines: bool = False, west_boundary: float = 0.0, east_boundary: float = 1.0, **kwargs):
         """
         The constructor of the WorldlinePotential class.
 
@@ -52,6 +52,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         self._timestep = timestep
         self._omega = mass
 
+        self.open_worldlines = open_worldlines # will be used by factor fields class
         self._west_boundary = west_boundary
         self._east_boundary = east_boundary
         self.length_scale = np.abs(self._west_boundary - self._east_boundary) # will be used by factor fields class
@@ -124,64 +125,25 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         float
             The dimensionless-action difference.
         """
-        #NOTE does not work for Nq > 1 
-        #NOTE does not work for V(x) =/= QHO
-        if active_particle_index < number_of_timeslices -1 and active_particle_index > 0:
-        # if not at any boundaries
-            current_dimensionless_action = (
-                    self._get_pairwise_dimensionless_action(
-                        positions, self._get_west_worldline_neighbour(active_particle_index),
-                        positions[self._get_west_worldline_neighbour(active_particle_index)],
-                        positions[active_particle_index]) +
-                    self._get_pairwise_dimensionless_action(
-                        positions, active_particle_index, positions[active_particle_index],
-                        positions[self._get_east_worldline_neighbour(active_particle_index)]))
-            
-            candidate_dimensionless_action = (
-                    self._get_pairwise_dimensionless_action(
-                        positions, self._get_west_worldline_neighbour(active_particle_index),
-                        positions[self._get_west_worldline_neighbour(active_particle_index)], candidate_position) +
-                    self._get_pairwise_dimensionless_action(
-                        positions, active_particle_index, candidate_position,
-                        positions[self._get_east_worldline_neighbour(active_particle_index)]))
-            
-        elif active_particle_index == 0:
-            # look at west boundary
-            current_dimensionless_action = (
-                    self._get_pairwise_dimensionless_action(
-                        positions, None,
-                        self._west_boundary,
-                        positions[active_particle_index]) +
-                    self._get_pairwise_dimensionless_action(
-                        positions, active_particle_index, positions[active_particle_index],
-                        positions[self._get_east_worldline_neighbour(active_particle_index)]))
-            candidate_dimensionless_action = (
-                    self._get_pairwise_dimensionless_action(
-                        positions, None,
-                        self._west_boundary, candidate_position) +
-                    self._get_pairwise_dimensionless_action(
-                        positions, active_particle_index, candidate_position,
-                        positions[self._get_east_worldline_neighbour(active_particle_index)]))
 
-        elif active_particle_index == number_of_particles - 1:
-            #look at east boundary
-            current_dimensionless_action = (
-                    self._get_pairwise_dimensionless_action(
-                        positions, self._get_west_worldline_neighbour(active_particle_index),
-                        positions[self._get_west_worldline_neighbour(active_particle_index)],
-                        positions[active_particle_index]) +
-                    self._get_pairwise_dimensionless_action(
-                        positions, active_particle_index, positions[active_particle_index],
-                        self._east_boundary))
-            
-            candidate_dimensionless_action = (
-                    self._get_pairwise_dimensionless_action(
-                        positions, self._get_west_worldline_neighbour(active_particle_index),
-                        positions[self._get_west_worldline_neighbour(active_particle_index)], candidate_position) +
-                    self._get_pairwise_dimensionless_action(
-                        positions, active_particle_index, candidate_position,
-                        self._east_boundary))
-            
+        position_at_east_neighbour_index, position_at_west_neighbour_index = self._get_east_west_neighbour_positions(active_particle_index, positions)
+        current_dimensionless_action = (
+                self._get_pairwise_dimensionless_action(
+                    positions, self._get_west_worldline_neighbour(active_particle_index),
+                    position_at_west_neighbour_index,
+                    positions[active_particle_index]) +
+                self._get_pairwise_dimensionless_action(
+                    positions, active_particle_index, positions[active_particle_index],
+                    position_at_east_neighbour_index))
+        
+        candidate_dimensionless_action = (
+                self._get_pairwise_dimensionless_action(
+                    positions, self._get_west_worldline_neighbour(active_particle_index),
+                    position_at_west_neighbour_index, candidate_position) +
+                self._get_pairwise_dimensionless_action(
+                    positions, active_particle_index, candidate_position,
+                    position_at_east_neighbour_index))
+
         return candidate_dimensionless_action - current_dimensionless_action
 
     def _get_pairwise_dimensionless_action(self, positions, active_particle_index, position_at_active_particle_index,
@@ -284,11 +246,11 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
                 uphill_energy = - np.log(np.random.uniform(0, 1))
                 try:
                     neighbour_position = positions[worldline_neighbour].item()
-                except: #NOTE not generalised for multiple quantum particles yet
-                    if worldline_neighbour == number_of_timeslices:
-                        neighbour_position = self._west_boundary
-                    elif worldline_neighbour == number_of_timeslices + 1:
+                except: 
+                    if worldline_neighbour == number_of_timeslices * number_of_quantum_particles:
                         neighbour_position = self._east_boundary
+                    elif worldline_neighbour == number_of_timeslices * number_of_quantum_particles + 1:
+                        neighbour_position = self._west_boundary
 
                 bottom_of_well = neighbour_position
                 if ((movement_direction > 0 and initial_position < bottom_of_well) or
@@ -380,16 +342,38 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         else:
             return roots[1]
 
-    @staticmethod
-    def _get_east_worldline_neighbour(lattice_site_index):
+    def _get_east_worldline_neighbour(self, lattice_site_index):
         """Returns the eastwards timeslice neighbour of lattice_site_index."""
-        # todo do we definitely need the 1.0e-12 correction? Doesn't appear in analogous Ising functions...
-        return int((lattice_site_index + number_of_quantum_particles) %
-                   (number_of_timeslices * number_of_quantum_particles) + 1.0e-12)
+        if self.open_worldlines:
+            if lattice_site_index < (number_of_timeslices - 1) * number_of_quantum_particles: # i.e. not at the eastern end of the array
+                return int((lattice_site_index + number_of_quantum_particles))
+            else:
+                return number_of_quantum_particles * number_of_timeslices
+        else:
+            return int((lattice_site_index + number_of_quantum_particles) %
+                   (number_of_timeslices * number_of_quantum_particles))
 
-    @staticmethod
-    def _get_west_worldline_neighbour(lattice_site_index):
+
+    def _get_west_worldline_neighbour(self, lattice_site_index):
         """Returns the westwards timeslice neighbour of lattice_site_index."""
-        # todo do we definitely need the 1.0e-12 correction? Doesn't appear in analogous Ising functions...
-        return int((lattice_site_index - number_of_quantum_particles) %
-                   (number_of_timeslices * number_of_quantum_particles) + 1.0e-12)
+        if self.open_worldlines:
+            if lattice_site_index > number_of_quantum_particles: # i.e. not at the western end of the array
+                 return int((lattice_site_index - number_of_quantum_particles))
+            else:
+                return number_of_quantum_particles * number_of_timeslices + 1
+        else:
+            return int((lattice_site_index - number_of_quantum_particles) %
+                   (number_of_timeslices * number_of_quantum_particles))
+    
+    def _get_east_west_neighbour_positions(self, active_particle_index, positions):
+        
+        try:
+            position_at_west_neighbour_index = positions[self._get_west_worldline_neighbour(active_particle_index)]
+        except:
+            position_at_west_neighbour_index = self._west_boundary
+        try:
+            position_at_east_neighbour_index = positions[self._get_east_worldline_neighbour(active_particle_index)]
+        except:
+            position_at_east_neighbour_index = self._east_boundary
+        
+        return position_at_east_neighbour_index, position_at_west_neighbour_index

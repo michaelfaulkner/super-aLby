@@ -72,10 +72,11 @@ class OpenQuantumHarmonicOscillatorPotential(WorldlinePotential):
         float
             The dimensionless-action gradient at active_particle_index.
         """
+        position_at_east_neighbour_index, position_at_west_neighbour_index = self._get_east_west_neighbour_positions(self, active_particle_index, positions)
         return self._mass / self._timestep * (
                 (2.0 + self._timestep ** 2 * self._omega ** 2) * positions[active_particle_index] -
-                positions[self._get_west_worldline_neighbour(active_particle_index)] -
-                positions[self._get_east_worldline_neighbour(active_particle_index)]).item()
+                position_at_west_neighbour_index -
+                position_at_east_neighbour_index).item()
 
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
         """
@@ -136,24 +137,13 @@ class OpenQuantumHarmonicOscillatorPotential(WorldlinePotential):
         vetoing_particle_index : int
             The index of the particle that triggers the event.
         """
-        if active_particle_index != 0 or active_particle_index != number_of_timeslices - 1:
-            #### NOTE not genralised for multiple quanutm particles #####
-            worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
+     
+        worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
                                 self._get_east_worldline_neighbour(active_particle_index)]
 
-            (shortest_distance_to_next_factor_event, vetoing_index
+        (shortest_distance_to_next_factor_event, vetoing_index
             ) = self._get_next_kinetic_event(positions, active_particle_index, movement_direction, worldline_neighbours)
 
-        else: 
-            if active_particle_index == 0:
-                (shortest_distance_to_next_factor_event, vetoing_index
-                    ) = self._get_next_kinetic_event(positions, active_particle_index, movement_direction,
-                                                    [number_of_timeslices]) # west boundary
-            elif active_particle_index == number_of_timeslices - 1:
-                (shortest_distance_to_next_factor_event, vetoing_index
-                    ) = self._get_next_kinetic_event(positions, active_particle_index, movement_direction,
-                                                    [number_of_timeslices+1]) # east boundary
-                
         """now consider the potential part of the action"""
         initial_position = positions[active_particle_index].item()
         uphill_energy = - np.log(np.random.uniform(0, 1))
@@ -209,12 +199,9 @@ class OpenQuantumHarmonicOscillatorPotential(WorldlinePotential):
             else:
                 active_particle_index = veto_index
         else: 
-            if veto_index == number_of_timeslices: # west boundary
-                active_particle_index = 1
-            elif veto_index == number_of_timeslices + 1: # east boundary
-                active_particle_index = number_of_timeslices - 2
-            else:
-                raise Exception("went out of bounds")
+            if veto_index == number_of_timeslices or veto_index == number_of_timeslices + 1: 
+                movement_direction = movement_direction * -1
+
         if active_particle_index == initial_a and movement_direction == initial_v:
             raise Exception("The same combination of active particle index and direction of motion has been chosen "
                             "twice in a row.")
