@@ -35,11 +35,9 @@ def main(config_file_string):
         if not (len(temperatures) == 2 and temperatures[0] == 1.2 and temperatures[1] == 3.0):
             raise ValueError("IsingPotential reference data only available for models for which two sampling "
                              "temperatures are given with values 1.2 and 3.")
-        config_file_directory = os.path.splitext(config_file_string)[0]
-        sub_config_files = [os.path.join(x[0], "job_00.ini") for x in os.walk(config_file_directory)][1:]
-        sub_config_files = sorted(sub_config_files, key=helper_methods.extract_index)
-        sample_directories = [helper_methods.get_basic_config_data(sub_config_file_string)[4]
-                              for sub_config_file_string in sub_config_files]
+        sample_directories = [[f"{sampler_directory}/temperature_{temperature_index:02d}/job_00"
+                               for sampler_directory in helper_methods.get_basic_config_data(config_file_string)[4]]
+                              for temperature_index in range(len(temperatures))]
 
     try:
         potential_prefactor = parsing.get_value(config, strings.to_camel_case(potential), "prefactor")
