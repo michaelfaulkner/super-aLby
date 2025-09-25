@@ -151,12 +151,11 @@ class EventChainMediator(Mediator):
                 else:
                     self._potential.update_position(self._positions, distance_to_next_event,
                                                     active_particle_index, movement_direction)
-                    for event_sampler_index, event_sampler in enumerate(self._event_samplers):
-                        self._event_samples[event_sampler_index].append(
-                            event_sampler.get_observation(self._positions, self._potential,
-                                                          active_particle_index, vetoing_index,
-                                                          distance_to_next_event))
+                    [self._event_samples[event_sampler_index].append(event_sampler.get_observation(
+                        self._positions, self._potential, active_particle_index, vetoing_index, distance_to_next_event))
+                        for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
+
                     if self._teleportation_portal:
                         portal_candidate = self._potential.get_portal_candidate(self._positions, active_particle_index,
                                                                                 vetoing_index, movement_direction)

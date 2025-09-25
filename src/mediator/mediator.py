@@ -178,9 +178,8 @@ class Mediator(metaclass=ABCMeta):
             else:
                 self._initial_samples[sampler_index][0, :] = sampler.get_observation(self._momenta, self._positions,
                                                                                      self._potential)
-        for event_sampler_index, event_sampler in enumerate(self._event_samplers):
-            self._initial_event_samples[event_sampler_index].append(
-                event_sampler.get_observation(self._positions, self._potential))
+        [self._initial_event_samples[event_sampler_index].append(event_sampler.get_observation(
+            self._positions, self._potential)) for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
 
     @abstractmethod
     def _generate_sample_at_current_temperature(self, temperature_index, temperature):
