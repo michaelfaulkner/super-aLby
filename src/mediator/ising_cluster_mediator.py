@@ -12,8 +12,7 @@ class IsingClusterMediator(DiffusiveMediator, metaclass=ABCMeta):
     """Abstract IsingClusterMediator class.  This is the parent class for the mediators for the Swendsen-Wang and Wolff
         algorithms for the square-lattice Ising model."""
 
-    def __init__(self, potential: IsingPotential, samplers: Sequence[Sampler], minimum_temperature: float = 1.0,
-                 maximum_temperature: float = 1.0, number_of_temperature_increments: int = 0,
+    def __init__(self, potential: IsingPotential, samplers: Sequence[Sampler], temperature: float = 1.0,
                  number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
                  proposal_dynamics_adaptor_is_on: bool = False):
         r"""
@@ -28,14 +27,9 @@ class IsingClusterMediator(DiffusiveMediator, metaclass=ABCMeta):
             Instance of potential.ising_potential.IsingPotential (the only permitted potential for WolffMediator).
         samplers : Sequence[sampler.sampler.Sampler]
             Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
-        minimum_temperature : float, optional
-            The minimum value of the model temperature, n.b., the temperature is the reciprocal of the inverse
-            temperature, beta (up to a proportionality constant).
-        maximum_temperature : float, optional
-            The maximum value of the model temperature, n.b., the temperature is the reciprocal of the inverse
-            temperature, beta (up to a proportionality constant).
-        number_of_temperature_increments : int, optional
-            number_of_temperature_increments + 1 is the number of temperature values to iterate over.
+        temperature : float, optional
+            The model temperature, n.b., the temperature is the reciprocal of the inverse temperature, beta (up to a
+            proportionality constant).
         number_of_equilibration_iterations : int, optional
             Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
@@ -51,15 +45,7 @@ class IsingClusterMediator(DiffusiveMediator, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If samplers is not a sequence of instances of some child classes of sampler.sampler.Sampler.
         base.exceptions.ConfigurationError
-            If minimum_temperature is less than 0.0.
-        base.exceptions.ConfigurationError
-            If maximum_temperature is less than 0.0.
-        base.exceptions.ConfigurationError
-            If maximum_temperature is less than minimum_temperature.
-        base.exceptions.ConfigurationError
-            If number_of_temperature_increments is less than 0.
-        base.exceptions.ConfigurationError
-            If number_of_temperature_increments is 0 and minimum_temperature does not equal maximum_temperature.
+            If temperature is less than 0.0.
         base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
@@ -71,8 +57,7 @@ class IsingClusterMediator(DiffusiveMediator, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If proposal_dynamics_adaptor_is_on is not False.
         """
-        super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
-                         number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations,
+        super().__init__(potential, samplers, temperature, number_of_equilibration_iterations, number_of_observations,
                          proposal_dynamics_adaptor_is_on)
         if isinstance(potential, IsingPotential):
             self._potential_constant = self._potential.potential_constant
@@ -86,7 +71,7 @@ class IsingClusterMediator(DiffusiveMediator, metaclass=ABCMeta):
         """Proposal dynamics cannot be adapted in the Swendsen-Wang of Wolff algorithms."""
         pass
 
-    def _print_markov_chain_summary(self):
+    def _print_markov_process_summary(self):
         """Markov-process summary not printed to screen as neither acceptance rates nor proposal dynamics are
             relevant."""
         pass

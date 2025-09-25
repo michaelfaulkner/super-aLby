@@ -21,26 +21,23 @@ matplotlib.rcParams['mathtext.fontset'] = 'cm'
 def main(config_file_string):
     initial_t = time.time()
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-    (config_file_mediator, potential, _, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
-    number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
-    
-    mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
+    (config_file_mediator, potential, _, samplers, sample_directories, temperature, number_of_equilibration_iterations,
+    number_of_observations, number_of_particles, _) = helper_methods.get_basic_config_data(config_file_string)
+
     timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
     number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
     
     sample_directory = sample_directories[0]
-    temperature_index = 0
     thinning_level = None
     number_of_equilibration_iterations = None
 
     timestep_str = str(timestep).replace(".", "")
 
-    mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
-                    temperature_index, number_of_particles, number_of_equilibration_iterations,
-                    thinning_level=thinning_level)
+    mean_sample = sample_getter.get_mean_positions(sample_directory, temperature, number_of_particles,
+                                                   number_of_equilibration_iterations, thinning_level=thinning_level)
     
-    position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
-            temperature_index, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
+    position_sample = sample_getter.get_positions(sample_directory, temperature, number_of_particles,
+                                                  number_of_equilibration_iterations, thinning_level=thinning_level)
     print(np.shape(position_sample))
 
     fig, ax = plt.subplots(2,1, figsize = (15, 10), sharex = True)

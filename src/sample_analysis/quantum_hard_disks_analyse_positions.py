@@ -17,8 +17,8 @@ strings = importlib.import_module("base.strings")
 
 def main(config_file_string):
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-    (config_file_mediator, potential, _, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
-    number_of_observations, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
+    (config_file_mediator, potential, _, samplers, sample_directories, temperature, number_of_equilibration_iterations,
+    number_of_observations, number_of_particles, _) = helper_methods.get_basic_config_data(config_file_string)
     
     mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
     timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
@@ -35,8 +35,8 @@ def main(config_file_string):
     temperature_index = 0
     thinning_level = None
     number_of_equilibration_iterations = None
-    position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
-                    temperature_index, 0, number_of_particles, number_of_equilibration_iterations, thinning_level=thinning_level)
+    position_sample = sample_getter.get_positions(sample_directory, temperature, 0, number_of_particles,
+                                                  number_of_equilibration_iterations, thinning_level=thinning_level)
 
     # test_positions = np.load("output/convergence_tests/quantum_hard_disk_potential/event_chain/positions_testing.npy")
     # sample_info = np.load("output/convergence_tests/quantum_hard_disk_potential/event_chain/sample_info.npy")
