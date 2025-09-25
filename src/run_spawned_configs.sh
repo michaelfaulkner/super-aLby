@@ -44,7 +44,12 @@ run_task() {
     for CONFIG_FILE in "$SUBDIR"/*.ini; do
         python run.py "$CONFIG_FILE" || { echo "run.py failed for $CONFIG_FILE"; exit 1; }
     done
+
+    wait
+
+    rm -rf "$BASE_DIR"
 }
+
 
 active_jobs() { jobs -r | wc -l | tr -d ' '; }
 
