@@ -5,24 +5,10 @@ import configparser
 import fnmatch
 
 
-def spawn_identical_configs(config_file_location, number_of_jobs):
+def spawn_identical_configs(config_file_location, number_of_jobs, config):
     """
     Generates num_jobs identical configuration files.
-
-    Parameters
-    ----------
-    config_file_location : str
-        A string defining the location of the configuration file.
-    number_of_jobs : int
-        Number of identical configuration files to generate.
     """
-    if not os.path.exists(config_file_location):
-        raise ValueError(f"Template config file {config_file_location} does not exist")
-
-    config = configparser.ConfigParser()
-    config.optionxform = str
-    config.read(config_file_location)
-
     config_file_directory = os.path.splitext(config_file_location)[0]
     config_file_basename = os.path.basename(config_file_directory)
     os.makedirs(config_file_directory, exist_ok=True)
@@ -43,6 +29,10 @@ def spawn_identical_configs(config_file_location, number_of_jobs):
 
 def main(config_file_location, number_of_jobs, sweep_start, sweep_end, number_of_increments, config_header,
          config_variable, increment_type='linear'):
+    """
+    Generates number_of_increments x number_of_jobs configuration files. Each increment features a different value
+    of config_variable. The value of each increment is determined by sweep_start, sweep_end, and number_of_increments.
+    """
     if not os.path.exists(config_file_location):
         raise ValueError(f"Template config file {config_file_location} does not exist")
 
@@ -51,12 +41,11 @@ def main(config_file_location, number_of_jobs, sweep_start, sweep_end, number_of
     config.read(config_file_location)
 
     config_file_directory = os.path.splitext(config_file_location)[0]
-    config_file_basename = os.path.basename(config_file_location)
     os.makedirs(config_file_directory, exist_ok=True)
 
     sweep_increment = (sweep_end - sweep_start) / number_of_increments
-    sweep_values = ([sweep_start * (sweep_end / sweep_start) ** (i / number_of_increments) for i in range(number_of_increments + 1)]
-                    if increment_type == 'log'
+    sweep_values = ([sweep_start * (sweep_end / sweep_start) ** (i / number_of_increments) for i in
+                     range(number_of_increments + 1)] if increment_type == 'log'
                     else [sweep_start + sweep_increment * i for i in range(number_of_increments + 1)])
 
     for index, increment in enumerate(sweep_values):
@@ -65,7 +54,7 @@ def main(config_file_location, number_of_jobs, sweep_start, sweep_end, number_of
         increment_config_file_path = os.path.join(config_file_directory, f"{config_variable}_{index:02d}.ini")
         with open(increment_config_file_path, 'w') as f:
             increment_config.write(f)
-        spawn_identical_configs(increment_config_file_path, number_of_jobs)
+        spawn_identical_configs(increment_config_file_path, number_of_jobs, increment_config)
         if os.path.exists(increment_config_file_path):
             os.remove(increment_config_file_path)
 
