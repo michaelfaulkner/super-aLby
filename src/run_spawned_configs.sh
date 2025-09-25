@@ -27,7 +27,8 @@ fi
 
 run_task() {
     local INCREMENT_ID="$1"
-    local SUBDIR="${BASE_DIR}/${TEMPLATE_BASENAME}_${CONFIG_VARIABLE}_$(printf "%02d" "$INCREMENT_ID")"
+    local SUBDIR
+    SUBDIR="${BASE_DIR}/${CONFIG_VARIABLE}_$(printf "%02d" "$INCREMENT_ID")"
     local attempts=0
 
     until [ -d "$SUBDIR" ] && compgen -G "$SUBDIR"/*.ini >/dev/null; do
