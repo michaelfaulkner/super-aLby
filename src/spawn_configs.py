@@ -7,7 +7,7 @@ import fnmatch
 
 def spawn_identical_configs(config_file_location, number_of_jobs, config):
     """
-    Generates num_jobs identical configuration files.
+    Generates n = number_of_jobs identical configuration files.
     """
     config_file_directory = os.path.splitext(config_file_location)[0]
     config_file_basename = os.path.basename(config_file_directory)
@@ -30,8 +30,8 @@ def spawn_identical_configs(config_file_location, number_of_jobs, config):
 def main(config_file_location, number_of_jobs, sweep_start, sweep_end, number_of_increments, config_header,
          config_variable, increment_type='linear'):
     """
-    Generates number_of_increments x number_of_jobs configuration files. Each increment features a different value
-    of config_variable. The value of each increment is determined by sweep_start, sweep_end, and number_of_increments.
+    Generates number_of_increments x number_of_jobs configuration files.  Each increment features a different value
+    of config_variable.  The value of each increment is determined by sweep_start, sweep_end, and number_of_increments.
     """
     if not os.path.exists(config_file_location):
         raise ValueError(f"Template config file {config_file_location} does not exist")

@@ -31,12 +31,7 @@ def main(config_file_string):
         if sweep_variable != "temperature":
             raise ValueError("IsingPotential reference data only available for temperature sweep. "
                              f"CONFIG_VARIABLE must be set to temperature. Provided: {sweep_variable}")
-        minimum_temperature, maximum_temperature, number_of_temperature_increments = (
-            float(helper_methods.read_variable_from_sh_file(sh_file_string, "START")),
-            float(helper_methods.read_variable_from_sh_file(sh_file_string, "END")),
-            int(helper_methods.read_variable_from_sh_file(sh_file_string, "NUM_INCREMENTS")))
-        temperatures = helper_methods.get_temperatures(minimum_temperature, maximum_temperature,
-                                                       number_of_temperature_increments)
+        temperatures = helper_methods.get_temps_from_bash_file(sh_file_string)
         if not (len(temperatures) == 2 and temperatures[0] == 1.2 and temperatures[1] == 3.0):
             raise ValueError("IsingPotential reference data only available for models for which two sampling "
                              "temperatures are given with values 1.2 and 3.")
@@ -204,6 +199,7 @@ def main(config_file_string):
             expected_potential_per_particle_reference_values = ["-1.99", "-1.01"]
             expected_spec_heat_per_particle_reference_values = ["0.0663", "0.603"]
             for temperature_index, temperature in enumerate(temperatures):
+                print(temperature_index)
                 print("---------------------------------")
                 print(f"Temperature = {temperature:.4f}")
                 for sample_index, sampler in enumerate(samplers):

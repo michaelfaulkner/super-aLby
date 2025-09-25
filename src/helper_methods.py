@@ -38,6 +38,17 @@ def get_temperatures(minimum_temperature, maximum_temperature, number_of_tempera
             for temperature_index in range(number_of_temperature_increments + 1)]
 
 
+def get_temps_from_bash_file(sh_file_string: str):
+    return get_temperatures(float(read_variable_from_sh_file(sh_file_string, "START")),
+                            float(read_variable_from_sh_file(sh_file_string, "END")),
+                            int(read_variable_from_sh_file(sh_file_string, "NUM_INCREMENTS")))
+
+
+def get_temps_and_reduced_temps_from_bash_file(sh_file_string: str, transition_temperature: float):
+    temperatures = get_temps_from_bash_file(sh_file_string)
+    return temperatures, [temperature / transition_temperature for temperature in temperatures]
+
+
 def get_basic_config_data(config_file_string):
     if type(config_file_string) is str:
         """nb, argument of parsing.parse_options() must be of type Sequence[str]"""

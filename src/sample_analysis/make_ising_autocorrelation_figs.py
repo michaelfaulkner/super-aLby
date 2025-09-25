@@ -1,12 +1,13 @@
-from markov_chain_diagnostics import get_iact_and_acf
 import importlib
 import math
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import sample_getter
 import sys
+
+from markov_chain_diagnostics import get_iact_and_acf
+import sample_getter
 
 # Add the directory that contains the module plotting_functions to sys.path
 this_directory = os.path.dirname(os.path.abspath(__file__))
@@ -30,11 +31,8 @@ def main(number_of_system_sizes=5):
     sample_directories_wolff = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]
     sample_directories_metrop = [f"{output_directory}/{length}x{length}_metropolis" for length in lattice_lengths]
     transition_temperature = 2.0 / math.log(1.0 + 2.0 ** 0.5)
-    temperatures = helper_methods.get_temperatures(
-        float(helper_methods.read_variable_from_sh_file(sh_file_string_4x4_wolff, "START")),
-        float(helper_methods.read_variable_from_sh_file(sh_file_string_4x4_wolff, "END")),
-        int(helper_methods.read_variable_from_sh_file(sh_file_string_4x4_wolff, "NUM_INCREMENTS")))
-    reduced_temperatures = [temperature / transition_temperature for temperature in temperatures]
+    temperatures, reduced_temperatures = helper_methods.get_temps_and_reduced_temps_from_bash_file(
+        sh_file_string_4x4_wolff, transition_temperature)
     number_of_jobs = int(helper_methods.read_variable_from_sh_file(sh_file_string_4x4_wolff, "NUM_JOBS"))
 
     fig_1, axis_1 = make_empty_fig()
