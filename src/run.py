@@ -51,7 +51,7 @@ def main(argv: Sequence[str]) -> None:
                       f"from checkpoint {mediator.get_checkpoint_index() - 1} using the checkpoint configuration "
                       f"saved at {os.path.join(os.getcwd(), output_directory, 'configuration_at_checkpoint.npy')}")
     else:
-        print_and_log(logger,f"Setting up the simulation based on the configuration file {args.config_file}.")
+        print_and_log(logger,f"Setting up the Markov process based on the configuration file {args.config_file}.")
 
     used_sections = factory.used_sections
     for section in config.sections():
@@ -62,7 +62,7 @@ def main(argv: Sequence[str]) -> None:
             raise ConfigurationError(f"When using LennardJonesPotentialWithLinkedLists, give a value of "
                                      f"lazy_toroidal_leapfrog_mediator for mediator in the [Run] section of the "
                                      f"configuration file.")
-    print_and_log(logger, "Running the Markov process.")
+    print_and_log(logger, "Starting the Markov process.")
 
     print("-----------------------------------------------------------------------------------------")
     start_time = time.time()

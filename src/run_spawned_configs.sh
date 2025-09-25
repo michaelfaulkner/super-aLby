@@ -44,10 +44,6 @@ run_task() {
     for CONFIG_FILE in "$SUBDIR"/*.ini; do
         python run.py "$CONFIG_FILE" || { echo "run.py failed for $CONFIG_FILE"; exit 1; }
     done
-
-    wait
-
-    rm -rf "$BASE_DIR"
 }
 
 
@@ -59,3 +55,5 @@ for i in $(seq 0 $((NUM_INCREMENTS))); do
 done
 
 wait
+
+rm -rf "$BASE_DIR"

@@ -138,10 +138,8 @@ def get_observable_iact_and_acf_vs_temperature(observable_string, mediator, outp
             iacts, acfs, acf_errors = [], [], []
             try:
                 for temperature_index, temperature in enumerate(temperatures):
-                    # todo adapt spawning script to remove the following from the string below:
-                    #   {lattice_length}x{lattice_length}_{mediator.replace('_mediator', '')}_
                     iact_vs_job, acf_vs_job = map(list, zip(*[get_iact_and_acf(get_sample_method(
-                        f"{sample_directory}/{lattice_length}x{lattice_length}_{mediator.replace('_mediator', '')}_temperature_{temperature_index:02d}/job_{job_number:02d}", temperature, 0,
+                        f"{sample_directory}/temperature_{temperature_index:02d}/job_{job_number:02d}", temperature, 0,
                         lattice_length ** 2, number_of_equilibration_iterations, thinning_level)) for job_number in
                         range(number_of_jobs)]))
                     iact = np.mean(iact_vs_job)
