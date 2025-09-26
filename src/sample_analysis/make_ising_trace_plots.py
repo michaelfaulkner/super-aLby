@@ -78,18 +78,18 @@ def make_low_temp_vs_transition_figs(cluster_mediator, metrop_mediator, output_d
                                                       simple_axis_labels)
     plot_magnetic_density_vs_time(
         axes[0, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-        temperatures[0], 0, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+        temperatures[0], 0, lattice_length, number_of_equilibration_iterations)
     plot_magnetic_density_vs_time(
         axes[0, 1], cluster_mediator, output_directory, sample_directories_cluster[lattice_length_index],
-        temperatures[0], 0, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+        temperatures[0], 0, lattice_length, number_of_equilibration_iterations)
     plot_magnetic_density_vs_time(
         axes[1, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
         temperature_near_critical_point, temperature_near_critical_point_index, lattice_length,
-        number_of_equilibration_iterations, sampling_algos_paper)
+        number_of_equilibration_iterations)
     plot_magnetic_density_vs_time(
         axes[1, 1], cluster_mediator, output_directory, sample_directories_cluster[lattice_length_index],
         temperature_near_critical_point, temperature_near_critical_point_index, lattice_length,
-        number_of_equilibration_iterations, sampling_algos_paper)
+        number_of_equilibration_iterations)
     if sampling_algos_paper:
         if simple_axis_labels:
             fig.savefig(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_density_vs_time_"
@@ -129,17 +129,17 @@ def make_low_vs_high_temp_figs(cluster_mediator, metrop_mediator, output_directo
                                                           simple_axis_labels)
     plot_magnetic_density_vs_time(
         axes[0, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-        temperatures[0], 0, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+        temperatures[0], 0, lattice_length, number_of_equilibration_iterations)
     plot_magnetic_density_vs_time(
         axes[0, 1], cluster_mediator, output_directory, sample_directories_cluster[lattice_length_index],
-        temperatures[0], 0, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+        temperatures[0], 0, lattice_length, number_of_equilibration_iterations)
     if sampling_algos_paper:
         plot_magnetic_density_vs_time(
             axes[1, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-            temperatures[26], 26, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+            temperatures[26], 26, lattice_length, number_of_equilibration_iterations)
         plot_magnetic_density_vs_time(
             axes[1, 1], cluster_mediator, output_directory, sample_directories_cluster[lattice_length_index],
-            temperatures[26], 26, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+            temperatures[26], 26, lattice_length, number_of_equilibration_iterations)
         if simple_axis_labels:
             fig.savefig(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_density_vs_time_"
                         f"metropolis_and_wolff_low_vs_high_temperature_simple_axis_labels.pdf", bbox_inches="tight")
@@ -149,10 +149,10 @@ def make_low_vs_high_temp_figs(cluster_mediator, metrop_mediator, output_directo
     else:
         plot_magnetic_density_vs_time(
             axes[1, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-            temperatures[2], 2, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+            temperatures[2], 2, lattice_length, number_of_equilibration_iterations)
         plot_magnetic_density_vs_time(
             axes[1, 1], cluster_mediator, output_directory, sample_directories_cluster[lattice_length_index],
-            temperatures[2], 2, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+            temperatures[2], 2, lattice_length, number_of_equilibration_iterations)
         if simple_axis_labels:
             fig.savefig(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_density_vs_time_"
                         f"metropolis_and_swendsen_wang_low_vs_high_temperature_simple_axis_labels.pdf",
@@ -196,25 +196,25 @@ def make_all_temps_figs(cluster_mediator, metrop_mediator, output_directory, sam
     [axis.set_ylim([-1.15, 1.15]) for axis in axes.flatten()]
     plot_magnetic_density_vs_time(
         axes[0, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-        temperatures[0], 0, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+        temperatures[0], 0, lattice_length, number_of_equilibration_iterations)
     plot_magnetic_density_vs_time(
         axes[0, 1], cluster_mediator, output_directory, sample_directories_cluster[lattice_length_index],
-        temperatures[0], 0, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+        temperatures[0], 0, lattice_length, number_of_equilibration_iterations)
     plot_magnetic_density_vs_time(
         axes[1, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
         temperature_near_critical_point, temperature_near_critical_point_index, lattice_length,
-        number_of_equilibration_iterations, sampling_algos_paper)
+        number_of_equilibration_iterations)
     plot_magnetic_density_vs_time(
         axes[1, 1], cluster_mediator, output_directory, sample_directories_cluster[lattice_length_index],
         temperature_near_critical_point, temperature_near_critical_point_index, lattice_length,
-        number_of_equilibration_iterations, sampling_algos_paper)
+        number_of_equilibration_iterations)
     if sampling_algos_paper:
         plot_magnetic_density_vs_time(
             axes[2, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-            temperatures[26], 26, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+            temperatures[26], 26, lattice_length, number_of_equilibration_iterations)
         plot_magnetic_density_vs_time(
             axes[2, 1], cluster_mediator, output_directory, sample_directories_cluster[lattice_length_index],
-            temperatures[26], 26, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+            temperatures[26], 26, lattice_length, number_of_equilibration_iterations)
         if simple_axis_labels:
             fig.savefig(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_density_vs_time_"
                         f"metropolis_and_wolff_all_temperatures_simple_axis_labels.pdf", bbox_inches="tight")
@@ -224,10 +224,10 @@ def make_all_temps_figs(cluster_mediator, metrop_mediator, output_directory, sam
     else:
         plot_magnetic_density_vs_time(
             axes[2, 0], metrop_mediator, output_directory, sample_directories_metrop[lattice_length_index],
-            temperatures[2], 2, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+            temperatures[2], 2, lattice_length, number_of_equilibration_iterations)
         plot_magnetic_density_vs_time(
             axes[2, 1], cluster_mediator, output_directory, sample_directories_cluster[lattice_length_index],
-            temperatures[2], 2, lattice_length, number_of_equilibration_iterations, sampling_algos_paper)
+            temperatures[2], 2, lattice_length, number_of_equilibration_iterations)
         if simple_axis_labels:
             fig.savefig(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_magnetic_density_vs_time_"
                         f"metropolis_and_swendsen_wang_all_temperatures_simple_axis_labels.pdf", bbox_inches="tight")
@@ -266,18 +266,14 @@ def make_empty_two_temperature_figure(higher_temperature_y_axis_label, sampling_
     return fig, axes
 
 
-def plot_magnetic_density_vs_time(axis, mediator, output_directory, sample_directory, temperature,
-                                  temperature_index, lattice_length, number_of_equilibration_iterations,
-                                  sampling_algos_paper):
+def plot_magnetic_density_vs_time(axis, mediator, output_directory, sample_directory, temperature, temperature_index,
+                                  lattice_length, number_of_equilibration_iterations):
     try:
         reduced_magnetic_density_sample = np.load(
             f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_temperature_{temperature_index:02d}_"
             f"reduced_magnetic_density_sample_{mediator.replace('_mediator', '')}_algorithm.npy")
     except IOError:
-        if sampling_algos_paper:
-            sample_directory = f"{sample_directory}/temperature_{temperature_index:02d}/job_00"
-        else:
-            sample_directory = f"{sample_directory}/temperature_{temperature_index:02d}"
+        sample_directory = f"{sample_directory}/temperature_{temperature_index:02d}/job_00"
         reduced_magnetic_density_sample = sample_getter.get_magnetic_density(
             sample_directory, temperature, 0, lattice_length ** 2,
             number_of_equilibration_iterations)[:150].flatten()

@@ -212,40 +212,36 @@ def make_empty_spec_heat_and_magnetisation_figs(metropolis_figure=False):
 
 def get_thermodynamic_specific_heat_density_vs_temperature(output_directory, no_of_temperature_integration_values=1000,
                                                            no_of_x_integration_values=1000, max_temperature=4.0):
-    try:
-        return np.load(f"{output_directory}/2d_ising_model_thermodynamic_specific_heat_density_vs_temperature_"
-                       f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy")
-    except IOError:
-        delta_temperature = max_temperature / no_of_temperature_integration_values
-        temperatures = np.linspace(delta_temperature, max_temperature, no_of_temperature_integration_values,
-                                   dtype=np.float64)
-        inverse_temperatures = 1.0 / temperatures
-        alpha = 2.0 * np.sinh(2.0 * inverse_temperatures) / np.cosh(2.0 * inverse_temperatures) ** 2
-        dalpha_dbeta = 4.0 * (
-                1.0 - 2.0 * np.tanh(2.0 * inverse_temperatures) ** 2) / np.cosh(2.0 * inverse_temperatures)
-        gamma_2, dgamma_2_dbeta = np.zeros(len(temperatures)), np.zeros(len(temperatures))
-        x = np.linspace(0.0, math.pi / 2.0, no_of_x_integration_values, dtype=np.float64)
-        for temperature_index in range(len(temperatures)):
-            gamma_2_integrand = np.log(0.5 * (1.0 + np.sqrt(1.0 - alpha[temperature_index] ** 2 * np.sin(x) ** 2)))
-            gamma_2[temperature_index] = np.trapz(gamma_2_integrand, x=x) / math.pi
-            dgamma_2_dbeta_integrand = - alpha[temperature_index] * dalpha_dbeta[temperature_index] * np.sin(x) ** 2 / (
-                    1.0 - alpha[temperature_index] ** 2 * np.sin(x) ** 2 + np.sqrt(1.0 - alpha[temperature_index] ** 2 *
-                                                                                   np.sin(x) ** 2))
-            dgamma_2_dbeta[temperature_index] = np.trapz(dgamma_2_dbeta_integrand, x=x) / math.pi
-        free_energy_density = - temperatures * (np.log(2.0 * np.cosh(2.0 * inverse_temperatures)) + gamma_2)
-        expected_potential_density = - 2.0 * np.tanh(2.0 * inverse_temperatures) - dgamma_2_dbeta
-        specific_heat_density = np.diff(expected_potential_density) / delta_temperature
-        specific_heat_temperatures = temperatures[:len(temperatures) - 1]
-        np.save(f"{output_directory}/2d_ising_model_thermodynamic_free_energy_density_vs_temperature_"
-                f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
-                np.array([temperatures, free_energy_density]))
-        np.save(f"{output_directory}/2d_ising_model_thermodynamic_potential_density_vs_temperature_"
-                f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
-                np.array([temperatures, expected_potential_density]))
-        np.save(f"{output_directory}/2d_ising_model_thermodynamic_specific_heat_density_vs_temperature_"
-                f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
-                np.array([specific_heat_temperatures, specific_heat_density]))
-        return np.array([specific_heat_temperatures, specific_heat_density])
+    delta_temperature = max_temperature / no_of_temperature_integration_values
+    temperatures = np.linspace(delta_temperature, max_temperature, no_of_temperature_integration_values,
+                               dtype=np.float64)
+    inverse_temperatures = 1.0 / temperatures
+    alpha = 2.0 * np.sinh(2.0 * inverse_temperatures) / np.cosh(2.0 * inverse_temperatures) ** 2
+    dalpha_dbeta = 4.0 * (
+            1.0 - 2.0 * np.tanh(2.0 * inverse_temperatures) ** 2) / np.cosh(2.0 * inverse_temperatures)
+    gamma_2, dgamma_2_dbeta = np.zeros(len(temperatures)), np.zeros(len(temperatures))
+    x = np.linspace(0.0, math.pi / 2.0, no_of_x_integration_values, dtype=np.float64)
+    for temperature_index in range(len(temperatures)):
+        gamma_2_integrand = np.log(0.5 * (1.0 + np.sqrt(1.0 - alpha[temperature_index] ** 2 * np.sin(x) ** 2)))
+        gamma_2[temperature_index] = np.trapz(gamma_2_integrand, x=x) / math.pi
+        dgamma_2_dbeta_integrand = - alpha[temperature_index] * dalpha_dbeta[temperature_index] * np.sin(x) ** 2 / (
+                1.0 - alpha[temperature_index] ** 2 * np.sin(x) ** 2 + np.sqrt(1.0 - alpha[temperature_index] ** 2 *
+                                                                               np.sin(x) ** 2))
+        dgamma_2_dbeta[temperature_index] = np.trapz(dgamma_2_dbeta_integrand, x=x) / math.pi
+    free_energy_density = - temperatures * (np.log(2.0 * np.cosh(2.0 * inverse_temperatures)) + gamma_2)
+    expected_potential_density = - 2.0 * np.tanh(2.0 * inverse_temperatures) - dgamma_2_dbeta
+    specific_heat_density = np.diff(expected_potential_density) / delta_temperature
+    specific_heat_temperatures = temperatures[:len(temperatures) - 1]
+    np.save(f"{output_directory}/2d_ising_model_thermodynamic_free_energy_density_vs_temperature_"
+            f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
+            np.array([temperatures, free_energy_density]))
+    np.save(f"{output_directory}/2d_ising_model_thermodynamic_potential_density_vs_temperature_"
+            f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
+            np.array([temperatures, expected_potential_density]))
+    np.save(f"{output_directory}/2d_ising_model_thermodynamic_specific_heat_density_vs_temperature_"
+            f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
+            np.array([specific_heat_temperatures, specific_heat_density]))
+    return np.array([specific_heat_temperatures, specific_heat_density])
 
 
 def get_observable_mean_and_error_vs_temperature(observable_string, mediator, output_directory, sample_directory,
