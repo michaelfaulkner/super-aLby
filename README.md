@@ -251,6 +251,8 @@ and accompanies [config_files/convergence_tests/ising_potential/metropolis.ini](
 as set by `TEMPLATE_INI`.  The files are located in the same directory and have mirrored names.  We suggest applying 
 this convention to all configuration-bash file pairs.
 
+### Bash-file parameters
+
 `CONFIG_VARIABLE` sets the parameter (located in the `CONFIG_HEADER` section of `TEMPLATE_INI`) over which the bash 
 file iterates independent simulations.  `START` should be equal to the value of `CONFIG_VARIABLE` in `TEMPLATE_INI` and 
 `END` should be equal to the desired final value of `CONFIG_VARIABLE`.
@@ -267,6 +269,19 @@ Independent simulations may also be run in parallel.  `MAX_CPUS` sets the maximu
 in parallel.  In this example, `MAX_CPUS=2`, which means that the bash file will run the simulations at both 
 `CONFIG_VARIABLE` increments in parallel (assuming two CPUs are indeed available).  `MAX_CPUS` should be chosen to 
 avoid overloading personal machines.
+
+### Running the bash file
+
+To run the super-aLby application using this such a bash file, open your terminal, navigate to the [`src`](src) 
+directory and enter `./<bash file>`.  This will then run [`run_spawned_configs.sh`](src/run_spawned_configs.sh) which calls 
+[`spawn_configs.py`](src/spawn_configs.py).  The latter spawns new configuration files based on the values chosen in 
+the bash file.   The remainder of the [`run_spawned_configs.sh`](src/run_spawned_configs.sh) script then runs super-aLby using each of the 
+spawned configuration files (possibly in parallel) before deleting the spawned configuration files.  The user therefore 
+never has to run [`run_spawned_configs.sh`](src/run_spawned_configs.sh) or [`spawn_configs.py`](src/spawn_configs.py).  
+
+The generated sample data will then appear in the [`output`](src/output) directory at the location given in the 
+corresponding configuration file, appended by `/CONFIG_VARIABLE_NM/job_PQ` (where `NM` and `PQ` correspond to the 
+`CONFIG_VARIABLE` iteration number and independent-simulation number, respectively).
 
 
 ## Checkpointing
