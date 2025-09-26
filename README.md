@@ -28,9 +28,9 @@ format](https://en.wikipedia.org/wiki/INI_file). The [`run.py`](src/run.py) scri
 directory. 
 
 To run the super-aLby application, open your terminal, navigate to the [`src`](src) directory and enter `python run.py 
-<configuration file>`. The generated sample data should then appear in the [`output`](src/output) directory (at a 
-location given in the configuration file). Sample analysis can then be performed via scripts within the 
-[`sample_analysis`](src/sample_analysis) directory.
+<configuration file>`. The generated sample data will then appear at a location defined in the configuration file (we 
+advise this location to be contained within the [`output`](src/output) directory). Sample analysis can then be 
+performed via scripts within the [`sample_analysis`](src/sample_analysis) directory.
 
 We also provide bash-script functionality for running multiple simulations (possibly in parallel) with the same and/or 
 different fixed values of model parameters.  This is described below in the section 
@@ -253,13 +253,20 @@ this convention to all configuration-bash file pairs.
 
 ### Bash-file parameters
 
+`TEMPLATE_INI` sets the base configuration file from which the bash file constructs the different simulations.
+
 `CONFIG_VARIABLE` sets the parameter (located in the `CONFIG_HEADER` section of `TEMPLATE_INI`) over which the bash 
 file iterates independent simulations.  `START` should be equal to the value of `CONFIG_VARIABLE` in `TEMPLATE_INI` and 
-`END` should be equal to the desired final value of `CONFIG_VARIABLE`.
+`END` should be equal to the desired final value of `CONFIG_VARIABLE`.  `NUM_INCREMENTS` sets the number of equally 
+spaced values of `CONFIG_VARIABLE` between and including `START` and `END`.  It must be an 
+integer greater than or equal to zero.  In the above example, `CONFIG_VARIABLE=temperature`, `START=1.2`, `END=3.0` and 
+`NUM_INCREMENTS=1`, which means that the bash file will run independent simulations with the value of `temperature` set 
+to 1.2 and 3.0.  If `NUM_INCREMENTS` had been set to 2, then the bash file would run independent simulations with the 
+value of `temperature` set to 1.2, 2.1 and 3.0. 
 
 `NUM_JOBS` then sets the number of independent simulations at each fixed set of model parameters.  It must be an 
-integer greater than or equal to one.  In this example, `NUM_JOBS=1`, which means that the bash file will run a single 
-simulation at each `CONFIG_VARIABLE` increment.
+integer greater than or equal to one.  In the above example, `NUM_JOBS=1`, which means that the bash file will run a 
+single simulation at each `CONFIG_VARIABLE` increment.
 
 The user may choose to run multiple simulations with fixed model parameters.  In this case, set `NUM_INCREMENTS=0` and 
 ensure that `START` and `END` are both equal to the value of `CONFIG_VARIABLE` in `TEMPLATE_INI`.  The bash file will 
@@ -272,16 +279,16 @@ avoid overloading personal machines.
 
 ### Running the bash file
 
-To run the super-aLby application using this such a bash file, open your terminal, navigate to the [`src`](src) 
+To run the super-aLby application using this bash functionality, open your terminal, navigate to the [`src`](src) 
 directory and enter `./<bash file>`.  This will then run [`run_spawned_configs.sh`](src/run_spawned_configs.sh) which calls 
 [`spawn_configs.py`](src/spawn_configs.py).  The latter spawns new configuration files based on the values chosen in 
 the bash file.   The remainder of the [`run_spawned_configs.sh`](src/run_spawned_configs.sh) script then runs super-aLby using each of the 
 spawned configuration files (possibly in parallel) before deleting the spawned configuration files.  The user therefore 
 never has to run [`run_spawned_configs.sh`](src/run_spawned_configs.sh) or [`spawn_configs.py`](src/spawn_configs.py).  
 
-The generated sample data will then appear in the [`output`](src/output) directory at the location given in the 
-corresponding configuration file, appended by `/CONFIG_VARIABLE_NM/job_PQ` (where `NM` and `PQ` correspond to the 
-`CONFIG_VARIABLE` iteration number and independent-simulation number, respectively).
+The generated sample data will then appear in `output_directory` (as defined in the corresponding configuration file) 
+appended by `/CONFIG_VARIABLE_NM/job_PQ` (where `NM` and `PQ` correspond to the `CONFIG_VARIABLE` iteration number and 
+independent-simulation number, respectively).
 
 
 ## Checkpointing
