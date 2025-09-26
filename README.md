@@ -32,6 +32,10 @@ To run the super-aLby application, open your terminal, navigate to the [`src`](s
 location given in the configuration file). Sample analysis can then be performed via scripts within the 
 [`sample_analysis`](src/sample_analysis) directory.
 
+We also provide bash-script functionality for running multiple simulations (possibly in parallel) with the same and/or 
+different fixed values of model parameters.  This is described below in the section 
+[Running multiple simulations](#running-multiple-simulations).
+
 The [`run.py`](src/run.py) script also takes optional arguments. These are:
 - `-h`, `--help`: Show the help message and exit.
 - `-V`, `--version`: Show program's version number and exit.
@@ -46,8 +50,6 @@ correspond to the [`run.py`](src/run.py) file and the [model settings](src/model
 ```INI
 [Run]
 mediator = some_mediator
-number_of_jobs = 1
-max_number_of_cpus = 1
 ```
 
 and 
@@ -93,13 +95,6 @@ interact with each other.  In addition, some [`potential`](src/potential) classe
 [`linked_lists`](src/linked_lists) package.  This provides linked-list functionality for cell-based evaluation of certain 
 multi-particle models defined on the two- or three-dimensional torus.  Below we detail how the configuration file 
 chooses the classes that will be used.
-
-### Rest of [Run] section
-
-`number_of_jobs` and `max_number_of_cpus` are `int` values and should also be specified in the `[Run]` section. They 
-correspond, respectively, to the number of independent realisations of the same process (i.e. simulation) and the 
-maximum number of CPUs that should be simultaneously used for each of these realisations (to avoid overloading personal 
-machines). 
 
 ### Model settings
 
@@ -150,13 +145,12 @@ Building on our example `[Run]` section above, configuration files might be of t
 ```INI
 [Run]
 mediator = some_mediator
-number_of_jobs = 1
-max_number_of_cpus = 1
 
 [SomeMediator]
 potential = some_potential
 samplers = some_sampler
 kinetic_energy = some_kinetic_energy
+temperature = 1.0
 ...
 
 [SomePotential]
@@ -179,13 +173,12 @@ or of the form
 ```INI
 [Run]
 mediator = some_mediator
-number_of_jobs = 1
-max_number_of_cpus = 1
 
 [SomeMediator]
 potential = some_potential
 samplers = some_sampler, some_other_sampler
 noise_distribution = some_noise_distribution
+temperature = 2.0
 ...
 
 [SomePotential]
@@ -213,7 +206,8 @@ first / second example requires the sections `[SomePotential]`, `[SomeSampler]` 
 The first example must correspond to some form of Hamiltonian Monte Carlo simulation (as it selects a 
 [`kinetic_energy`](src/kinetic_energy)) while the second must correspond to a Metropolis Monte Carlo simulation (as it selects a 
 [`noise_distribution`](src/noise_distribution)). Note that additional examples are also possible (e.g. one may choose to construct an 
-event-chain Monte Carlo simulation).
+event-chain Monte Carlo simulation).  In addition, the first / second example sets the temperature to 1.0 / 2.0 (in 
+units of the potential energy, which may be dimensionless).
 
 Some example configuration files are located in the [`src/config_files`](src/config_files) directory. To get a feel for the 
 application, run `python run.py 
@@ -229,6 +223,50 @@ to the relevant sampler.  We advise that `output_directory` mirrors the location
 `output_directory = "output/remaining_path/config_file_name"` for a configuration file with path 
 `config_files/remaining_path/config_file_name.ini`.  This stores samples within the [`output`](src/output) directory 
 but is not a requirement.
+
+
+## Running multiple simulations
+
+The files [`run_spawned_configs.sh`](src/run_spawned_configs.sh) and [`spawn_configs.py`](src/spawn_configs.py) provide functionality for 
+running multiple simulations (possibly in parallel) with the same and/or different fixed values of model parameters 
+such as the temperature.  To achieve this, the user must create a bash file of the following form which accompanies a 
+corresponding configuration file:
+
+```
+#!/bin/bash
+export TEMPLATE_INI=config_files/convergence_tests/ising_potential/metropolis.ini
+export NUM_JOBS=1
+export START=1.2
+export END=3.0
+export NUM_INCREMENTS=1
+export CONFIG_HEADER=MetropolisMediator
+export CONFIG_VARIABLE=temperature
+export MAX_CPUS=2
+
+exec ./run_spawned_configs.sh
+```
+
+This example is [config_files/convergence_tests/ising_potential/metropolis.sh](config_files/convergence_tests/ising_potential/metropolis.sh) 
+and accompanies [config_files/convergence_tests/ising_potential/metropolis.ini](config_files/convergence_tests/ising_potential/metropolis.ini),
+as set by `TEMPLATE_INI`.  The files are located in the same directory and have mirrored names.  We suggest applying 
+this convention to all configuration-bash file pairs.
+
+`CONFIG_VARIABLE` sets the parameter (located in the `CONFIG_HEADER` section of `TEMPLATE_INI`) over which the bash 
+file iterates independent simulations.  `START` should be equal to the value of `CONFIG_VARIABLE` in `TEMPLATE_INI` and 
+`END` should be equal to the desired final value of `CONFIG_VARIABLE`.
+
+`NUM_JOBS` then sets the number of independent simulations at each fixed set of model parameters.  It must be an 
+integer greater than or equal to one.  In this example, `NUM_JOBS=1`, which means that the bash file will run a single 
+simulation at each `CONFIG_VARIABLE` increment.
+
+The user may choose to run multiple simulations with fixed model parameters.  In this case, set `NUM_INCREMENTS=0` and 
+ensure that `START` and `END` are both equal to the value of `CONFIG_VARIABLE` in `TEMPLATE_INI`.  The bash file will 
+then run `NUM_JOBS` simulations with the same `CONFIG_VARIABLE`. 
+
+Independent simulations may also be run in parallel.  `MAX_CPUS` sets the maximum number of CPUs that may be accessed 
+in parallel.  In this example, `MAX_CPUS=2`, which means that the bash file will run the simulations at both 
+`CONFIG_VARIABLE` increments in parallel (assuming two CPUs are indeed available).  `MAX_CPUS` should be chosen to 
+avoid overloading personal machines.
 
 
 ## Checkpointing
