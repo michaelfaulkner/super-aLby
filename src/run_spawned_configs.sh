@@ -13,6 +13,44 @@ if [[ -z "${TEMPLATE_INI:-}" || -z "${NUM_JOBS:-}" || -z "${START:-}" || -z "${E
     exit 1
 fi
 
+if ! [[ "$NUM_JOBS" =~ ^[0-9]+$ ]] || [ "$NUM_JOBS" -lt 1 ]; then
+    echo "Error: NUM_JOBS must be an integer greater than or equal to 1 (got '$NUM_JOBS')" >&2
+    exit 1
+fi
+
+if ! [[ "$MAX_CPUS" =~ ^[0-9]+$ ]] || [ "$MAX_CPUS" -lt 1 ]; then
+    echo "Error: MAX_CPUS must be an integer greater than or equal to 1 (got '$MAX_CPUS')" >&2
+    exit 1
+fi
+
+if ! [[ "$NUM_INCREMENTS" =~ ^[0-9]+$ ]] || [ "$NUM_INCREMENTS" -lt 0 ]; then
+    echo "Error: NUM_INCREMENTS must be an integer greater than or equal to 0 (got '$NUM_INCREMENTS')" >&2
+    exit 1
+fi
+
+if ! awk -v header="$CONFIG_HEADER" -v var="$CONFIG_VARIABLE" '
+    $0 ~ "^[[:space:]]*\\["header"\\][[:space:]]*$" { in_section=1; next }
+    in_section && /^\[/ { in_section=0 }    # left the section
+    in_section && $1 == var { found=1; exit }
+    END { exit(found ? 0 : 1) }
+' "$TEMPLATE_INI"; then
+    echo "Error: CONFIG_VARIABLE '$CONFIG_VARIABLE' not found under section [$CONFIG_HEADER] in $TEMPLATE_INI" >&2
+    exit 1
+fi
+
+INI_VALUE="$(awk -F '=' -v key="$CONFIG_VARIABLE" '
+    $1 ~ ("^"key"[[:space:]]*$") { gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2 }
+' "$TEMPLATE_INI")"
+if [[ "$INI_VALUE" != "$START" ]]; then
+    echo "Error: START ($START) does not match value of $CONFIG_VARIABLE ($INI_VALUE) in $TEMPLATE_INI" >&2
+    exit 1
+fi
+
+if [ "$NUM_INCREMENTS" -eq 0 ] && [ "$END" != "$START" ]; then
+    echo "Error: NUM_INCREMENTS=0 requires END ($END) == START ($START)" >&2
+    exit 1
+fi
+
 TEMPLATE_BASENAME="$(basename "$TEMPLATE_INI" .ini)"
 TEMPLATE_DIRNAME="$(dirname "$TEMPLATE_INI")"
 BASE_DIR="${TEMPLATE_DIRNAME}/${TEMPLATE_BASENAME}"
@@ -44,10 +82,6 @@ run_task() {
     for CONFIG_FILE in "$SUBDIR"/*.ini; do
         python run.py "$CONFIG_FILE" || { echo "run.py failed for $CONFIG_FILE"; exit 1; }
     done
-
-    wait
-
-    rm -rf "$BASE_DIR"
 }
 
 
@@ -59,3 +93,5 @@ for i in $(seq 0 $((NUM_INCREMENTS))); do
 done
 
 wait
+
+rm -rf "$BASE_DIR"

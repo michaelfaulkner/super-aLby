@@ -1,5 +1,5 @@
 #!/bin/bash
-export TEMPLATE_INI=config_files/sampling_algos_ising_figs/4x4_metropolis.ini
+export TEMPLATE_INI=config_files/sampling_algos_ising_figs/64x64_metropolis_supplementary_fig.ini
 export NUM_JOBS=1
 export START=2.22
 export END=2.31
