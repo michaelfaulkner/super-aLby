@@ -38,6 +38,17 @@ def get_temperatures(minimum_temperature, maximum_temperature, number_of_tempera
             for temperature_index in range(number_of_temperature_increments + 1)]
 
 
+def get_temps_from_bash_file(sh_file_string: str):
+    return get_temperatures(float(read_variable_from_sh_file(sh_file_string, "START")),
+                            float(read_variable_from_sh_file(sh_file_string, "END")),
+                            int(read_variable_from_sh_file(sh_file_string, "NUM_INCREMENTS")))
+
+
+def get_temps_and_reduced_temps_from_bash_file(sh_file_string: str, transition_temperature: float):
+    temperatures = get_temps_from_bash_file(sh_file_string)
+    return temperatures, [temperature / transition_temperature for temperature in temperatures]
+
+
 def get_basic_config_data(config_file_string):
     if type(config_file_string) is str:
         """nb, argument of parsing.parse_options() must be of type Sequence[str]"""
@@ -45,7 +56,7 @@ def get_basic_config_data(config_file_string):
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     possible_mediators = ["UnboundedLeapfrogMediator", "ToroidalLeapfrogMediator", "LazyToroidalLeapfrogMediator",
                           "MetropolisMediator", "SwendsenWangMediator", "WolffMediator", "EventChainMediator"]
-    (config_file_mediator, potential, factor_field, samplers, temperatures, number_of_equilibration_iterations,
+    (config_file_mediator, potential, factor_field, samplers, temperature, number_of_equilibration_iterations,
      number_of_observations, number_of_particles, size_of_particle_space) = (None, None, None, None, None, None, None,
                                                                              None, None)
     for possible_mediator in possible_mediators:
@@ -83,10 +94,7 @@ def get_basic_config_data(config_file_string):
             else:
                 factor_field = "no_factor_field"
             samplers = config.get(possible_mediator, "samplers").replace(" ", "").split(",")
-            temperatures = get_temperatures(parsing.get_value(config, possible_mediator, "minimum_temperature"),
-                                            parsing.get_value(config, possible_mediator, "maximum_temperature"),
-                                            parsing.get_value(config, possible_mediator,
-                                                              "number_of_temperature_increments"))
+            temperature = parsing.get_value(config, possible_mediator, "temperature")
             number_of_equilibration_iterations = parsing.get_value(config, possible_mediator,
                                                                    "number_of_equilibration_iterations")
             number_of_observations = parsing.get_value(config, possible_mediator, "number_of_observations")
@@ -99,9 +107,8 @@ def get_basic_config_data(config_file_string):
                                  "LazyToroidalLeapfrogMediator, MetropolisMediator, SwendsenWangMediator, "
                                  "WolffMediator or EventChainMediator.")
     sample_directories = [config.get(strings.to_camel_case(sampler), "output_directory") for sampler in samplers]
-    return (config_file_mediator, potential, factor_field, samplers, sample_directories, temperatures,
-            number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space,
-            parsing.get_value(config, "Run", "number_of_jobs"), parsing.get_value(config, "Run", "max_number_of_cpus"))
+    return (config_file_mediator, potential, factor_field, samplers, sample_directories, temperature,
+            number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space)
 
 
 def check_model_settings_of_soft_matter_potential(size_of_particle_space, dimensionality_of_particle_space,
@@ -243,3 +250,20 @@ def get_initial_positions_of_smooth_potential(potential_class):
         else:
             return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]
                              for _ in range(number_of_particles)])
+
+
+def read_variable_from_sh_file(sh_file_string, variable_name):
+    with open(sh_file_string) as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith("export ") and "=" in line:
+                key, val = line.replace("export ", "", 1).split("=", 1)
+                if key.strip() == variable_name:
+                    return val.strip()
+    raise KeyError(f"{variable_name} not found in {sh_file_string}")
+
+
+def extract_index(path):
+    import re
+    match = re.search(r'_(\d+)/job_', path)
+    return int(match.group(1)) if match else -1

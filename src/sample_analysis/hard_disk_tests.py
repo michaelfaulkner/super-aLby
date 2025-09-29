@@ -23,8 +23,8 @@ def main(config_file_string):
     """
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-    (config_file_mediator, potential, _, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
-     _, number_of_particles, _, _, _) = helper_methods.get_basic_config_data(config_file_string)
+    (config_file_mediator, potential, _, samplers, sample_directories, temperature, number_of_equilibration_iterations,
+     _, number_of_particles, _) = helper_methods.get_basic_config_data(config_file_string)
 
     if potential == "hard_disk_potential":
         if not (len(samplers) == 1 and samplers[0] == "pressure_sampler"):
@@ -33,13 +33,10 @@ def main(config_file_string):
     else:
         raise ValueError("This script is designed to test hard-disk code.  Please give only the value "
                          "hard_disk_potential for potential in the Mediator section.")
-    if len(temperatures) > 1:
-        raise RuntimeWarning(f"The value of number_of_temperature_increments in the Mediator section is greater than 0."
-                             f"This script therefore tests against only for the minimum temperature value.")
 
     disk_radius = parsing.get_value(config, "HardDiskPotential", "disk_radius")
     sample_mean, sample_error = get_sample_mean_and_error(
-        sample_getter.get_pressure(sample_directories[0], temperatures[0], 0, 0,
+        sample_getter.get_pressure(sample_directories[0], temperature, 0, 0,
                                    number_of_particles, number_of_equilibration_iterations).flatten())
     print(f"Pressure = {sample_mean * (2.0 * disk_radius) ** 2} +- {sample_error * (2.0 * disk_radius) ** 2}")
     packing_fraction = parsing.get_value(config, "HardDiskPotential", "packing_fraction")

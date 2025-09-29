@@ -14,12 +14,11 @@ class UnboundedAndLazyToroidalLeapfrogMediators(DeterministicMediator, metaclass
     """
 
     def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
-                 kinetic_energy: KineticEnergy, minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
-                 number_of_temperature_increments: int = 0, number_of_equilibration_iterations: int = 10000,
-                 number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True,
-                 initial_step_size: float = 0.1, max_number_of_integration_steps: int = 10,
-                 randomise_number_of_integration_steps: bool = False, use_metropolis_accept_reject: bool = True,
-                 **kwargs):
+                 kinetic_energy: KineticEnergy, temperature: float = 1.0,
+                 number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
+                 proposal_dynamics_adaptor_is_on: bool = True, initial_step_size: float = 0.1,
+                 max_number_of_integration_steps: int = 10, randomise_number_of_integration_steps: bool = False,
+                 use_metropolis_accept_reject: bool = True, **kwargs):
         r"""
         The constructor of the UnboundedAndLazyToroidalLeapfrogMediators class.
 
@@ -31,14 +30,9 @@ class UnboundedAndLazyToroidalLeapfrogMediators(DeterministicMediator, metaclass
             Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
         kinetic_energy : kinetic_energy.kinetic_energy.KineticEnergy
             Instance of the chosen child class of kinetic_energy.kinetic_energy.KineticEnergy.
-        minimum_temperature : float, optional
-            The minimum value of the model temperature, n.b., the temperature is the reciprocal of the inverse
-            temperature, beta (up to a proportionality constant).
-        maximum_temperature : float, optional
-            The maximum value of the model temperature, n.b., the temperature is the reciprocal of the inverse
-            temperature, beta (up to a proportionality constant).
-        number_of_temperature_increments : int, optional
-            number_of_temperature_increments + 1 is the number of temperature values to iterate over.
+        temperature : float, optional
+            The model temperature, n.b., the temperature is the reciprocal of the inverse temperature, beta (up to a
+            proportionality constant).
         number_of_equilibration_iterations : int, optional
             Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
@@ -65,15 +59,7 @@ class UnboundedAndLazyToroidalLeapfrogMediators(DeterministicMediator, metaclass
         base.exceptions.ConfigurationError
             If samplers is not a sequence of instances of some child classes of sampler.sampler.Sampler.
         base.exceptions.ConfigurationError
-            If minimum_temperature is less than 0.0.
-        base.exceptions.ConfigurationError
-            If maximum_temperature is less than 0.0.
-        base.exceptions.ConfigurationError
-            If maximum_temperature is less than minimum_temperature.
-        base.exceptions.ConfigurationError
-            If number_of_temperature_increments is less than 0.
-        base.exceptions.ConfigurationError
-            If number_of_temperature_increments is 0 and minimum_temperature does not equal maximum_temperature.
+            If temperature is less than 0.0.
         base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
@@ -91,22 +77,17 @@ class UnboundedAndLazyToroidalLeapfrogMediators(DeterministicMediator, metaclass
         base.exceptions.ConfigurationError
             If type(use_metropolis_accept_reject) is not bool
         """
-        super().__init__(potential, samplers, kinetic_energy, minimum_temperature, maximum_temperature,
-                         number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations,
-                         proposal_dynamics_adaptor_is_on, initial_step_size, max_number_of_integration_steps,
-                         randomise_number_of_integration_steps, use_metropolis_accept_reject, **kwargs)
+        super().__init__(potential, samplers, kinetic_energy, temperature, number_of_equilibration_iterations,
+                         number_of_observations, proposal_dynamics_adaptor_is_on, initial_step_size,
+                         max_number_of_integration_steps, randomise_number_of_integration_steps,
+                         use_metropolis_accept_reject, **kwargs)
 
-    def _get_candidate_configuration_without_toroidal_corrections(self, temperature):
+    def _get_candidate_configuration_without_toroidal_corrections(self):
         """
         Returns the candidate momenta, positions and potential after self._number_of_integration_steps integration
         steps. This method is used in UnboundedLeapfrogMediator._get_candidate_configuration() and
         LazyToroidalLeapfrogMediator._get_candidate_configuration(), where the candidate positions are corrected for
         periodic boundaries in the latter case.
-
-        Parameters
-        ----------
-        temperature : float
-            The sampling temperature.
 
         Returns
         -------
@@ -122,12 +103,13 @@ class UnboundedAndLazyToroidalLeapfrogMediators(DeterministicMediator, metaclass
             The potential of the candidate configuration.
         """
         candidate_momenta = (self._momenta - 0.5 * self._step_size *
-                             self._potential.get_gradient(self._positions) / temperature)
+                             self._potential.get_gradient(self._positions) / self._temperature)
         candidate_positions = (self._positions + self._step_size *
-                               self._kinetic_energy.get_gradient(candidate_momenta) / temperature)
+                               self._kinetic_energy.get_gradient(candidate_momenta) / self._temperature)
         for _ in range(self._number_of_integration_steps - 1):
-            candidate_momenta -= self._step_size * self._potential.get_gradient(candidate_positions) / temperature
-            candidate_positions += self._step_size * self._kinetic_energy.get_gradient(candidate_momenta) / temperature
+            candidate_momenta -= self._step_size * self._potential.get_gradient(candidate_positions) / self._temperature
+            candidate_positions += (self._step_size * self._kinetic_energy.get_gradient(candidate_momenta) /
+                                    self._temperature)
         return (candidate_momenta - 0.5 * self._step_size *
-                self._potential.get_gradient(candidate_positions) / temperature,
+                self._potential.get_gradient(candidate_positions) / self._temperature,
                 candidate_positions, self._potential.get_value(candidate_positions))

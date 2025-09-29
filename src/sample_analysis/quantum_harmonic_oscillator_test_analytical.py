@@ -55,9 +55,9 @@ def main(values_filepath, config_folder):
             config_file_string = os.path.join(config_folder, f"metropolis/metropolis_{string}.ini")
             print(config_file_string)
             config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-            (config_file_mediator, potential, _, samplers, sample_directories, temperatures,
+            (config_file_mediator, potential, _, samplers, sample_directories, temperature,
              number_of_equilibration_iterations, number_of_observations, number_of_particles,
-             _, _, _) = helper_methods.get_basic_config_data(config_file_string)
+             _) = helper_methods.get_basic_config_data(config_file_string)
             
             mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
             timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
@@ -66,11 +66,9 @@ def main(values_filepath, config_folder):
             sample_directory = sample_directories[0]
             temperature_index = 0
             thinning_level = None
-            mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
-                                                           temperature_index, number_of_particles,
+            mean_sample = sample_getter.get_mean_positions(sample_directory, temperature, number_of_particles,
                                                            number_of_equilibration_iterations, thinning_level)
-            # position_sample = sample_getter.get_positions(sample_directory, temperatures[temperature_index],
-            #                                               temperature_index, number_of_particles,
+            # position_sample = sample_getter.get_positions(sample_directory, temperature, number_of_particles,
             #                                               number_of_equilibration_iterations, thinning_level)
             mean_sample_mean = get_sample_mean_and_error(mean_sample)
             numerical_x2[index] = mean_sample_mean[0] / timestep**2
@@ -84,8 +82,8 @@ def main(values_filepath, config_folder):
         config_file_string = os.path.join(config_folder, f"ecmc_lambda_50/event_chain_{string}.ini")
         print(config_file_string)
         config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-        (config_file_mediator, potential, samplers, sample_directories, temperatures,
-         number_of_equilibration_iterations, number_of_observations, number_of_particles, _, _, _
+        (config_file_mediator, potential, samplers, sample_directories, temperature,
+         number_of_equilibration_iterations, number_of_observations, number_of_particles, _
          ) = helper_methods.get_basic_config_data(config_file_string)
         
         mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
@@ -96,8 +94,7 @@ def main(values_filepath, config_folder):
         temperature_index = 0
         thinning_level = None
  
-        mean_sample = sample_getter.get_mean_positions(sample_directory, temperatures[temperature_index],
-                                                       temperature_index, number_of_particles,
+        mean_sample = sample_getter.get_mean_positions(sample_directory, temperature, number_of_particles,
                                                        number_of_equilibration_iterations, thinning_level)
         mean_sample = mean_sample[:30000]
 
@@ -109,23 +106,23 @@ def main(values_filepath, config_folder):
     timestep = 0.01
     number_of_equilibration_iterations = 1000
     metropolis_001_31k = np.load(
-        "output/metropolis/mean_squared_positions/31000/temperature_00_sample_of_mean_squared_positions_001_0.npy")
+        "output/metropolis/mean_squared_positions/31000/sample_of_mean_squared_positions_001_0.npy")
     metropolis_001_31k = get_sample_mean_and_error(metropolis_001_31k)
     metropolis_001_31k = metropolis_001_31k[0] / timestep **2
 
     metropolis_001_51k = np.load(
-        "output/metropolis/mean_squared_positions/51000/temperature_00_sample_of_mean_squared_positions_001_0.npy")
+        "output/metropolis/mean_squared_positions/51000/sample_of_mean_squared_positions_001_0.npy")
     metropolis_001_51k = metropolis_001_51k[number_of_equilibration_iterations + 1:]
     metropolis_001_51k = get_sample_mean_and_error(metropolis_001_51k)
     metropolis_001_51k = metropolis_001_51k[0] / timestep**2
 
     metropolis_001_81k = np.load(
-        "output/metropolis/mean_squared_positions/81000/temperature_00_sample_of_mean_squared_positions_001_0.npy")
+        "output/metropolis/mean_squared_positions/81000/sample_of_mean_squared_positions_001_0.npy")
     metropolis_001_81k = get_sample_mean_and_error(metropolis_001_81k)
     metropolis_001_81k = metropolis_001_81k[0] / timestep**2
 
     metropolis_001_101k = np.load(
-        "output/metropolis/mean_squared_positions/101000/temperature_00_sample_of_mean_squared_positions_001_0.npy")
+        "output/metropolis/mean_squared_positions/101000/sample_of_mean_squared_positions_001_0.npy")
     metropolis_001_101k = get_sample_mean_and_error(metropolis_001_101k)
     metropolis_001_101k = metropolis_001_101k[0] / timestep**2
 
@@ -134,7 +131,7 @@ def main(values_filepath, config_folder):
     metropolis_001_10e6 = np.zeros(sub_arr_len * num_sub_arrs)
     for i in range(num_sub_arrs):
         metropolis_001_10e6[i * sub_arr_len : (i+1) * sub_arr_len] = np.load(
-        f"output/metropolis_001_checkpoints/temperature_00_run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
+        f"output/metropolis_001_checkpoints/run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
 
     metropolis_001_10e6 = metropolis_001_10e6[number_of_equilibration_iterations + 1:-18999]
     metropolis_001_10e6 = get_sample_mean_and_error(metropolis_001_10e6)
