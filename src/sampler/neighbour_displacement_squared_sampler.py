@@ -36,7 +36,7 @@ class  NeighbourDisplacementSquaredSampler(Sampler):
         numpy.ndarray
             Numpy array of zeros of the required structure.
         """
-        return np.zeros((total_number_of_iterations, number_of_particles, dimensionality_of_particle_space))
+        return np.zeros((total_number_of_iterations, dimensionality_of_particle_space))
     
     def get_observation(self, momenta, positions, potential):
         """
@@ -62,11 +62,11 @@ class  NeighbourDisplacementSquaredSampler(Sampler):
             The observation.
         """
 
-        sample = np.zeros((number_of_particles,1))
-        for i in range(number_of_particles): #TODO can probably vectorise this
+        sample = 0
+        for i in range(number_of_particles): 
             displacement = get_east_worldline_neighbour(i, number_of_quantum_particles, number_of_timeslices) - \
                             positions[i]
-            sample[i] = displacement**2
+            sample += displacement**2
         return sample
     
     def output_sample(self, sample, temperature_index, checkpoint_index):
