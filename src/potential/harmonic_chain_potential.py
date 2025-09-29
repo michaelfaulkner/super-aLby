@@ -69,11 +69,10 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         potential : float
             The potential.
         """
-        positions = positions.copy()
         potential = 0.0
         for particle_index in positions:
             neg_neighbour_index = (particle_index - 1) % number_of_particles
-            neg_neighbour_position = positions[neg_neighbour_index]
+            neg_neighbour_position = positions[neg_neighbour_index].copy()
             if particle_index == 0:
                 neg_neighbour_position -= size_of_particle_space
             potential += (positions[particle_index] - neg_neighbour_position - self._equilibrium_length) ** 2
@@ -95,11 +94,10 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
             is a float and represents one Cartesian component of the gradient of the potential of a single particle.
         """
-        positions = positions.copy()
         gradient_value = 0.0
         for particle_index in positions:
             neg_neighbour_index = (particle_index - 1) % number_of_particles
-            neg_neighbour_position = positions[neg_neighbour_index]
+            neg_neighbour_position = positions[neg_neighbour_index].copy()
             if particle_index == 0:
                 neg_neighbour_position -= size_of_particle_space
             gradient_value += 2.0 * (positions[particle_index] - neg_neighbour_position - self._equilibrium_length)
@@ -151,9 +149,9 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         float
             The potential at lattice_site_index.
         """
-        positions = positions.copy()
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(active_particle_index)
-        neg_neighbour_position, pos_neighbour_position = positions[neg_neighbour_index], positions[pos_neighbour_index]
+        neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index].copy(),
+                                                          positions[pos_neighbour_index].copy())
         if active_particle_index == number_of_particles - 1:
             pos_neighbour_position += size_of_particle_space
         if active_particle_index == 0:
@@ -209,11 +207,10 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         vetoing_index : int
             The index of the particle that triggers the event.
         """
-        positions = positions.copy()
-        active_particle_position = positions[active_particle_index]
+        active_particle_position = positions[active_particle_index].copy()
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(active_particle_index)
-        neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index],
-                                                          positions[pos_neighbour_index])
+        neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index].copy(),
+                                                          positions[pos_neighbour_index].copy())
 
         if active_particle_index == number_of_particles - 1:
             pos_neighbour_position += size_of_particle_space
