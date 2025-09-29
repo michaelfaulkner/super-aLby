@@ -14,17 +14,17 @@ if [[ -z "${TEMPLATE_INI:-}" || -z "${NUM_JOBS:-}" || -z "${START:-}" || -z "${E
 fi
 
 if ! [[ "$NUM_JOBS" =~ ^[0-9]+$ ]] || [ "$NUM_JOBS" -lt 1 ]; then
-    echo "Error: NUM_JOBS must be an integer greater than or equal to 1 (got '$NUM_JOBS')" >&2
+    echo "Error: NUM_JOBS must be an integer greater than or equal to 1 (got '$NUM_JOBS')." >&2
     exit 1
 fi
 
 if ! [[ "$MAX_CPUS" =~ ^[0-9]+$ ]] || [ "$MAX_CPUS" -lt 1 ]; then
-    echo "Error: MAX_CPUS must be an integer greater than or equal to 1 (got '$MAX_CPUS')" >&2
+    echo "Error: MAX_CPUS must be an integer greater than or equal to 1 (got '$MAX_CPUS')." >&2
     exit 1
 fi
 
 if ! [[ "$NUM_INCREMENTS" =~ ^[0-9]+$ ]] || [ "$NUM_INCREMENTS" -lt 0 ]; then
-    echo "Error: NUM_INCREMENTS must be an integer greater than or equal to 0 (got '$NUM_INCREMENTS')" >&2
+    echo "Error: NUM_INCREMENTS must be an integer greater than or equal to 0 (got '$NUM_INCREMENTS')." >&2
     exit 1
 fi
 
