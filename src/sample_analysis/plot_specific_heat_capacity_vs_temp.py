@@ -55,6 +55,7 @@ def main(config_file_string):
 
     plt.tight_layout()
     plt.show()
+    plt.savefig(os.path.join(os.path.dirname(potential_directory_paths[0]), "specific_heat_vs_temp.png"))
 
 
 if __name__ == '__main__':

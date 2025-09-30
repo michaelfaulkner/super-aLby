@@ -53,6 +53,7 @@ def main(config_file_string, sample_name):
 
     plt.tight_layout()
     plt.show()
+    plt.savefig(os.path.join(os.path.dirname(sample_directory_paths[0]), "iact_vs_temp.png"))
 
 
 if __name__ == '__main__':

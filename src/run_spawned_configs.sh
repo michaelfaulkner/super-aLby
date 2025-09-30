@@ -1,5 +1,7 @@
 #!/bin/bash
 set -euo pipefail
+exec </dev/null
+export PYTHONUNBUFFERED=1
 
 cd "$PWD" || { echo "Failed to cd to $PWD"; exit 1; }
 MAX_CPUS="${MAX_CPUS:-$(sysctl -n hw.ncpu 2>/dev/null || nproc || echo 1)}"
@@ -30,7 +32,7 @@ fi
 
 if ! awk -v header="$CONFIG_HEADER" -v var="$CONFIG_VARIABLE" '
     $0 ~ "^[[:space:]]*\\["header"\\][[:space:]]*$" { in_section=1; next }
-    in_section && /^\[/ { in_section=0 }    # left the section
+    in_section && /^\[/ { in_section=0 }
     in_section && $1 == var { found=1; exit }
     END { exit(found ? 0 : 1) }
 ' "$TEMPLATE_INI"; then
@@ -84,14 +86,28 @@ run_task() {
     done
 }
 
-
-active_jobs() { jobs -r | wc -l | tr -d ' '; }
+fail=0
+declare -a PIDS=()
 
 for i in $(seq 0 $((NUM_INCREMENTS))); do
-    while [ "$(active_jobs)" -ge "$MAX_CPUS" ]; do sleep 1; done
     run_task "$i" &
+    PIDS+=($!)
+    if [ "${#PIDS[@]}" -ge "$MAX_CPUS" ]; then
+        if ! wait "${PIDS[0]}"; then
+            fail=1
+        fi
+        PIDS=("${PIDS[@]:1}")
+    fi
 done
 
-wait
+for pid in "${PIDS[@]}"; do
+    if ! wait "$pid"; then
+        fail=1
+    fi
+done
 
-rm -rf "$BASE_DIR"
+if [ "$fail" -eq 0 ] && [ -n "${BASE_DIR:-}" ] && [ -d "$BASE_DIR" ]; then
+    rm -rf -- "$BASE_DIR"
+fi
+
+exit $fail
