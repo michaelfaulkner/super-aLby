@@ -22,13 +22,15 @@ def main(data_path):
     temperature_index = 0
     thinning_level = None
     number_of_equilibration_iterations = None
-    mean_sample = np.load(data_path)
+    mean_sample = np.load(data_path)[5000:]
 
     fig, ax = plt.subplots(1,1)
     ax.plot(np.arange(np.shape(mean_sample)[0]), mean_sample, color="purple")
     ax.set_xlim(-500, 80000)
 
     plt.savefig("trace.png")
+    print(mean_sample)
+    print(np.mean(mean_sample))
 
 
 if __name__ == '__main__':
