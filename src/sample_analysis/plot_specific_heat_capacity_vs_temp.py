@@ -32,6 +32,7 @@ def main(config_file_string):
     potential_directory_paths = [os.path.dirname(temp_sample[potential_index]) for temp_sample in sample_directories]
     potential_sample_paths = [[os.path.join(potential_directory_path, f"job_{i:02d}")
                                for i in range(num_jobs)] for potential_directory_path in potential_directory_paths]
+
     specific_heats = []
     for temp_index, temp_sample in enumerate(potential_sample_paths):
         temp_specific_heats = []
@@ -43,8 +44,7 @@ def main(config_file_string):
             temp_specific_heats.append(specific_heat)
         specific_heats.append(np.mean(temp_specific_heats))
 
-    plt.scatter(temp_values, specific_heats, color='firebrick', marker='o', linestyle='-', alpha=0.7,
-                linewidth=1.8)
+    plt.scatter(temp_values, specific_heats, color='firebrick', marker='o', linestyle='-', alpha=0.7, linewidth=1.8)
 
     plt.xlabel("Temperature", fontsize=14)
     plt.ylabel("Specific Heat", fontsize=14)
