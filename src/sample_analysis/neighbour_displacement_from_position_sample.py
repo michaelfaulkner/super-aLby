@@ -59,25 +59,20 @@ def main(config_file_folder_stem, number_of_repeats):
                 print(f"No sample was found for timestep {parsing.get_value(config, strings.to_camel_case(potential),
                                     "timestep")}, this value will be skipped")
 
-    print(displacement)
-    print(N)
-    print(np.shape(displacement))
-    print(np.shape(N))
-    #e_coeffs = np.polyfit(np.log(N), np.log(displacement), deg=1)
-    #fitted_e = e_coeffs[1] + np.multiply(np.log(N), e_coeffs[0])
-
-
     err = np.std(displacement, axis=1)
     displacement = np.mean(displacement, axis=1)
 
     N = N[np.nonzero(displacement)]
+    N = N[:,0]
     displacement = displacement[np.nonzero(displacement)]
     err = err[np.nonzero(displacement)]
+    e_coeffs = np.polyfit(np.log(N[N>0.5e3]), np.log(displacement[N>0.5e3]), deg=1)
+    fitted_e = e_coeffs[1] + np.multiply(np.log(N[N>0.5e3]), e_coeffs[0])
+    print(f"coeffs: {e_coeffs}")
 
     
-    #plt.plot(N, np.exp(fitted_e), color="#d97dd9ff")
-    #plt.scatter(N, displacement)
-    plt.errorbar(N[:,0], displacement, err, fmt='o', capsize=3, markersize=3, color = "#9e0ebeff")
+    plt.plot(N[N>0.5e3], np.exp(fitted_e), color="#d97dd9ff")
+    plt.errorbar(N, displacement, err, fmt='o', capsize=3, markersize=3, color = "#9e0ebeff")
 
     plt.xlabel(r"$N_{\tau}$", fontsize=17)
     plt.ylabel(r"$<(x_{i+1} - x_i)^2>$", fontsize=17)
