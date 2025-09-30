@@ -40,17 +40,17 @@ def main(iact_data_path, N):
 
     fig, ax = plt.subplots(1, 1)
     ax.errorbar(sorted_N, iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="#ed1171ff")
-    ax.plot(sorted_N[start_fit:], np.exp(fitted_e), color="#d97dd9ff")
+    #ax.plot(sorted_N[start_fit:], np.exp(fitted_e), color="#d97dd9ff")
 
     ax.set_xlabel(r"$N_{\tau}$", fontsize=20, labelpad=-10)
     ax.set_ylabel("IACT", fontsize=15, labelpad=0)
     ax.set_xscale("log")
     ax.set_yscale("log")
     #print(ax.get_ylim())
-    #ax.set_ylim(10.0, 432.23)
+    #ax.set_ylim(0, 1.5e1)
     #ax.set_xlim(38, 13000)
     plt.tight_layout()
-    plt.savefig("iact_ff_b_1_new.pdf")
+    plt.savefig("iact_ff_b_01.pdf")
     plt.clf()
 
 
