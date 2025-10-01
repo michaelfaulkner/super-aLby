@@ -52,8 +52,8 @@ def main(config_file_string, sample_name):
     plt.yticks(fontsize=12)
 
     plt.tight_layout()
-    plt.show()
     plt.savefig(os.path.join(os.path.dirname(sample_directory_paths[0]), f"{sample_name}_vs_temp.png"))
+    plt.show()
     np.save(os.path.join(os.path.dirname(sample_directory_paths[0]), f"{sample_name}_vs_temp.npy"),
             np.vstack([temp_values, mean_samples]))
 

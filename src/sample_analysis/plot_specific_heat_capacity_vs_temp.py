@@ -57,8 +57,8 @@ def main(config_file_string):
     plt.yticks(fontsize=12)
 
     plt.tight_layout()
-    plt.show()
     plt.savefig(os.path.join(os.path.dirname(potential_directory_paths[0]), "specific_heat_vs_temp.png"))
+    plt.show()
     np.save(os.path.join(os.path.dirname(potential_directory_paths[0]), "specific_heat_vs_temp.npy"),
             np.vstack([temp_values, specific_heats]))
 
