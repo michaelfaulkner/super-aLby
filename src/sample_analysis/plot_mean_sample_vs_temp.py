@@ -1,10 +1,8 @@
-from markov_chain_diagnostics import get_iact_and_acf
 import importlib
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import sample_getter
 import sys
 
 # Add the directory that contains the module plotting_functions to sys.path
@@ -33,22 +31,21 @@ def main(config_file_string, sample_name):
     sample_paths = [[os.path.join(potential_directory_path, f"job_{i:02d}")
                      for i in range(num_jobs)] for potential_directory_path in sample_directory_paths]
 
-    iacts = []
+    mean_samples = []
     for temp_index, temp_sample in enumerate(sample_paths):
-        temp_iacts = []
+        temp_mean_samples = []
         for sample_path in temp_sample:
             try:
                 sample = np.load(os.path.join(sample_path, f"checkpoint_00_sample_of_{sample_name}.npy")).flatten()
             except FileNotFoundError:
                 continue
-            iact = get_iact_and_acf(sample[number_of_equilibration_iterations:])[0]
-            temp_iacts.append(iact)
-        iacts.append(np.mean(temp_iacts))
+            temp_mean_samples.append(np.mean(sample[number_of_equilibration_iterations:]))
+        mean_samples.append(np.mean(temp_mean_samples))
 
-    plt.scatter(temp_values, iacts, color='firebrick', marker='o', linestyle='-', alpha=0.7, linewidth=1.8)
+    plt.scatter(temp_values, mean_samples, color='firebrick', marker='o', linestyle='-', alpha=0.7, linewidth=1.8)
 
     plt.xlabel("Temperature", fontsize=14)
-    plt.ylabel("IACT", fontsize=14)
+    plt.ylabel(sample_name, fontsize=14)
 
     plt.grid(True, which="both", linestyle="--", linewidth=0.7, alpha=0.7)
     plt.xticks(fontsize=12)
@@ -56,9 +53,9 @@ def main(config_file_string, sample_name):
 
     plt.tight_layout()
     plt.show()
-    plt.savefig(os.path.join(os.path.dirname(sample_directory_paths[0]), "iact_vs_temp.png"))
-    np.save(os.path.join(os.path.dirname(sample_directory_paths[0]), "iact_vs_temp.npy"),
-            np.vstack([temp_values, iacts]))
+    plt.savefig(os.path.join(os.path.dirname(sample_directory_paths[0]), f"{sample_name}_vs_temp.png"))
+    np.save(os.path.join(os.path.dirname(sample_directory_paths[0]), f"{sample_name}_vs_temp.npy"),
+            np.vstack([temp_values, mean_samples]))
 
 
 if __name__ == '__main__':

@@ -37,9 +37,12 @@ def main(config_file_string):
     for temp_index, temp_sample in enumerate(potential_sample_paths):
         temp_specific_heats = []
         for potential_sample_path in temp_sample:
-            specific_heat_sample = sample_getter.get_specific_heat(
-                potential_sample_path, temp_values[temp_index], 0, number_of_particles,
-                number_of_equilibration_iterations)
+            try:
+                specific_heat_sample = sample_getter.get_specific_heat(
+                    potential_sample_path, temp_values[temp_index], 0, number_of_particles,
+                    number_of_equilibration_iterations)
+            except FileNotFoundError:
+                continue
             specific_heat = np.mean(specific_heat_sample)
             temp_specific_heats.append(specific_heat)
         specific_heats.append(np.mean(temp_specific_heats))
@@ -56,6 +59,8 @@ def main(config_file_string):
     plt.tight_layout()
     plt.show()
     plt.savefig(os.path.join(os.path.dirname(potential_directory_paths[0]), "specific_heat_vs_temp.png"))
+    np.save(os.path.join(os.path.dirname(potential_directory_paths[0]), "specific_heat_vs_temp.npy"),
+            np.vstack([temp_values, specific_heats]))
 
 
 if __name__ == '__main__':
