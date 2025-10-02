@@ -55,8 +55,6 @@ def main(config_file_location, number_of_jobs, sweep_start, sweep_end, number_of
         with open(increment_config_file_path, 'w') as f:
             increment_config.write(f)
         spawn_identical_configs(increment_config_file_path, number_of_jobs, increment_config)
-        if os.path.exists(increment_config_file_path):
-            os.remove(increment_config_file_path)
 
     print(f"Created {number_of_increments}x{number_of_jobs} config file(s) in {config_file_directory}.")
 
