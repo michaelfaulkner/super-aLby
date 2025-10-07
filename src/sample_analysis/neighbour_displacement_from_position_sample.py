@@ -51,7 +51,8 @@ def main(config_file_folder_stem, number_of_repeats):
                 for sample_index, sample in enumerate(position_sample):
                     for position_index, position_value in enumerate(position_sample[sample_index, :]):
                         neighbour_displacement[sample_index, position_index] = \
-                            (position_sample[sample_index, helper_methods.get_east_neighbour(position_index, number_of_particles)] - position_value)**2
+                            (position_sample[sample_index, helper_methods.get_east_neighbour(position_index, number_of_particles)] 
+                             - position_value)**2
                 
                 displacement[index, repeat] = np.mean(neighbour_displacement)
                 
@@ -60,19 +61,19 @@ def main(config_file_folder_stem, number_of_repeats):
                                     "timestep")}, this value will be skipped")
 
     err = np.std(displacement, axis=1)
-    displacement = np.mean(displacement, axis=1)
+    mean_neighbour_displacement = np.mean(displacement, axis=1)
 
-    N = N[np.nonzero(displacement)]
+    N = N[np.nonzero(mean_neighbour_displacement)]
     N = N[:,0]
-    displacement = displacement[np.nonzero(displacement)]
-    err = err[np.nonzero(displacement)]
-    e_coeffs = np.polyfit(np.log(N[N>0.5e3]), np.log(displacement[N>0.5e3]), deg=1)
+    mean_neighbour_displacement = mean_neighbour_displacement[np.nonzero(mean_neighbour_displacement)]
+    err = err[np.nonzero(mean_neighbour_displacement)]
+    e_coeffs = np.polyfit(np.log(N[N>0.5e3]), np.log(mean_neighbour_displacement[N>0.5e3]), deg=1)
     fitted_e = e_coeffs[1] + np.multiply(np.log(N[N>0.5e3]), e_coeffs[0])
     print(f"coeffs: {e_coeffs}")
 
     
     plt.plot(N[N>0.5e3], np.exp(fitted_e), color="#d97dd9ff")
-    plt.errorbar(N, displacement, err, fmt='o', capsize=3, markersize=3, color = "#9e0ebeff")
+    plt.errorbar(N, mean_neighbour_displacement, err, fmt='o', capsize=3, markersize=3, color = "#9e0ebeff")
 
     plt.xlabel(r"$N_{\tau}$", fontsize=17)
     plt.ylabel(r"$<(x_{i+1} - x_i)^2>$", fontsize=17)

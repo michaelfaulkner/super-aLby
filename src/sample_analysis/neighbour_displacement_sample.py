@@ -49,12 +49,10 @@ def main(config_file_folder_stem, number_of_repeats):
 
     timestep_arr = np.mean(timestep_arr, axis=1)
     #timestep_arr = timestep_arr[~np.isnan(mean_neighbour_displacement)]
-
     err = np.std(mean_neighbour_displacement, axis = 1)
     neighbour_displacement = np.mean(mean_neighbour_displacement, axis = 1)
-
-    print(neighbour_displacement)
-    print(np.shape(neighbour_displacement))
+    print(mean_neighbour_displacement)
+    print(err)
 
     timestep_arr = timestep_arr[np.nonzero(neighbour_displacement)]
     err = err[np.nonzero(neighbour_displacement)]
