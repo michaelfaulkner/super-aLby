@@ -43,7 +43,7 @@ def main(config_file_string, sample_name):
                 continue
             iact = get_iact_and_acf(sample[number_of_equilibration_iterations:])[0]
             temp_iacts.append(iact)
-        iacts.append(np.mean(temp_iacts))
+        iacts.append(np.mean(temp_iacts)) if temp_iacts else iacts.append(float('nan'))
 
     plt.scatter(temp_values, iacts, color='firebrick', marker='o', linestyle='-', alpha=0.7, linewidth=1.8)
 

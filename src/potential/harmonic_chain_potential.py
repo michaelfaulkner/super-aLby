@@ -226,9 +226,15 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         distance_to_next_pos_factor_event = (pos_dist_to_eq + rand_pos ** 0.5 if pos_dist_to_eq > 0
                                              else pos_dist_to_eq + (rand_pos + (-pos_dist_to_eq) ** 2) ** 0.5)
 
-        shortest_distance_to_next_factor_event, vetoing_index = (
-            min((distance_to_next_neg_factor_event, neg_neighbour_index),
-                (distance_to_next_pos_factor_event, pos_neighbour_index)))
+        shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
+            min((distance_to_next_neg_factor_event, neg_neighbour_index, neg_neighbour_position
+                 - active_particle_position),
+                (distance_to_next_pos_factor_event, pos_neighbour_index, pos_neighbour_position
+                 - active_particle_position)))
+
+        self.state_space_displacement += hop_displacement
+        self.total_event_distance += shortest_distance_to_next_factor_event
+        print(self.state_space_displacement / self.total_event_distance)
 
         return shortest_distance_to_next_factor_event[0], vetoing_index
 

@@ -39,6 +39,8 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
         """the following are currently only used for ECMC in HardDiskPotential - see main docstring above for details"""
         self.pointer_hop_distance = 0.0
         self.aggregate_pointer_hop_distance = 0.0
+        self.state_space_displacement = 0.0
+        self.total_event_distance = 0.0
         self.cell_boundary_event = False
 
     @abstractmethod

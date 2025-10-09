@@ -40,7 +40,7 @@ def main(config_file_string, sample_name):
             except FileNotFoundError:
                 continue
             temp_mean_samples.append(np.mean(sample[number_of_equilibration_iterations:]))
-        mean_samples.append(np.mean(temp_mean_samples))
+        mean_samples.append(np.mean(temp_mean_samples)) if temp_mean_samples else mean_samples.append(float('nan'))
 
     plt.scatter(temp_values, mean_samples, color='firebrick', marker='o', linestyle='-', alpha=0.7, linewidth=1.8)
 
