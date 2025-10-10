@@ -16,22 +16,51 @@ helper_methods = importlib.import_module("helper_methods")
 parsing = importlib.import_module("base.parsing")
 strings = importlib.import_module("base.strings")
 
-def main(data_path):
+def main(data_file_path):
 
-    sample_directory = data_path
-    temperature_index = 0
-    thinning_level = None
-    number_of_equilibration_iterations = None
-    mean_sample = np.load(data_path)[5000:]
+    numerical_data = np.zeros(len(os.listdir(data_file_path)))
+    analytical_data = np.zeros(len(os.listdir(data_file_path)))
+    T_data = np.zeros(len(os.listdir(data_file_path)))
 
-    fig, ax = plt.subplots(1,1)
-    ax.plot(np.arange(np.shape(mean_sample)[0]), mean_sample, color="purple")
-    ax.set_xlim(-500, 80000)
+    for index, folder in enumerate(os.listdir(data_file_path)):
 
-    plt.savefig("trace.png")
-    print(mean_sample)
-    print(np.mean(mean_sample))
+        omega = 1.0
+        total_time = float(folder.split("_")[1])
 
+        data_path = os.path.join(os.path.join(data_file_path, folder), "temperature_00_checkpoint_00_sample_of_mean_squared_positions.npy")
+        temperature_index = 0
+        thinning_level = None
+        number_of_equilibration_iterations = None
+        mean_sample = np.load(data_path)[5000:]
+        numerical = np.mean(mean_sample)
+        print(f"sample: {numerical}")
+        analytical = analytical_x_squared_open_worldlines(total_time, omega)
+        print(f"analytical: {analytical}")
+
+        numerical_data[index] = numerical
+        analytical_data[index] = analytical
+        T_data[index] = total_time
+        
+
+    plt.scatter(T_data, analytical_data, label="analytical")
+    plt.scatter(T_data, numerical_data, label="numerical")
+    plt.xlabel("T")
+    plt.ylabel("<x^2>")
+    plt.legend()
+    plt.savefig("test.png")
+
+
+
+
+
+def coth(x):
+    if x != 0:
+        return np.cosh(x)/np.sinh(x)
+    else:
+        raise Exception("Input to coth(x) may not be 0")
+
+def analytical_x_squared_open_worldlines(T, omega):
+    return (-1 + T * omega * coth(T * omega))/(2 * T * omega**2)
 
 if __name__ == '__main__':
     main(sys.argv[1])
