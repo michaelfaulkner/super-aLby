@@ -44,8 +44,10 @@ def main(iact_data_path, N):
 
     ax.set_xlabel(r"$m$", fontsize=20, labelpad=-10)
     ax.set_ylabel("IACT", fontsize=15, labelpad=0)
+    ax.set_title(r"$b=1.0$")
     ax.set_xscale("log")
     ax.set_yscale("log")
+    ax.annotate(f"Fit Coefficient: {e_coeffs[0]:.3f}", xy=(np.median(sorted_N), np.median(iact_mean_arr)-0.1*(np.max(iact_mean_arr)-np.min(iact_mean_arr))))
     #print(ax.get_ylim())
     #ax.set_ylim(0, 1.5e1)
     #ax.set_xlim(38, 13000)
