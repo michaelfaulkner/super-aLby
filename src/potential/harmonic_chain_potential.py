@@ -234,7 +234,6 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
 
         self.state_space_displacement += hop_displacement
         self.total_event_distance += shortest_distance_to_next_factor_event
-        print(self.state_space_displacement / self.total_event_distance)
 
         return shortest_distance_to_next_factor_event[0], vetoing_index
 
