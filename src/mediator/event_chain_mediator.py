@@ -161,8 +161,6 @@ class EventChainMediator(Mediator):
                     distance_to_next_velocity_refreshment -= distance_to_next_event
 
             super()._print_sample_progress(markov_chain_index)
-        print(f'Mean state space velocity: '
-              f'{(self._potential.state_space_displacement / self._potential.total_event_distance)[0]:.4f}')
 
     def _print_markov_process_summary(self):
         """Prints a summary of the completed Markov process to the screen."""

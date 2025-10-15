@@ -31,6 +31,7 @@ def main(config_file_string, sample_name):
     sample_paths = [[os.path.join(potential_directory_path, f"job_{i:02d}")
                      for i in range(num_jobs)] for potential_directory_path in sample_directory_paths]
 
+    mean_value, mean_error = None, None
     for temp_index, temp_sample in enumerate(sample_paths):
         means = []
         errors = []
@@ -47,6 +48,8 @@ def main(config_file_string, sample_name):
         mean_error = sum(error**2 for error in errors) ** 0.5 / len(errors)
 
         print(f"Temp: {temp_values[temp_index]} Mean value: {mean_value:.6f} +- {mean_error:.6f}")
+
+    return mean_value, mean_error
 
 
 if __name__ == '__main__':

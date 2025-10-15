@@ -148,10 +148,13 @@ class Mediator(metaclass=ABCMeta):
 
     def _write_checkpoint_index_and_configuration(self):
         """Saves current run index and final position state of the system."""
-        np.savetxt(os.path.join(os.getcwd(),  self._samplers[0].output_directory, "checkpoint_index.txt"),
-                   [self._checkpoint_index], fmt="%02d")
-        np.save(os.path.join(os.getcwd(),  self._samplers[0].output_directory, "configuration_at_checkpoint.npy"),
-                self._positions)
+        try:
+            sample_directory = self._samplers[0].output_directory
+        except IndexError:
+            sample_directory = self._event_samplers[0].output_directory
+        np.savetxt(os.path.join(os.getcwd(),  sample_directory, "checkpoint_index.txt"),
+               [self._checkpoint_index], fmt="%02d")
+        np.save(os.path.join(os.getcwd(),  sample_directory, "configuration_at_checkpoint.npy"), self._positions)
 
     @abstractmethod
     def _print_markov_process_summary(self):
