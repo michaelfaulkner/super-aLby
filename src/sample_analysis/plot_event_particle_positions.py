@@ -31,37 +31,21 @@ def find_mean_and_max_chain_length(event_step_sample):
 def main(config_file_string, n, m, vlines=1, remove_eq=0):
     """Plot the event particle positions, active particle indices, and event steps from index n to m."""
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-    (config_file_mediator, potential, factor_field, samplers, sample_directories, temperature,
+    (config_file_mediator, potential, factor_field, samplers, sample_directory, temperature,
      number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space) = (
         helper_methods.get_basic_config_data(config_file_string))
 
-    event_step_index = 0
-    event_particle_position_index = 0
-    event_active_particle_index_index = 0
-    for i, sampler in enumerate(samplers):
-        if "event_particle_position_sampler" in sampler:
-            event_particle_position_index = i
-        if "event_step_sampler" in sampler:
-            event_step_index = i
-        if "event_active_particle_index" in sampler:
-            event_active_particle_index_index = i
-
-    event_particle_position_directory = sample_directories[event_particle_position_index]
-    event_particle_position_path = os.path.join(event_particle_position_directory,
-                                                'checkpoint_00_sample_of_event_particle_position.npy')
+    event_particle_position_path = os.path.join(sample_directory, 'checkpoint_00_sample_of_event_particle_position.npy')
     event_particle_position_sample = np.load(event_particle_position_path)[remove_eq *
                                                                            number_of_equilibration_iterations:]
 
-    event_step_directory = sample_directories[event_step_index]
-    event_step_path = os.path.join(event_step_directory, 'checkpoint_00_sample_of_event_step.npy')
+    event_step_path = os.path.join(sample_directory, 'checkpoint_00_sample_of_event_step.npy')
     event_step_sample = np.load(event_step_path)[remove_eq * number_of_equilibration_iterations:]
 
-    event_active_particle_index_directory = sample_directories[event_active_particle_index_index]
     event_active_particle_index_path = (
-        os.path.join(event_active_particle_index_directory,
-                     'checkpoint_00_sample_of_event_active_particle_index.npy'))
-    event_active_particle_index_sample = np.load(event_active_particle_index_path)[remove_eq *
-                                                                                   number_of_equilibration_iterations:]
+        os.path.join(sample_directory, 'checkpoint_00_sample_of_event_active_particle_index.npy'))
+    event_active_particle_index_sample = (
+        np.load(event_active_particle_index_path))[remove_eq * number_of_equilibration_iterations:]
 
     n_cols = np.shape(event_particle_position_sample)[1]
 
@@ -94,7 +78,7 @@ def main(config_file_string, n, m, vlines=1, remove_eq=0):
     fig.suptitle(f'Step ratio: {prop_plus:.5f}, Mean pointer velocity: {mean_pointer_velocity:.6f}, '
                  f'Mean chain length: {mean_chain_length:.2f}, Max chain length: {max_chain_length}', y=0.95)
 
-    plt.savefig(os.path.join(event_particle_position_directory, f'event_particle_positions_{n}_{m}.png'))
+    plt.savefig(os.path.join(sample_directory, f'event_particle_positions_{n}_{m}.png'))
     plt.show()
 
 

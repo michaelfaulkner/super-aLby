@@ -17,21 +17,13 @@ parsing = importlib.import_module("base.parsing")
 
 def main(config_file_string):
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-    (config_file_mediator, potential, _, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
+    (config_file_mediator, potential, _, samplers, sample_directory, temperatures, number_of_equilibration_iterations,
      _, number_of_particles, _) = helper_methods.get_basic_config_data(config_file_string)
     sh_file_string = f"{os.path.splitext(config_file_string)[0]}.sh"
     num_jobs = int(helper_methods.read_variable_from_sh_file(sh_file_string, "NUM_JOBS"))
     temp_values = helper_methods.get_temps_from_bash_file(sh_file_string)
-    sample_directories = [[f"{sampler_directory}/temperature_{temperature_index:02d}/job_00"
-                           for sampler_directory in helper_methods.get_basic_config_data(config_file_string)[4]]
-                          for temperature_index in range(len(temp_values))]
-    potential_index = 0
-    for sampler_index, sampler in enumerate(samplers):
-        if "potential_sampler" in sampler:
-            potential_index = sampler_index
-    potential_directory_paths = [os.path.dirname(temp_sample[potential_index]) for temp_sample in sample_directories]
-    potential_sample_paths = [[os.path.join(potential_directory_path, f"job_{i:02d}")
-                               for i in range(num_jobs)] for potential_directory_path in potential_directory_paths]
+    potential_sample_paths = [[os.path.join(f"{sample_directory}/temperature_{temperature_index:02d}", f"job_{i:02d}")
+                               for i in range(num_jobs)] for temperature_index in range(len(temp_values))]
 
     specific_heats = []
     for temp_index, temp_sample in enumerate(potential_sample_paths):
@@ -57,9 +49,9 @@ def main(config_file_string):
     plt.yticks(fontsize=12)
 
     plt.tight_layout()
-    plt.savefig(os.path.join(os.path.dirname(potential_directory_paths[0]), "specific_heat_vs_temp.png"))
+    plt.savefig(os.path.join(sample_directory, "specific_heat_vs_temp.png"))
     plt.show()
-    np.save(os.path.join(os.path.dirname(potential_directory_paths[0]), "specific_heat_vs_temp.npy"),
+    np.save(os.path.join(sample_directory, "specific_heat_vs_temp.npy"),
             np.vstack([temp_values, specific_heats]))
 
 

@@ -13,7 +13,8 @@ class Mediator(metaclass=ABCMeta):
     """Abstract Mediator class."""
 
     def __init__(self, potential: Potential, samplers: Sequence[Sampler], temperature: float = 1.0,
-                 number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000, **kwargs):
+                 number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
+                 output_directory: str = None, **kwargs):
         r"""
         The constructor of the Mediator class.
 
@@ -34,6 +35,8 @@ class Mediator(metaclass=ABCMeta):
         number_of_observations : int, optional
             Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
+        output_directory : str
+            The name of the directory into which the sample file is written at the end of the run.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
 
@@ -65,6 +68,8 @@ class Mediator(metaclass=ABCMeta):
         if number_of_observations <= 0:
             raise ConfigurationError(f"Give a value greater than 0 as number_of_observations in "
                                      f"{self.__class__.__name__}.")
+        if type(output_directory) is not str:
+            raise ConfigurationError(f"Give a value of type str as output_directory in {self.__class__.__name__}.")
         self._potential = potential
         self._samplers = [sampler for sampler in samplers if 'event' not in str(sampler)]
         self._event_samplers = [sampler for sampler in samplers if 'event' in str(sampler)]
@@ -73,6 +78,7 @@ class Mediator(metaclass=ABCMeta):
         self._number_of_observations = number_of_observations
         self._total_number_of_iterations = number_of_equilibration_iterations + number_of_observations
         self._number_of_observations_between_screen_prints_for_clock = int(self._total_number_of_iterations / 10)
+        self._output_directory = output_directory
         """The following objects are set in self._set_arrays_and_counters()"""
         self._momenta = None
         self._positions = None
@@ -84,6 +90,7 @@ class Mediator(metaclass=ABCMeta):
 
     def generate_sample(self, restart_flag):
         """Generates a sample with the model temperature equal to self._temperature."""
+        os.makedirs(self._output_directory, exist_ok=True)
         self._set_arrays_and_counters()
         if restart_flag:
             self._reload_configuration_from_file_and_reset()
@@ -97,10 +104,11 @@ class Mediator(metaclass=ABCMeta):
             self._event_samples = [np.concatenate((self._initial_event_samples[event_sampler_index],
                                                    self._event_samples[event_sampler_index])) for
                                    event_sampler_index, sampler in enumerate(self._event_samplers)]
-        [sampler.output_sample(self._samples[sampler_index], self._checkpoint_index)
+        [sampler.output_sample(self._samples[sampler_index], self._checkpoint_index, self._output_directory)
          for sampler_index, sampler in enumerate(self._samplers)]
-        [event_sampler.output_sample(self._event_samples[event_sampler_index], self._checkpoint_index) 
-         for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
+        [event_sampler.output_sample(self._event_samples[event_sampler_index], self._checkpoint_index,
+                                     self._output_directory) for event_sampler_index, event_sampler in
+         enumerate(self._event_samplers)]
         self._write_checkpoint_index_and_configuration()
         self._print_markov_process_summary()
 
@@ -114,12 +122,11 @@ class Mediator(metaclass=ABCMeta):
 
     def _reload_configuration_from_file_and_reset(self):
         """Reloads position data from a previous sub-run in the case of checkpointing."""
-        self._positions = np.load(os.path.join(os.getcwd(), self._samplers[0].output_directory,
-                                               "configuration_at_checkpoint.npy"))
+        self._positions = np.load(os.path.join(os.getcwd(), self._output_directory, "configuration_at_checkpoint.npy"))
 
     def get_checkpoint_index(self):
         """Finds run index if checkpointing is being used."""
-        return int(np.loadtxt(os.path.join(os.getcwd(), self._samplers[0].output_directory, "checkpoint_index.txt"),
+        return int(np.loadtxt(os.path.join(os.getcwd(), self._output_directory, "checkpoint_index.txt"),
                               dtype='int')) + 1
 
     def _get_initial_sample(self):
@@ -148,13 +155,9 @@ class Mediator(metaclass=ABCMeta):
 
     def _write_checkpoint_index_and_configuration(self):
         """Saves current run index and final position state of the system."""
-        try:
-            sample_directory = self._samplers[0].output_directory
-        except IndexError:
-            sample_directory = self._event_samplers[0].output_directory
-        np.savetxt(os.path.join(os.getcwd(),  sample_directory, "checkpoint_index.txt"),
+        np.savetxt(os.path.join(os.getcwd(),  self._output_directory, "checkpoint_index.txt"),
                [self._checkpoint_index], fmt="%02d")
-        np.save(os.path.join(os.getcwd(),  sample_directory, "configuration_at_checkpoint.npy"), self._positions)
+        np.save(os.path.join(os.getcwd(),  self._output_directory, "configuration_at_checkpoint.npy"), self._positions)
 
     @abstractmethod
     def _print_markov_process_summary(self):

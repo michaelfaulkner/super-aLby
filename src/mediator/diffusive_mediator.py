@@ -11,7 +11,7 @@ class DiffusiveMediator(ReversibleMediator, metaclass=ABCMeta):
 
     def __init__(self, potential: Potential, samplers: Sequence[Sampler], temperature: float = 1.0,
                  number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
-                 proposal_dynamics_adaptor_is_on: bool = True, **kwargs):
+                 output_directory: str = None, proposal_dynamics_adaptor_is_on: bool = True, **kwargs):
         r"""
         The constructor of the DiffusiveMediator class.
 
@@ -32,6 +32,8 @@ class DiffusiveMediator(ReversibleMediator, metaclass=ABCMeta):
         number_of_observations : int, optional
             Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
+        output_directory : str
+            The name of the directory into which the sample file is written at the end of the run.
         proposal_dynamics_adaptor_is_on : bool, optional
             When True, the step size of the integrator is tuned during the equilibration process.
         kwargs : Any
@@ -53,7 +55,7 @@ class DiffusiveMediator(ReversibleMediator, metaclass=ABCMeta):
             If type(proposal_dynamics_adaptor_is_on) is not bool.
         """
         super().__init__(potential, samplers, temperature, number_of_equilibration_iterations, number_of_observations,
-                         proposal_dynamics_adaptor_is_on, **kwargs)
+                         output_directory, proposal_dynamics_adaptor_is_on, **kwargs)
 
     def _set_arrays_and_counters(self):
         """Sets the arrays (e.g. the sample array) and counters before the Markov process."""

@@ -18,7 +18,7 @@ class EventChainMediator(Mediator):
     def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
                  factor_field: FactorField = NoFactorField(), temperature: float = 1.0,
                  number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
-                 normalised_distance_between_measurements: float = 1.0,
+                 output_directory: str = None, normalised_distance_between_measurements: float = 1.0,
                  normalised_distance_between_velocity_refreshments: float = 1.0, teleportation_portal: bool = False):
         r"""
         Constructor of the EventChainMediator class.  Note that this class works only with potential classes that
@@ -41,6 +41,8 @@ class EventChainMediator(Mediator):
         number_of_observations : int, optional
             Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
+        output_directory : str
+            The name of the directory into which the sample file is written at the end of the run.
         normalised_distance_between_measurements : float, optional
             Total distance through state space between samples (normalised as indicated by the operations below).
         normalised_distance_between_velocity_refreshments : float, optional
@@ -66,7 +68,8 @@ class EventChainMediator(Mediator):
         base.exceptions.ConfigurationError
             If normalised_distance_between_velocity_refreshments is not greater than 0.0.
         """
-        super().__init__(potential, samplers, temperature, number_of_equilibration_iterations, number_of_observations)
+        super().__init__(potential, samplers, temperature, number_of_equilibration_iterations, number_of_observations,
+                         output_directory)
         """Re-instantiate self._potential as EuclideanSubspacePotential contains additional abstract methods."""
         self._potential = potential
         if normalised_distance_between_measurements <= 0.0:
