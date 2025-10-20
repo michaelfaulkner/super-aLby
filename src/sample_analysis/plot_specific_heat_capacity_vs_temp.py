@@ -1,4 +1,3 @@
-from markov_chain_diagnostics import get_sample_mean_and_error
 import importlib
 import matplotlib
 import matplotlib.pyplot as plt
