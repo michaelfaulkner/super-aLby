@@ -4,6 +4,7 @@ import matplotlib
 import numpy as np
 import os
 import sys
+import json
 
 # Add the directory that contains the module plotting_functions to sys.path
 this_directory = os.path.dirname(os.path.abspath(__file__))
@@ -37,11 +38,12 @@ def main(config_file_string, sample_name):
             errors.append(error)
 
         mean_value = np.mean(means)
-        mean_error = sum(error**2 for error in errors) ** 0.5 / len(errors)
+        mean_error = sum(error ** 2 for error in errors) ** 0.5 / len(errors)
 
         print(f"Temp: {temp_values[temp_index]} Mean value: {mean_value:.6f} +- {mean_error:.6f}")
 
-    return mean_value, mean_error
+        with open(os.path.join(sample_directory, "mean_values.json"), "w") as f:
+            json.dump({sample_name: (mean_value, mean_error)}, f)
 
 
 if __name__ == '__main__':
