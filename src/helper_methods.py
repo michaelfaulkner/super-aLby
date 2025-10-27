@@ -62,12 +62,21 @@ def get_basic_config_data(config_file_string):
     for possible_mediator in possible_mediators:
         try:
             potential = config.get(possible_mediator, "potential")
-            if "hard_disk_potential" in str(potential) and "quantum_hard_disk_potential" not in str(potential):
+            if "hard_disk_potential" in str(potential) and "quantum_hard_disk_potential" not in str(potential) and \
+            "one_dim_hard_disk_potential" not in str(potential):
                 number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
                 packing_fraction = parsing.get_value(config, "HardDiskPotential", "packing_fraction")
                 disk_radius = parsing.get_value(config, "HardDiskPotential", "disk_radius")
                 linear_system_size = math.sqrt(number_of_particles * math.pi / packing_fraction) * disk_radius
                 size_of_particle_space = [linear_system_size, linear_system_size]
+
+            elif "one_dim_hard_disk_potential" in str(potential) and "quantum_hard_disk_potential" not in str(potential):
+                number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
+                packing_fraction = parsing.get_value(config, "OneDimHardDiskPotential", "packing_fraction")
+                disk_radius = parsing.get_value(config, "OneDimHardDiskPotential", "disk_radius")
+                linear_system_size = math.sqrt(number_of_particles * math.pi / packing_fraction) * disk_radius
+                size_of_particle_space = [linear_system_size, linear_system_size]
+                
             elif "quantum_hard_disk_potential" in str(potential):
                 number_of_quantum_particles = parsing.get_value(config, "ModelSettings", "number_of_quantum_particles")
                 packing_fraction = parsing.get_value(config, "QuantumHardDiskPotential", "packing_fraction")
