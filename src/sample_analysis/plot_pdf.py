@@ -21,18 +21,20 @@ def main(config_file_strings, sample_name, figsize=(10, 8)):
         (config_file_mediator, potential, _, samplers, sample_directory, temperature, number_of_equilibration_iterations,
          _, number_of_particles, size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
         sample_directories.append(sample_directory)
-        eq_length = config.get("HarmonicChainPotential", "equilibrium_length")
+        # eq_length = config.get("HarmonicChainPotential", "equilibrium_length")
         try:
             sample = np.load(os.path.join(sample_directory, f"checkpoint_00_sample_of_{sample_name}.npy")).flatten()
         except FileNotFoundError:
             continue
-        plt.hist(sample[number_of_equilibration_iterations:], bins=50, alpha=0.6, density=True,
-                 label=f"T={temperature}_N={number_of_particles}_L={size_of_particle_space}_b={eq_length}")
+        plt.hist(sample[number_of_equilibration_iterations:], bins=50, alpha=0.6, density=True)
+        # plt.hist(sample[number_of_equilibration_iterations:], bins=50, alpha=0.6, density=True,
+        #         label=f"T={temperature} N={number_of_particles} L={size_of_particle_space} b={eq_length}")
 
     plt.xlabel(sample_name, fontsize=14)
     plt.ylabel("PDF", fontsize=14)
-    ax.set_xlim(0, 5.0)
-    ax.axvline(2.0, color='k', linestyle='--', label="L/N=2.0")
+    # ax.set_xlim(0, 7.0)
+    # ax.set_ylim(0, 1.5)
+    # ax.axvline(2.0, color='k', linestyle='--', label="L/N=2.0")
 
     plt.grid(True, which="both", linestyle="--", linewidth=0.7, alpha=0.6)
     plt.xticks(fontsize=12)
