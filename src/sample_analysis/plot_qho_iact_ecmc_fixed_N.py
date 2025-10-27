@@ -8,16 +8,16 @@ matplotlib.rcParams['mathtext.fontset'] = 'cm'
 def main(iact_data_path, N):
 
     N = int(N)
-    timestep_data = np.load(os.path.join(iact_data_path, "iact_ecmc_0.npy"))[:, 1]
-    sorted_timestep = timestep_data[np.argsort(timestep_data)]
-    storage_arr = np.zeros((len(timestep_data), N))
+    m_data = np.load(os.path.join(iact_data_path, "iact_ecmc_0.npy"))[:, 1]
+    sorted_m = m_data[np.argsort(m_data)]
+    storage_arr = np.zeros((len(m_data), N))
 
     for index in range(N):
-        iact_timestep =  np.load(os.path.join(iact_data_path, f"iact_ecmc_{index}.npy"))
-        iact_data = iact_timestep[:, 0] 
-        timestep_data = iact_timestep[:, 1] 
-        argsorted_data = np.argsort(timestep_data)
-        timestep_argsorted = timestep_data[argsorted_data]
+        iact_m =  np.load(os.path.join(iact_data_path, f"iact_ecmc_{index}.npy"))
+        iact_data = iact_m[:, 0] 
+        m_data = iact_m[:, 1] 
+        argsorted_data = np.argsort(m_data)
+        m_argsorted = m_data[argsorted_data]
         iact_data = iact_data[argsorted_data] 
         storage_arr[:, index] = iact_data
     
@@ -26,33 +26,33 @@ def main(iact_data_path, N):
     fit_index = -2
     start_fit = -7
 
-    sorted_timestep = np.trim_zeros(sorted_timestep, trim="f")
-    iact_mean_arr = np.mean(storage_arr[np.nonzero(sorted_timestep >= min)], axis = 1)
-    print(sorted_timestep)
+    sorted_m = np.trim_zeros(sorted_m, trim="f")
+    iact_mean_arr = np.mean(storage_arr[np.nonzero(sorted_m >= min)], axis = 1)
+    print(sorted_m)
     print(iact_mean_arr)
 
-    err = np.std(storage_arr[np.nonzero(sorted_timestep >= min)], axis=1)
-    sorted_N = 120 / sorted_timestep[np.nonzero(sorted_timestep >= min)]
-    print(sorted_N)
-    e_coeffs = np.polyfit(np.log(sorted_N[start_fit:]), np.log(iact_mean_arr[start_fit:]), deg=1)
-    fitted_e = e_coeffs[1] + np.multiply(np.log(sorted_N[start_fit:]), e_coeffs[0])
+    err = np.std(storage_arr[np.nonzero(sorted_m >= min)], axis=1)
+    sorted_m = sorted_m[np.nonzero(sorted_m >= min)]
+  
+    e_coeffs = np.polyfit(np.log(sorted_m[start_fit:]), np.log(iact_mean_arr[start_fit:]), deg=1)
+    fitted_e = e_coeffs[1] + np.multiply(np.log(sorted_m[start_fit:]), e_coeffs[0])
     print(e_coeffs)
 
     fig, ax = plt.subplots(1, 1)
-    ax.errorbar(sorted_N, iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="#ed1171ff")
-    ax.plot(sorted_N[start_fit:], np.exp(fitted_e), color="#d97dd9ff")
+    ax.errorbar(sorted_m, iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="#ed1171ff")
+    ax.plot(sorted_m[start_fit:], np.exp(fitted_e), color="#d97dd9ff")
 
     ax.set_xlabel(r"$m$", fontsize=20, labelpad=-10)
     ax.set_ylabel("IACT", fontsize=15, labelpad=0)
-    ax.set_title(r"$b=1.0$")
+    ax.set_title(r"$b=4.0$")
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.annotate(f"Fit Coefficient: {e_coeffs[0]:.3f}", xy=(np.median(sorted_N), np.median(iact_mean_arr)-0.1*(np.max(iact_mean_arr)-np.min(iact_mean_arr))))
+    ax.annotate(f"Fit Coefficient: {e_coeffs[0]:.3f}", xy=(np.median(sorted_m), np.median(iact_mean_arr)-0.1*(np.max(iact_mean_arr)-np.min(iact_mean_arr))))
     #print(ax.get_ylim())
     #ax.set_ylim(0, 1.5e1)
     #ax.set_xlim(38, 13000)
     plt.tight_layout()
-    plt.savefig("iact_fixed_N.pdf")
+    plt.savefig("iact_fixed_N_4.pdf")
     plt.clf()
 
 
