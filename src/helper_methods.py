@@ -75,7 +75,7 @@ def get_basic_config_data(config_file_string):
                 packing_fraction = parsing.get_value(config, "OneDimHardDiskPotential", "packing_fraction")
                 disk_radius = parsing.get_value(config, "OneDimHardDiskPotential", "disk_radius")
                 linear_system_size = math.sqrt(number_of_particles * math.pi / packing_fraction) * disk_radius
-                size_of_particle_space = [linear_system_size, linear_system_size]
+                size_of_particle_space = 2.0 * number_of_particles * disk_radius / packing_fraction
                 
             elif "quantum_hard_disk_potential" in str(potential):
                 number_of_quantum_particles = parsing.get_value(config, "ModelSettings", "number_of_quantum_particles")
