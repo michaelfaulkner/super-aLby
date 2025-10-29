@@ -3,6 +3,7 @@ import os
 import importlib
 import matplotlib
 import matplotlib.pyplot as plt
+import mpmath as mp
 import sample_getter
 import sys
 from configparser import NoOptionError
@@ -47,7 +48,7 @@ def main(data_file_path):
     plt.xlabel("T")
     plt.ylabel("<x^2>")
     plt.legend()
-    plt.savefig("test.png")
+    plt.savefig("dirichlet.png")
 
 
 
@@ -55,12 +56,15 @@ def main(data_file_path):
 
 def coth(x):
     if x != 0:
+        print(np.cosh(x))
+        print(np.sinh(x))
+
         return np.cosh(x)/np.sinh(x)
     else:
         raise Exception("Input to coth(x) may not be 0")
 
 def analytical_x_squared_open_worldlines(T, omega):
-    return (-1 + T * omega * coth(T * omega))/(2 * T * omega**2)
+    return (-1 + T * omega *mp.coth(T * omega))/(2 * T * omega**2)
 
 if __name__ == '__main__':
     main(sys.argv[1])
