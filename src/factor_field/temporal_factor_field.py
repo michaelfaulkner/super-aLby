@@ -43,4 +43,4 @@ class TemporalFactorField(FactorField):
         veto_index : int
             The particle index responsible for the event.
         """
-        return - np.log(np.random.uniform(0, 1)) / temperature / self._prefactor, active_particle_index
+        return - np.log(np.random.uniform(0, 1)) * temperature / self._prefactor, active_particle_index
