@@ -6,7 +6,7 @@ from .euclidean_subspace_potential import EuclideanSubspacePotential
 from base.exceptions import ConfigurationError, MediatorError
 from base.vectors import get_shortest_vectors_on_torus
 from linked_lists.two_dimensional_linked_lists import TwoDimensionalLinkedLists
-from model_settings import size_of_particle_space, number_of_particles
+from model_settings import size_of_particle_space, number_of_particles, dimensionality_of_particle_space
 
 
 class HardDiskPotential(EuclideanSubspacePotential):
@@ -61,10 +61,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
             approximately 0.9, respectively).
         """
         super().__init__(prefactor=prefactor)
-        if not math.isclose(size_of_particle_space[0], size_of_particle_space[1]):
-            raise ConfigurationError(
-                f"Set each Cartesian component of size_of_particle_space to a common float when using "
-                f"{self.__class__.__name__}, as this class currently provides only for square compact subspaces.")
         for linear_length in size_of_particle_space:
             if disk_radius > 0.5 * linear_length:
                 raise ConfigurationError(
@@ -77,7 +73,12 @@ class HardDiskPotential(EuclideanSubspacePotential):
         self._disk_radius = disk_radius
         self._packing_fraction = packing_fraction
         number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * self._disk_radius))
-        self._linked_lists = TwoDimensionalLinkedLists(number_of_cells_in_each_direction)
+        if dimensionality_of_particle_space > 1:
+            if not math.isclose(size_of_particle_space[0], size_of_particle_space[1]):
+                raise ConfigurationError(
+                    f"Set each Cartesian component of size_of_particle_space to a common float when using "
+                    f"{self.__class__.__name__}, as this class currently provides only for square compact subspaces.")
+            self._linked_lists = TwoDimensionalLinkedLists(number_of_cells_in_each_direction)
         self._active_cell_index = 0
         print(f"System length along each Cartesian dimension is {size_of_particle_space}.")
         print(f"Number of cells along each Cartesian dimension is {number_of_cells_in_each_direction}.")
@@ -102,9 +103,9 @@ class HardDiskPotential(EuclideanSubspacePotential):
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
         """
-        This is a dummy method as it is not relevant to hard-sphere models.  For some candidate configuration and
-            smooth potential function, the functionality provides MetropolisMediator with the increase in the value of
-            the potential function (relative to the current configuration).
+        This method supports 1D systems only.  For some candidate configuration and smooth potential function,
+            the functionality provides MetropolisMediator with the increase in the value of the potential function
+            (relative to the current configuration).
 
         Parameters
         ----------
@@ -122,7 +123,12 @@ class HardDiskPotential(EuclideanSubspacePotential):
         float
             The potential difference resulting from moving the single active particle to candidate_position.
         """
-        raise SystemError(f"The get_gradient method of {self.__class__.__name__} has not been written.")
+        minimum_allowed_separation = 2.0 * self._disk_radius
+        for neighbour_index in range(number_of_particles):
+            if (neighbour_index != active_particle_index and np.linalg.norm(get_shortest_vectors_on_torus(
+                    positions[neighbour_index] - candidate_position)) < minimum_allowed_separation):
+                return float('inf')
+        return 0.0
 
     def get_gradient(self, positions):
         """
@@ -166,6 +172,10 @@ class HardDiskPotential(EuclideanSubspacePotential):
             particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
+        if dimensionality_of_particle_space == 1:
+            positions = self._get_candidate_initial_positions(number_of_particles)
+            self._check_for_disk_overlaps(positions)
+            return positions
         try:
             index_range = [int(number_of_particles ** 0.5), int(number_of_particles ** 0.5 + 2)]
             positions = self._get_candidate_initial_positions(index_range)
@@ -200,9 +210,9 @@ class HardDiskPotential(EuclideanSubspacePotential):
             of disks along any row and index_range[1] the total number of rows.  This reflects the fully packed
             configuration presented in figure 4 of Statist. Sci. 39, 137 (2024).
 
-        N.B. As it is challenging to generate close-packed configurations of hard disks, we recommend choosing
-            number_of_particles equal to either a square number or the product of two adjacent integers.  This avoids
-            non-complete rows of disks (in the closed-packed configuration).
+        N.B. As it is challenging to generate close-packed configurations of hard disks, for 2D configurations,
+            we recommend choosing number_of_particles equal to either a square number or the product of two adjacent
+            integers. This avoids non-complete rows of disks (in the closed-packed configuration).
 
         Returns
         -------
@@ -212,9 +222,14 @@ class HardDiskPotential(EuclideanSubspacePotential):
             particles (confined to two-dimensional space) at positions (0.0, 1.0), (2.0, 3.0) and (- 1.0, - 2.0) is
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
+        positions = np.zeros((number_of_particles, dimensionality_of_particle_space))
         delta_x = 1.00001 * 2.0 * self._disk_radius
+        if dimensionality_of_particle_space == 1:
+            for index in range(index_range):
+                positions[index, 0] = (index * delta_x / self._packing_fraction) % size_of_particle_space
+            positions = get_shortest_vectors_on_torus(positions)
+            return positions
         delta_y = [1.00001 * self._disk_radius, 1.00001 * self._disk_radius * 3.0 ** 0.5]
-        positions = np.zeros((number_of_particles, 2))
         for index_x in range(index_range[0]):
             for index_y in range(index_range[1]):
                 if index_x + index_y * index_range[0] + 1 > number_of_particles:
@@ -240,6 +255,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
             numpy array (of integers) of length dimensionality_of_particle_space, where the nth component represents the
             velocity of the active particle along the nth Cartesian direction.
         """
+        if dimensionality_of_particle_space == 1:
+            return 1
         if np.random.uniform() < 0.5:
             return np.array([1, 0])
         return np.array([0, 1])
@@ -268,6 +285,12 @@ class HardDiskPotential(EuclideanSubspacePotential):
         vetoing_particle_index : int
             The index of the particle that triggers the event.
         """
+        if dimensionality_of_particle_space == 1:
+            vetoing_particle_index = (active_particle_index + 1) % number_of_particles if movement_direction > 0 else (
+                    (active_particle_index - 1) % number_of_particles)
+            distance_to_next_event = ((positions[vetoing_particle_index, 0] - positions[active_particle_index, 0])
+                                      % size_of_particle_space[0] - 2.0 * self._disk_radius)
+            return distance_to_next_event, vetoing_particle_index
         self.pointer_hop_distance = 0.0
         active_particle_position = positions[active_particle_index]
         if self.cell_boundary_event:
@@ -349,9 +372,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                                                                            positions[particle_index_2]))
                 if (minimal_separation_distance < 2.0 * self._disk_radius and not
                         abs(minimal_separation_distance - 2.0 * self._disk_radius) < 1.0e-12):
-                    raise ValueError(
-                        f"Disks {particle_index_1} and {particle_index_2} are overlapping.  Their minimal separation "
-                        f"distance is {minimal_separation_distance}.")
+                    return True
+        return False
 
     @staticmethod
     def _get_motion_index_and_other_index(movement_direction):

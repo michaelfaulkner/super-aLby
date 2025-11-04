@@ -10,7 +10,7 @@ class StructureFactorSampler(ObservationSampler):
     Class for taking observations of the structure factor S(q,t).
     """
 
-    def __init__(self, output_directory: str):
+    def __init__(self, output_directory: str, wave_vector: float = 2.0 * np.pi / size_of_particle_space):
         """
         The constructor of the StructureFactorSampler class.
 
@@ -21,16 +21,13 @@ class StructureFactorSampler(ObservationSampler):
         ----------
         output_directory : str
             The filename onto which the sample is written at the end of the run.
+        wave_vector : numpy.ndarray
+            Defines the wave vector of the Fourier component of the particle density over which to evaluate the
+            structure factor. Default = 2.0 * pi / L = slowest, longest wavelength oscillations.
 
-        Raises
-        ------
-        base.exceptions.ConfigurationError
-            If dimensionality_of_particle_space does not equal 1.
         """
         super().__init__(output_directory)
-        if len(size_of_particle_space) != 1:
-            raise ConfigurationError(f"{self.__class__.__name__} only supports 1D systems.")
-        self._q = 2.0 * np.pi / size_of_particle_space
+        self._wave_vector = wave_vector
 
     def get_empty_sample_array(self, total_number_of_iterations):
         """
@@ -69,9 +66,9 @@ class StructureFactorSampler(ObservationSampler):
         Returns
         -------
         float
-            The observation of the structure factor S(q,t) with q = 2π / L.
+            The observation of the structure factor S(q,t).
         """
-        rho_q = np.sum(np.exp(1j * self._q * positions.reshape(-1)))
+        rho_q = np.sum(np.exp(1j * np.dot(self._wave_vector, positions.T)))
         return (np.abs(rho_q) ** 2) / float(number_of_particles)
 
     def output_sample(self, sample, checkpoint_index):

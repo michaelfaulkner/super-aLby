@@ -78,7 +78,7 @@ class EventChainMediator(Mediator):
         self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
         self._distance_between_velocity_refreshments = (normalised_distance_between_velocity_refreshments *
                                                         number_of_particles)
-        if "HardDiskPotential" in str(potential):
+        if "HardDiskPotential" in str(potential) and len(size_of_particle_space) > 1:
             self._distance_between_measurements *= np.min(size_of_particle_space)
             self._distance_between_velocity_refreshments *= np.min(size_of_particle_space)
         print(f"Distance between event-chain measurements is {self._distance_between_measurements}")
@@ -104,6 +104,8 @@ class EventChainMediator(Mediator):
         active_particle_index = np.random.randint(0, number_of_particles)
         movement_direction = self._potential.get_random_event_chain_velocity()
         distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
+        distance_to_next_velocity_refreshment = np.random.uniform(0, size_of_particle_space -
+                                                                  2.0 * number_of_particles)
         for markov_chain_index in range(self._total_number_of_iterations):
             distance_to_next_measurement = self._distance_between_measurements
             while True:
@@ -132,6 +134,8 @@ class EventChainMediator(Mediator):
                     active_particle_index = np.random.randint(0, number_of_particles)
                     movement_direction = self._potential.get_random_event_chain_velocity()
                     distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
+                    distance_to_next_velocity_refreshment = np.random.uniform(0, size_of_particle_space -
+                                                                              2.0 * number_of_particles)
 
                 else:
                     self._potential.update_position(self._positions, distance_to_next_event,

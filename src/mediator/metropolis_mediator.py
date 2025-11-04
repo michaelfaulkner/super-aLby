@@ -73,7 +73,8 @@ class MetropolisMediator(DiffusiveMediator):
             candidate_position = self._noise_distribution.get_candidate_position(active_particle_index, self._positions)
             potential_difference = self._potential.get_potential_difference(active_particle_index, candidate_position,
                                                                             self._positions)
-            if potential_difference < 0.0 or np.random.uniform(0.0, 1.0) < np.exp(- potential_difference / self._temperature):
+            if (potential_difference < 0.0 or np.random.uniform(0.0, 1.0) <
+                    np.exp(- potential_difference / self._temperature)):
                 self._positions[active_particle_index] = candidate_position
                 self._number_of_accepted_trajectories += 1
 
