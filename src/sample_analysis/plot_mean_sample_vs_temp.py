@@ -20,7 +20,8 @@ def main(config_file_string, sample_name):
     sh_file_string = f"{os.path.splitext(config_file_string)[0]}.sh"
     num_jobs = int(helper_methods.read_variable_from_sh_file(sh_file_string, "NUM_JOBS"))
     temp_values = helper_methods.get_temps_from_bash_file(sh_file_string)
-    sample_paths = [[os.path.join(f"{sample_directory}/temperature_{temperature_index:02d}", f"job_{i:02d}")
+    sweep_name = helper_methods.read_variable_from_sh_file(sh_file_string, "CONFIG_VARIABLE")
+    sample_paths = [[os.path.join(f"{sample_directory}/{sweep_name}_{temperature_index:02d}", f"job_{i:02d}")
                      for i in range(num_jobs)] for temperature_index in range(len(temp_values))]
 
     mean_samples = []

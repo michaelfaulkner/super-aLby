@@ -68,12 +68,14 @@ def main(config_file_string, same_plot=1):
         ax[1].set_ylabel("Mean Index Space Velocity", fontsize=14)
         ax[1].grid(True, which="both", linestyle="--", linewidth=0.7, alpha=0.7)
 
-    plt.title(f"N={number_of_particles}_L={size_of_particle_space}_T={temperature}")
+    plt.title(f"N={number_of_particles} L={size_of_particle_space} T={temperature}")
     plt.legend()
     plt.savefig(os.path.join(sample_directory, f"index_and_state_space_velocity_{sweep_name}_sweep.png"))
     plt.show()
     np.save(os.path.join(sample_directory, f"index_and_state_space_velocity_{sweep_name}_sweep.npy"),
             np.vstack([sweep_values, state_space_velocities, index_space_velocities]))
+
+    print(f"Plot saved: {os.path.join(sample_directory, f'index_and_state_space_velocity_{sweep_name}_sweep.png')}")
 
     return fig, ax
 
