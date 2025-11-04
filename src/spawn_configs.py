@@ -11,15 +11,16 @@ def spawn_identical_configs(config_file_location, number_of_jobs, config):
     config_file_directory = os.path.splitext(config_file_location)[0]
     config_file_basename = os.path.basename(config_file_directory)
     os.makedirs(config_file_directory, exist_ok=True)
-    # mediator = next(section for section in config.sections() if fnmatch.fnmatch(section, "*Mediator"))
-    sampler = next(section for section in config.sections() if fnmatch.fnmatch(section, "*Sampler"))
+    mediator = next(section for section in config.sections() if fnmatch.fnmatch(section, "*Mediator"))
+    samplers = [section for section in config.sections() if fnmatch.fnmatch(section, "*Sampler")]
     # output_directory = config.get(mediator, "output_directory")
-    output_directory = config.get(sampler, "output_directory")
+    output_directory = config.get(samplers[0], "output_directory")
     for job_index in range(number_of_jobs):
         job_config = copy.deepcopy(config)
         job_config_file_path = os.path.join(config_file_directory, f"job_{job_index:02d}.ini")
         job_output_directory = os.path.join(output_directory, config_file_basename, f"job_{job_index:02d}")
-        job_config.set(sampler, "output_directory", job_output_directory)
+        for sampler in samplers:
+            job_config.set(sampler, "output_directory", job_output_directory)
         with open(job_config_file_path, 'w') as f:
             job_config.write(f)
     print(f"Created {number_of_jobs} config file(s) in {config_file_directory}.")
