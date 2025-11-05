@@ -56,9 +56,9 @@ def get_basic_config_data(config_file_string):
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     possible_mediators = ["UnboundedLeapfrogMediator", "ToroidalLeapfrogMediator", "LazyToroidalLeapfrogMediator",
                           "MetropolisMediator", "SwendsenWangMediator", "WolffMediator", "EventChainMediator"]
-    (config_file_mediator, potential, factor_field, samplers, temperature, number_of_equilibration_iterations,
-     number_of_observations, number_of_particles, size_of_particle_space) = (None, None, None, None, None, None, None,
-                                                                             None, None)
+    (config_file_mediator, potential, factor_field, samplers, output_directory, temperature,
+     number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space) = (
+        None, None, None, None, None, None, None, None, None, None)
     for possible_mediator in possible_mediators:
         try:
             potential = config.get(possible_mediator, "potential")
@@ -107,6 +107,7 @@ def get_basic_config_data(config_file_string):
             number_of_equilibration_iterations = parsing.get_value(config, possible_mediator,
                                                                    "number_of_equilibration_iterations")
             number_of_observations = parsing.get_value(config, possible_mediator, "number_of_observations")
+            output_directory = parsing.get_value(config, possible_mediator, "output_directory")
             config_file_mediator = strings.to_snake_case(possible_mediator)
             break
         except NoSectionError:
@@ -115,8 +116,7 @@ def get_basic_config_data(config_file_string):
         raise ConfigurationError("Mediator not one of UnboundedLeapfrogMediator, ToroidalLeapfrogMediator, "
                                  "LazyToroidalLeapfrogMediator, MetropolisMediator, SwendsenWangMediator, "
                                  "WolffMediator or EventChainMediator.")
-    sample_directories = [config.get(strings.to_camel_case(sampler), "output_directory") for sampler in samplers]
-    return (config_file_mediator, potential, factor_field, samplers, sample_directories, temperature,
+    return (config_file_mediator, potential, factor_field, samplers, output_directory, temperature,
             number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space)
 
 

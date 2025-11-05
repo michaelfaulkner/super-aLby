@@ -36,6 +36,8 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
             If prefactor is not greater than 0.0.
         """
         super().__init__(prefactor, **kwargs)
+        self.state_space_displacement = 0.0
+        self.total_event_distance = 0.0
         """the following are currently only used for ECMC in HardDiskPotential - see main docstring above for details"""
         self.pointer_hop_distance = 0.0
         self.aggregate_pointer_hop_distance = 0.0

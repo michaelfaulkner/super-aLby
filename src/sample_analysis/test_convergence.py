@@ -22,9 +22,9 @@ def main(config_file_string):
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     """nb, argument of parsing.parse_options() must be of type Sequence[str]"""
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-    (config_file_mediator, potential, _, samplers, sample_directories, temperature, number_of_equilibration_iterations,
+    (config_file_mediator, potential, _, samplers, sample_directory, temperature, number_of_equilibration_iterations,
      _, number_of_particles, _) = helper_methods.get_basic_config_data(config_file_string)
-    temperatures = None
+    temperatures, sample_directories = None, None
     if potential == "ising_potential":
         sh_file_string = f"{os.path.splitext(config_file_string)[0]}.sh"
         sweep_variable = helper_methods.read_variable_from_sh_file(sh_file_string, "CONFIG_VARIABLE")
@@ -35,9 +35,8 @@ def main(config_file_string):
         if not (len(temperatures) == 2 and temperatures[0] == 1.2 and temperatures[1] == 3.0):
             raise ValueError("IsingPotential reference data only available for models for which two sampling "
                              "temperatures are given with values 1.2 and 3.")
-        sample_directories = [[f"{sampler_directory}/temperature_{temperature_index:02d}/job_00"
-                               for sampler_directory in helper_methods.get_basic_config_data(config_file_string)[4]]
-                              for temperature_index in range(len(temperatures))]
+        sample_directories = [(f"{helper_methods.get_basic_config_data(config_file_string)[4]}/temperature_"
+                               f"{temperature_index:02d}/job_00") for temperature_index in range(len(temperatures))]
 
     try:
         potential_prefactor = parsing.get_value(config, strings.to_camel_case(potential), "prefactor")
@@ -204,7 +203,7 @@ def main(config_file_string):
                     if sampler == "standard_mean_position_sampler":
                         # expected magnetic-norm density is E[|m|] où m = sum_i s_i / N
                         magnetic_norm_density_mean_and_error = get_sample_mean_and_error(
-                            sample_getter.get_magnetic_norm_density(sample_directories[temperature_index][sample_index],
+                            sample_getter.get_magnetic_norm_density(sample_directories[temperature_index],
                                                                     temperature,0, number_of_particles,
                                                                     number_of_equilibration_iterations, thinning_level))
                         print(f"Sample estimate of expected magnetic-norm density = "
@@ -215,9 +214,8 @@ def main(config_file_string):
                         # but to compare Swendsen-Wang/Wolff and Metropolis, we estimate beta N Var[|m|] (the expected
                         # magnetic-norm susc (per particle))
                         magnetic_norm_susceptibility_mean_and_error = get_sample_mean_and_error(
-                            sample_getter.get_magnetic_norm_susceptibility(sample_directories[temperature_index]
-                                                                           [sample_index], temperature,
-                                                                           0,
+                            sample_getter.get_magnetic_norm_susceptibility(sample_directories[temperature_index],
+                                                                           temperature,0,
                                                                            number_of_particles,
                                                                            number_of_equilibration_iterations,
                                                                            thinning_level))
@@ -227,7 +225,7 @@ def main(config_file_string):
                               f"{expected_magnetic_norm_susc_per_particle_reference_values[temperature_index]})")
                     elif sampler == "potential_sampler":
                         potential_mean_and_error = get_sample_mean_and_error(sample_getter.get_potential(
-                            sample_directories[temperature_index][sample_index], temperature, 0, number_of_particles,
+                            sample_directories[temperature_index], temperature, 0, number_of_particles,
                             number_of_equilibration_iterations, thinning_level))
                         print(f"Sample estimate of expected potential per particle = "
                               f"{potential_mean_and_error[0] / number_of_particles} +- "
@@ -236,7 +234,7 @@ def main(config_file_string):
                         # expected specific heat is \partial_T E[U] = beta^2 Var[U] (a dimensionless quantity) -- we
                         # estimate beta^2 Var[U] / N (the expected specific heat per particle)
                         specific_heat_mean_and_error = get_sample_mean_and_error(sample_getter.get_specific_heat(
-                            sample_directories[temperature_index][sample_index], temperature, 0, number_of_particles,
+                            sample_directories[temperature_index], temperature, 0, number_of_particles,
                             number_of_equilibration_iterations, thinning_level))
                         print(f"Sample estimate of expected specific heat per particle = "
                               f"{specific_heat_mean_and_error[0] / number_of_particles} +- "
@@ -270,25 +268,25 @@ def main(config_file_string):
     if "ising_potential" not in potential:
         reference_cdf = get_cumulative_distribution(reference_sample)
         if "coulomb" in potential or "lennard_jones" in potential:
-            sample = sample_getter.get_particle_separations(sample_directories[0], temperature, 0,
+            sample = sample_getter.get_particle_separations(sample_directory, temperature, 0,
                                                             number_of_particles,
                                                             number_of_equilibration_iterations).flatten()
         elif "xy" in potential:
-            sample = sample_getter.get_xy_magnetisation_norm(sample_directories[0], temperature, 0,
+            sample = sample_getter.get_xy_magnetisation_norm(sample_directory, temperature, 0,
                                                              number_of_particles,
                                                              number_of_equilibration_iterations).flatten()
         elif "harmonic_chain" in potential:
-            sample = sample_getter.get_structure_factor(sample_directories[0], temperature, 0, number_of_particles,
+            sample = sample_getter.get_structure_factor(sample_directory, temperature, 0, number_of_particles,
                                                         number_of_equilibration_iterations).flatten()
         elif "quantum_harmonic_oscillator_potential" in potential:
-            sample = sample_getter.get_mean_squared_positions(sample_directories[0], temperature, 0,
+            sample = sample_getter.get_mean_squared_positions(sample_directory, temperature, 0,
                                                               number_of_particles, number_of_equilibration_iterations
                                                               ).flatten()
         elif "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
-            sample = sample_getter.get_pressure(sample_directories[0], temperature,0,
+            sample = sample_getter.get_pressure(sample_directory, temperature,0,
                                                 number_of_particles, number_of_equilibration_iterations).flatten()
         else:
-            sample = sample_getter.get_positions(sample_directories[0], temperature, 0, number_of_particles,
+            sample = sample_getter.get_positions(sample_directory, temperature, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
 
         sample_cdf = get_cumulative_distribution(sample)
