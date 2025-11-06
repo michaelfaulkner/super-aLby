@@ -13,7 +13,7 @@ class WolffMediator(IsingClusterMediator):
 
     def __init__(self, potential: IsingPotential, samplers: Sequence[Sampler], temperature: float = 1.0,
                  number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
-                 proposal_dynamics_adaptor_is_on: bool = False):
+                 output_directory: str = None, proposal_dynamics_adaptor_is_on: bool = False):
         r"""
         The constructor of the WolffMediator class.
 
@@ -31,6 +31,8 @@ class WolffMediator(IsingClusterMediator):
         number_of_observations : int, optional
             Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
+        output_directory : str
+            The name of the directory into which the sample file is written at the end of the run.
         proposal_dynamics_adaptor_is_on : bool, optional
             When True, the step size of the integrator is tuned during the equilibration process.
 
@@ -54,7 +56,7 @@ class WolffMediator(IsingClusterMediator):
             If proposal_dynamics_adaptor_is_on is not False.
         """
         super().__init__(potential, samplers, temperature, number_of_equilibration_iterations, number_of_observations,
-                         proposal_dynamics_adaptor_is_on)
+                         output_directory, proposal_dynamics_adaptor_is_on)
         """Re-instantiate self._potential as IsingPotential contains lattice_length."""
         self._potential = potential
 

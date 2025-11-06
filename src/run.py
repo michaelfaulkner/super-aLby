@@ -43,7 +43,7 @@ def main(argv: Sequence[str]) -> None:
     
     config = read_config(args.config_file)
     mediator = factory.build_from_config(config, to_camel_case(config.get("Run", "mediator")), "mediator")
-    output_directory = get_basic_config_data(config_file_location)[4][0]
+    output_directory = get_basic_config_data(config_file_location)[4]
     restart_flag = os.path.isfile(os.path.join(os.getcwd(), output_directory, "checkpoint_index.txt"))
 
     if restart_flag:

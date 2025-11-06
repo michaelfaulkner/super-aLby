@@ -226,10 +226,14 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         distance_to_next_pos_factor_event = (pos_dist_to_eq + rand_pos ** 0.5 if pos_dist_to_eq > 0
                                              else pos_dist_to_eq + (rand_pos + (-pos_dist_to_eq) ** 2) ** 0.5)
 
-        shortest_distance_to_next_factor_event, vetoing_index = (
-            min((distance_to_next_neg_factor_event, neg_neighbour_index),
-                (distance_to_next_pos_factor_event, pos_neighbour_index)))
+        shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
+            min((distance_to_next_neg_factor_event, neg_neighbour_index, neg_neighbour_position
+                 - active_particle_position),
+                (distance_to_next_pos_factor_event, pos_neighbour_index, pos_neighbour_position
+                 - active_particle_position)))
 
+        self.update_state_and_index_space_displacements(shortest_distance_to_next_factor_event, active_particle_index,
+                                                        vetoing_index, hop_displacement)
         return shortest_distance_to_next_factor_event[0], vetoing_index
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
@@ -261,7 +265,22 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """Updates the position of the active particle following an event."""
         positions[active_particle_index] = positions[active_particle_index] + movement_direction * displacement_distance
+        if positions[active_particle_index] > 1e10:
+            positions -= 1e10
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""
         raise SystemError(f"The get_portal_candidate method of {self.__class__.__name__} has not been written.")
+
+    def update_state_and_index_space_displacements(self, displacement_distance, active_particle_index,
+                                                   vetoing_index, hop_displacement):
+        """Updates state space and index space displacements following an event."""
+        self.state_space_displacement += hop_displacement[0]
+        self.total_event_distance += displacement_distance[0]
+        if vetoing_index == (active_particle_index + 1) % number_of_particles:
+            self.index_space_displacement += 1
+        if vetoing_index == (active_particle_index - 1) % number_of_particles:
+            self.index_space_displacement -= 1
+        self.number_of_index_space_moves += 1
+
+
