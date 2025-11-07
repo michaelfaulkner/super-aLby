@@ -98,8 +98,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
         float
             The potential function.
         """
-        self._check_for_disk_overlaps(positions)
-        return 0.0
+        return float('inf') if self._check_for_disk_overlaps(positions)[0] else 0.0
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
         """
@@ -174,19 +173,26 @@ class HardDiskPotential(EuclideanSubspacePotential):
         """
         if dimensionality_of_particle_space == 1:
             positions = self._get_candidate_initial_positions(number_of_particles)
-            self._check_for_disk_overlaps(positions)
             return positions
         try:
             index_range = [int(number_of_particles ** 0.5), int(number_of_particles ** 0.5 + 2)]
             positions = self._get_candidate_initial_positions(index_range)
-            self._check_for_disk_overlaps(positions)
+            overlap_exists, particle_index_1, particle_index_2, minimal_separation_distance = (
+                self._check_for_disk_overlaps(positions))
+            if overlap_exists:
+                raise ValueError(f"Disks {particle_index_1} and {particle_index_2} are overlapping. "
+                                 f"Their minimal separation distance is {minimal_separation_distance}.")
             print("Using the primary method for generating initial hard-disk configurations (see "
                   "HardDiskPotential.get_initial_positions()).")
         except ValueError:
             try:
                 index_range = [int(number_of_particles ** 0.5 + 1), int(number_of_particles ** 0.5 + 1)]
                 positions = self._get_candidate_initial_positions(index_range)
-                self._check_for_disk_overlaps(positions)
+                overlap_exists, particle_index_1, particle_index_2, minimal_separation_distance = (
+                    self._check_for_disk_overlaps(positions))
+                if overlap_exists:
+                    raise ValueError(f"Disks {particle_index_1} and {particle_index_2} are overlapping. "
+                                     f"Their minimal separation distance is {minimal_separation_distance}.")
                 print("Using the alternative method for generating initial hard-disk configurations (due to overlaps "
                       "induced by the primary method - see HardDiskPotential.get_initial_positions()).")
             except ValueError:
@@ -226,7 +232,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
         delta_x = 1.00001 * 2.0 * self._disk_radius
         if dimensionality_of_particle_space == 1:
             for index in range(index_range):
-                positions[index, 0] = (index * delta_x / self._packing_fraction) % size_of_particle_space
+                positions[index, 0] = index * delta_x / self._packing_fraction
             positions = get_shortest_vectors_on_torus(positions)
             return positions
         delta_y = [1.00001 * self._disk_radius, 1.00001 * self._disk_radius * 3.0 ** 0.5]
@@ -290,6 +296,10 @@ class HardDiskPotential(EuclideanSubspacePotential):
                     (active_particle_index - 1) % number_of_particles)
             distance_to_next_event = ((positions[vetoing_particle_index, 0] - positions[active_particle_index, 0])
                                       % size_of_particle_space[0] - 2.0 * self._disk_radius)
+            hop_displacement = positions[vetoing_particle_index] - positions[active_particle_index] if (
+                    movement_direction > 0) else positions[active_particle_index] - positions[vetoing_particle_index]
+            self.update_state_and_index_space_displacements(distance_to_next_event, active_particle_index,
+                                                            vetoing_particle_index, hop_displacement)
             return distance_to_next_event, vetoing_particle_index
         self.pointer_hop_distance = 0.0
         active_particle_position = positions[active_particle_index]
@@ -372,8 +382,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                                                                            positions[particle_index_2]))
                 if (minimal_separation_distance < 2.0 * self._disk_radius and not
                         abs(minimal_separation_distance - 2.0 * self._disk_radius) < 1.0e-12):
-                    return True
-        return False
+                    return True, particle_index_1, particle_index_2, minimal_separation_distance
+        return False, None, None, None
 
     @staticmethod
     def _get_motion_index_and_other_index(movement_direction):
@@ -386,3 +396,14 @@ class HardDiskPotential(EuclideanSubspacePotential):
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""
         raise SystemError(f"The get_portal_candidate method of {self.__class__.__name__} has not been written.")
+
+    def update_state_and_index_space_displacements(self, displacement_distance, active_particle_index,
+                                                   vetoing_index, hop_displacement):
+        """Updates state space and index space displacements following an event."""
+        self.state_space_displacement += hop_displacement[0]
+        self.total_event_distance += displacement_distance
+        if vetoing_index == (active_particle_index + 1) % number_of_particles:
+            self.index_space_displacement += 1
+        if vetoing_index == (active_particle_index - 1) % number_of_particles:
+            self.index_space_displacement -= 1
+        self.number_of_index_space_moves += 1

@@ -10,7 +10,7 @@ class StructureFactorSampler(ObservationSampler):
     Class for taking observations of the structure factor S(q,t).
     """
 
-    def __init__(self, output_directory: str, wave_vector: float = 2.0 * np.pi / size_of_particle_space):
+    def __init__(self, wave_vector: float = 2.0 * np.pi / size_of_particle_space):
         """
         The constructor of the StructureFactorSampler class.
 
@@ -19,14 +19,12 @@ class StructureFactorSampler(ObservationSampler):
 
         Parameters
         ----------
-        output_directory : str
-            The filename onto which the sample is written at the end of the run.
         wave_vector : numpy.ndarray
             Defines the wave vector of the Fourier component of the particle density over which to evaluate the
             structure factor. Default = 2.0 * pi / L = slowest, longest wavelength oscillations.
 
         """
-        super().__init__(output_directory)
+        super().__init__()
         self._wave_vector = wave_vector
 
     def get_empty_sample_array(self, total_number_of_iterations):

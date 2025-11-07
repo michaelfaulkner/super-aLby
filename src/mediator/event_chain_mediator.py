@@ -108,9 +108,8 @@ class EventChainMediator(Mediator):
         """Runs the Markov process with model temperature equal to self._temperature."""
         active_particle_index = np.random.randint(0, number_of_particles)
         movement_direction = self._potential.get_random_event_chain_velocity()
-        distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
-        distance_to_next_velocity_refreshment = np.random.uniform(0, size_of_particle_space -
-                                                                  2.0 * number_of_particles)
+        # distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
+        distance_to_next_velocity_refreshment = np.random.uniform(0, size_of_particle_space - 2.0 * number_of_particles)
         for markov_chain_index in range(self._total_number_of_iterations):
             distance_to_next_measurement = self._distance_between_measurements
             taken_measurement = False
@@ -140,7 +139,9 @@ class EventChainMediator(Mediator):
                     distance_to_next_measurement -= distance_to_next_velocity_refreshment
                     active_particle_index = np.random.randint(0, number_of_particles)
                     movement_direction = self._potential.get_random_event_chain_velocity()
-                    distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
+                    # distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
+                    distance_to_next_velocity_refreshment = np.random.uniform(0, size_of_particle_space -
+                                                                              2.0 * number_of_particles)
                     if taken_measurement:
                         break
 
