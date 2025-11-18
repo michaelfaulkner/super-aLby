@@ -7,10 +7,13 @@ from base.exceptions import ConfigurationError
 from .mediator import Mediator
 from factor_field.factor_field import FactorField
 from factor_field.no_factor_field import NoFactorField
+from refreshment_distribution.refreshment_distribution import RefreshmentDistribution
+from refreshment_distribution.constant_refreshment_distribution import ConstantRefreshmentDistribution
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from sampler.sampler import Sampler
 from typing import Sequence
-from model_settings import number_of_particles, size_of_particle_space
+from model_settings import number_of_particles, size_of_particle_space, dimensionality_of_particle_space
+
 parsing = importlib.import_module("base.parsing")
 
 
@@ -18,10 +21,11 @@ class EventChainMediator(Mediator):
     """The EventChainMediator class provides functionality for the event-chain Monte Carlo algorithm."""
 
     def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
-                 factor_field: FactorField = NoFactorField(), temperature: float = 1.0,
-                 number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
-                 output_directory: str = None, normalised_distance_between_measurements: float = 1.0,
-                 normalised_distance_between_velocity_refreshments: float = 1.0, teleportation_portal: bool = False):
+                 factor_field: FactorField = NoFactorField(),
+                 refreshment_distribution: RefreshmentDistribution = ConstantRefreshmentDistribution(),
+                 temperature: float = 1.0, number_of_equilibration_iterations: int = 10000,
+                 number_of_observations: int = 100000, output_directory: str = None,
+                 normalised_distance_between_measurements: float = 1.0, teleportation_portal: bool = False):
         r"""
         Constructor of the EventChainMediator class.  Note that this class works only with potential classes that
             inherit from EuclideanSubspacePotential (essentially continuous spaces).
@@ -35,6 +39,9 @@ class EventChainMediator(Mediator):
         factor_field : factor_field.factor_field.FactorField
             Instance of the chosen child class of factor_field.factor_field.FactorField.  Choose no_factor_field in the
             configuration file if you do not want to use a factor field.
+        refreshment_distribution : refreshment_distribution.refreshment_distribution.RefreshmentDistribution
+            Instance of the chosen child class of
+            refreshment_distribution.refreshment_distribution.RefreshmentDistribution.
         temperature : float, optional
             The model temperature, n.b., the temperature is the reciprocal of the inverse temperature, beta (up to a
             proportionality constant).
@@ -47,9 +54,6 @@ class EventChainMediator(Mediator):
             The name of the directory into which the sample file is written at the end of the run.
         normalised_distance_between_measurements : float, optional
             Total distance through state space between samples (normalised as indicated by the operations below).
-        normalised_distance_between_velocity_refreshments : float, optional
-            Total distance through state space between velocity refreshments (normalised as indicated by the operations
-            below).
         teleportation_portal : bool, optional
             When True, a teleportation portal is attempted at each event induced by the potential.
 
@@ -74,51 +78,52 @@ class EventChainMediator(Mediator):
                          output_directory)
         """Re-instantiate self._potential as EuclideanSubspacePotential contains additional abstract methods."""
         self._potential = potential
+        self._factor_field = factor_field
+        self._refreshment_distribution = refreshment_distribution
         if normalised_distance_between_measurements <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 for normalised_distance_between_measurements in "
                                      f"{self.__class__.__name__}.")
-        if normalised_distance_between_velocity_refreshments <= 0.0:
-            raise ConfigurationError(f"Give a value greater than 0.0 for "
-                                     f"normalised_distance_between_velocity_refreshments in {self.__class__.__name__}.")
         self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
-        self._distance_between_velocity_refreshments = (normalised_distance_between_velocity_refreshments *
-                                                        number_of_particles)
         if "HardDiskPotential" in str(potential) and len(size_of_particle_space) > 1:
             self._distance_between_measurements *= np.min(size_of_particle_space)
-            self._distance_between_velocity_refreshments *= np.min(size_of_particle_space)
+            # self._distance_between_velocity_refreshments *= np.min(size_of_particle_space)
+        self._free_space = np.atleast_1d(size_of_particle_space)[0]
+        if "HardDiskPotential" in str(potential):
+            self._free_space -= 2.0 * number_of_particles
         print(f"Distance between event-chain measurements is {self._distance_between_measurements}")
-        print(f"Distance between event-chain velocity refreshments is {self._distance_between_velocity_refreshments}")
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
-                if (abs(normalised_distance_between_measurements -
-                        normalised_distance_between_velocity_refreshments) > 1.0e-12 and
-                        normalised_distance_between_measurements > normalised_distance_between_velocity_refreshments):
-                    raise ConfigurationError(f"Give a value not less than normalised_distance_between_measurements for "
-                                             f"normalised_distance_between_velocity_refreshments in "
-                                             f"{self.__class__.__name__}.  This is to avoid errors due to the subtle "
-                                             f"calculation of pressure estimates made via the pointer-hop distance "
-                                             f"(though this is not fully understood).")
+                # if (abs(normalised_distance_between_measurements -
+                #        normalised_distance_between_velocity_refreshments) > 1.0e-12 and
+                #        normalised_distance_between_measurements > normalised_distance_between_velocity_refreshments):
+                #   raise ConfigurationError(f"Give a value not less than normalised_distance_between_measurements for "
+                #                             f"normalised_distance_between_velocity_refreshments in "
+                #                             f"{self.__class__.__name__}.  This is to avoid errors due to the subtle "
+                #                             f"calculation of pressure estimates made via the pointer-hop distance "
+                #                             f"(though this is not fully understood).")
         """The following object is set in self._set_arrays_and_counters()"""
-        self._total_number_of_events = None
-        self._factor_field = factor_field
+        (self._total_number_of_events, self._state_space_displacement, self._total_event_distance,
+         self._index_space_displacement, self._number_of_index_space_moves) = None, None, None, None, None
         self._teleportation_portal = teleportation_portal
 
     def _run_markov_process(self):
         """Runs the Markov process with model temperature equal to self._temperature."""
         active_particle_index = np.random.randint(0, number_of_particles)
+        distance_to_next_measurement = 0.0
         movement_direction = self._potential.get_random_event_chain_velocity()
-        # distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
-        distance_to_next_velocity_refreshment = np.random.uniform(0, size_of_particle_space - 2.0 * number_of_particles)
+        distance_to_next_velocity_refreshment = self._refreshment_distribution.get_refreshment_distance()
         for markov_chain_index in range(self._total_number_of_iterations):
-            distance_to_next_measurement = self._distance_between_measurements
+            distance_to_next_measurement += self._distance_between_measurements
             taken_measurement = False
             while True:
                 candidate_events = [self._potential.get_next_event(
                                         self._positions, active_particle_index, self._temperature, movement_direction),
                                     self._factor_field.get_next_event(
                                         self._positions, active_particle_index, self._temperature, movement_direction)]
-                distance_to_next_event, vetoing_index = min(candidate_events)
+                distance_to_next_event, vetoing_index, hop_displacement = min(candidate_events)
+                self._update_state_and_index_space_displacements(distance_to_next_event, active_particle_index,
+                                                                 vetoing_index, hop_displacement)
 
                 if (distance_to_next_measurement < distance_to_next_event and
                         distance_to_next_measurement < distance_to_next_velocity_refreshment):
@@ -127,6 +132,7 @@ class EventChainMediator(Mediator):
                     self._potential.cell_boundary_event = False
                     distance_to_next_velocity_refreshment -= distance_to_next_measurement
                     distance_to_next_event -= distance_to_next_measurement
+                    distance_to_next_measurement = 0.0
                     for sampler_index, sampler in enumerate(self._samplers):
                         self._samples[sampler_index][markov_chain_index, :] = sampler.get_observation(
                             None, self._positions, self._potential)
@@ -139,11 +145,7 @@ class EventChainMediator(Mediator):
                     distance_to_next_measurement -= distance_to_next_velocity_refreshment
                     active_particle_index = np.random.randint(0, number_of_particles)
                     movement_direction = self._potential.get_random_event_chain_velocity()
-                    # distance_to_next_velocity_refreshment = self._distance_between_velocity_refreshments
-                    distance_to_next_velocity_refreshment = np.random.uniform(0, size_of_particle_space -
-                                                                              2.0 * number_of_particles)
-                    if taken_measurement:
-                        break
+                    distance_to_next_velocity_refreshment = self._refreshment_distribution.get_refreshment_distance()
 
                 else:
                     self._potential.update_position(self._positions, distance_to_next_event,
@@ -170,9 +172,9 @@ class EventChainMediator(Mediator):
                             self._positions, active_particle_index, movement_direction, vetoing_index)
                     self._total_number_of_events += 1
                     distance_to_next_velocity_refreshment -= distance_to_next_event
+                    distance_to_next_measurement -= distance_to_next_event
                     if taken_measurement:
                         break
-                    distance_to_next_measurement -= distance_to_next_event
 
             super()._print_sample_progress(markov_chain_index)
         self._write_state_and_index_space_velocities()
@@ -185,11 +187,27 @@ class EventChainMediator(Mediator):
     def _set_arrays_and_counters(self):
         """Sets the arrays (e.g. the sample array) and counters before the Markov process."""
         super()._set_arrays_and_counters()
-        self._total_number_of_events = 0
+        self._total_number_of_events, self._number_of_index_space_moves = 0, 0
+        self._state_space_displacement, self._total_event_distance, self._index_space_displacement = 0.0, 0.0, 0.0
 
     def _write_state_and_index_space_velocities(self):
         """Saves average state space and index space velocities"""
-        state_space_velocity = self._potential.state_space_displacement / self._potential.total_event_distance
-        index_space_velocity = self._potential.index_space_displacement / self._potential.number_of_index_space_moves
+        state_space_velocity = None if self._total_event_distance == 0.0 else (
+                self._state_space_displacement / self._total_event_distance)
+        index_space_velocity = None if self._number_of_index_space_moves == 0.0 else (
+                self._index_space_displacement / self._number_of_index_space_moves)
         with open(os.path.join(self._output_directory, "state_and_index_space_velocities.json"), "w") as f:
             json.dump({"state_space_velocity": state_space_velocity, "index_space_velocity": index_space_velocity}, f)
+
+    def _update_state_and_index_space_displacements(self, displacement_distance, active_particle_index,
+                                                    vetoing_index, hop_displacement):
+        """Updates state space and index space displacements following an event."""
+        if dimensionality_of_particle_space == 1:
+            if hop_displacement:
+                self._state_space_displacement += hop_displacement[0]
+                self._total_event_distance += displacement_distance[0]
+            if vetoing_index == (active_particle_index + 1) % number_of_particles:
+                self._index_space_displacement += 1
+            elif vetoing_index == (active_particle_index - 1) % number_of_particles:
+                self._index_space_displacement -= 1
+            self._number_of_index_space_moves += 1

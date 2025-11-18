@@ -1,7 +1,7 @@
 """Module for the HarmonicChainFactorField class."""
 from .factor_field import FactorField
 import numpy as np
-from model_settings import number_of_particles
+from model_settings import number_of_particles, size_of_particle_space
 
 
 class HarmonicChainFactorField(FactorField):
@@ -49,10 +49,20 @@ class HarmonicChainFactorField(FactorField):
             The distance to the next particle event
         veto_index : int
             The particle index responsible for the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         neg_neighbour_index, pos_neighbour_index = ((active_particle_index - 1) % number_of_particles,
                                                     (active_particle_index + 1) % number_of_particles)
         vetoing_index = pos_neighbour_index if movement_direction > 0.0 else neg_neighbour_index
-        distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0)) / self._prefactor * temperature
-        return distance_to_next_factor_event, vetoing_index
+        distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0, 1)) / self._prefactor * temperature
+
+        active_particle_position = positions[active_particle_index].copy()
+        vetoing_particle_position = positions[vetoing_index].copy()
+        if active_particle_index == number_of_particles - 1 and vetoing_index == 0:
+            vetoing_particle_position += size_of_particle_space
+        elif active_particle_index == 0 and vetoing_index == number_of_particles - 1:
+            vetoing_particle_position -= size_of_particle_space
+
+        return distance_to_next_factor_event, vetoing_index, vetoing_particle_position - active_particle_position
 

@@ -290,17 +290,17 @@ class HardDiskPotential(EuclideanSubspacePotential):
             The distance to the next particle event
         vetoing_particle_index : int
             The index of the particle that triggers the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         if dimensionality_of_particle_space == 1:
             vetoing_particle_index = (active_particle_index + 1) % number_of_particles if movement_direction > 0 else (
                     (active_particle_index - 1) % number_of_particles)
-            distance_to_next_event = ((positions[vetoing_particle_index, 0] - positions[active_particle_index, 0])
-                                      % size_of_particle_space[0] - 2.0 * self._disk_radius)
-            hop_displacement = positions[vetoing_particle_index] - positions[active_particle_index] if (
-                    movement_direction > 0) else positions[active_particle_index] - positions[vetoing_particle_index]
-            self.update_state_and_index_space_displacements(distance_to_next_event, active_particle_index,
-                                                            vetoing_particle_index, hop_displacement)
-            return distance_to_next_event, vetoing_particle_index
+            distance_to_next_event = get_shortest_vectors_on_torus(
+                (positions[vetoing_particle_index, 0] - positions[active_particle_index, 0])) - 2.0 * self._disk_radius
+            hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index]
+                                                             - positions[active_particle_index])
+            return distance_to_next_event, vetoing_particle_index, hop_displacement
         self.pointer_hop_distance = 0.0
         active_particle_position = positions[active_particle_index]
         if self.cell_boundary_event:
@@ -342,7 +342,9 @@ class HardDiskPotential(EuclideanSubspacePotential):
                         vetoing_particle_index = candidate_particle_index
                         self.pointer_hop_distance = candidate_pointer_hop_distance
                 candidate_particle_index = self._linked_lists.next_particle_in_same_cell[candidate_particle_index]
-        return shortest_distance_to_next_event, vetoing_particle_index
+        hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index]
+                                                         - positions[active_particle_index])
+        return shortest_distance_to_next_event, vetoing_particle_index, hop_displacement
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """
@@ -397,13 +399,3 @@ class HardDiskPotential(EuclideanSubspacePotential):
         """Propose candidate via teleportation portal kernel."""
         raise SystemError(f"The get_portal_candidate method of {self.__class__.__name__} has not been written.")
 
-    def update_state_and_index_space_displacements(self, displacement_distance, active_particle_index,
-                                                   vetoing_index, hop_displacement):
-        """Updates state space and index space displacements following an event."""
-        self.state_space_displacement += hop_displacement[0]
-        self.total_event_distance += displacement_distance
-        if vetoing_index == (active_particle_index + 1) % number_of_particles:
-            self.index_space_displacement += 1
-        if vetoing_index == (active_particle_index - 1) % number_of_particles:
-            self.index_space_displacement -= 1
-        self.number_of_index_space_moves += 1

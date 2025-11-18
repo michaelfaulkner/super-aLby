@@ -132,6 +132,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             The distance to the next particle event
         vetoing_particle_index : int
             The index of the particle that triggers the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
                                 self._get_east_worldline_neighbour(active_particle_index)]
@@ -160,7 +162,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             shortest_distance_to_next_factor_event = distance_to_next_factor_event
             vetoing_index = active_particle_index
 
-        return shortest_distance_to_next_factor_event, vetoing_index
+        return shortest_distance_to_next_factor_event, vetoing_index, None
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """

@@ -1,7 +1,8 @@
 """Module for the HardDiskFactorField class."""
 from .factor_field import FactorField
 import numpy as np
-from model_settings import number_of_particles, size_of_particle_space
+from model_settings import number_of_particles
+from base.vectors import get_shortest_vectors_on_torus
 
 
 class HardDiskFactorField(FactorField):
@@ -43,12 +44,16 @@ class HardDiskFactorField(FactorField):
             The distance to the next particle event
         veto_index : int
             The particle index responsible for the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         neg_neighbour_index, pos_neighbour_index = ((active_particle_index - 1) % number_of_particles,
                                                     (active_particle_index + 1) % number_of_particles)
         vetoing_index = neg_neighbour_index if movement_direction > 0.0 else pos_neighbour_index
         # pressure = number_of_particles * temperature / (size_of_particle_space -
         #                                                2.0 * number_of_particles * self._disk_radius)
-        distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0)) / self._prefactor * temperature
-        return distance_to_next_factor_event, vetoing_index
+        distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0, 1)) / self._prefactor * temperature
+        hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_index, 0]
+                                                         - positions[active_particle_index, 0])
+        return distance_to_next_factor_event, vetoing_index, hop_displacement
 
