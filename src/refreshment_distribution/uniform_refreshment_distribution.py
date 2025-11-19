@@ -29,8 +29,7 @@ class UniformRefreshmentDistribution(RefreshmentDistribution):
                                      f"normalised_upper_limit >= normalised_lower_limit in {self.__class__.__name__}. "
                                      f"Provided: normalised_lower_limit={normalised_lower_limit}, "
                                      f"normalised_upper_limit={normalised_upper_limit}.")
-        self._normalised_lower_limit, self._normalised_upper_limit = (
-            number_of_particles * normalised_lower_limit, normalised_upper_limit)
+        self._lower_limit, self._upper_limit = number_of_particles * (normalised_lower_limit, normalised_upper_limit)
 
     def get_refreshment_distance(self):
         """
@@ -45,4 +44,4 @@ class UniformRefreshmentDistribution(RefreshmentDistribution):
         numpy.ndarray
             A one-dimensional numpy array with single element equal to the refreshment distance.
         """
-        return number_of_particles * np.random.uniform(self._normalised_lower_limit, self._normalised_upper_limit, 1)
+        return np.random.uniform(self._lower_limit, self._upper_limit, 1)

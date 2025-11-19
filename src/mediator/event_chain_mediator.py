@@ -62,6 +62,11 @@ class EventChainMediator(Mediator):
         base.exceptions.ConfigurationError
             If potential is not an instance of some child class of potential.potential.Potential.
         base.exceptions.ConfigurationError
+            If factor_field is not an instance of some child class of factor_field.factor_field.FactorField.
+        base.exceptions.ConfigurationError
+            If refreshment_distribution is not an instance of some child class of
+                refreshment_distribution.refreshment_distribution.RefreshmentDistribution.
+        base.exceptions.ConfigurationError
             If samplers is not a sequence of instances of some child classes of sampler.sampler.Sampler.
         base.exceptions.ConfigurationError
             If temperature is less than 0.0.
@@ -76,6 +81,12 @@ class EventChainMediator(Mediator):
         """
         super().__init__(potential, samplers, temperature, number_of_equilibration_iterations, number_of_observations,
                          output_directory)
+        if not isinstance(factor_field, FactorField):
+            raise ConfigurationError(f"Give a factor-field class as the value for factor_field in "
+                                     f"{self.__class__.__name__}.")
+        if not isinstance(refreshment_distribution, RefreshmentDistribution):
+            raise ConfigurationError(f"Give a refreshment-distribution class as the value for refreshment_distribution "
+                                     f"in {self.__class__.__name__}.")
         """Re-instantiate self._potential as EuclideanSubspacePotential contains additional abstract methods."""
         self._potential = potential
         self._factor_field = factor_field
@@ -86,7 +97,6 @@ class EventChainMediator(Mediator):
         self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
         if "HardDiskPotential" in str(potential) and len(size_of_particle_space) > 1:
             self._distance_between_measurements *= np.min(size_of_particle_space)
-            # self._distance_between_velocity_refreshments *= np.min(size_of_particle_space)
         self._free_space = np.atleast_1d(size_of_particle_space)[0]
         if "HardDiskPotential" in str(potential):
             self._free_space -= 2.0 * number_of_particles
@@ -202,6 +212,7 @@ class EventChainMediator(Mediator):
     def _update_state_and_index_space_displacements(self, displacement_distance, active_particle_index,
                                                     vetoing_index, hop_displacement):
         """Updates state space and index space displacements following an event."""
+        # todo add functionality for greater than 1D particle space
         if dimensionality_of_particle_space == 1:
             if hop_displacement:
                 self._state_space_displacement += hop_displacement[0]

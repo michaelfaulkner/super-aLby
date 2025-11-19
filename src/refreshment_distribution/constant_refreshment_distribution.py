@@ -23,7 +23,7 @@ class ConstantRefreshmentDistribution(RefreshmentDistribution):
         if normalised_refreshment_distance <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 for normalised_refreshment_distance in "
                                      f"{self.__class__.__name__}.")
-        self._normalised_refreshment_distance = normalised_refreshment_distance
+        self._refreshment_distance = number_of_particles * normalised_refreshment_distance
 
     def get_refreshment_distance(self):
         """
@@ -38,4 +38,4 @@ class ConstantRefreshmentDistribution(RefreshmentDistribution):
         numpy.ndarray
             A one-dimensional numpy array with single element equal to the refreshment distance.
         """
-        return np.array([number_of_particles * self._normalised_refreshment_distance])
+        return np.array([self._refreshment_distance])
