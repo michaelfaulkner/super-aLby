@@ -112,6 +112,8 @@ def get_basic_config_data(config_file_string):
         raise ConfigurationError("Mediator not one of UnboundedLeapfrogMediator, ToroidalLeapfrogMediator, "
                                  "LazyToroidalLeapfrogMediator, MetropolisMediator, SwendsenWangMediator, "
                                  "WolffMediator or EventChainMediator.")
+    if isinstance(size_of_particle_space, float):
+        size_of_particle_space = [size_of_particle_space]
     return (config_file_mediator, potential, factor_field, samplers, output_directory, temperature,
             number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space)
 
