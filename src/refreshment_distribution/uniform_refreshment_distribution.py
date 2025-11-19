@@ -23,7 +23,7 @@ class UniformRefreshmentDistribution(RefreshmentDistribution):
             Upper limit of uniform distribution per particle.
         """
         super().__init__()
-        if (normalised_lower_limit <= 0.0 or normalised_upper_limit <= 0.0 or normalised_upper_limit <
+        if (normalised_lower_limit < 0.0 or normalised_upper_limit < 0.0 or normalised_upper_limit <
                 normalised_lower_limit):
             raise ConfigurationError(f"Give values for normalised_lower_limit and normalised_upper_limit >= 0.0 with "
                                      f"normalised_upper_limit >= normalised_lower_limit in {self.__class__.__name__}. "
