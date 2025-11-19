@@ -76,8 +76,6 @@ class EventChainMediator(Mediator):
             If number_of_observations is not greater than 0.
         base.exceptions.ConfigurationError
             If normalised_distance_between_measurements is not greater than 0.0.
-        base.exceptions.ConfigurationError
-            If normalised_distance_between_velocity_refreshments is not greater than 0.0.
         """
         super().__init__(potential, samplers, temperature, number_of_equilibration_iterations, number_of_observations,
                          output_directory)
@@ -104,14 +102,15 @@ class EventChainMediator(Mediator):
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
                 sampler.distance_between_measurements = self._distance_between_measurements
-                # if (abs(normalised_distance_between_measurements -
-                #        normalised_distance_between_velocity_refreshments) > 1.0e-12 and
-                #        normalised_distance_between_measurements > normalised_distance_between_velocity_refreshments):
-                #   raise ConfigurationError(f"Give a value not less than normalised_distance_between_measurements for "
-                #                             f"normalised_distance_between_velocity_refreshments in "
-                #                             f"{self.__class__.__name__}.  This is to avoid errors due to the subtle "
-                #                             f"calculation of pressure estimates made via the pointer-hop distance "
-                #                             f"(though this is not fully understood).")
+                if (abs(normalised_distance_between_measurements -
+                        self._refreshment_distribution.normalised_refreshment_lengthscale) > 1.0e-12 and
+                        normalised_distance_between_measurements >
+                        self._refreshment_distribution.normalised_refreshment_lengthscale):
+                    raise ConfigurationError(f"Give a value not less than normalised_distance_between_measurements for "
+                                             f"normalised_distance_between_velocity_refreshments in "
+                                             f"{self.__class__.__name__}.  This is to avoid errors due to the subtle "
+                                             f"calculation of pressure estimates made via the pointer-hop distance "
+                                             f"(though this is not fully understood).")
         """The following object is set in self._set_arrays_and_counters()"""
         (self._total_number_of_events, self._state_space_displacement, self._total_event_distance,
          self._index_space_displacement, self._number_of_index_space_moves) = None, None, None, None, None

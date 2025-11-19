@@ -19,7 +19,7 @@ class ConstantRefreshmentDistribution(RefreshmentDistribution):
         normalised_refreshment_distance : float or int
             Constant velocity refreshment distance per particle.
         """
-        super().__init__()
+        super().__init__(normalised_refreshment_distance)
         if normalised_refreshment_distance <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 for normalised_refreshment_distance in "
                                      f"{self.__class__.__name__}.")

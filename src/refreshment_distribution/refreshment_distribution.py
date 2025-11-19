@@ -1,11 +1,12 @@
 """Module for the abstract RefreshmentDistribution class."""
 from abc import ABCMeta, abstractmethod
+from model_settings import number_of_particles
 
 
 class RefreshmentDistribution(metaclass=ABCMeta):
     """Abstract class for velocity refreshment distributions."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, normalised_refreshment_lengthscale=1.0, **kwargs):
         """
         The constructor of the RefreshmentDistribution class.
 
@@ -18,6 +19,7 @@ class RefreshmentDistribution(metaclass=ABCMeta):
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
         """
         super().__init__(**kwargs)
+        self.normalised_refreshment_lengthscale = normalised_refreshment_lengthscale
 
     @abstractmethod
     def get_refreshment_distance(self):

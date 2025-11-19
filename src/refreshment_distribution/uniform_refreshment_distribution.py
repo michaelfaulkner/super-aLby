@@ -22,14 +22,15 @@ class UniformRefreshmentDistribution(RefreshmentDistribution):
         normalised_upper_limit : float or int
             Upper limit of uniform distribution per particle.
         """
-        super().__init__()
+        super().__init__(normalised_upper_limit)
         if (normalised_lower_limit < 0.0 or normalised_upper_limit < 0.0 or normalised_upper_limit <
                 normalised_lower_limit):
             raise ConfigurationError(f"Give values for normalised_lower_limit and normalised_upper_limit >= 0.0 with "
                                      f"normalised_upper_limit >= normalised_lower_limit in {self.__class__.__name__}. "
                                      f"Provided: normalised_lower_limit={normalised_lower_limit}, "
                                      f"normalised_upper_limit={normalised_upper_limit}.")
-        self._lower_limit, self._upper_limit = number_of_particles * (normalised_lower_limit, normalised_upper_limit)
+        self._lower_limit, self._upper_limit = (number_of_particles * normalised_lower_limit,
+                                                number_of_particles * normalised_upper_limit)
 
     def get_refreshment_distance(self):
         """

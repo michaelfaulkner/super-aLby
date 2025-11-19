@@ -19,8 +19,7 @@ def get_sample_mean_and_error(sample):
     if len(np.atleast_2d(sample)) > 1:
         raise Exception("Error: the sample passed to markov_chain_diagnostics.get_autocorrelation() must be a sample "
                         "of a scalar quantity.")
-    iact = get_iact_and_acf(sample)[0]
-    return [np.mean(sample), np.std(sample, ddof=1) * (iact / len(sample)) ** 0.5]
+    return [np.mean(sample), np.std(sample, ddof=1) * (get_iact(sample) / len(sample)) ** 0.5]
 
 
 def get_thinned_sample(sample, thinning_level):
@@ -88,8 +87,7 @@ def get_autocorrelation(sample):
 
 def get_iact(sample, cutoff=math.e ** (-2)):
     """
-    Calculate the integrated autocorrelation time and autocorrelation function of sample.  The elements of sample must
-        be scalar quantities.
+    Calculate the integrated autocorrelation time of sample.  The elements of sample must be scalar quantities.
 
     Parameters
     ----------
@@ -102,8 +100,6 @@ def get_iact(sample, cutoff=math.e ** (-2)):
     -------
     float
         Integrated autocorrelation time.
-    numpy.ndarray
-        The autocorrelation function of the sample.
     """
     autocorrelation_function = get_autocorrelation(sample)
     below_cutoff = np.where(autocorrelation_function < cutoff)[0]
@@ -138,7 +134,7 @@ def get_iact_and_acf(sample, cutoff=math.e ** (-2)):
 
 def get_iact_and_error(sample, cutoff=math.e ** (-2)):
     """
-    Calculate the integrated autocorrelation time and autocorrelation function of sample.  The elements of sample must
+    Calculate the integrated autocorrelation time and jackknife estimate for its error.  The elements of sample must
         be scalar quantities.
 
     Parameters
@@ -177,11 +173,11 @@ def get_effective_sample_size(sample):
     float
         Effective sample size.
     """
-    iact = get_iact_and_acf(sample, cutoff=math.e ** (-2))[0]
+    iact = get_iact(sample, cutoff=math.e ** (-2))
     return len(sample) / iact
 
 
-def get_jackknife_error(sample, block_size, estimator):
+def get_jackknife_error(sample, block_size, estimator, max_blocks=20):
     """
     Calculate the error on a statistical quantity via the jackknife method.
 
@@ -193,22 +189,22 @@ def get_jackknife_error(sample, block_size, estimator):
         Size of blocks sample is divided into.
     estimator : function
         Estimator whose error to return.
+    max_blocks : int
+        Maximum number of blocks to divide sample into.
 
     Returns
     -------
     float
         Jackknife error.
     """
-    sample = list(sample)
     estimate = estimator(sample)
-    number_of_blocks = int(len(sample) / block_size)
-    if number_of_blocks < 2:
-        raise ValueError(f"The jackknife blocksize must be smaller than half the length of the sample. Provided:"
-                         f"Sample length={len(sample)}. Block_size={block_size}")
-    block_indices = [i * block_size for i in range(number_of_blocks)]
+    number_of_blocks, n = int(len(sample) / max_blocks), len(sample)
+    if number_of_blocks > max_blocks:
+        number_of_blocks, block_size = max_blocks, int(n / max_blocks)
     block_estimators = []
     for i in range(number_of_blocks-1):
-        block_sample = np.delete(sample, range(block_indices[i], block_indices[i+1]))
+        start_index, end_index = i * block_size, min((i + 1) * block_size, n)
+        block_sample = np.concatenate((sample[:start_index], sample[end_index:]))
         block_estimators.append(estimator(block_sample))
     jackknife_variance = (number_of_blocks - 1) / number_of_blocks * np.sum((np.array(block_estimators) - estimate)**2)
     return jackknife_variance ** 0.5
