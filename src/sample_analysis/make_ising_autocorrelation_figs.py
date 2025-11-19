@@ -24,10 +24,10 @@ def main(number_of_system_sizes=5):
     config_file_4x4_metrop = "config_files/sampling_algos_ising_figs/4x4_metropolis.ini"
     sh_file_string_4x4_wolff = f"{os.path.splitext(config_file_4x4_wolff)[0]}.sh"
 
-    (wolff_mediator, _, _, samplers, sample_directories_4x4_wolff, _, number_of_equilibration_iterations,
+    (wolff_mediator, _, _, samplers, sample_directory_4x4_wolff, _, number_of_equilibration_iterations,
      number_of_observations, _, _) = helper_methods.get_basic_config_data(config_file_4x4_wolff)
     metrop_mediator = helper_methods.get_basic_config_data(config_file_4x4_metrop)[0]
-    output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
+    output_directory = sample_directory_4x4_wolff.replace("/4x4_wolff", "")
     sample_directories_wolff = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]
     sample_directories_metrop = [f"{output_directory}/{length}x{length}_metropolis" for length in lattice_lengths]
     transition_temperature = 2.0 / math.log(1.0 + 2.0 ** 0.5)
