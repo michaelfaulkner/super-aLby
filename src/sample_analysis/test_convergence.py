@@ -25,6 +25,8 @@ def main(config_file_string):
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     (config_file_mediator, potential, _, samplers, sample_directory, temperature, number_of_equilibration_iterations,
      _, number_of_particles, size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
+    if not isinstance(size_of_particle_space, list):
+        size_of_particle_space = [size_of_particle_space]
     temperatures, sample_directories = None, None
     if potential == "ising_potential":
         sh_file_string = f"{os.path.splitext(config_file_string)[0]}.sh"
