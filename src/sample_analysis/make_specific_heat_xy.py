@@ -22,7 +22,7 @@ def main(config_file_string):
 
 
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-    (config_file_mediator, potential, _, samplers, sample_directories, temperatures, number_of_equilibration_iterations,
+    (config_file_mediator, potential, _, samplers, sample_directory, temperatures, number_of_equilibration_iterations,
      _, number_of_particles, _) = helper_methods.get_basic_config_data(config_file_string)
     
     if config_file_mediator == "metropolis_mediator":
@@ -51,7 +51,7 @@ def main(config_file_string):
 
                 
                 specific_heat_mean_and_error = get_sample_mean_and_error(sample_getter.get_specific_heat(
-                    sample_directories[sample_index], temperature, temperature_index, number_of_particles,
+                    sample_directory, temperature, temperature_index, number_of_particles,
                     number_of_equilibration_iterations, thinning_level))
 
                 

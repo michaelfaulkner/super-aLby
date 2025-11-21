@@ -164,6 +164,8 @@ class SmoothPinballLossPotential(OneDimEuclideanParticleSpacePotential):
             The distance to the next particle event
         vetoing_particle_index : int
             The index of the particle that triggers the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         raise SystemError(f"The get_distance_to_next_event_and_veto_index method of {self.__class__.__name__} has not "
                           f"been written.  Functionality of ECMC for {self.__class__.__name__} is not yet provided.")
@@ -205,3 +207,7 @@ class SmoothPinballLossPotential(OneDimEuclideanParticleSpacePotential):
     @staticmethod
     def _logistic_function(a):
         return np.exp(-np.logaddexp(0, -a))
+
+    def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
+        """Propose candidate via teleportation portal kernel."""
+        raise SystemError(f"The get_portal_candidate method of {self.__class__.__name__} has not been written.")

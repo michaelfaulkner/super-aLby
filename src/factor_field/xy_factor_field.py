@@ -56,6 +56,8 @@ class XyFactorField(FactorField):
             The distance to the next particle event
         veto_index : int
             The particle index responsible for the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         shortest_distance_to_next_factor_event = 1.0e10
         active_spin_value = positions[active_particle_index, 0]
@@ -78,7 +80,7 @@ class XyFactorField(FactorField):
                     shortest_distance_to_next_factor_event = distance_to_next_factor_event
                     vetoing_index = neighbouring_spin_index
 
-        return shortest_distance_to_next_factor_event, vetoing_index
+        return shortest_distance_to_next_factor_event, vetoing_index, None
 
     @staticmethod
     def _get_spin_difference(spin_value_one, spin_value_two):

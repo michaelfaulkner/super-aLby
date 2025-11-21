@@ -172,6 +172,8 @@ class XyPotential(EuclideanSubspacePotential):
             The distance to the next particle event
         vetoing_particle_index : int
             The index of the particle that triggers the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         shortest_distance_to_next_factor_event = 1.0e10
         active_spin_value = positions[active_particle_index, 0]
@@ -202,7 +204,7 @@ class XyPotential(EuclideanSubspacePotential):
                 shortest_distance_to_next_factor_event = distance_to_next_factor_event
                 vetoing_spin_index = neighbouring_spin_index
 
-        return shortest_distance_to_next_factor_event, vetoing_spin_index
+        return shortest_distance_to_next_factor_event, vetoing_spin_index, None
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """

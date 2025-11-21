@@ -21,9 +21,10 @@ class LazyToroidalLeapfrogMediator(UnboundedAndLazyToroidalLeapfrogMediators):
     def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
                  kinetic_energy: KineticEnergy, temperature: float = 1.0,
                  number_of_equilibration_iterations: int = 10000,
-                 number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True,
-                 initial_step_size: float = 0.1, max_number_of_integration_steps: int = 10,
-                 randomise_number_of_integration_steps: bool = False, use_metropolis_accept_reject: bool = True):
+                 number_of_observations: int = 100000, output_directory: str = None,
+                 proposal_dynamics_adaptor_is_on: bool = True, initial_step_size: float = 0.1,
+                 max_number_of_integration_steps: int = 10, randomise_number_of_integration_steps: bool = False,
+                 use_metropolis_accept_reject: bool = True):
         r"""
         The constructor of the ToroidalLeapfrogMediator class.
 
@@ -43,6 +44,8 @@ class LazyToroidalLeapfrogMediator(UnboundedAndLazyToroidalLeapfrogMediators):
         number_of_observations : int, optional
             Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
+        output_directory : str
+            The name of the directory into which the sample file is written at the end of the run.
         proposal_dynamics_adaptor_is_on : bool, optional
             When True, the step size of the integrator is tuned during the equilibration process.
         initial_step_size : float, optional
@@ -85,7 +88,7 @@ class LazyToroidalLeapfrogMediator(UnboundedAndLazyToroidalLeapfrogMediators):
             If type(element) is not np.float64 for element in size_of_particle_space.
         """
         super().__init__(potential, samplers, kinetic_energy, temperature, number_of_equilibration_iterations,
-                         number_of_observations, proposal_dynamics_adaptor_is_on, initial_step_size,
+                         number_of_observations, output_directory, proposal_dynamics_adaptor_is_on, initial_step_size,
                          max_number_of_integration_steps, randomise_number_of_integration_steps,
                          use_metropolis_accept_reject)
         for element in size_of_particle_space:
