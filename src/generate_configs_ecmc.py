@@ -39,8 +39,8 @@ def main(timestep, N, equilibrium, samples, prefactor, mass, omega, number_of_ti
         f"mass = {mass} \n" \
         f"omega = {omega} \n" \
         f"timestep = {timestep} \n" \
-	"factor_fields = True \n" \
-	f"factor_fields_prefactor = {prefactor} \n" \
+	    "factor_fields = True \n" \
+	    f"factor_fields_prefactor = {prefactor} \n" \
         "\n" \
         "[MeanSquaredPositionSampler] \n" \
         f"output_directory = output/factor_fields_b_vary_30/{prefactor_str}/{i} \n" \
