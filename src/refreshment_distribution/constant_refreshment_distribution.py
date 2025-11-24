@@ -14,9 +14,12 @@ class ConstantRefreshmentDistribution(RefreshmentDistribution):
         """
         The constructor of the ConstantRefreshmentDistribution class.
 
-        N.B. For the hard-disk model, we recommend setting the value of normalised_refreshment_distance to
-            min(size_of_particle_space).  In the 1D case, this is number_of_particles * disk_radius / packing_fraction;
-            in the 2D case, it is disk_radius * (pi * number_of_particles / packing_fraction) ** 0.5.
+        N.B. We recommend setting the value of normalised_refreshment_distance to min(size_of_particle_space) or simply
+            to one if this value is O(1).  For the 2D hard-disk model, the value of min(size_of_particle_space) is
+            disk_radius * (pi * number_of_particles / packing_fraction) ** 0.5 for a square aspect ratio.
+
+        N.B. This velocity-refreshment distribution should not be used for the 1D hard-disk model.  This is because
+            the Markov process then fails to converge at certain packing fractions, as it becomes too deterministic.
 
         Parameters
         ----------
