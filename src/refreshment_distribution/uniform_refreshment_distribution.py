@@ -7,7 +7,8 @@ from refreshment_distribution.refreshment_distribution import RefreshmentDistrib
 
 class UniformRefreshmentDistribution(RefreshmentDistribution):
     """
-    Class for sampling the velocity refreshment distance within the Event Chain algorithm from a uniform distribution.
+    Class for sampling the velocity-refreshment distance (within the event-chain Monte Carlo algorithm) from a uniform
+        distribution.
     """
 
     def __init__(self, normalised_lower_limit: float = 0.0,
