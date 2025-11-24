@@ -13,7 +13,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         where m and \omega are the mass and frequency, respectively.
     """
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0,
-                 timestep: float = 0.1):
+                 timestep: float = 0.1, anharmonicity: float = 0.0):
         r"""
         The constructor of the QuantumHarmonicOscillatorPotential class
 
@@ -36,6 +36,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         if lattice_dimensionality != 1:
             raise ConfigurationError(f"Give a value of 1 for lattice_dimensionality in {self.__class__.__name__} - "
                                      f"functionality for other dimensions not yet provided.")
+        self._anharmonicity = anharmonicity
         
     def get_initial_positions(self):
         """
@@ -153,9 +154,12 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         else:
             intermediate_position = initial_position
                 
-        initial_action = 0.5 * self._mass * self._timestep * self._omega ** 2 * intermediate_position ** 2
+        initial_action = 0.5 * self._mass * self._timestep * self._omega ** 2 * intermediate_position ** 2 + \
+                        self._timestep * self._anharmonicity * intermediate_position**4
         final_action = uphill_energy + initial_action
-        roots = np.roots([0.5 * self._mass * self._timestep * self._omega ** 2, 0.0, -final_action])
+        roots = np.roots([self._timestep * self._anharmonicity, 0.0, 
+                          0.5 * self._mass * self._timestep * self._omega ** 2, 0.0, -final_action])
+        #TODO re-write for \lambda nonzero
         final_position_wrt_factor_event = self._get_final_position_wrt_quadratic_event(movement_direction, roots)
 
         distance_to_next_factor_event = np.abs(final_position_wrt_factor_event - initial_position)
