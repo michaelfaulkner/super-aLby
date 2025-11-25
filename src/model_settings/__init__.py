@@ -64,6 +64,8 @@ with open(args.config_file) as config_file:
     if "QuantumHardDiskPotential" in config_file_as_str or "QuantumHarmonicOscillatorPotential" in config_file_as_str:
         number_of_quantum_particles = get_value(config, "ModelSettings", "number_of_quantum_particles")
         number_of_timeslices = get_value(config, "ModelSettings", "number_of_timeslices")
+        if "QuantumHarmonicOscillatorPotential" in config_file_as_str:
+            total_time = get_value(config, "QuantumHarmonicOscillatorPotential", "timestep") * number_of_timeslices
     else:
         number_of_quantum_particles = None
         number_of_timeslices = None
