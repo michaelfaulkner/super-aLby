@@ -38,6 +38,17 @@ def get_temperatures(minimum_temperature, maximum_temperature, number_of_tempera
             for temperature_index in range(number_of_temperature_increments + 1)]
 
 
+def get_temps_from_bash_file(sh_file_string: str):
+    return get_temperatures(float(read_variable_from_sh_file(sh_file_string, "START")),
+                            float(read_variable_from_sh_file(sh_file_string, "END")),
+                            int(read_variable_from_sh_file(sh_file_string, "NUM_INCREMENTS")))
+
+
+def get_temps_and_reduced_temps_from_bash_file(sh_file_string: str, transition_temperature: float):
+    temperatures = get_temps_from_bash_file(sh_file_string)
+    return temperatures, [temperature / transition_temperature for temperature in temperatures]
+
+
 def get_basic_config_data(config_file_string):
     if type(config_file_string) is str:
         """nb, argument of parsing.parse_options() must be of type Sequence[str]"""
@@ -45,23 +56,28 @@ def get_basic_config_data(config_file_string):
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     possible_mediators = ["UnboundedLeapfrogMediator", "ToroidalLeapfrogMediator", "LazyToroidalLeapfrogMediator",
                           "MetropolisMediator", "SwendsenWangMediator", "WolffMediator", "EventChainMediator"]
-    (config_file_mediator, potential, factor_field, samplers, temperatures, number_of_equilibration_iterations,
-     number_of_observations, number_of_particles, size_of_particle_space) = (None, None, None, None, None, None, None,
-                                                                             None, None)
+    (config_file_mediator, potential, factor_field, samplers, output_directory, temperature,
+     number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space,
+     dimensionality_of_particle_space) = (None, None, None, None, None, None, None, None, None, None, None)
     for possible_mediator in possible_mediators:
         try:
             potential = config.get(possible_mediator, "potential")
-            if "hard_disk_potential" in str(potential) and "quantum_hard_disk_potential" not in str(potential):
-                number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
-                packing_fraction = parsing.get_value(config, "HardDiskPotential", "packing_fraction")
-                disk_radius = parsing.get_value(config, "HardDiskPotential", "disk_radius")
-                linear_system_size = math.sqrt(number_of_particles * math.pi / packing_fraction) * disk_radius
-                size_of_particle_space = [linear_system_size, linear_system_size]
-            elif "quantum_hard_disk_potential" in str(potential):
+            if "quantum_hard_disk_potential" in str(potential):
                 number_of_quantum_particles = parsing.get_value(config, "ModelSettings", "number_of_quantum_particles")
                 packing_fraction = parsing.get_value(config, "QuantumHardDiskPotential", "packing_fraction")
                 disk_radius = parsing.get_value(config, "QuantumHardDiskPotential", "disk_radius")
                 size_of_particle_space = 2.0 * disk_radius * number_of_quantum_particles / packing_fraction
+            elif "hard_disk_potential" in str(potential):
+                dimensionality_of_particle_space = parsing.get_value(config, "ModelSettings",
+                                                                     "dimensionality_of_particle_space")
+                number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
+                packing_fraction = parsing.get_value(config, "HardDiskPotential", "packing_fraction")
+                disk_radius = parsing.get_value(config, "HardDiskPotential", "disk_radius")
+                if dimensionality_of_particle_space == 1:
+                    size_of_particle_space = 2.0 * number_of_particles * disk_radius / packing_fraction
+                else:
+                    linear_system_size = math.sqrt(number_of_particles * math.pi / packing_fraction) * disk_radius
+                    size_of_particle_space = [linear_system_size, linear_system_size]
             else:
                 size_of_particle_space = parsing.get_value(config, "ModelSettings", "size_of_particle_space")
             if ("quantum_hard_disk_potential" in str(potential) or
@@ -83,13 +99,11 @@ def get_basic_config_data(config_file_string):
             else:
                 factor_field = "no_factor_field"
             samplers = config.get(possible_mediator, "samplers").replace(" ", "").split(",")
-            temperatures = get_temperatures(parsing.get_value(config, possible_mediator, "minimum_temperature"),
-                                            parsing.get_value(config, possible_mediator, "maximum_temperature"),
-                                            parsing.get_value(config, possible_mediator,
-                                                              "number_of_temperature_increments"))
+            temperature = parsing.get_value(config, possible_mediator, "temperature")
             number_of_equilibration_iterations = parsing.get_value(config, possible_mediator,
                                                                    "number_of_equilibration_iterations")
             number_of_observations = parsing.get_value(config, possible_mediator, "number_of_observations")
+            output_directory = parsing.get_value(config, possible_mediator, "output_directory")
             config_file_mediator = strings.to_snake_case(possible_mediator)
             break
         except NoSectionError:
@@ -98,10 +112,8 @@ def get_basic_config_data(config_file_string):
         raise ConfigurationError("Mediator not one of UnboundedLeapfrogMediator, ToroidalLeapfrogMediator, "
                                  "LazyToroidalLeapfrogMediator, MetropolisMediator, SwendsenWangMediator, "
                                  "WolffMediator or EventChainMediator.")
-    sample_directories = [config.get(strings.to_camel_case(sampler), "output_directory") for sampler in samplers]
-    return (config_file_mediator, potential, factor_field, samplers, sample_directories, temperatures,
-            number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space,
-            parsing.get_value(config, "Run", "number_of_jobs"), parsing.get_value(config, "Run", "max_number_of_cpus"))
+    return (config_file_mediator, potential, factor_field, samplers, output_directory, temperature,
+            number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space)
 
 
 def check_model_settings_of_soft_matter_potential(size_of_particle_space, dimensionality_of_particle_space,
@@ -243,3 +255,20 @@ def get_initial_positions_of_smooth_potential(potential_class):
         else:
             return np.array([[np.random.uniform(*axis_range) for axis_range in range_of_initial_particle_positions]
                              for _ in range(number_of_particles)])
+
+
+def read_variable_from_sh_file(sh_file_string, variable_name):
+    with open(sh_file_string) as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith("export ") and "=" in line:
+                key, val = line.replace("export ", "", 1).split("=", 1)
+                if key.strip() == variable_name:
+                    return val.strip()
+    raise KeyError(f"{variable_name} not found in {sh_file_string}")
+
+
+def extract_index(path):
+    import re
+    match = re.search(r'_(\d+)/job_', path)
+    return int(match.group(1)) if match else -1

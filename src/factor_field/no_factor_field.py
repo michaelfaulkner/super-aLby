@@ -4,8 +4,7 @@ from .factor_field import FactorField
 
 class NoFactorField(FactorField):
     """
-    Class for empty factor field.
-
+    Class for not implementing factor fields in event-chain Monte Carlo.
     """
 
     def __init__(self, prefactor: float = 1.0):
@@ -46,5 +45,7 @@ class NoFactorField(FactorField):
             The distance to the next particle event
         veto_index : int
             The particle index responsible for the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
-        return float('inf'), None
+        return float('inf'), None, None

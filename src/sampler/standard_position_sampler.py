@@ -7,16 +7,11 @@ class StandardPositionSampler(PositionSampler):
     Class for taking observations of particle positions without correcting for periodic boundaries.
     """
 
-    def __init__(self, output_directory: str):
+    def __init__(self):
         """
         The constructor of the StandardPositionSampler class.
-
-        Parameters
-        ----------
-        output_directory : str
-            The filename onto which the sample is written at the end of the run.
         """
-        super().__init__(output_directory)
+        super().__init__()
 
     def get_observation(self, momenta, positions, potential):
         """

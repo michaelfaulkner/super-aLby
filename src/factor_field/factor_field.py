@@ -5,8 +5,7 @@ from abc import ABCMeta, abstractmethod
 
 class FactorField(metaclass=ABCMeta):
     """
-    Abstract class for factor fields.
-
+    Abstract class for factor-field functionality in event-chain Monte Carlo.
     """
 
     def __init__(self, prefactor: float = 1.0, **kwargs):
@@ -52,5 +51,7 @@ class FactorField(metaclass=ABCMeta):
             The distance to the next particle event
         veto_index : int
             The particle index responsible for the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         raise NotImplementedError

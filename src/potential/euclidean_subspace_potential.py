@@ -37,6 +37,7 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
         """
         super().__init__(prefactor, **kwargs)
         """the following are currently only used for ECMC in HardDiskPotential - see main docstring above for details"""
+        self.pointer_hop_distance = 0.0
         self.aggregate_pointer_hop_distance = 0.0
         self.cell_boundary_event = False
 
@@ -101,6 +102,8 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
             The distance to the next particle event
         veto_index : int
             The particle index responsible for the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         raise NotImplementedError
 
@@ -140,3 +143,4 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""
         raise NotImplementedError
+

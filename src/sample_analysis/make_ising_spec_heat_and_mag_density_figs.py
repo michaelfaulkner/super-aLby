@@ -1,13 +1,13 @@
-from markov_chain_diagnostics import get_sample_mean_and_error
 import importlib
 import math
 import matplotlib
 import matplotlib.pyplot as plt
-import multiprocessing as mp
 import numpy as np
 import os
-import sample_getter
 import sys
+
+from markov_chain_diagnostics import get_sample_mean_and_error
+import sample_getter
 
 # Add the directory that contains the module plotting_functions to sys.path
 this_directory = os.path.dirname(os.path.abspath(__file__))
@@ -43,18 +43,25 @@ def main(sampling_algos_paper=True, number_of_system_sizes=5):
         output_directory = "output/emergent_electrostatics_ising_figs"
     else:
         lattice_lengths = [2 ** (index + 2) for index in range(number_of_system_sizes)]
-        config_file_4x4_wolff = ["config_files/sampling_algos_ising_figs/4x4_wolff.ini"]
-        (mediator_wolff, _, _, samplers, sample_directories_4x4_wolff, temperatures_wolff,
-         number_of_equilibration_iterations_wolff, number_of_observations_wolff, _, _, number_of_jobs_wolff,
-         max_number_of_cpus_wolff) = helper_methods.get_basic_config_data(config_file_4x4_wolff)
+        config_file_4x4_wolff = "config_files/sampling_algos_ising_figs/4x4_wolff.ini"
+        sh_file_string_4x4_wolff = f"{os.path.splitext(config_file_4x4_wolff)[0]}.sh"
         config_file_metrop = "config_files/sampling_algos_ising_figs/64x64_metropolis_supplementary_fig.ini"
-        (mediator_metrop, _, _, _, sample_directories_metrop, temperatures_metrop,
-         number_of_equilibration_iterations_metrop, number_of_observations_metrop, _, _, number_of_jobs_metrop,
-         max_number_of_cpus_metrop) = helper_methods.get_basic_config_data(config_file_metrop)
-        output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
+        sh_file_string_metrop = f"{os.path.splitext(config_file_metrop)[0]}.sh"
+
+        (mediator_wolff, _, _, samplers, sample_directory_4x4_wolff, _, number_of_equilibration_iterations_wolff,
+         number_of_observations_wolff, _, _) = helper_methods.get_basic_config_data(config_file_4x4_wolff)
+        (mediator_metrop, _, _, _, sample_directory_metrop, _, number_of_equilibration_iterations_metrop,
+         number_of_observations_metrop, _, _) = helper_methods.get_basic_config_data(config_file_metrop)
+        output_directory = sample_directory_4x4_wolff.replace("/4x4_wolff", "")
         sample_directories = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]
-        reduced_temperatures_wolff = [temperature / transition_temperature for temperature in temperatures_wolff]
-        reduced_temperatures_metrop = [temperature / transition_temperature for temperature in temperatures_metrop]
+
+        temperatures_wolff, reduced_temperatures_wolff = helper_methods.get_temps_and_reduced_temps_from_bash_file(
+            sh_file_string_4x4_wolff, transition_temperature)
+        number_of_jobs_wolff = int(helper_methods.read_variable_from_sh_file(sh_file_string_4x4_wolff, "NUM_JOBS"))
+
+        temperatures_metrop, reduced_temperatures_metrop = helper_methods.get_temps_and_reduced_temps_from_bash_file(
+            sh_file_string_metrop, transition_temperature)
+        number_of_jobs_metrop = 1
 
         fig_1, axis_1 = plt.subplots(1, figsize=(6.25, 4.0))  # fig for spont. mag. and spec-heat density curves only
         setup_empty_thermodynamic_fig(fig_1, axis_1)
@@ -96,38 +103,32 @@ def main(sampling_algos_paper=True, number_of_system_sizes=5):
         fig_1.savefig(f"{output_directory}/2d_ising_model_thermodynamic_specific_heat_and_spontaneous_magnetic_density_"
                       f"vs_temperature.pdf", bbox_inches="tight")
 
-        if number_of_jobs_wolff > 1:
-            number_of_cpus = mp.cpu_count()
-            pool = mp.Pool(min(number_of_cpus, max_number_of_cpus_wolff))
-        else:
-            pool = None
-
         for lattice_length_index, lattice_length in enumerate(lattice_lengths):
             _, _ = get_observable_mean_and_error_vs_temperature(
                 "magnetic_density", mediator_wolff, output_directory, sample_directories[lattice_length_index],
                 temperatures_wolff, lattice_length, number_of_equilibration_iterations_wolff,
-                number_of_observations_wolff, number_of_jobs_wolff, pool)
+                number_of_observations_wolff, number_of_jobs_wolff)
             (magnetic_norm_density_vs_temp,
              magnetic_norm_density_errors_vs_temp) = get_observable_mean_and_error_vs_temperature(
                 "magnetic_norm_density", mediator_wolff, output_directory, sample_directories[lattice_length_index],
                 temperatures_wolff, lattice_length, number_of_equilibration_iterations_wolff,
-                number_of_observations_wolff, number_of_jobs_wolff, pool)
+                number_of_observations_wolff, number_of_jobs_wolff)
             (_, _) = get_observable_mean_and_error_vs_temperature(
                 "magnetic_susceptibility", mediator_wolff, output_directory, sample_directories[lattice_length_index],
                 temperatures_wolff, lattice_length, number_of_equilibration_iterations_wolff,
-                number_of_observations_wolff, number_of_jobs_wolff, pool)
+                number_of_observations_wolff, number_of_jobs_wolff)
             (_, _) = get_observable_mean_and_error_vs_temperature(
                 "magnetic_norm_susceptibility", mediator_wolff, output_directory,
                 sample_directories[lattice_length_index], temperatures_wolff, lattice_length,
-                number_of_equilibration_iterations_wolff, number_of_observations_wolff, number_of_jobs_wolff, pool)
+                number_of_equilibration_iterations_wolff, number_of_observations_wolff, number_of_jobs_wolff)
             _, _ = get_observable_mean_and_error_vs_temperature(
                 "potential", mediator_wolff, output_directory, sample_directories[lattice_length_index],
                 temperatures_wolff, lattice_length, number_of_equilibration_iterations_wolff,
-                number_of_observations_wolff, number_of_jobs_wolff, pool)
+                number_of_observations_wolff, number_of_jobs_wolff)
             (specific_heat_vs_temp, specific_heat_errors_vs_temp) = get_observable_mean_and_error_vs_temperature(
                 "specific_heat", mediator_wolff, output_directory, sample_directories[lattice_length_index],
                 temperatures_wolff, lattice_length, number_of_equilibration_iterations_wolff,
-                number_of_observations_wolff, number_of_jobs_wolff, pool)
+                number_of_observations_wolff, number_of_jobs_wolff)
             axes_2[0].errorbar(reduced_temperatures_wolff, specific_heat_vs_temp / lattice_length ** 2,
                                specific_heat_errors_vs_temp / lattice_length ** 2, marker=".", markersize=8,
                                color=system_size_colors[lattice_length_index], linestyle="None",
@@ -140,31 +141,31 @@ def main(sampling_algos_paper=True, number_of_system_sizes=5):
 
         lattice_length = 64
         _, _ = get_observable_mean_and_error_vs_temperature(
-            "magnetic_density", mediator_metrop, output_directory, sample_directories_metrop[0], temperatures_metrop,
-            lattice_length, number_of_equilibration_iterations_metrop, number_of_observations_metrop,
-            number_of_jobs_metrop, None)
-        (magnetic_norm_density_vs_temp_metrop,
-         magnetic_norm_density_errors_vs_temp_metrop) = get_observable_mean_and_error_vs_temperature(
-            "magnetic_norm_density", mediator_metrop, output_directory, sample_directories_metrop[0],
+            "magnetic_density", mediator_metrop, output_directory, sample_directory_metrop,
             temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop,
-            number_of_observations_metrop, number_of_jobs_metrop, None)
-        (_, _) = get_observable_mean_and_error_vs_temperature(
-            "magnetic_susceptibility", mediator_metrop, output_directory, sample_directories_metrop[0],
+            number_of_observations_metrop, number_of_jobs_metrop)
+        (magnetic_norm_density_vs_temp_metrop, magnetic_norm_density_errors_vs_temp_metrop
+         ) = get_observable_mean_and_error_vs_temperature(
+            "magnetic_norm_density", mediator_metrop, output_directory, sample_directory_metrop,
             temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop,
-            number_of_observations_metrop, number_of_jobs_metrop, None)
-        (_, _) = get_observable_mean_and_error_vs_temperature(
-            "magnetic_norm_susceptibility", mediator_metrop, output_directory, sample_directories_metrop[0],
-            temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop,
-            number_of_observations_metrop, number_of_jobs_metrop, None)
+            number_of_observations_metrop, number_of_jobs_metrop)
         _, _ = get_observable_mean_and_error_vs_temperature(
-            "potential", mediator_metrop, output_directory, sample_directories_metrop[0], temperatures_metrop,
-            lattice_length, number_of_equilibration_iterations_metrop, number_of_observations_metrop,
-            number_of_jobs_metrop, None)
+            "magnetic_susceptibility", mediator_metrop, output_directory, sample_directory_metrop,
+            temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop,
+            number_of_observations_metrop, number_of_jobs_metrop)
+        _, _ = get_observable_mean_and_error_vs_temperature(
+            "magnetic_norm_susceptibility", mediator_metrop, output_directory, sample_directory_metrop,
+            temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop,
+            number_of_observations_metrop, number_of_jobs_metrop)
+        _, _ = get_observable_mean_and_error_vs_temperature(
+            "potential", mediator_metrop, output_directory, sample_directory_metrop,
+            temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop,
+            number_of_observations_metrop, number_of_jobs_metrop)
         (specific_heat_vs_temp_metrop, specific_heat_errors_vs_temp_metrop
          ) = get_observable_mean_and_error_vs_temperature(
-            "specific_heat", mediator_metrop, output_directory, sample_directories_metrop[0], temperatures_metrop,
-            lattice_length, number_of_equilibration_iterations_metrop, number_of_observations_metrop,
-            number_of_jobs_metrop, None)
+            "specific_heat", mediator_metrop, output_directory, sample_directory_metrop,
+            temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop,
+            number_of_observations_metrop, number_of_jobs_metrop)
         axes_3[0].errorbar(reduced_temperatures_metrop, specific_heat_vs_temp_metrop / lattice_length ** 2,
                            specific_heat_errors_vs_temp_metrop / lattice_length ** 2, marker=".", markersize=8,
                            color=system_size_colors[0], linestyle="None",
@@ -211,46 +212,41 @@ def make_empty_spec_heat_and_magnetisation_figs(metropolis_figure=False):
 
 def get_thermodynamic_specific_heat_density_vs_temperature(output_directory, no_of_temperature_integration_values=1000,
                                                            no_of_x_integration_values=1000, max_temperature=4.0):
-    try:
-        return np.load(f"{output_directory}/2d_ising_model_thermodynamic_specific_heat_density_vs_temperature_"
-                       f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy")
-    except IOError:
-        delta_temperature = max_temperature / no_of_temperature_integration_values
-        temperatures = np.linspace(delta_temperature, max_temperature, no_of_temperature_integration_values,
-                                   dtype=np.float128)
-        inverse_temperatures = 1.0 / temperatures
-        alpha = 2.0 * np.sinh(2.0 * inverse_temperatures) / np.cosh(2.0 * inverse_temperatures) ** 2
-        dalpha_dbeta = 4.0 * (
-                1.0 - 2.0 * np.tanh(2.0 * inverse_temperatures) ** 2) / np.cosh(2.0 * inverse_temperatures)
-        gamma_2, dgamma_2_dbeta = np.zeros(len(temperatures)), np.zeros(len(temperatures))
-        x = np.linspace(0.0, math.pi / 2.0, no_of_x_integration_values, dtype=np.float128)
-        for temperature_index in range(len(temperatures)):
-            gamma_2_integrand = np.log(0.5 * (1.0 + np.sqrt(1.0 - alpha[temperature_index] ** 2 * np.sin(x) ** 2)))
-            gamma_2[temperature_index] = np.trapz(gamma_2_integrand, x=x) / math.pi
-            dgamma_2_dbeta_integrand = - alpha[temperature_index] * dalpha_dbeta[temperature_index] * np.sin(x) ** 2 / (
-                    1.0 - alpha[temperature_index] ** 2 * np.sin(x) ** 2 + np.sqrt(1.0 - alpha[temperature_index] ** 2 *
-                                                                                   np.sin(x) ** 2))
-            dgamma_2_dbeta[temperature_index] = np.trapz(dgamma_2_dbeta_integrand, x=x) / math.pi
-        free_energy_density = - temperatures * (np.log(2.0 * np.cosh(2.0 * inverse_temperatures)) + gamma_2)
-        expected_potential_density = - 2.0 * np.tanh(2.0 * inverse_temperatures) - dgamma_2_dbeta
-        specific_heat_density = np.diff(expected_potential_density) / delta_temperature
-        specific_heat_temperatures = temperatures[:len(temperatures) - 1]
-        np.save(f"{output_directory}/2d_ising_model_thermodynamic_free_energy_density_vs_temperature_"
-                f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
-                np.array([temperatures, free_energy_density]))
-        np.save(f"{output_directory}/2d_ising_model_thermodynamic_potential_density_vs_temperature_"
-                f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
-                np.array([temperatures, expected_potential_density]))
-        np.save(f"{output_directory}/2d_ising_model_thermodynamic_specific_heat_density_vs_temperature_"
-                f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
-                np.array([specific_heat_temperatures, specific_heat_density]))
-        return np.array([specific_heat_temperatures, specific_heat_density])
+    delta_temperature = max_temperature / no_of_temperature_integration_values
+    temperatures = np.linspace(delta_temperature, max_temperature, no_of_temperature_integration_values,
+                               dtype=np.float64)
+    inverse_temperatures = 1.0 / temperatures
+    alpha = 2.0 * np.sinh(2.0 * inverse_temperatures) / np.cosh(2.0 * inverse_temperatures) ** 2
+    dalpha_dbeta = 4.0 * (
+            1.0 - 2.0 * np.tanh(2.0 * inverse_temperatures) ** 2) / np.cosh(2.0 * inverse_temperatures)
+    gamma_2, dgamma_2_dbeta = np.zeros(len(temperatures)), np.zeros(len(temperatures))
+    x = np.linspace(0.0, math.pi / 2.0, no_of_x_integration_values, dtype=np.float64)
+    for temperature_index in range(len(temperatures)):
+        gamma_2_integrand = np.log(0.5 * (1.0 + np.sqrt(1.0 - alpha[temperature_index] ** 2 * np.sin(x) ** 2)))
+        gamma_2[temperature_index] = np.trapz(gamma_2_integrand, x=x) / math.pi
+        dgamma_2_dbeta_integrand = - alpha[temperature_index] * dalpha_dbeta[temperature_index] * np.sin(x) ** 2 / (
+                1.0 - alpha[temperature_index] ** 2 * np.sin(x) ** 2 + np.sqrt(1.0 - alpha[temperature_index] ** 2 *
+                                                                               np.sin(x) ** 2))
+        dgamma_2_dbeta[temperature_index] = np.trapz(dgamma_2_dbeta_integrand, x=x) / math.pi
+    free_energy_density = - temperatures * (np.log(2.0 * np.cosh(2.0 * inverse_temperatures)) + gamma_2)
+    expected_potential_density = - 2.0 * np.tanh(2.0 * inverse_temperatures) - dgamma_2_dbeta
+    specific_heat_density = np.diff(expected_potential_density) / delta_temperature
+    specific_heat_temperatures = temperatures[:len(temperatures) - 1]
+    np.save(f"{output_directory}/2d_ising_model_thermodynamic_free_energy_density_vs_temperature_"
+            f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
+            np.array([temperatures, free_energy_density]))
+    np.save(f"{output_directory}/2d_ising_model_thermodynamic_potential_density_vs_temperature_"
+            f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
+            np.array([temperatures, expected_potential_density]))
+    np.save(f"{output_directory}/2d_ising_model_thermodynamic_specific_heat_density_vs_temperature_"
+            f"{no_of_temperature_integration_values}_temp_values_{no_of_x_integration_values}_x_values.npy",
+            np.array([specific_heat_temperatures, specific_heat_density]))
+    return np.array([specific_heat_temperatures, specific_heat_density])
 
 
-def get_observable_mean_and_error_vs_temperature(observable_string, mediator, output_directory,
-                                                 sample_directory, temperatures, lattice_length,
-                                                 number_of_equilibration_iterations, number_of_observations,
-                                                 number_of_jobs, pool, thinning_level=None):
+def get_observable_mean_and_error_vs_temperature(observable_string, mediator, output_directory, sample_directory,
+                                                 temperatures, lattice_length, number_of_equilibration_iterations,
+                                                 number_of_observations, number_of_jobs, thinning_level=None):
     try:
         with open(f"{output_directory}/{lattice_length}x{lattice_length}_ising_model_expected_{observable_string}_vs_"
                   f"temperature_{mediator.replace('_mediator', '')}_{number_of_jobs}x{number_of_observations}_"
@@ -268,13 +264,13 @@ def get_observable_mean_and_error_vs_temperature(observable_string, mediator, ou
         for temperature_index, temperature in enumerate(temperatures):
             if number_of_jobs == 1:
                 sample_mean, sample_error = get_sample_mean_and_error(get_sample_method(
-                    sample_directory, temperature, temperature_index, lattice_length ** 2,
-                    number_of_equilibration_iterations, thinning_level))
+                    f"{sample_directory}/temperature_{temperature_index:02d}/job_00", temperature, 0,
+                    lattice_length ** 2, number_of_equilibration_iterations, thinning_level))
             else:
-                sample_means_and_errors = np.transpose(
-                    np.array(pool.starmap(get_sample_mean_and_error, [[get_sample_method(
-                        f"{sample_directory}/job_{job_number:02d}", temperature, temperature_index, lattice_length ** 2,
-                        number_of_equilibration_iterations, thinning_level)] for job_number in range(number_of_jobs)])))
+                sample_means_and_errors = np.transpose(np.array([get_sample_mean_and_error(get_sample_method(
+                    f"{sample_directory}/temperature_{temperature_index:02d}/job_{job_number:02d}", temperature, 0,
+                    lattice_length ** 2, number_of_equilibration_iterations, thinning_level))
+                    for job_number in range(number_of_jobs)]))
                 sample_mean = np.mean(sample_means_and_errors[0])
                 sample_error = np.linalg.norm(sample_means_and_errors[1])
             output_file.write(f"{temperature:.14e}".ljust(30) + f"{sample_mean:.14e}".ljust(35) +

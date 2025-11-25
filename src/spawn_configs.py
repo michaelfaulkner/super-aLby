@@ -1,0 +1,78 @@
+import os
+import sys
+import copy
+import configparser
+import fnmatch
+import shutil
+import time
+
+
+def spawn_identical_configs(config_file_location, number_of_jobs, config):
+    config_file_directory = os.path.splitext(config_file_location)[0]
+    config_file_basename = os.path.basename(config_file_directory)
+    os.makedirs(config_file_directory, exist_ok=True)
+    mediator = next(section for section in config.sections() if fnmatch.fnmatch(section, "*Mediator"))
+    output_directory = config.get(mediator, "output_directory")
+    for job_index in range(number_of_jobs):
+        job_config = copy.deepcopy(config)
+        job_config_file_path = os.path.join(config_file_directory, f"job_{job_index:02d}.ini")
+        job_output_directory = os.path.join(output_directory, config_file_basename, f"job_{job_index:02d}")
+        job_config.set(mediator, "output_directory", job_output_directory)
+        with open(job_config_file_path, 'w') as f:
+            job_config.write(f)
+    print(f"Created {number_of_jobs} config file(s) in {config_file_directory}.")
+
+
+def main(config_file_location, number_of_jobs, sweep_start, sweep_end, number_of_increments, config_header,
+         config_variable, increment_type='linear'):
+    if not os.path.exists(config_file_location):
+        raise ValueError(f"Template config file {config_file_location} does not exist")
+    if number_of_increments < 0:
+        raise ValueError("number_of_increments must be >= 0")
+
+    config = configparser.ConfigParser()
+    config.optionxform = str
+    config.read(config_file_location)
+
+    config_file_directory = os.path.splitext(config_file_location)[0]
+    staging_root = f"{config_file_directory}.__staging_{int(time.time()*1000)}"
+    os.makedirs(staging_root, exist_ok=True)
+
+    if number_of_increments == 0:
+        sweep_values = [sweep_start]
+    elif increment_type == 'log':
+        if sweep_start <= 0 or sweep_end <= 0:
+            raise ValueError("Log sweep requires positive sweep_start and sweep_end.")
+        sweep_values = [sweep_start * (sweep_end / sweep_start) ** (i / number_of_increments)
+                        for i in range(number_of_increments + 1)]
+    else:
+        sweep_increment = (sweep_end - sweep_start) / number_of_increments
+        sweep_values = [sweep_start + sweep_increment * i for i in range(number_of_increments + 1)]
+
+    for index, increment in enumerate(sweep_values):
+        increment_config = copy.deepcopy(config)
+        increment_config.set(config_header, config_variable, format(increment, ".15g"))
+        increment_config_file_path = os.path.join(staging_root, f"{config_variable}_{index:02d}.ini")
+        with open(increment_config_file_path, 'w') as f:
+            increment_config.write(f)
+        spawn_identical_configs(increment_config_file_path, number_of_jobs, increment_config)
+
+    if os.path.exists(config_file_directory):
+        shutil.rmtree(config_file_directory)
+    os.rename(staging_root, config_file_directory)
+
+    print(f"Created {len(sweep_values)}x{number_of_jobs} = {len(sweep_values) * number_of_jobs} "
+          f"config file(s) in {config_file_directory}.")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 8:
+        raise ValueError("Not enough arguments provided to spawn_configs.py.  Correct usage: python spawn_configs.py "
+                         "<template_ini> <num_jobs> <start> <end> <num_increments> <config_header> <config_variable> "
+                         "[<increment_type>]")
+    elif len(sys.argv) == 8:
+        main(sys.argv[1], int(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4]), int(sys.argv[5]), sys.argv[6],
+             sys.argv[7])
+    else:
+        main(sys.argv[1], int(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4]), int(sys.argv[5]), sys.argv[6],
+             sys.argv[7], sys.argv[8])
