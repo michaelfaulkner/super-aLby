@@ -1,4 +1,4 @@
-"""Module for the EventSampler class."""
+"""Module for the abstract EventSampler class."""
 from .sampler import Sampler
 from abc import ABCMeta, abstractmethod
 
@@ -8,24 +8,19 @@ class EventSampler(Sampler, metaclass=ABCMeta):
     Abstract class for taking observations of the system at event times.
     """
 
-    def __init__(self, output_directory: str):
+    def __init__(self):
         """
         The constructor of the EventSampler class.
 
         This class is designed for cooperative inheritance, meaning that it passes through all unused kwargs in the
         init to the next class in the MRO via super.
 
-        Parameters
-        ----------
-        output_directory : str
-            The filename onto which the sample is written at the end of the run.
-
         Raises
         ------
         base.exceptions.ConfigurationError
             If dimensionality_of_particle_space does not equal 1.
         """
-        super().__init__(output_directory)
+        super().__init__()
 
     def get_empty_sample_array(self):
         """

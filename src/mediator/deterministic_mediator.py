@@ -16,8 +16,8 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
 
     def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
                  kinetic_energy: KineticEnergy, temperature: float = 1.0,
-                 number_of_equilibration_iterations: int = 10000,
-                 number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True,
+                 number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
+                 output_directory: str = None, proposal_dynamics_adaptor_is_on: bool = True,
                  initial_step_size: float = 0.1, max_number_of_integration_steps: int = 10,
                  randomise_number_of_integration_steps: bool = False, use_metropolis_accept_reject: bool = True,
                  **kwargs):
@@ -43,6 +43,8 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
         number_of_observations : int, optional
             Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
+        output_directory : str
+            The name of the directory into which the sample file is written at the end of the run.
         proposal_dynamics_adaptor_is_on : bool, optional
             When True, the step size of the integrator is tuned during the equilibration process.
         initial_step_size : float, optional
@@ -85,7 +87,7 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
             If type(use_metropolis_accept_reject) is not bool
         """
         super().__init__(potential, samplers, temperature, number_of_equilibration_iterations, number_of_observations,
-                         proposal_dynamics_adaptor_is_on, **kwargs)
+                         output_directory, proposal_dynamics_adaptor_is_on, **kwargs)
         if not isinstance(kinetic_energy, KineticEnergy):
             raise ConfigurationError(f"Give a kinetic_energy class as the value for kinetic_energy in "
                                      f"{self.__class__.__name__}.")

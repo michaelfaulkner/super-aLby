@@ -12,7 +12,7 @@ class ReversibleMediator(Mediator, metaclass=ABCMeta):
 
     def __init__(self, potential: Potential, samplers: Sequence[Sampler], temperature: float = 1.0,
                  number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
-                 proposal_dynamics_adaptor_is_on: bool = True, **kwargs):
+                 output_directory: str = None, proposal_dynamics_adaptor_is_on: bool = True, **kwargs):
         r"""
         The constructor of the ReversibleMediator class.
 
@@ -33,6 +33,8 @@ class ReversibleMediator(Mediator, metaclass=ABCMeta):
         number_of_observations : int, optional
             Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
+        output_directory : str
+            The name of the directory into which the sample file is written at the end of the run.
         proposal_dynamics_adaptor_is_on : bool, optional
             When True, the size of either the numerical integration step (DeterministicMediator) or the width of the
             proposal distribution (MetropolisMediator) is tuned during the equilibration process.
@@ -55,7 +57,7 @@ class ReversibleMediator(Mediator, metaclass=ABCMeta):
             If type(proposal_dynamics_adaptor_is_on) is not bool.
         """
         super().__init__(potential, samplers, temperature, number_of_equilibration_iterations, number_of_observations,
-                         **kwargs)
+                         output_directory, **kwargs)
         if type(proposal_dynamics_adaptor_is_on) is not bool:
             raise ConfigurationError(f"Give a value of type bool as proposal_dynamics_adaptor_is_on in "
                                      f"{self.__class__.__name__}.")

@@ -16,7 +16,8 @@ class MetropolisMediator(DiffusiveMediator):
 
     def __init__(self, potential: Potential, samplers: Sequence[Sampler], noise_distribution: NoiseDistribution,
                  temperature: float = 1.0, number_of_equilibration_iterations: int = 10000,
-                 number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True):
+                 number_of_observations: int = 100000, output_directory: str = None,
+                 proposal_dynamics_adaptor_is_on: bool = True):
         r"""
         The constructor of the MetropolisMediator class.
 
@@ -36,6 +37,8 @@ class MetropolisMediator(DiffusiveMediator):
         number_of_observations : int, optional
             Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
+        output_directory : str
+            The name of the directory into which the sample file is written at the end of the run.
         proposal_dynamics_adaptor_is_on : bool, optional
             When True, the step size of the integrator is tuned during the equilibration process.
 
@@ -58,7 +61,7 @@ class MetropolisMediator(DiffusiveMediator):
             noise_distribution.noise_distribution.NoiseDistribution.
         """
         super().__init__(potential, samplers, temperature, number_of_equilibration_iterations, number_of_observations,
-                         proposal_dynamics_adaptor_is_on)
+                         output_directory, proposal_dynamics_adaptor_is_on)
         if not isinstance(noise_distribution, NoiseDistribution):
             raise ConfigurationError(f"Give a noise_distribution class as the value for noise_distribution in "
                                      f"{self.__class__.__name__}.")
@@ -73,7 +76,8 @@ class MetropolisMediator(DiffusiveMediator):
             candidate_position = self._noise_distribution.get_candidate_position(active_particle_index, self._positions)
             potential_difference = self._potential.get_potential_difference(active_particle_index, candidate_position,
                                                                             self._positions)
-            if potential_difference < 0.0 or np.random.uniform(0.0, 1.0) < np.exp(- potential_difference / self._temperature):
+            if (potential_difference < 0.0 or np.random.uniform(0.0, 1.0) <
+                    np.exp(- potential_difference / self._temperature)):
                 self._positions[active_particle_index] = candidate_position
                 self._number_of_accepted_trajectories += 1
 

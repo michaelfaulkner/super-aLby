@@ -56,32 +56,28 @@ def get_basic_config_data(config_file_string):
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     possible_mediators = ["UnboundedLeapfrogMediator", "ToroidalLeapfrogMediator", "LazyToroidalLeapfrogMediator",
                           "MetropolisMediator", "SwendsenWangMediator", "WolffMediator", "EventChainMediator"]
-    (config_file_mediator, potential, factor_field, samplers, temperature, number_of_equilibration_iterations,
-     number_of_observations, number_of_particles, size_of_particle_space) = (None, None, None, None, None, None, None,
-                                                                             None, None)
+    (config_file_mediator, potential, factor_field, samplers, output_directory, temperature,
+     number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space,
+     dimensionality_of_particle_space) = (None, None, None, None, None, None, None, None, None, None, None)
     for possible_mediator in possible_mediators:
         try:
             potential = config.get(possible_mediator, "potential")
-            if "hard_disk_potential" in str(potential) and "quantum_hard_disk_potential" not in str(potential) and \
-            "one_dim_hard_disk_potential" not in str(potential):
-                number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
-                packing_fraction = parsing.get_value(config, "HardDiskPotential", "packing_fraction")
-                disk_radius = parsing.get_value(config, "HardDiskPotential", "disk_radius")
-                linear_system_size = math.sqrt(number_of_particles * math.pi / packing_fraction) * disk_radius
-                size_of_particle_space = [linear_system_size, linear_system_size]
-
-            elif "one_dim_hard_disk_potential" in str(potential) and "quantum_hard_disk_potential" not in str(potential):
-                number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
-                packing_fraction = parsing.get_value(config, "OneDimHardDiskPotential", "packing_fraction")
-                disk_radius = parsing.get_value(config, "OneDimHardDiskPotential", "disk_radius")
-                linear_system_size = math.sqrt(number_of_particles * math.pi / packing_fraction) * disk_radius
-                size_of_particle_space = 2.0 * number_of_particles * disk_radius / packing_fraction
-                
-            elif "quantum_hard_disk_potential" in str(potential):
+            if "quantum_hard_disk_potential" in str(potential):
                 number_of_quantum_particles = parsing.get_value(config, "ModelSettings", "number_of_quantum_particles")
                 packing_fraction = parsing.get_value(config, "QuantumHardDiskPotential", "packing_fraction")
                 disk_radius = parsing.get_value(config, "QuantumHardDiskPotential", "disk_radius")
                 size_of_particle_space = 2.0 * disk_radius * number_of_quantum_particles / packing_fraction
+            elif "hard_disk_potential" in str(potential):
+                dimensionality_of_particle_space = parsing.get_value(config, "ModelSettings",
+                                                                     "dimensionality_of_particle_space")
+                number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
+                packing_fraction = parsing.get_value(config, "HardDiskPotential", "packing_fraction")
+                disk_radius = parsing.get_value(config, "HardDiskPotential", "disk_radius")
+                if dimensionality_of_particle_space == 1:
+                    size_of_particle_space = 2.0 * number_of_particles * disk_radius / packing_fraction
+                else:
+                    linear_system_size = math.sqrt(number_of_particles * math.pi / packing_fraction) * disk_radius
+                    size_of_particle_space = [linear_system_size, linear_system_size]
             else:
                 size_of_particle_space = parsing.get_value(config, "ModelSettings", "size_of_particle_space")
             if ("quantum_hard_disk_potential" in str(potential) or
@@ -107,6 +103,7 @@ def get_basic_config_data(config_file_string):
             number_of_equilibration_iterations = parsing.get_value(config, possible_mediator,
                                                                    "number_of_equilibration_iterations")
             number_of_observations = parsing.get_value(config, possible_mediator, "number_of_observations")
+            output_directory = parsing.get_value(config, possible_mediator, "output_directory")
             config_file_mediator = strings.to_snake_case(possible_mediator)
             break
         except NoSectionError:
@@ -115,8 +112,7 @@ def get_basic_config_data(config_file_string):
         raise ConfigurationError("Mediator not one of UnboundedLeapfrogMediator, ToroidalLeapfrogMediator, "
                                  "LazyToroidalLeapfrogMediator, MetropolisMediator, SwendsenWangMediator, "
                                  "WolffMediator or EventChainMediator.")
-    sample_directories = [config.get(strings.to_camel_case(sampler), "output_directory") for sampler in samplers]
-    return (config_file_mediator, potential, factor_field, samplers, sample_directories, temperature,
+    return (config_file_mediator, potential, factor_field, samplers, output_directory, temperature,
             number_of_equilibration_iterations, number_of_observations, number_of_particles, size_of_particle_space)
 
 
