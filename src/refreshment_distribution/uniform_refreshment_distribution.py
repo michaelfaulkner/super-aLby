@@ -7,7 +7,8 @@ from refreshment_distribution.refreshment_distribution import RefreshmentDistrib
 
 class UniformRefreshmentDistribution(RefreshmentDistribution):
     """
-    Class for sampling the velocity refreshment distance within the Event Chain algorithm from a uniform distribution.
+    Class for sampling the velocity-refreshment distance (within the event-chain Monte Carlo algorithm) from a uniform
+        distribution.
     """
 
     def __init__(self, normalised_lower_limit: float = 0.0,
@@ -43,6 +44,6 @@ class UniformRefreshmentDistribution(RefreshmentDistribution):
         Returns
         -------
         numpy.ndarray
-            A one-dimensional numpy array with single element equal to the refreshment distance.
+            A one-dimensional numpy array whose single element is equal to the refreshment distance.
         """
         return np.random.uniform(self._lower_limit, self._upper_limit, 1)
