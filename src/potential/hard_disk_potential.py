@@ -301,6 +301,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
             hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index]
                                                              - positions[active_particle_index])
             return distance_to_next_event, vetoing_particle_index, hop_displacement
+        # todo fix bug in 2D hard-disk code that appeared after correcting EventChainMediator structure
         self.pointer_hop_distance = 0.0
         active_particle_position = positions[active_particle_index]
         if self.cell_boundary_event:

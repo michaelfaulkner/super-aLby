@@ -4,7 +4,7 @@ from model_settings import number_of_particles
 
 
 class RefreshmentDistribution(metaclass=ABCMeta):
-    """Abstract class for velocity refreshment distributions."""
+    """Abstract class for velocity-refreshment distributions within the event-chain Monte Carlo algorithm."""
 
     def __init__(self, normalised_refreshment_lengthscale=1.0, **kwargs):
         """
