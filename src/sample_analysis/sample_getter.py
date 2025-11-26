@@ -6,8 +6,8 @@ import os
 """Methods to get base samples"""
 
 
-def get_mean_particle_separation(sample_directory, temperature, temperature_index, checkpoint_index,
-                                 number_of_particles, number_of_equilibration_iterations=None, thinning_level=None):
+def get_mean_particle_separation(sample_directory, temperature, checkpoint_index, number_of_particles,
+                                 number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the mean particle separation.
 
@@ -17,8 +17,6 @@ def get_mean_particle_separation(sample_directory, temperature, temperature_inde
         The location of the directory containing the sample(s).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process
     number_of_particles : int
@@ -38,11 +36,11 @@ def get_mean_particle_separation(sample_directory, temperature, temperature_inde
         None.  The nth element is a float corresponding to the mean particle separation measured at observation n.
     """
     return get_reduced_sample(np.load(
-        f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
-        f"sample_of_mean_particle_separation.npy").flatten(), number_of_equilibration_iterations, thinning_level)
+        f"{sample_directory}/checkpoint_{checkpoint_index:02d}_sample_of_mean_particle_separation.npy").flatten(),
+                              number_of_equilibration_iterations, thinning_level)
 
 
-def get_mean_positions(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+def get_mean_positions(sample_directory, temperature, checkpoint_index, number_of_particles,
                        number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the mean particle positions (where each position may be corrected for periodic boundaries).
@@ -53,8 +51,6 @@ def get_mean_positions(sample_directory, temperature, temperature_index, checkpo
         The location of the directory containing the sample(s).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process.
     number_of_particles : int
@@ -76,11 +72,11 @@ def get_mean_positions(sample_directory, temperature, temperature_index, checkpo
         sub-array is the ith Cartesian component the mean particle position at observation n.
     """
     return get_reduced_sample(
-        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
-                f"sample_of_mean_positions.npy"), number_of_equilibration_iterations, thinning_level)
+        np.load(f"{sample_directory}/checkpoint_{checkpoint_index:02d}_sample_of_mean_positions.npy"),
+        number_of_equilibration_iterations, thinning_level)
 
 
-def get_mean_squared_positions(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+def get_mean_squared_positions(sample_directory, temperature, checkpoint_index, number_of_particles,
                                number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the mean squared particle positions without correcting for periodic boundaries.
@@ -91,8 +87,6 @@ def get_mean_squared_positions(sample_directory, temperature, temperature_index,
         The location of the directory containing the sample(s).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process
     number_of_particles : int
@@ -112,11 +106,11 @@ def get_mean_squared_positions(sample_directory, temperature, temperature_index,
         and/or thinning_level is not None.  The nth element is the mean squared particle position at observation n.
     """
     return get_reduced_sample(
-        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
-                f"sample_of_mean_squared_positions.npy"), number_of_equilibration_iterations, thinning_level)
+        np.load(f"{sample_directory}/checkpoint_{checkpoint_index:02d}_sample_of_mean_squared_positions.npy"),
+        number_of_equilibration_iterations, thinning_level)
 
 
-def get_momenta(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+def get_momenta(sample_directory, temperature, checkpoint_index, number_of_particles,
                 number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of particle momenta.
@@ -127,8 +121,6 @@ def get_momenta(sample_directory, temperature, temperature_index, checkpoint_ind
         The location of the directory containing the sample(s).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process
     number_of_particles : int
@@ -149,11 +141,11 @@ def get_momenta(sample_directory, temperature, temperature_index, checkpoint_ind
         float corresponding to one of the Cartesian components of the momentum of some particle.
     """
     return get_reduced_sample(
-        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
-                f"sample_of_momenta.npy"), number_of_equilibration_iterations, thinning_level)
+        np.load(f"{sample_directory}/checkpoint_{checkpoint_index:02d}_sample_of_momenta.npy"),
+        number_of_equilibration_iterations, thinning_level)
 
 
-def get_particle_separations(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+def get_particle_separations(sample_directory, temperature, checkpoint_index, number_of_particles,
                              number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the minimum (if on the torus) particle separation distances.
@@ -164,8 +156,6 @@ def get_particle_separations(sample_directory, temperature, temperature_index, c
         The location of the directory containing the sample(s).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process
     number_of_particles : int
@@ -186,11 +176,11 @@ def get_particle_separations(sample_directory, temperature, temperature_index, c
         separation.
     """
     return get_reduced_sample(np.load(
-        f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
-        f"sample_of_particle_separations.npy"), number_of_equilibration_iterations, thinning_level)
+        f"{sample_directory}/checkpoint_{checkpoint_index:02d}_sample_of_particle_separations.npy"),
+        number_of_equilibration_iterations, thinning_level)
 
 
-def get_positions(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+def get_positions(sample_directory, temperature, checkpoint_index, number_of_particles,
                   number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of particle positions.
@@ -201,8 +191,6 @@ def get_positions(sample_directory, temperature, temperature_index, checkpoint_i
         The location of the directory containing the sample(s).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process
     number_of_particles : int
@@ -223,11 +211,11 @@ def get_positions(sample_directory, temperature, temperature_index, checkpoint_i
         float corresponding to one of the Cartesian components of the position of some particle.
     """
     return get_reduced_sample(
-        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
-                f"sample_of_positions.npy"), number_of_equilibration_iterations, thinning_level)
+        np.load(f"{sample_directory}/checkpoint_{checkpoint_index:02d}_sample_of_positions.npy"),
+        number_of_equilibration_iterations, thinning_level)
 
 
-def get_potential(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+def get_potential(sample_directory, temperature, checkpoint_index, number_of_particles,
                   number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the potential sample.
@@ -238,8 +226,6 @@ def get_potential(sample_directory, temperature, temperature_index, checkpoint_i
         The location of the directory containing the sample(s).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process.
     number_of_particles : int
@@ -258,12 +244,12 @@ def get_potential(sample_directory, temperature, temperature_index, checkpoint_i
         length is shortened if number_of_equilibration_iterations and/or thinning_level is not None.  The nth element
         is a float corresponding to the potential measured at observation n.
     """
-    return get_reduced_sample(np.load(
-        f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
-        f"sample_of_potential.npy").flatten(), number_of_equilibration_iterations, thinning_level)
+    return get_reduced_sample(
+        np.load(f"{sample_directory}/checkpoint_{checkpoint_index:02d}_sample_of_potential.npy").flatten(),
+        number_of_equilibration_iterations, thinning_level)
 
 
-def get_single_particle_separation(sample_directory, temperature, temperature_index, checkpoint_index,
+def get_single_particle_separation(sample_directory, temperature, checkpoint_index,
                                    number_of_particles, number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the minimum (if on the torus) separation distance between the zeroth and first particles.
@@ -274,8 +260,6 @@ def get_single_particle_separation(sample_directory, temperature, temperature_in
         The location of the directory containing the sample(s).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process.
     number_of_particles : int
@@ -295,12 +279,12 @@ def get_single_particle_separation(sample_directory, temperature, temperature_in
         shortened if number_of_equilibration_iterations and/or thinning_level is not None.  Each element is a float
         corresponding to single minimum particle-pair separation.
     """
-    return get_reduced_sample(np.load(
-        f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
-        f"sample_of_single_particle_separation.npy"), number_of_equilibration_iterations, thinning_level)
+    return get_reduced_sample(
+        np.load(f"{sample_directory}/checkpoint_{checkpoint_index:02d}_sample_of_single_particle_separation.npy"),
+        number_of_equilibration_iterations, thinning_level)
 
 
-def get_pressure(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+def get_pressure(sample_directory, temperature, checkpoint_index, number_of_particles,
                  number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the pressure of a hard-sphere model.
@@ -311,8 +295,6 @@ def get_pressure(sample_directory, temperature, temperature_index, checkpoint_in
         The location of the directory containing the sample(s).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process
     number_of_particles : int
@@ -331,15 +313,15 @@ def get_pressure(sample_directory, temperature, temperature_index, checkpoint_in
         length is shortened if number_of_equilibration_iterations and/or thinning_level is not None.  The nth element is
         a float corresponding to the mean particle separation measured at observation n.
     """
-    return get_reduced_sample(np.load(
-        f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
-        f"sample_of_pressure.npy").flatten(), number_of_equilibration_iterations, thinning_level)
+    return get_reduced_sample(
+        np.load(f"{sample_directory}/checkpoint_{checkpoint_index:02d}_sample_of_pressure.npy").flatten(),
+        number_of_equilibration_iterations, thinning_level)
 
 
 """Methods to get samples of observations that are functions of the observations corresponding ot the base samples"""
 
 
-def get_specific_heat(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+def get_specific_heat(sample_directory, temperature, checkpoint_index, number_of_particles,
                       number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the specific heat
@@ -354,8 +336,6 @@ def get_specific_heat(sample_directory, temperature, temperature_index, checkpoi
         option of multiple repeated simulations).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process.
     number_of_particles : int
@@ -372,12 +352,12 @@ def get_specific_heat(sample_directory, temperature, temperature_index, checkpoi
         The sample of the specific heat.  A one-dimensional numpy array of length number_of_observations.
         The nth element is a float corresponding to the specific heat measured at observation n.
     """
-    potential_sample = get_potential(sample_directory, temperature, temperature_index, checkpoint_index,
+    potential_sample = get_potential(sample_directory, temperature, checkpoint_index,
                                      number_of_particles, number_of_equilibration_iterations, thinning_level)
     return (potential_sample - np.mean(potential_sample)) ** 2 / temperature ** 2
 
 
-def get_magnetic_density(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+def get_magnetic_density(sample_directory, temperature, checkpoint_index, number_of_particles,
                          number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the magnetic density m = sum_i x_i / number_of_particles of the Ising model, where x_i is the
@@ -390,8 +370,6 @@ def get_magnetic_density(sample_directory, temperature, temperature_index, check
         option of multiple repeated simulations).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process.
     number_of_particles : int
@@ -408,11 +386,11 @@ def get_magnetic_density(sample_directory, temperature, temperature_index, check
         The sample of the magnetic density.  A one-dimensional numpy array of length number_of_observations.  The nth
         element is a float corresponding to the magnetic density measured at observation n.
     """
-    return get_mean_positions(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+    return get_mean_positions(sample_directory, temperature, checkpoint_index, number_of_particles,
                               number_of_equilibration_iterations, thinning_level).flatten()
 
 
-def get_magnetic_susceptibility(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+def get_magnetic_susceptibility(sample_directory, temperature, checkpoint_index, number_of_particles,
                                 number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the magnetic susceptibility chi(x; temperature, number_of_particles) per particle, where
@@ -426,8 +404,6 @@ def get_magnetic_susceptibility(sample_directory, temperature, temperature_index
         option of multiple repeated simulations).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process.
     number_of_particles : int
@@ -445,13 +421,12 @@ def get_magnetic_susceptibility(sample_directory, temperature, temperature_index
         number_of_observations.  The nth element is a float corresponding to the magnetic susceptibility measured at
         observation n.
     """
-    magnetic_density_sample = get_magnetic_density(sample_directory, temperature, temperature_index, checkpoint_index,
-                                                   number_of_particles, number_of_equilibration_iterations,
-                                                   thinning_level)
+    magnetic_density_sample = get_magnetic_density(sample_directory, temperature, checkpoint_index, number_of_particles,
+                                                   number_of_equilibration_iterations, thinning_level)
     return number_of_particles * (magnetic_density_sample - np.mean(magnetic_density_sample)) ** 2 / temperature
 
 
-def get_magnetic_norm_density(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+def get_magnetic_norm_density(sample_directory, temperature, checkpoint_index, number_of_particles,
                               number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the magnetic-norm density ||m|| of the Ising model, where m = sum_i x_i / number_of_particles
@@ -464,8 +439,6 @@ def get_magnetic_norm_density(sample_directory, temperature, temperature_index, 
         option of multiple repeated simulations).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process.
     number_of_particles : int
@@ -482,12 +455,12 @@ def get_magnetic_norm_density(sample_directory, temperature, temperature_index, 
         The sample of the magnetic-norm density.  A one-dimensional numpy array of length number_of_observations.  The
         nth element is a float corresponding to the magnetic density measured at observation n.
     """
-    return np.abs(get_magnetic_density(sample_directory, temperature, temperature_index, checkpoint_index,
-                                       number_of_particles, number_of_equilibration_iterations, thinning_level))
+    return np.abs(get_magnetic_density(sample_directory, temperature, checkpoint_index, number_of_particles,
+                                       number_of_equilibration_iterations, thinning_level))
 
 
-def get_magnetic_norm_susceptibility(sample_directory, temperature, temperature_index, checkpoint_index,
-                                     number_of_particles, number_of_equilibration_iterations=None, thinning_level=None):
+def get_magnetic_norm_susceptibility(sample_directory, temperature, checkpoint_index, number_of_particles,
+                                     number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the magnetic-norm susceptibility chi_{||m||}(x; temperature, number_of_particles) per
     particle, where E[chi_{||m||}(x; temperature, number_of_particles)] := beta N^2 Var[||m||] where
@@ -502,8 +475,6 @@ def get_magnetic_norm_susceptibility(sample_directory, temperature, temperature_
         option of multiple repeated simulations).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process.
     number_of_particles : int
@@ -521,14 +492,14 @@ def get_magnetic_norm_susceptibility(sample_directory, temperature, temperature_
         number_of_observations.  The nth element is a float corresponding to the magnetic susceptibility measured at
         observation n.
     """
-    magnetic_norm_density_sample = get_magnetic_norm_density(sample_directory, temperature, temperature_index,
-                                                             checkpoint_index, number_of_particles, 
-                                                             number_of_equilibration_iterations, thinning_level)
+    magnetic_norm_density_sample = get_magnetic_norm_density(sample_directory, temperature, checkpoint_index,
+                                                             number_of_particles,  number_of_equilibration_iterations,
+                                                             thinning_level)
     return number_of_particles * (
             magnetic_norm_density_sample - np.mean(magnetic_norm_density_sample)) ** 2 / temperature
 
 
-def get_xy_magnetisation_norm(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+def get_xy_magnetisation_norm(sample_directory, temperature, checkpoint_index, number_of_particles,
                               number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the magnetisation norm.
@@ -539,8 +510,6 @@ def get_xy_magnetisation_norm(sample_directory, temperature, temperature_index, 
         The location of the directory containing the sample(s).
     temperature : float
         The sampling temperature.
-    temperature_index : int
-        The index of the current sampling temperature within the configuration file.
     checkpoint_index : int
         The index of the data file created as part of the checkpointing process.
     number_of_particles : int
@@ -558,8 +527,42 @@ def get_xy_magnetisation_norm(sample_directory, temperature, temperature_index, 
         element is a float corresponding to the magnetisation norm measured at observation n.
     """
     return get_reduced_sample(
-        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
-                f"sample_of_magnetisation_norm.npy"), number_of_equilibration_iterations, thinning_level)
+        np.load(f"{sample_directory}/checkpoint_{checkpoint_index:02d}_sample_of_magnetisation_norm.npy"),
+        number_of_equilibration_iterations, thinning_level)
+
+
+def get_structure_factor(sample_directory, temperature, checkpoint_index,
+                         number_of_particles, number_of_equilibration_iterations=None, thinning_level=None):
+    """
+    Returns the sample of the structure factor.
+
+    Parameters
+    ----------
+    sample_directory : str
+        The location of the directory containing the sample(s).
+    temperature : float
+        The sampling temperature.
+    checkpoint_index : int
+        The index of the data file created as part of the checkpointing process
+    number_of_particles : int
+        The total number of particles.
+    number_of_equilibration_iterations : None or int, optional
+        The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
+    thinning_level : None or int, optional
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
+        all observations are retained.
+
+    Returns
+    -------
+    numpy.ndarray
+        The sample of the mean particle separation.  A one-dimensional numpy array of maximum length
+        number_of_observations + number_of_equilibration_iterations + 1 (the 1 is for the observation of the initial
+        system state) but the length is shortened if number_of_equilibration_iterations and/or thinning_level is not
+        None.  The nth element is a float corresponding to the mean particle separation measured at observation n.
+    """
+    return get_reduced_sample(
+        np.load(f"{sample_directory}/checkpoint_{checkpoint_index:02d}_sample_of_structure_factor.npy").flatten(),
+        number_of_equilibration_iterations, thinning_level)
 
 def get_active_particle(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
                        number_of_equilibration_iterations=None, thinning_level=None):
@@ -634,7 +637,6 @@ def get_structure_factor(sample_directory, temperature, temperature_index, check
 
 
 """helper methods"""
-
 
 def get_checkpointing_indices(sample_directory):
     return np.loadtxt(os.path.join(f"{sample_directory}", "checkpoint_index.txt"), dtype='int')

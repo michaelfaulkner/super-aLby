@@ -3,13 +3,12 @@ from .factor_field import FactorField
 import numpy as np
 from helper_methods import get_neighbours
 from model_settings import number_of_particles
-from base.exceptions import ConfigurationError
 
 
 class XyFactorField(FactorField):
     """
-    Class for factor field for XY model.
-
+    Class for implementing factor fields (in event-chain Monte Carlo) for the 2DXY model.  This is currently a work in
+        progress as we have not finalised how to implement factor fields for the 2DXY model.
     """
 
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 2):
@@ -56,6 +55,8 @@ class XyFactorField(FactorField):
             The distance to the next particle event
         veto_index : int
             The particle index responsible for the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         shortest_distance_to_next_factor_event = 1.0e10
         active_spin_value = positions[active_particle_index, 0]
@@ -78,7 +79,7 @@ class XyFactorField(FactorField):
                     shortest_distance_to_next_factor_event = distance_to_next_factor_event
                     vetoing_index = neighbouring_spin_index
 
-        return shortest_distance_to_next_factor_event, vetoing_index
+        return shortest_distance_to_next_factor_event, vetoing_index, None
 
     @staticmethod
     def _get_spin_difference(spin_value_one, spin_value_two):

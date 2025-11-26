@@ -15,9 +15,9 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
         relativistic or super-relativistic dynamics."""
 
     def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
-                 kinetic_energy: KineticEnergy, minimum_temperature: float = 1.0, maximum_temperature: float = 1.0,
-                 number_of_temperature_increments: int = 1, number_of_equilibration_iterations: int = 10000,
-                 number_of_observations: int = 100000, proposal_dynamics_adaptor_is_on: bool = True,
+                 kinetic_energy: KineticEnergy, temperature: float = 1.0,
+                 number_of_equilibration_iterations: int = 10000, number_of_observations: int = 100000,
+                 output_directory: str = None, proposal_dynamics_adaptor_is_on: bool = True,
                  initial_step_size: float = 0.1, max_number_of_integration_steps: int = 10,
                  randomise_number_of_integration_steps: bool = False, use_metropolis_accept_reject: bool = True,
                  **kwargs):
@@ -35,19 +35,16 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
             Sequence of instances of the chosen child classes of sampler.sampler.Sampler.
         kinetic_energy : kinetic_energy.kinetic_energy.KineticEnergy
             Instance of the chosen child class of kinetic_energy.kinetic_energy.KineticEnergy.
-        minimum_temperature : float, optional
-            The minimum value of the model temperature, n.b., the temperature is the reciprocal of the inverse
-            temperature, beta (up to a proportionality constant).
-        maximum_temperature : float, optional
-            The maximum value of the model temperature, n.b., the temperature is the reciprocal of the inverse
-            temperature, beta (up to a proportionality constant).
-        number_of_temperature_increments : int, optional
-            number_of_temperature_increments + 1 is the number of temperature values to iterate over.
+        temperature : float, optional
+            The model temperature, n.b., the temperature is the reciprocal of the inverse temperature, beta (up to a
+            proportionality constant).
         number_of_equilibration_iterations : int, optional
             Number of equilibration iterations of the Markov process.
         number_of_observations : int, optional
             Number of sample observations, i.e. the sample size. This is equal to the number of post-equilibration
             iterations of the Markov process.
+        output_directory : str
+            The name of the directory into which the sample file is written at the end of the run.
         proposal_dynamics_adaptor_is_on : bool, optional
             When True, the step size of the integrator is tuned during the equilibration process.
         initial_step_size : float, optional
@@ -71,15 +68,7 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If samplers is not a sequence of instances of some child classes of sampler.sampler.Sampler.
         base.exceptions.ConfigurationError
-            If minimum_temperature is less than 0.0.
-        base.exceptions.ConfigurationError
-            If maximum_temperature is less than 0.0.
-        base.exceptions.ConfigurationError
-            If maximum_temperature is less than minimum_temperature.
-        base.exceptions.ConfigurationError
-            If number_of_temperature_increments is less than 0.
-        base.exceptions.ConfigurationError
-            If number_of_temperature_increments is 0 and minimum_temperature does not equal maximum_temperature.
+            If temperature is less than 0.0.
         base.exceptions.ConfigurationError
             If number_of_equilibration_iterations is less than 0.
         base.exceptions.ConfigurationError
@@ -97,9 +86,8 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
         base.exceptions.ConfigurationError
             If type(use_metropolis_accept_reject) is not bool
         """
-        super().__init__(potential, samplers, minimum_temperature, maximum_temperature,
-                         number_of_temperature_increments, number_of_equilibration_iterations, number_of_observations,
-                         proposal_dynamics_adaptor_is_on, **kwargs)
+        super().__init__(potential, samplers, temperature, number_of_equilibration_iterations, number_of_observations,
+                         output_directory, proposal_dynamics_adaptor_is_on, **kwargs)
         if not isinstance(kinetic_energy, KineticEnergy):
             raise ConfigurationError(f"Give a kinetic_energy class as the value for kinetic_energy in "
                                      f"{self.__class__.__name__}.")
@@ -131,47 +119,42 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
         self._randomise_number_of_integration_steps = randomise_number_of_integration_steps
         self._use_metropolis_accept_reject = use_metropolis_accept_reject
         self._target_acceptance_rate = 0.85  # TODO add functionality so the user can set self._target_acceptance_rate
-        """The following objects are set in self._reset_arrays_and_counters()"""
+        """The following objects are set in self._set_arrays_and_counters()"""
         self._current_potential = None
         self._number_of_unstable_trajectories = None
 
-    def _reset_arrays_and_counters(self, temperature):
-        """Sets or resets the arrays (e.g. the sample array) and counters before each temperature iteration."""
-        super()._reset_arrays_and_counters(temperature)
-        self._momenta = self._kinetic_energy.get_momentum_observations(temperature)
+    def _set_arrays_and_counters(self):
+        """Sets the arrays (e.g. the sample array) and counters before the Markov process."""
+        super()._set_arrays_and_counters()
+        self._momenta = self._kinetic_energy.get_momentum_observations(self._temperature)
         self._current_potential = self._potential.get_value(self._positions)
         self._number_of_unstable_trajectories = 0
 
-    def _generate_single_observation(self, markov_chain_step_index, temperature):
+    def _generate_single_observation(self, markov_chain_step_index):
         """Advances the Markov chain by one step and adds a single observation to the sample."""
         if self._randomise_number_of_integration_steps:
             self._number_of_integration_steps = 1 + np.random.randint(self._max_number_of_integration_steps)
-        candidate_momenta, candidate_positions, candidate_potential = self._get_candidate_configuration(temperature)
+        candidate_momenta, candidate_positions, candidate_potential = self._get_candidate_configuration()
         current_energy = self._kinetic_energy.get_value(self._momenta) + self._current_potential
         energy_change = self._kinetic_energy.get_value(candidate_momenta) + candidate_potential - current_energy
         if energy_change / current_energy > 1000.0:
             self._number_of_unstable_trajectories += 1
         if self._use_metropolis_accept_reject:
-            if energy_change < 0.0 or np.random.uniform(0.0, 1.0) < np.exp(- energy_change / temperature):
+            if energy_change < 0.0 or np.random.uniform(0.0, 1.0) < np.exp(- energy_change / self._temperature):
                 self._update_system_state(candidate_momenta, candidate_positions, candidate_potential)
                 self._number_of_accepted_trajectories += 1
         else:
             self._update_system_state(candidate_momenta, candidate_positions, candidate_potential)
-        self._momenta = self._kinetic_energy.get_momentum_observations(temperature)
+        self._momenta = self._kinetic_energy.get_momentum_observations(self._temperature)
         for sampler_index, sampler in enumerate(self._samplers):
             self._samples[sampler_index][markov_chain_step_index, :] = sampler.get_observation(
                 self._momenta, self._positions, self._potential)
 
     @abstractmethod
-    def _get_candidate_configuration(self, temperature):
+    def _get_candidate_configuration(self):
         """
         Returns the candidate momenta, positions and potential after self._number_of_integration_steps integration
         steps.
-
-        Parameters
-        ----------
-        temperature : float
-            The sampling temperature.
 
         Returns
         -------
@@ -213,7 +196,7 @@ class DeterministicMediator(ReversibleMediator, metaclass=ABCMeta):
         elif acceptance_rate < 0.95 * self._target_acceptance_rate:
             self._step_size *= 0.9
 
-    def _print_markov_chain_summary(self):
+    def _print_markov_process_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
         if self._use_metropolis_accept_reject:
             acceptance_rate = self._number_of_accepted_trajectories / self._number_of_observations
