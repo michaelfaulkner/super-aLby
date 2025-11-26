@@ -9,7 +9,7 @@ from linked_lists.two_dimensional_linked_lists import TwoDimensionalLinkedLists
 from model_settings import size_of_particle_space, number_of_particles, dimensionality_of_particle_space
 
 
-class HardDiskPotential(EuclideanSubspacePotential):
+class HardDiskPotentialBinary(EuclideanSubspacePotential):
     r"""
     This class implements the potential functionality for event-chain simulations of the hard-disk model.  Functionality
         is currently provided only for hard disks in a 2D box with a (1:1) aspect ratio.
@@ -314,8 +314,12 @@ class HardDiskPotential(EuclideanSubspacePotential):
         if dimensionality_of_particle_space == 1:
             vetoing_particle_index = (active_particle_index + 1) % number_of_particles if movement_direction > 0 else (
                     (active_particle_index - 1) % number_of_particles)
-            distance_to_next_event = get_shortest_vectors_on_torus(
-                (positions[vetoing_particle_index, 0] - positions[active_particle_index, 0])) - 2.0 * self._disk_radius
+            
+            active_radius = self._radius_for_index(active_particle_index)
+            veto_radius = self._radius_for_index(vetoing_particle_index)
+            separation = get_shortest_vectors_on_torus(
+                positions[vetoing_particle_index, 0] - positions[active_particle_index, 0])
+            distance_to_next_event = separation - (active_radius + veto_radius)
             hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index]
                                                              - positions[active_particle_index])
             return distance_to_next_event, vetoing_particle_index, hop_displacement

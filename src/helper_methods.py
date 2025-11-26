@@ -67,6 +67,16 @@ def get_basic_config_data(config_file_string):
                 packing_fraction = parsing.get_value(config, "QuantumHardDiskPotential", "packing_fraction")
                 disk_radius = parsing.get_value(config, "QuantumHardDiskPotential", "disk_radius")
                 size_of_particle_space = 2.0 * disk_radius * number_of_quantum_particles / packing_fraction
+            elif "hard_disk_potential_binary" in str(potential):
+                dimensionality_of_particle_space = parsing.get_value(config, "ModelSettings",
+                                                                     "dimensionality_of_particle_space")
+                number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
+                packing_fraction = parsing.get_value(config, "HardDiskPotentialBinary", "packing_fraction")
+                disk_radius_a = parsing.get_value(config, "HardDiskPotentialBinary", "disk_radius_a")
+                disk_radius_b = parsing.get_value(config,"HardDiskPotentialBinary", "disk_radius_b")
+                if dimensionality_of_particle_space == 1:
+                    total_particle_length = 2.0 * ((number_of_particles//2) * disk_radius_a + (number_of_particles-(number_of_particles//2)) * disk_radius_b)
+                    size_of_particle_space = total_particle_length / packing_fraction
             elif "hard_disk_potential" in str(potential):
                 dimensionality_of_particle_space = parsing.get_value(config, "ModelSettings",
                                                                      "dimensionality_of_particle_space")
@@ -78,6 +88,7 @@ def get_basic_config_data(config_file_string):
                 else:
                     linear_system_size = math.sqrt(number_of_particles * math.pi / packing_fraction) * disk_radius
                     size_of_particle_space = [linear_system_size, linear_system_size]
+
             else:
                 size_of_particle_space = parsing.get_value(config, "ModelSettings", "size_of_particle_space")
             if ("quantum_hard_disk_potential" in str(potential) or
