@@ -1,26 +1,23 @@
-"""Module for the NoFactorField class."""
+"""Module for the TemporalFactorField class."""
 from .factor_field import FactorField
+import numpy as np
 
-
-class NoFactorField(FactorField):
+class TemporalFactorField(FactorField):
     """
-    Class for not implementing factor fields in event-chain Monte Carlo.
+    This class implements factor fields along the Euclidean time axis for worldline-type models.
     """
 
-    def __init__(self, prefactor: float = 1.0):
+    def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1):
+
         """
-        The constructor of the NoFactorField class.
+        The constructor of the TemporalFactorField class.
 
         Parameters
         ----------
         prefactor : float, optional
             A general multiplicative prefactor of the potential.
-
-        Raises
-        ------
-        base.exceptions.ConfigurationError
-            If prefactor is not greater than 0.0.
         """
+         
         super().__init__(prefactor)
 
     def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
@@ -29,9 +26,9 @@ class NoFactorField(FactorField):
 
         Parameters
         ----------
-        positions : numpy.ndarray
+          positions : numpy.ndarray
             A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
-            is a float and represents the spin angle of its corresponding particle.
+            is a float and represents the position of a single quantum particle.
         active_particle_index : int
             The active particle index
         temperature : float
@@ -45,7 +42,5 @@ class NoFactorField(FactorField):
             The distance to the next particle event
         veto_index : int
             The particle index responsible for the event.
-        hop_displacement : numpy.ndarray
-            Net displacement through state space from active to vetoing particle.
         """
-        return float('inf'), None, None
+        return - np.log(np.random.uniform(0, 1)) * temperature / self._prefactor, active_particle_index

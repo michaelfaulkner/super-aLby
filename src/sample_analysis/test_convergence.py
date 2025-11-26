@@ -1,5 +1,5 @@
 from configparser import NoOptionError
-from markov_chain_diagnostics import get_cumulative_distribution, get_sample_mean_and_error, get_iact_and_acf
+from markov_chain_diagnostics import get_cumulative_distribution, get_sample_mean_and_error, get_iact
 import importlib
 import matplotlib
 import matplotlib.pyplot as plt
@@ -7,6 +7,7 @@ import numpy as np
 import os
 import sample_getter
 import sys
+
 
 # Add the directory that contains the module plotting_functions to sys.path
 this_directory = os.path.dirname(os.path.abspath(__file__))
@@ -23,7 +24,9 @@ def main(config_file_string):
     """nb, argument of parsing.parse_options() must be of type Sequence[str]"""
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     (config_file_mediator, potential, _, samplers, sample_directory, temperature, number_of_equilibration_iterations,
-     _, number_of_particles, _) = helper_methods.get_basic_config_data(config_file_string)
+     _, number_of_particles, size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
+    if not isinstance(size_of_particle_space, list):
+        size_of_particle_space = [size_of_particle_space]
     temperatures, sample_directories = None, None
     if potential == "ising_potential":
         sh_file_string = f"{os.path.splitext(config_file_string)[0]}.sh"
@@ -48,7 +51,6 @@ def main(config_file_string):
         prefactors of 1/power and 1/2, respectively - potential_prefactor defines the relative weight of the potential 
         in question when included in the sum of a more complex model (though multi-sub-potential functionality has not 
         yet been integrated into super-aLby)"""
-
     if potential == "ising_potential":
         if not (len(samplers) <= 2 and all([sampler == "potential_sampler" or
                                             sampler == "standard_mean_position_sampler" for sampler in samplers])):
@@ -76,10 +78,14 @@ def main(config_file_string):
             raise ValueError("1D quantum harmonic oscillator model reference data only available for "
                              "MeanSquaredPositionSampler. Please give only this value for samplers in the Mediator "
                              "section.")
-    elif potential == "hard_disk_potential":
+    elif potential == "hard_disk_potential" and len(size_of_particle_space) == 1:
+        if not (len(samplers) == 1 and samplers[0] == "structure_factor_sampler"):
+            raise ValueError("1D hard-disk model reference data only available for StructureFactorSampler. "
+                             "Please give only this value for samplers in the Mediator section.")
+    elif potential == "hard_disk_potential" and len(size_of_particle_space) == 2:
         if not (len(samplers) == 1 and samplers[0] == "pressure_sampler"):
-            raise ValueError("Hard-disk model reference data only available for PressureSampler. Please give only this "
-                             "value for samplers in the Mediator section.")
+            raise ValueError("2D hard-disk model reference data only available for PressureSampler. "
+                             "Please give only this value for samplers in the Mediator section.")
     elif potential == "quantum_hard_disk_potential":
         if not (config_file_mediator == "event_chain_mediator" or config_file_mediator == "metropolis_mediator"):
             raise ValueError("Reference data for the quantum hard-disk model is only available for EventChainMediator "
@@ -256,8 +262,12 @@ def main(config_file_string):
         reference_sample = np.load("permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_"
                                    "reference_sample.npy").flatten()
     elif "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
-        reference_sample = np.load("permanent_data/reference_data/"
-                                   "nine_2d_hard_disks_particles_packing_fraction_point_688_reference_sample.npy")
+        if len(size_of_particle_space) == 1:
+            reference_sample = np.load("permanent_data/reference_data/nine_1d_hard_disks_particles_packing_"
+                                       "fraction_point_5_reference_sample.npy")
+        elif len(size_of_particle_space) == 2:
+            reference_sample = np.load("permanent_data/reference_data/"
+                                       "nine_2d_hard_disks_particles_packing_fraction_point_688_reference_sample.npy")
     elif "quantum_hard_disk_potential" in potential and "event_chain_mediator" in config_file_mediator:
         reference_sample = np.load("permanent_data/reference_data/ten_quantum_hard_disks_two_timeslices_"
                                    "packing_fraction_point_97_event_chain_reference_sample.npy")
@@ -283,15 +293,20 @@ def main(config_file_string):
                                                               number_of_particles, number_of_equilibration_iterations
                                                               ).flatten()
         elif "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
-            sample = sample_getter.get_pressure(sample_directory, temperature,0,
-                                                number_of_particles, number_of_equilibration_iterations).flatten()
+            if len(size_of_particle_space) == 1:
+                sample = sample_getter.get_structure_factor(sample_directory, temperature,0,
+                                                            number_of_particles,
+                                                            number_of_equilibration_iterations).flatten()
+            elif len(size_of_particle_space) == 2:
+                sample = sample_getter.get_pressure(sample_directory, temperature,0, number_of_particles,
+                                                    number_of_equilibration_iterations).flatten()
         else:
             sample = sample_getter.get_positions(sample_directory, temperature, 0, number_of_particles,
                                                  number_of_equilibration_iterations).flatten()
 
         sample_cdf = get_cumulative_distribution(sample)
-        iact = get_iact_and_acf(sample)[0]
-        ref_iact = get_iact_and_acf(reference_sample)[0]
+        iact = get_iact(sample)
+        ref_iact = get_iact(reference_sample)
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-',
                  label=f'reference data\n IACT: {ref_iact:.3f}')

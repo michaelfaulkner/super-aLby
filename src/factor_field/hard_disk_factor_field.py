@@ -1,31 +1,26 @@
-"""Module for the HarmonicChainFactorField class."""
+"""Module for the HardDiskFactorField class."""
 from .factor_field import FactorField
 import numpy as np
-from model_settings import number_of_particles, size_of_particle_space
+from model_settings import number_of_particles
+from base.vectors import get_shortest_vectors_on_torus
 
 
-class HarmonicChainFactorField(FactorField):
+class HardDiskFactorField(FactorField):
     """
-    Class for implementing factor fields (in event-chain Monte Carlo) for the harmonic-chain model.
+    Class for implementing factor fields (in event-chain Monte Carlo) for the hard disk model.
     """
 
     def __init__(self, prefactor: float = 1.0):
         """
-        The constructor of the HarmonicChainFactorField class.
+        The constructor of the HardDiskFactorField class.
 
         Parameters
         ----------
         prefactor : float, optional
             A general multiplicative prefactor of the potential.
 
-
-        Raises
-        ------
-        base.exceptions.ConfigurationError
-            If prefactor is not greater than 0.0.
         """
         super().__init__(prefactor)
-        self._prefactor = prefactor
 
     def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
@@ -54,15 +49,11 @@ class HarmonicChainFactorField(FactorField):
         """
         neg_neighbour_index, pos_neighbour_index = ((active_particle_index - 1) % number_of_particles,
                                                     (active_particle_index + 1) % number_of_particles)
-        vetoing_index = pos_neighbour_index if movement_direction > 0.0 else neg_neighbour_index
+        vetoing_index = neg_neighbour_index if movement_direction > 0.0 else pos_neighbour_index
+        # pressure = number_of_particles * temperature / (size_of_particle_space -
+        #                                                2.0 * number_of_particles * self._disk_radius)
         distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0, 1)) / self._prefactor * temperature
-
-        active_particle_position = positions[active_particle_index].copy()
-        vetoing_particle_position = positions[vetoing_index].copy()
-        if active_particle_index == number_of_particles - 1 and vetoing_index == 0:
-            vetoing_particle_position += size_of_particle_space
-        elif active_particle_index == 0 and vetoing_index == number_of_particles - 1:
-            vetoing_particle_position -= size_of_particle_space
-
-        return distance_to_next_factor_event, vetoing_index, vetoing_particle_position - active_particle_position
+        hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_index, 0]
+                                                         - positions[active_particle_index, 0])
+        return distance_to_next_factor_event, vetoing_index, hop_displacement
 

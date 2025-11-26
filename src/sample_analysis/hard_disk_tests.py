@@ -23,7 +23,7 @@ def main(config_file_string):
     """
     matplotlib.rcParams['text.latex.preamble'] = r"\usepackage{amsmath}"
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-    (config_file_mediator, potential, _, samplers, sample_directories, temperature, number_of_equilibration_iterations,
+    (config_file_mediator, potential, _, samplers, sample_directory, temperature, number_of_equilibration_iterations,
      _, number_of_particles, _) = helper_methods.get_basic_config_data(config_file_string)
 
     if potential == "hard_disk_potential":
@@ -36,12 +36,12 @@ def main(config_file_string):
 
     disk_radius = parsing.get_value(config, "HardDiskPotential", "disk_radius")
     sample_mean, sample_error = get_sample_mean_and_error(
-        sample_getter.get_pressure(sample_directories[0], temperature, 0, 0,
+        sample_getter.get_pressure(sample_directory, temperature, 0, 0,
                                    number_of_particles, number_of_equilibration_iterations).flatten())
     print(f"Pressure = {sample_mean * (2.0 * disk_radius) ** 2} +- {sample_error * (2.0 * disk_radius) ** 2}")
     packing_fraction = parsing.get_value(config, "HardDiskPotential", "packing_fraction")
     packing_fraction_after_decimal_point = str(packing_fraction).split('.')[1].ljust(3, '0')[:3]
-    with open(f"{sample_directories[0]}/packing_fraction_point_{packing_fraction_after_decimal_point}.dat",
+    with open(f"{sample_directory}/packing_fraction_point_{packing_fraction_after_decimal_point}.dat",
               'w') as output_file:
         output_file.write(f"Pressure = {sample_mean * (2.0 * disk_radius) ** 2} +- "
                           f"{sample_error * (2.0 * disk_radius) ** 2}\n")

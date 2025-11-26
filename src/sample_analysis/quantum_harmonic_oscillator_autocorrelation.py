@@ -20,14 +20,13 @@ def main(config_folder):
     for index, file in enumerate(os.listdir(config_folder)):
         config_file_string = os.path.join(config_folder, file)
         config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-        (config_file_mediator, potential, _, samplers, sample_directories, temperature,
+        (config_file_mediator, potential, _, samplers, sample_directory, temperature,
          number_of_equilibration_iterations, number_of_observations, number_of_particles,
          _) = helper_methods.get_basic_config_data(config_file_string)
         
         mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
         timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
         number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
-        sample_directory = sample_directories[0]
         temperature_index = 0
         thinning_level = None
         timestep_arr[index] = timestep

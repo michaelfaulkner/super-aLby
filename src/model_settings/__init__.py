@@ -7,8 +7,8 @@ helper_methods = importlib.import_module("helper_methods")
 
 
 args = parse_options(sys.argv[1:])
-(_, potential, factor_field, _, _, _, _, _, number_of_particles, size_of_particle_space
-) = helper_methods.get_basic_config_data(args.config_file)
+(_, potential, factor_field, _, _, _, _, _, number_of_particles, size_of_particle_space) = (
+    helper_methods.get_basic_config_data(args.config_file))
 number_of_particle_pairs = int(number_of_particles * (number_of_particles - 1) / 2)
 if size_of_particle_space is None or type(size_of_particle_space) is float or type(size_of_particle_space) is int:
     dimensionality_of_particle_space = 1
@@ -64,6 +64,8 @@ with open(args.config_file) as config_file:
     if "QuantumHardDiskPotential" in config_file_as_str or "QuantumHarmonicOscillatorPotential" in config_file_as_str:
         number_of_quantum_particles = get_value(config, "ModelSettings", "number_of_quantum_particles")
         number_of_timeslices = get_value(config, "ModelSettings", "number_of_timeslices")
+        if "QuantumHarmonicOscillatorPotential" in config_file_as_str:
+            total_time = get_value(config, "QuantumHarmonicOscillatorPotential", "timestep") * number_of_timeslices
     else:
         number_of_quantum_particles = None
         number_of_timeslices = None

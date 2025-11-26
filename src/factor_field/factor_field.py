@@ -51,5 +51,7 @@ class FactorField(metaclass=ABCMeta):
             The distance to the next particle event
         veto_index : int
             The particle index responsible for the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         raise NotImplementedError

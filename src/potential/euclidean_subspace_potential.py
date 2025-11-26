@@ -106,6 +106,8 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
             The distance to the next particle event
         veto_index : int
             The particle index responsible for the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         raise NotImplementedError
 
@@ -144,10 +146,4 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
     @abstractmethod
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""
-        raise NotImplementedError
-
-    @abstractmethod
-    def update_state_and_index_space_displacements(self, displacement_distance, active_particle_index,
-                                                   vetoing_index, hop_displacement):
-        """Updates state space and index space displacements following an event."""
         raise NotImplementedError

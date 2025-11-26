@@ -206,6 +206,8 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             The distance to the next particle event
         vetoing_index : int
             The index of the particle that triggers the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         active_particle_position = positions[active_particle_index].copy()
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(active_particle_index)
@@ -232,9 +234,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
                 (distance_to_next_pos_factor_event, pos_neighbour_index, pos_neighbour_position
                  - active_particle_position)))
 
-        self.update_state_and_index_space_displacements(shortest_distance_to_next_factor_event, active_particle_index,
-                                                        vetoing_index, hop_displacement)
-        return shortest_distance_to_next_factor_event[0], vetoing_index
+        return shortest_distance_to_next_factor_event, vetoing_index, hop_displacement
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """
@@ -271,16 +271,3 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""
         raise SystemError(f"The get_portal_candidate method of {self.__class__.__name__} has not been written.")
-
-    def update_state_and_index_space_displacements(self, displacement_distance, active_particle_index,
-                                                   vetoing_index, hop_displacement):
-        """Updates state space and index space displacements following an event."""
-        self.state_space_displacement += hop_displacement[0]
-        self.total_event_distance += displacement_distance[0]
-        if vetoing_index == (active_particle_index + 1) % number_of_particles:
-            self.index_space_displacement += 1
-        if vetoing_index == (active_particle_index - 1) % number_of_particles:
-            self.index_space_displacement -= 1
-        self.number_of_index_space_moves += 1
-
-

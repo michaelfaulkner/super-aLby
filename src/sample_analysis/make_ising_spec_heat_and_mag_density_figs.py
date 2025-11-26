@@ -48,11 +48,11 @@ def main(sampling_algos_paper=True, number_of_system_sizes=5):
         config_file_metrop = "config_files/sampling_algos_ising_figs/64x64_metropolis_supplementary_fig.ini"
         sh_file_string_metrop = f"{os.path.splitext(config_file_metrop)[0]}.sh"
 
-        (mediator_wolff, _, _, samplers, sample_directories_4x4_wolff, _, number_of_equilibration_iterations_wolff,
+        (mediator_wolff, _, _, samplers, sample_directory_4x4_wolff, _, number_of_equilibration_iterations_wolff,
          number_of_observations_wolff, _, _) = helper_methods.get_basic_config_data(config_file_4x4_wolff)
-        (mediator_metrop, _, _, _, sample_directories_metrop, _, number_of_equilibration_iterations_metrop,
+        (mediator_metrop, _, _, _, sample_directory_metrop, _, number_of_equilibration_iterations_metrop,
          number_of_observations_metrop, _, _) = helper_methods.get_basic_config_data(config_file_metrop)
-        output_directory = sample_directories_4x4_wolff[0].replace("/4x4_wolff", "")
+        output_directory = sample_directory_4x4_wolff.replace("/4x4_wolff", "")
         sample_directories = [f"{output_directory}/{length}x{length}_wolff" for length in lattice_lengths]
 
         temperatures_wolff, reduced_temperatures_wolff = helper_methods.get_temps_and_reduced_temps_from_bash_file(
@@ -141,29 +141,29 @@ def main(sampling_algos_paper=True, number_of_system_sizes=5):
 
         lattice_length = 64
         _, _ = get_observable_mean_and_error_vs_temperature(
-            "magnetic_density", mediator_metrop, output_directory, sample_directories_metrop[0],
+            "magnetic_density", mediator_metrop, output_directory, sample_directory_metrop,
             temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop,
             number_of_observations_metrop, number_of_jobs_metrop)
         (magnetic_norm_density_vs_temp_metrop, magnetic_norm_density_errors_vs_temp_metrop
          ) = get_observable_mean_and_error_vs_temperature(
-            "magnetic_norm_density", mediator_metrop, output_directory, sample_directories_metrop[0],
+            "magnetic_norm_density", mediator_metrop, output_directory, sample_directory_metrop,
             temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop,
             number_of_observations_metrop, number_of_jobs_metrop)
         _, _ = get_observable_mean_and_error_vs_temperature(
-            "magnetic_susceptibility", mediator_metrop, output_directory, sample_directories_metrop[0],
+            "magnetic_susceptibility", mediator_metrop, output_directory, sample_directory_metrop,
             temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop,
             number_of_observations_metrop, number_of_jobs_metrop)
         _, _ = get_observable_mean_and_error_vs_temperature(
-            "magnetic_norm_susceptibility", mediator_metrop, output_directory, sample_directories_metrop[0],
+            "magnetic_norm_susceptibility", mediator_metrop, output_directory, sample_directory_metrop,
             temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop,
             number_of_observations_metrop, number_of_jobs_metrop)
         _, _ = get_observable_mean_and_error_vs_temperature(
-            "potential", mediator_metrop, output_directory, sample_directories_metrop[0],
+            "potential", mediator_metrop, output_directory, sample_directory_metrop,
             temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop,
             number_of_observations_metrop, number_of_jobs_metrop)
         (specific_heat_vs_temp_metrop, specific_heat_errors_vs_temp_metrop
          ) = get_observable_mean_and_error_vs_temperature(
-            "specific_heat", mediator_metrop, output_directory, sample_directories_metrop[0],
+            "specific_heat", mediator_metrop, output_directory, sample_directory_metrop,
             temperatures_metrop, lattice_length, number_of_equilibration_iterations_metrop,
             number_of_observations_metrop, number_of_jobs_metrop)
         axes_3[0].errorbar(reduced_temperatures_metrop, specific_heat_vs_temp_metrop / lattice_length ** 2,

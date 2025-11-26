@@ -144,6 +144,8 @@ class GaussianPotential(EuclideanSubspacePotential):
             The distance to the next particle event
         vetoing_particle_index : int
             The index of the particle that triggers the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         raise SystemError(f"The get_distance_to_next_event_and_veto_index method of {self.__class__.__name__} has not "
                           f"been written.  Functionality of ECMC for {self.__class__.__name__} is not yet provided.")
