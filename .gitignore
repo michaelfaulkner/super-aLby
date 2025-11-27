@@ -13,7 +13,12 @@ src/config_files/event_chain/event_chain_*.ini
 src/sample_analysis/test_convergence_copy.py
 src/sample_analysis/quantum_harmonic_oscillator_analysis.py
 src/vals_0.txt
+<<<<<<< HEAD
 src/config_files/factor_fields_b_*
+=======
+src/config_files/factor_fields*
+
+>>>>>>> cc3e1862a4f598f88b22b5f89c3c39da4e3b3a20
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
