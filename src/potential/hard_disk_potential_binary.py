@@ -67,11 +67,15 @@ class HardDiskPotentialBinary(EuclideanSubspacePotential):
                     f"Give a value of less than half the length of the particle space (along each Cartesian dimension) "
                     f"for disk_radius in {self.__class__.__name__}.  This ensures at least two cells along each "
                     f"Cartesian direction, which avoids the possibility of self collision in event-chain Monte Carlo.")
+        if dimensionality_of_particle_space != 1 and math.isclose(disk_radius_a, disk_radius_b):
+            raise ConfigurationError("Binary-mixture functionality is only available for 1D hard-sphere models.  For "
+                                     "dimensionality_of_particle_space > 1, set disk_radius_a equal to disk_radius_b.")
         if not (0.1 <= packing_fraction <= 0.8):
             raise ConfigurationError(f"Give a value not less than 0.1 and not greater than 0.8 for packing_fraction in "
                                      f"{self.__class__.__name__}.")
         self._disk_radius_a = disk_radius_a
         self._disk_radius_b = disk_radius_b
+        self._disk_radius = disk_radius_a if dimensionality_of_particle_space > 1 else None
         self._packing_fraction = packing_fraction
         self._disk_radii = np.array([self._disk_radius_a if (i % 2) == 0 else self._disk_radius_b for i in range(number_of_particles)], dtype=float)
         number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * max(self._disk_radius_a, self._disk_radius_b)))
@@ -128,11 +132,6 @@ class HardDiskPotentialBinary(EuclideanSubspacePotential):
         float
             The potential difference resulting from moving the single active particle to candidate_position.
         """
-
-        if dimensionality_of_particle_space != 1:
-            raise MediatorError("get_potential_difference only implemented for 1D")
-        
-
         active_radius = self._radius_for_index(active_particle_index)
         for neighbour_index in range(number_of_particles):
             neighbour_radius = self._radius_for_index(neighbour_index)
