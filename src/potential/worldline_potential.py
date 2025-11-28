@@ -329,4 +329,5 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             return roots[0]
         else:
             return roots[1]
+        
 
