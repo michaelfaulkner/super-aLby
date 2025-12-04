@@ -25,7 +25,7 @@ class EventChainMediator(Mediator):
                  refreshment_distribution: RefreshmentDistribution = ConstantRefreshmentDistribution(),
                  temperature: float = 1.0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, output_directory: str = None,
-                 normalised_distance_between_measurements: float = 1.0, teleportation_portal: bool = False):
+                 normalised_distance_between_measurements: float = 1.0, teleportation_portal: bool = True):
         r"""
         Constructor of the EventChainMediator class.  Note that this class works only with potential classes that
             inherit from EuclideanSubspacePotential (essentially continuous spaces).
@@ -159,26 +159,37 @@ class EventChainMediator(Mediator):
                 else:
                     self._potential.update_position(self._positions, distance_to_next_event,
                                                     active_particle_index, movement_direction)
+                    #print(self._positions)
                     [self._event_samples[event_sampler_index].append(event_sampler.get_observation(
                         self._positions, self._potential, active_particle_index, vetoing_index, distance_to_next_event))
                         for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
 
                     if self._teleportation_portal:
-                        portal_candidate = self._potential.get_portal_candidate(self._positions, active_particle_index,
-                                                                                vetoing_index, movement_direction)
-                        potential_difference = self._potential.get_potential_difference(active_particle_index,
-                                                                                        portal_candidate,
-                                                                                        self._positions)
-                        if (potential_difference < 0.0 or np.random.uniform(0.0, 1.0)
-                                < np.exp(- potential_difference / self._temperature)):
-                            self._positions[active_particle_index] = portal_candidate
-                        else:
+                        portal_candidate = self._potential.get_portal_candidate(
+                            self._positions, active_particle_index, vetoing_index, movement_direction)
+                        if portal_candidate is None:
                             active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                                 self._positions, active_particle_index, movement_direction, vetoing_index)
+                        else:
+                            potential_difference = self._potential.get_potential_difference(active_particle_index, portal_candidate, self._positions)
+                            accepted = (potential_difference < 0.0 or
+                                        np.random.uniform(0.0, 1.0) < np.exp(- potential_difference / self._temperature))
+                            if accepted:
+                                #print('portalled')
+                                self._positions[active_particle_index] = portal_candidate
+                                next_idx = (active_particle_index + 1) % number_of_particles
+                                self._positions[[active_particle_index, next_idx]] = self._positions[[next_idx, active_particle_index]]
+                                self._potential._disk_radii[[active_particle_index, next_idx]] = self._potential._disk_radii[[next_idx, active_particle_index]]
+                                #print(self._positions)
+                                active_particle_index = next_idx
+                            else:
+                                active_particle_index, movement_direction = self._potential.choose_next_active_particle(
+                                    self._positions, active_particle_index, movement_direction, vetoing_index)
                     else:
                         active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                             self._positions, active_particle_index, movement_direction, vetoing_index)
+
                     self._total_number_of_events += 1
                     distance_to_next_velocity_refreshment -= distance_to_next_event
                     distance_to_next_measurement -= distance_to_next_event
