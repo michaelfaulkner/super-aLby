@@ -97,7 +97,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         float
             The potential energy contribution to the pairwise dimensionless action.
         """
-        return 0.5 * self._mass * self._timestep * self._omega ** 2 * position_at_active_particle_index ** 2
+        return 0.5 * self._mass * self._timestep * self._omega ** 2 * position_at_active_particle_index ** 2 \
+                    + self._anharmonicity * self._timestep * position_at_active_particle_index**4
 
     @staticmethod
     def get_random_event_chain_velocity():
