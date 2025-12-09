@@ -420,27 +420,28 @@ class HardDiskPotential(EuclideanSubspacePotential):
         return motion_index, other_index
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
-        #print(self._disk_radii)
+        # print(self._disk_radii)
         if dimensionality_of_particle_space != 1:
             raise MediatorError("portals only implemented for 1D hard-sphere systems.")
-        if veto_index is None or veto_index == active_particle_index:
-            return None             
-        if np.random.uniform() >= 0.5:
+        if veto_index is None or veto_index == active_particle_index or np.random.uniform() >= 0.5:
             return None
         active_radius = self._radius_for_index(active_particle_index)
         veto_radius = self._radius_for_index(veto_index)
-        seperation = float(np.linalg.norm(get_shortest_vectors_on_torus(positions[active_particle_index] - positions[veto_index])))
-        if (seperation > (active_radius + veto_radius) + 1e-12):
-            return None
+        separation = np.linalg.norm(get_shortest_vectors_on_torus(positions[active_particle_index] -
+                                                                  positions[veto_index]))
+        if not math.isclose(separation, active_radius + veto_radius):
+            # return None
+            # raise ValueError("Have attempted a teleportation for non-touching hard spheres.")
+            print("Have attempted a teleportation for non-touching hard spheres.")
+        veto_position = positions[veto_index, 0]
+        candidate_position = get_shortest_vectors_on_torus(veto_position + (veto_radius + active_radius))
+        """Now change self._disk_radii() if candidate_position will be accepted be EventChainMediator."""
         next_index = (veto_index + 1) % number_of_particles
         next_radius = self._radius_for_index(next_index)
-        veto_position = float(positions[veto_index, 0])
-        next_position = float(positions[next_index, 0])
-        #print(active_particle_index, veto_index, next_index)
-        gap = (next_position - veto_position) % size_of_particle_space      
+        next_position = positions[next_index, 0]
+        gap = (next_position - veto_position) % size_of_particle_space
         required_gap = veto_radius + 2.0 * active_radius + next_radius
-        if gap + 1e-12 < required_gap:
-            return None
-        candidate_position = veto_position + (veto_radius + active_radius) + 1e-8
-        wrapped_position = ((candidate_position + size_of_particle_space/2) % size_of_particle_space) - size_of_particle_space/2
-        return float(wrapped_position)
+        if gap < required_gap:
+             return None
+        self._disk_radii[active_particle_index], self._disk_radii[veto_index] = veto_radius, active_radius
+        return candidate_position

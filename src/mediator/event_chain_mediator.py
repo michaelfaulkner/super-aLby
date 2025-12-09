@@ -174,14 +174,16 @@ class EventChainMediator(Mediator):
                             potential_difference = self._potential.get_potential_difference(active_particle_index, portal_candidate, self._positions)
                             accepted = (potential_difference < 0.0 or
                                         np.random.uniform(0.0, 1.0) < np.exp(- potential_difference / self._temperature))
-                            if accepted:
-                                #print('portalled')
-                                self._positions[active_particle_index] = portal_candidate
-                                next_idx = (active_particle_index + 1) % number_of_particles
-                                self._positions[[active_particle_index, next_idx]] = self._positions[[next_idx, active_particle_index]]
-                                self._potential._disk_radii[[active_particle_index, next_idx]] = self._potential._disk_radii[[next_idx, active_particle_index]]
-                                #print(self._positions)
-                                active_particle_index = next_idx
+                            if (potential_difference < 0.0 or np.random.uniform(0.0, 1.0) <
+                                    np.exp(- potential_difference / self._temperature)):
+                                if "HardDiskPotential" in str(self._potential):
+                                    veto_index = (active_particle_index + 1) % number_of_particles
+                                    veto_position = self._positions[veto_index]
+                                    self._positions[active_particle_index] = veto_position
+                                    self._positions[veto_index] = portal_candidate
+                                    active_particle_index = veto_index
+                                else:
+                                    self._positions[active_particle_index] = portal_candidate
                             else:
                                 active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                                     self._positions, active_particle_index, movement_direction, vetoing_index)
