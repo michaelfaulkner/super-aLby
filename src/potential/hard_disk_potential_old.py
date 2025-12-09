@@ -9,7 +9,7 @@ from linked_lists.two_dimensional_linked_lists import TwoDimensionalLinkedLists
 from model_settings import size_of_particle_space, number_of_particles, dimensionality_of_particle_space
 
 
-class HardDiskPotentialBinary(EuclideanSubspacePotential):
+class HardDiskPotential(EuclideanSubspacePotential):
     r"""
     This class implements the potential functionality for event-chain simulations of the hard-disk model.  Functionality
         is currently provided only for hard disks in a 2D box with a (1:1) aspect ratio.
@@ -37,7 +37,7 @@ class HardDiskPotentialBinary(EuclideanSubspacePotential):
             discarding 10^5 equilibration samples.
     """
 
-    def __init__(self, prefactor: float = 1.0, disk_radius_a: float = 1.0, disk_radius_b: float = 1.0, packing_fraction: float = 0.5):
+    def __init__(self, prefactor: float = 1.0, disk_radius: float = 1.0, packing_fraction: float = 0.5):
         r"""
         The constructor of the HardDiskPotential class
 
@@ -62,23 +62,17 @@ class HardDiskPotentialBinary(EuclideanSubspacePotential):
         """
         super().__init__(prefactor=prefactor)
         for linear_length in size_of_particle_space:
-            if (disk_radius_a or disk_radius_b) > 0.5 * linear_length:
+            if disk_radius > 0.5 * linear_length:
                 raise ConfigurationError(
                     f"Give a value of less than half the length of the particle space (along each Cartesian dimension) "
                     f"for disk_radius in {self.__class__.__name__}.  This ensures at least two cells along each "
                     f"Cartesian direction, which avoids the possibility of self collision in event-chain Monte Carlo.")
-        if dimensionality_of_particle_space != 1 and math.isclose(disk_radius_a, disk_radius_b):
-            raise ConfigurationError("Binary-mixture functionality is only available for 1D hard-sphere models.  For "
-                                     "dimensionality_of_particle_space > 1, set disk_radius_a equal to disk_radius_b.")
         if not (0.1 <= packing_fraction <= 0.8):
             raise ConfigurationError(f"Give a value not less than 0.1 and not greater than 0.8 for packing_fraction in "
                                      f"{self.__class__.__name__}.")
-        self._disk_radius_a = disk_radius_a
-        self._disk_radius_b = disk_radius_b
-        self._disk_radius = disk_radius_a if dimensionality_of_particle_space > 1 else None
+        self._disk_radius = disk_radius
         self._packing_fraction = packing_fraction
-        self._disk_radii = np.array([self._disk_radius_a if (i % 2) == 0 else self._disk_radius_b for i in range(number_of_particles)], dtype=float)
-        number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * max(self._disk_radius_a, self._disk_radius_b)))
+        number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * self._disk_radius))
         if dimensionality_of_particle_space > 1:
             if not math.isclose(size_of_particle_space[0], size_of_particle_space[1]):
                 raise ConfigurationError(
@@ -88,10 +82,6 @@ class HardDiskPotentialBinary(EuclideanSubspacePotential):
         self._active_cell_index = 0
         print(f"System length along each Cartesian dimension is {size_of_particle_space}.")
         print(f"Number of cells along each Cartesian dimension is {number_of_cells_in_each_direction}.")
-
-    def _radius_for_index(self, idx: int) -> float:
-        """Return disk radius for a given particle index."""
-        return float(self._disk_radii[idx])
 
     def get_value(self, positions):
         """
@@ -132,10 +122,8 @@ class HardDiskPotentialBinary(EuclideanSubspacePotential):
         float
             The potential difference resulting from moving the single active particle to candidate_position.
         """
-        active_radius = self._radius_for_index(active_particle_index)
+        minimum_allowed_separation = 2.0 * self._disk_radius
         for neighbour_index in range(number_of_particles):
-            neighbour_radius = self._radius_for_index(neighbour_index)
-            minimum_allowed_separation = active_radius + neighbour_radius
             if (neighbour_index != active_particle_index and np.linalg.norm(get_shortest_vectors_on_torus(
                     positions[neighbour_index] - candidate_position)) < minimum_allowed_separation):
                 return float('inf')
@@ -241,30 +229,25 @@ class HardDiskPotentialBinary(EuclideanSubspacePotential):
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
         positions = np.zeros((number_of_particles, dimensionality_of_particle_space))
+        delta_x = 1.00001 * 2.0 * self._disk_radius
         if dimensionality_of_particle_space == 1:
-            positions[0, 0] = 0.0
-            for index in range(1, number_of_particles):
-                previous_radius = self._radius_for_index(index - 1)
-                current_radius = self._radius_for_index(index)
-                step = 1.00001 * (previous_radius + current_radius) / self._packing_fraction
-                positions[index, 0] = positions[index - 1, 0] + step
+            for index in range(index_range):
+                positions[index, 0] = index * delta_x / self._packing_fraction
             positions = get_shortest_vectors_on_torus(positions)
             return positions
-        """
         delta_y = [1.00001 * self._disk_radius, 1.00001 * self._disk_radius * 3.0 ** 0.5]
         for index_x in range(index_range[0]):
             for index_y in range(index_range[1]):
                 if index_x + index_y * index_range[0] + 1 > number_of_particles:
-                    pass to correct for using index_range[1] = int(number_of_particles ** 0.5 + 2) - which we use as 
-                        int(number_of_particles ** 0.5) is too small for a non-square number_of_particles
+                    """pass to correct for using index_range[1] = int(number_of_particles ** 0.5 + 2) - which we use as 
+                        int(number_of_particles ** 0.5) is too small for a non-square number_of_particles"""
                     continue
                 positions[index_x + index_y * index_range[0], 0] = (index_x * delta_x + index_y * delta_y[0]
                                                                     ) % size_of_particle_space[0]
                 positions[index_x + index_y * index_range[0], 1] = (index_y * delta_y[1]) % size_of_particle_space[1]
         positions = get_shortest_vectors_on_torus(positions)
         return positions
-        """
-    
+
     @staticmethod
     def get_random_event_chain_velocity():
         """
@@ -313,12 +296,8 @@ class HardDiskPotentialBinary(EuclideanSubspacePotential):
         if dimensionality_of_particle_space == 1:
             vetoing_particle_index = (active_particle_index + 1) % number_of_particles if movement_direction > 0 else (
                     (active_particle_index - 1) % number_of_particles)
-            
-            active_radius = self._radius_for_index(active_particle_index)
-            veto_radius = self._radius_for_index(vetoing_particle_index)
-            separation = get_shortest_vectors_on_torus(
-                positions[vetoing_particle_index, 0] - positions[active_particle_index, 0])
-            distance_to_next_event = separation - (active_radius + veto_radius)
+            distance_to_next_event = get_shortest_vectors_on_torus(
+                (positions[vetoing_particle_index, 0] - positions[active_particle_index, 0])) - 2.0 * self._disk_radius
             hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index]
                                                              - positions[active_particle_index])
             return distance_to_next_event, vetoing_particle_index, hop_displacement
@@ -401,13 +380,11 @@ class HardDiskPotentialBinary(EuclideanSubspacePotential):
 
     def _check_for_disk_overlaps(self, positions):
         for particle_index_1 in range(number_of_particles):
-            radius_particle_index_1 = self._radius_for_index(particle_index_1)
             for particle_index_2 in range(particle_index_1 + 1, number_of_particles):
-                radius_particle_index_2 = self._radius_for_index(particle_index_2)
                 minimal_separation_distance = np.linalg.norm(get_shortest_vectors_on_torus(positions[particle_index_1] -
                                                                                            positions[particle_index_2]))
-                if (minimal_separation_distance < (radius_particle_index_1 + radius_particle_index_2) and not
-                        abs(minimal_separation_distance - (radius_particle_index_1 + radius_particle_index_2)) < 1.0e-12):
+                if (minimal_separation_distance < 2.0 * self._disk_radius and not
+                        abs(minimal_separation_distance - 2.0 * self._disk_radius) < 1.0e-12):
                     return True, particle_index_1, particle_index_2, minimal_separation_distance
         return False, None, None, None
 
