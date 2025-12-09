@@ -25,7 +25,7 @@ class EventChainMediator(Mediator):
                  refreshment_distribution: RefreshmentDistribution = ConstantRefreshmentDistribution(),
                  temperature: float = 1.0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, output_directory: str = None,
-                 normalised_distance_between_measurements: float = 1.0, teleportation_portal: bool = True):
+                 normalised_distance_between_measurements: float = 1.0, teleportation_portal: bool = False):
         r"""
         Constructor of the EventChainMediator class.  Note that this class works only with potential classes that
             inherit from EuclideanSubspacePotential (essentially continuous spaces).
