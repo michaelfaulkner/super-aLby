@@ -138,7 +138,6 @@ class EventChainMediator(Mediator):
                         distance_to_next_measurement < distance_to_next_velocity_refreshment):
                     self._potential.update_position(self._positions, distance_to_next_measurement,
                                                     active_particle_index, movement_direction)
-                    self._potential.cell_boundary_event = False
                     distance_to_next_velocity_refreshment -= distance_to_next_measurement
                     distance_to_next_event -= distance_to_next_measurement
                     distance_to_next_measurement = 0.0
@@ -208,9 +207,14 @@ class EventChainMediator(Mediator):
         with open(os.path.join(self._output_directory, "state_and_index_space_velocities.json"), "w") as f:
             json.dump({"state_space_velocity": state_space_velocity, "index_space_velocity": index_space_velocity}, f)
 
-    def _update_state_and_index_space_displacements(self, displacement_distance, active_particle_index,
-                                                    vetoing_index, hop_displacement):
-        """Updates state space and index space displacements following an event."""
+    def _update_state_and_index_space_displacements(self, displacement_distance, active_particle_index, vetoing_index,
+                                                    hop_displacement):
+        """Updates the state- and index-space displacements following each particle-event sampling.  This is to measure
+            their mean values over the entire simulation.  N.B. we apply this method before checking whether the next
+            event is the particle event, a velocity-refreshment event or a sampling/measurement event.  For the latter,
+            this is because we continue motion without re-sampling the next particle event; for the
+            velocity-refreshment events, it is because we can choose between including none or all of the current
+            piecewise trajectory (this may change at non-constant speed but we would have to check)."""
         # todo add functionality for greater than 1D particle space
         if dimensionality_of_particle_space == 1:
             if hop_displacement:
