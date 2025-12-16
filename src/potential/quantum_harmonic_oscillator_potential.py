@@ -3,7 +3,6 @@ import numpy as np
 from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError
 from helper_methods import get_initial_positions_of_smooth_potential
-from helper_methods import get_east_worldline_neighbour, get_west_worldline_neighbour
 from model_settings import number_of_quantum_particles, number_of_timeslices
 class QuantumHarmonicOscillatorPotential(WorldlinePotential):
     r"""
@@ -37,7 +36,10 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             raise ConfigurationError(f"Give a value of 1 for lattice_dimensionality in {self.__class__.__name__} - "
                                      f"functionality for other dimensions not yet provided.")
         self._anharmonicity = anharmonicity
-        self._barrier_height = self._get_barrier_height()
+        if self._anharmonicity != 0:
+            self._barrier_height = self._get_barrier_height()
+        else:
+            self._barrier_height = 0
         
     def get_initial_positions(self):
         """
@@ -73,10 +75,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         """
         return self._mass / self._timestep * (
                 (2.0 + self._timestep ** 2 * self._omega ** 2) * positions[active_particle_index] -
-                positions[get_west_worldline_neighbour(active_particle_index, number_of_quantum_particles,
-                                                             number_of_timeslices)] -
-                positions[get_east_worldline_neighbour(active_particle_index, number_of_quantum_particles,
-                                                             number_of_timeslices)]).item()
+                positions[self._get_west_worldline_neighbour(active_particle_index)] -
+                positions[self._get_east_worldline_neighbour(active_particle_index)]).item()
 
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
         """
@@ -140,10 +140,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         hop_displacement : numpy.ndarray
             Net displacement through state space from active to vetoing particle.
         """
-        worldline_neighbours = [get_west_worldline_neighbour(active_particle_index, number_of_quantum_particles,
-                                                             number_of_timeslices),
-                                get_east_worldline_neighbour(active_particle_index, number_of_quantum_particles,
-                                                             number_of_timeslices)]
+        worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
+                                self._get_east_worldline_neighbour(active_particle_index)]
 
         (shortest_distance_to_next_factor_event, vetoing_index) = \
             self._get_next_kinetic_event(positions, active_particle_index, movement_direction, worldline_neighbours)
@@ -165,19 +163,25 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         initial_action = 0.5 * self._mass * self._timestep * self._omega ** 2 * intermediate_position ** 2 + \
                         self._timestep * self._anharmonicity * intermediate_position**4
         final_action = uphill_energy - barrier_jump_energy + initial_action
+        #print(f"S_f: {final_action}")
         roots = np.roots([self._timestep * self._anharmonicity, 0.0, 
                           0.5 * self._mass * self._timestep * self._omega ** 2, 0.0, -final_action])
+        #print(f"quartic: {self._timestep * self._anharmonicity:.3f}x^4 + {0.5 * self._mass * self._timestep * self._omega ** 2:.3f}x^2 {-final_action: .3f}")
+        #print(f"roots: {roots}")
         
-        if self._anharmonicity != 0 and np.isreal(roots):
+        if self._anharmonicity != 0 and np.isreal(roots).all():
+            #print("self._anharmonicity != 0 and np.isreal(roots).all()")
             final_position_wrt_factor_event = self._get_final_position_wrt_quartic_event(positions, 
                                                         active_particle_index, movement_direction, roots, 
                                                         barrier_jump_energy)
         elif self._anharmonicity != 0:
-            final_position_wrt_factor_event = self._get_final_position_wrt_quartic_event(positions, 
-                                                        active_particle_index, movement_direction, 
-                                                        roots[np.nonzero(np.isreal(roots))], barrier_jump_energy)
+            #print("self._anharmonicity != 0")
+            #print(f"real roots: {roots[np.nonzero(np.isreal(roots))]}")
+            final_position_wrt_factor_event = self._get_final_position_wrt_quadratic_event(movement_direction, 
+                                                        roots[np.nonzero(np.isreal(roots))])
         else:
             final_position_wrt_factor_event = self._get_final_position_wrt_quadratic_event(movement_direction, roots)
+            #print(f"final_position: {final_position_wrt_factor_event}")
 
         distance_to_next_factor_event = np.abs(final_position_wrt_factor_event - initial_position)
 

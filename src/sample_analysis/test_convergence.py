@@ -319,8 +319,8 @@ def main(config_file_string):
         legend.get_frame().set_edgecolor('k')
         legend.get_frame().set_lw(1.5)
         plt.tight_layout()
-        plt.show()
-        #plt.savefig("convergence.png")
+        #plt.show()
+        plt.savefig("convergence.png")
 
 
 if __name__ == '__main__':
