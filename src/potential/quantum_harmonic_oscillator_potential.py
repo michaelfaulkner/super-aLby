@@ -163,32 +163,43 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         initial_action = 0.5 * self._mass * self._timestep * self._omega ** 2 * intermediate_position ** 2 + \
                         self._timestep * self._anharmonicity * intermediate_position**4
         final_action = uphill_energy - barrier_jump_energy + initial_action
-        #print(f"S_f: {final_action}")
         roots = np.roots([self._timestep * self._anharmonicity, 0.0, 
                           0.5 * self._mass * self._timestep * self._omega ** 2, 0.0, -final_action])
-        #print(f"quartic: {self._timestep * self._anharmonicity:.3f}x^4 + {0.5 * self._mass * self._timestep * self._omega ** 2:.3f}x^2 {-final_action: .3f}")
-        #print(f"roots: {roots}")
         
-        if self._anharmonicity != 0 and np.isreal(roots).all():
-            #print("self._anharmonicity != 0 and np.isreal(roots).all()")
-            final_position_wrt_factor_event = self._get_final_position_wrt_quartic_event(positions, 
+        if self._anharmonicity > 0:
+            if np.isreal(roots).all():
+                final_position_wrt_factor_event = self._get_final_position_wrt_quartic_event(positions, 
                                                         active_particle_index, movement_direction, roots, 
                                                         barrier_jump_energy)
-        elif self._anharmonicity != 0:
-            #print("self._anharmonicity != 0")
-            #print(f"real roots: {roots[np.nonzero(np.isreal(roots))]}")
-            final_position_wrt_factor_event = self._get_final_position_wrt_quadratic_event(movement_direction, 
+            else:
+                final_position_wrt_factor_event = self._get_final_position_wrt_single_well_parabola_event(movement_direction, 
                                                         roots[np.nonzero(np.isreal(roots))])
+        elif self._anharmonicity < 0:
+
+            if np.isreal(roots).all():
+                #print("real roots")
+                roots = np.sort(roots)
+                final_position_wrt_factor_event = self._get_final_position_wrt_single_well_parabola_event(movement_direction, 
+                                                        roots[1:3])
+            else:
+                #print(f"some complex roots, {roots}")
+                final_position_wrt_factor_event = np.inf
         else:
-            final_position_wrt_factor_event = self._get_final_position_wrt_quadratic_event(movement_direction, roots)
-            #print(f"final_position: {final_position_wrt_factor_event}")
+            final_position_wrt_factor_event = self._get_final_position_wrt_single_well_parabola_event(movement_direction, roots)
 
         distance_to_next_factor_event = np.abs(final_position_wrt_factor_event - initial_position)
+
+        if self._anharmonicity < 0 and not np.isreal(roots).all():
+            assert(distance_to_next_factor_event == np.inf)
 
         if distance_to_next_factor_event < shortest_distance_to_next_factor_event:
             shortest_distance_to_next_factor_event = distance_to_next_factor_event
             vetoing_index = active_particle_index
 
+        if self._anharmonicity < 0 and not np.isreal(roots).all():
+            assert(distance_to_next_factor_event == np.inf)
+            #print(shortest_distance_to_next_factor_event)
+        print(f"shortest distance was {shortest_distance_to_next_factor_event}")
         return shortest_distance_to_next_factor_event, vetoing_index, None
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):

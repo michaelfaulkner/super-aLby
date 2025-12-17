@@ -80,6 +80,7 @@ class MetropolisMediator(DiffusiveMediator):
                     np.exp(- potential_difference / self._temperature)):
                 self._positions[active_particle_index] = candidate_position
                 self._number_of_accepted_trajectories += 1
+                print(f"accepted move of size {candidate_position}")
 
     def _proposal_dynamics_adaptor(self):
         """Tunes the size of either the numerical integration step or the width of the proposal distribution."""
