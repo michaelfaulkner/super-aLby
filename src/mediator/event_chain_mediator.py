@@ -203,7 +203,7 @@ class EventChainMediator(Mediator):
         state_space_velocity = None if self._total_event_distance == 0.0 else (
                 self._state_space_displacement / self._total_event_distance)
         index_space_velocity = None if self._number_of_index_space_moves == 0.0 else (
-                self._index_space_displacement / self._number_of_index_space_moves)
+                self._index_space_displacement / self._total_event_distance)
         with open(os.path.join(self._output_directory, "state_and_index_space_velocities.json"), "w") as f:
             json.dump({"state_space_velocity": state_space_velocity, "index_space_velocity": index_space_velocity}, f)
 
