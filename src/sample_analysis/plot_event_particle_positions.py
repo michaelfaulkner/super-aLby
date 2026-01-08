@@ -24,8 +24,8 @@ def find_mean_and_max_chain_length(event_step_sample):
             u = obs
             max_length = max(max_length, length)
             length = 1
-    mean_chain_length = np.mean(lengths) if lengths else len(event_step_sample)
-    return mean_chain_length, max_length if lengths else mean_chain_length
+    mean_chain_length = np.mean(lengths)
+    return mean_chain_length, max_length
 
 
 def main(config_file_string, n, m, vlines=1, remove_eq=0):
@@ -75,6 +75,8 @@ def main(config_file_string, n, m, vlines=1, remove_eq=0):
                 axis.axvline(x, color="black", linestyle=":", linewidth=0.8, alpha=0.4)
 
     fig.subplots_adjust(hspace=0.0)
+    fig.suptitle(f'Step ratio: {prop_plus:.5f}, Mean pointer velocity: {mean_pointer_velocity:.6f}, '
+                 f'Mean chain length: {mean_chain_length:.2f}, Max chain length: {max_chain_length}', y=0.95)
 
     plt.savefig(os.path.join(sample_directory, f'event_particle_positions_{n}_{m}.png'))
     plt.show()

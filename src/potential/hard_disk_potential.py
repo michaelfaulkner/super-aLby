@@ -17,18 +17,18 @@ class HardDiskPotential(EuclideanSubspacePotential):
     N.B. the abstract get_gradient() method (defined in EuclideanSubspacePotential) is not relevant due to the
         non-smooth nature of the 'potential' function.
 
-    For 72 hard disks in a 2D box with a (1:1) aspect ratio, the simulations defined in config_files/2d_hard_disk_tests
+    For 72 hard disks in a 2D box with a (1:1) aspect ratio, the simulations defined in config_files/hard_disk_tests
         tested the event-chain code against data provided at the following URL:
 
         https://github.com/jellyfysh/HistoricDisks/blob/master/DigitizedData/ThisWork.csv
 
-        1) config_files/2d_hard_disk_tests/packing_fraction_point_688 predicted
+        1) config_files/hard_disk_tests/packing_fraction_point_688 predicted
             \beta P (2 \sigma)^2 = 8.377193860693 +- 0.012134909492, compared with 8.39654 +- 0.00040 at the URL.
 
-        2) config_files/2d_hard_disk_tests/packing_fraction_point_698 predicted
+        2) config_files/hard_disk_tests/packing_fraction_point_698 predicted
             \beta P (2 \sigma)^2 = 8.521643548125 +- 0.013374142768, compared with 8.5118 +- 0.0010 at the URL.
 
-        3) config_files/2d_hard_disk_tests/packing_fraction_point_698 predicted
+        3) config_files/hard_disk_tests/packing_fraction_point_698 predicted
             \beta P (2 \sigma)^2 = 8.548840320398 +- 0.012093065068, compared with 8.55170 +- 0.00059 at the URL.
 
         The final two simulations agreed (with the published data) within the simulation error.  The first resulted in
@@ -296,12 +296,10 @@ class HardDiskPotential(EuclideanSubspacePotential):
         if dimensionality_of_particle_space == 1:
             vetoing_particle_index = (active_particle_index + 1) % number_of_particles if movement_direction > 0 else (
                     (active_particle_index - 1) % number_of_particles)
-            distance_to_next_event = get_shortest_vectors_on_torus(
-                (positions[vetoing_particle_index, 0] - positions[active_particle_index, 0])) - 2.0 * self._disk_radius
-            hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index]
-                                                             - positions[active_particle_index])
-            return distance_to_next_event, vetoing_particle_index, hop_displacement
-        # todo fix bug in 2D hard-disk code that appeared after correcting EventChainMediator structure
+            vetoing_particle_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index]
+                                                                          - positions[active_particle_index])
+            distance_to_next_event = np.abs(vetoing_particle_displacement) - 2.0 * self._disk_radius
+            return distance_to_next_event, vetoing_particle_index, vetoing_particle_displacement
         self.pointer_hop_distance = 0.0
         active_particle_position = positions[active_particle_index]
         if self.cell_boundary_event:
