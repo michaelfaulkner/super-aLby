@@ -173,7 +173,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             numpy array (of integers) of length dimensionality_of_particle_space, where the nth component represents the
             velocity of the active particle along the nth Cartesian direction.
         """
-        return 1
+        return -1
 
     @staticmethod
     def _get_neighbours(active_particle_index):
@@ -221,6 +221,8 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
 
         neg_dist_to_eq, pos_dist_to_eq = (neg_neighbour_position + self._equilibrium_length - active_particle_position,
                                           pos_neighbour_position - self._equilibrium_length - active_particle_position)
+        neg_dist_to_eq *= movement_direction
+        pos_dist_to_eq *= movement_direction
         rand_neg, rand_pos = (- temperature * np.log(np.random.uniform(0.0, 1.0)) / self._potential_constant,
                               - temperature * np.log(np.random.uniform(0.0, 1.0)) / self._potential_constant)
         distance_to_next_neg_factor_event = (neg_dist_to_eq + rand_neg ** 0.5 if neg_dist_to_eq > 0
@@ -267,6 +269,8 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         positions[active_particle_index] = positions[active_particle_index] + movement_direction * displacement_distance
         if positions[active_particle_index] > 1e10:
             positions -= 1e10
+        elif positions[active_particle_index] < -1e10:
+            positions += 1e10
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""
