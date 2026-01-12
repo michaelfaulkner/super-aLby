@@ -12,7 +12,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     Abstract class for worldline potentials.  The extra methods provided are those required to calculate the action
         of the system.
     """
-    def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0,
+    def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0, omega_squared: float = 1.0,
                  timestep: float = 1.0, **kwargs):
         """
         The constructor of the WorldlinePotential class.
@@ -26,6 +26,10 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             A general multiplicative prefactor of the potential.
         lattice_dimensionality : int
             The number of Cartesian dimensions of the lattice.
+        mass : float
+            The mass of the particle
+        omega_squared : float
+            The squared frequency of the oscillations
         timestep : float
             The size of the time step
         kwargs : Any
@@ -46,7 +50,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         self._lattice_dimensionality = lattice_dimensionality
         self._mass = mass
         self._timestep = timestep
-        self._omega = mass
+        self._omega_squared = omega_squared
 
     def get_value(self, positions):
         """

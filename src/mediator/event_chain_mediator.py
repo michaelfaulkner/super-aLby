@@ -120,6 +120,7 @@ class EventChainMediator(Mediator):
 
     def _run_markov_process(self):
         """Runs the Markov process with model temperature equal to self._temperature."""
+        ff_events = 0
         active_particle_index = np.random.randint(0, number_of_particles)
         distance_to_next_measurement = 0.0
         movement_direction = self._potential.get_random_event_chain_velocity()
@@ -132,7 +133,14 @@ class EventChainMediator(Mediator):
                                         self._positions, active_particle_index, self._temperature, movement_direction),
                                     self._factor_field.get_next_event(
                                         self._positions, active_particle_index, self._temperature, movement_direction)]
+
                 distance_to_next_event, vetoing_index, hop_displacement = min(candidate_events)
+                if np.argmin([candidate_events[0][0], candidate_events[1][0]]) == 1:
+                    FF_event = True
+                    ff_events += 1
+                else:
+                    FF_event = False
+                #print(f"distance to next event: {distance_to_next_event}, FF: {FF_event}")
                 self._update_state_and_index_space_displacements(distance_to_next_event, active_particle_index,
                                                                  vetoing_index, hop_displacement)
 
@@ -188,6 +196,8 @@ class EventChainMediator(Mediator):
 
             super()._print_sample_progress(markov_chain_index)
         self._write_state_and_index_space_velocities()
+        print(f"total events: {self._total_number_of_events}, factor field events: {ff_events}" 
+              f"\n {ff_events/ self._total_number_of_events} of events were ff")
 
     def _print_markov_process_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
