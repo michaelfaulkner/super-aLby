@@ -200,6 +200,11 @@ class GinzburgLandauPotential(OneDimEuclideanParticleSpacePotential):
             The next active-particle direction of motion.
         """
         raise SystemError(f"The choose_next_active_particle method of {self.__class__.__name__} has not been written.")
+
+    def get_swap_candidate(self, positions, active_particle_index):
+        """Propose candidate configuration via a Metropolis swap kernel."""
+        raise SystemError(f"The functionality (within MetropolisMediator) for Metropolis swaps has only been written "
+                          f"for hard-sphere models.")
         
     def _pos_x_translation(self, position):
         # reshape to a self._lattice_length x self._lattice_length x self._lattice_length matrix

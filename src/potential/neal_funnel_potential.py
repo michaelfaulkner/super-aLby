@@ -166,3 +166,8 @@ class NealFunnelPotential(OneDimEuclideanParticleSpacePotential):
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
         """Updates the position of the active particle following an event."""
         raise SystemError(f"The update_position method has not been written.")
+
+    def get_swap_candidate(self, positions, active_particle_index):
+        """Propose candidate configuration via a Metropolis swap kernel."""
+        raise SystemError(f"The functionality (within MetropolisMediator) for Metropolis swaps has only been written "
+                          f"for hard-sphere models.")

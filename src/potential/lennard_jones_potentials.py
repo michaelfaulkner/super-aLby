@@ -125,3 +125,8 @@ class LennardJonesPotentials(EuclideanSubspacePotential, metaclass=ABCMeta):
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
         return get_initial_positions_of_smooth_potential(self.__class__.__name__)
+
+    def get_swap_candidate(self, positions, active_particle_index):
+        """Propose candidate configuration via a Metropolis swap kernel."""
+        raise SystemError(f"The functionality (within MetropolisMediator) for Metropolis swaps has only been written "
+                          f"for hard-sphere models.")

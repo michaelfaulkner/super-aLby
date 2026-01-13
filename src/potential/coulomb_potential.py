@@ -391,3 +391,8 @@ class CoulombPotential(EuclideanSubspacePotential):
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""
         raise SystemError(f"The get_portal_candidate method of {self.__class__.__name__} has not been written.")
+
+    def get_swap_candidate(self, positions, active_particle_index):
+        """Propose candidate configuration via a Metropolis swap kernel."""
+        raise SystemError(f"The functionality (within MetropolisMediator) for Metropolis swaps has only been written "
+                          f"for hard-sphere models.")

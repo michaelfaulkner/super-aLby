@@ -17,7 +17,7 @@ class MetropolisMediator(DiffusiveMediator):
     def __init__(self, potential: Potential, samplers: Sequence[Sampler], noise_distribution: NoiseDistribution,
                  temperature: float = 1.0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, output_directory: str = None,
-                 proposal_dynamics_adaptor_is_on: bool = True):
+                 proposal_dynamics_adaptor_is_on: bool = True, particle_swap: bool = False):
         r"""
         The constructor of the MetropolisMediator class.
 
@@ -41,6 +41,8 @@ class MetropolisMediator(DiffusiveMediator):
             The name of the directory into which the sample file is written at the end of the run.
         proposal_dynamics_adaptor_is_on : bool, optional
             When True, the step size of the integrator is tuned during the equilibration process.
+        particle_swap : bool, optional
+            When True, particle swaps are proposed at each step of the Markov process.
 
         Raises
         ------
@@ -67,12 +69,17 @@ class MetropolisMediator(DiffusiveMediator):
                                      f"{self.__class__.__name__}.")
         self._target_acceptance_rate = 0.44  # TODO add functionality so the user can set self._target_acceptance_rate
         self._noise_distribution = noise_distribution
+        self._particle_swap = particle_swap
 
     def _advance_markov_chain(self, markov_chain_step_index):
         """Advances the Markov chain by one step."""
         particles_to_update = [index for index in range(number_of_particles)]
         random.shuffle(particles_to_update)  # randomises order of elements in particles_to_update
         for active_particle_index in particles_to_update:
+            """n.b. swap functionality only provided for hard-sphere models (accept-reject step needed otherwise)"""
+            if self._particle_swap:
+                self._potential.get_swap_candidate(self._positions, active_particle_index)
+
             candidate_position = self._noise_distribution.get_candidate_position(active_particle_index, self._positions)
             potential_difference = self._potential.get_potential_difference(active_particle_index, candidate_position,
                                                                             self._positions)
