@@ -163,7 +163,6 @@ class EventChainMediator(Mediator):
                 else:
                     self._potential.update_position(self._positions, distance_to_next_event,
                                                     active_particle_index, movement_direction)
-                    #print(self._positions)
                     [self._event_samples[event_sampler_index].append(event_sampler.get_observation(
                         self._positions, self._potential, active_particle_index, vetoing_index, distance_to_next_event))
                         for event_sampler_index, event_sampler in enumerate(self._event_samplers)]

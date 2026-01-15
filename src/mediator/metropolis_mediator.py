@@ -79,7 +79,6 @@ class MetropolisMediator(DiffusiveMediator):
             """n.b. swap functionality only provided for hard-sphere models (accept-reject step needed otherwise)"""
             if self._particle_swap:
                 self._potential.get_swap_candidate(self._positions, active_particle_index)
-
             candidate_position = self._noise_distribution.get_candidate_position(active_particle_index, self._positions)
             potential_difference = self._potential.get_potential_difference(active_particle_index, candidate_position,
                                                                             self._positions)

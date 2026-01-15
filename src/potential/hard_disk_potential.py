@@ -420,44 +420,31 @@ class HardDiskPotential(EuclideanSubspacePotential):
         return motion_index, other_index
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
-        # print(self._disk_radii)
         if dimensionality_of_particle_space != 1:
             raise MediatorError("portals only implemented for 1D hard-sphere systems.")
         if veto_index is None or veto_index == active_particle_index or np.random.uniform() >= 0.5:
             return None
         active_radius = self._radius_for_index(active_particle_index)
         veto_radius = self._radius_for_index(veto_index)
-        separation = np.linalg.norm(get_shortest_vectors_on_torus(positions[active_particle_index] -
-                                                                  positions[veto_index]))
-        if not math.isclose(separation, active_radius + veto_radius):
-            raise ValueError("Have attempted a teleportation for non-touching hard spheres.")
-        veto_position = positions[veto_index, 0]
-        #candidate_position = get_shortest_vectors_on_torus(veto_position + (veto_radius + active_radius))
-        """Now change self._disk_radii() if candidate_position will be accepted be EventChainMediator."""
         next_index = (veto_index + 1) % number_of_particles
-        next_radius = self._radius_for_index(next_index)
-        next_position = positions[next_index, 0]
         previous_index = (active_particle_index - 1) % number_of_particles
-        previous_radius = self._radius_for_index(previous_index)
-        previous_position = positions[previous_index, 0]
-        left_gap = (positions[active_particle_index, 0] - previous_position) % size_of_particle_space
-        right_gap = (next_position - veto_position) % size_of_particle_space
-        required_left_gap = previous_radius + veto_radius
-        required_right_gap = active_radius + next_radius
+        left_gap = (positions[active_particle_index, 0] - positions[previous_index, 0]) % size_of_particle_space
+        right_gap = (positions[next_index, 0] - positions[veto_index, 0]) % size_of_particle_space
+        required_left_gap = self._radius_for_index(previous_index) + veto_radius
+        required_right_gap = active_radius + self._radius_for_index(next_index)
         if left_gap < required_left_gap or right_gap < required_right_gap:
             return None
-        if veto_radius < active_radius:
-            return None
-        #print(active_particle_index)
-        #print(self._disk_radii)
         self._disk_radii[active_particle_index], self._disk_radii[veto_index] = veto_radius, active_radius
-<<<<<<< HEAD
-        #print(self._disk_radii)
-        return True
-=======
-        return candidate_position
 
     def get_swap_candidate(self, positions, active_particle_index):
         """Propose candidate configuration via a Metropolis swap kernel."""
-        pass
->>>>>>> f3e5ef4ad7f5d172dade40669658b1668c45acb5
+        random_particle_index = np.random.randint(0, number_of_particles)
+        while random_particle_index == active_particle_index:
+            random_particle_index = np.random.randint(0, number_of_particles)
+        random_radius = self._radius_for_index(random_particle_index)
+        active_radius = self._radius_for_index(active_particle_index) 
+        self._disk_radii[active_particle_index], self._disk_radii[random_particle_index] = random_radius, active_radius
+        overlap_exists = self._check_for_disk_overlaps(positions)[0]
+        if overlap_exists:
+            self._disk_radii[active_particle_index], self._disk_radii[random_particle_index] = active_radius, random_radius
+        
