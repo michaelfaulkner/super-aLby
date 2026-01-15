@@ -119,3 +119,8 @@ class IsingPotential(Potential):
         else:
             return np.array([np.atleast_1d(
                 np.random.choice(range_of_initial_particle_positions)) for _ in range(number_of_particles)])
+
+    def get_swap_candidate(self, positions, active_particle_index):
+        """Propose candidate configuration via a Metropolis swap kernel."""
+        raise SystemError(f"The functionality (within MetropolisMediator) for Metropolis swaps has only been written "
+                          f"for hard-sphere models.")

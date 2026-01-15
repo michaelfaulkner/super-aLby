@@ -95,3 +95,8 @@ class Potential(metaclass=ABCMeta):
             represented by [[0.0 1.0] [2.0 3.0] [-1.0 -2.0]].
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def get_swap_candidate(self, positions, active_particle_index):
+        """Propose candidate via a Metropolis swap kernel."""
+        raise NotImplementedError

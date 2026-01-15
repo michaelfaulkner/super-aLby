@@ -451,5 +451,13 @@ class HardDiskPotential(EuclideanSubspacePotential):
         #print(active_particle_index)
         #print(self._disk_radii)
         self._disk_radii[active_particle_index], self._disk_radii[veto_index] = veto_radius, active_radius
+<<<<<<< HEAD
         #print(self._disk_radii)
         return True
+=======
+        return candidate_position
+
+    def get_swap_candidate(self, positions, active_particle_index):
+        """Propose candidate configuration via a Metropolis swap kernel."""
+        pass
+>>>>>>> f3e5ef4ad7f5d172dade40669658b1668c45acb5
