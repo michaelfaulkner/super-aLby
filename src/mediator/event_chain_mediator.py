@@ -25,7 +25,7 @@ class EventChainMediator(Mediator):
                  refreshment_distribution: RefreshmentDistribution = ConstantRefreshmentDistribution(),
                  temperature: float = 1.0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, output_directory: str = None,
-                 normalised_distance_between_measurements: float = 1.0, teleportation_portal: bool = False):
+                 normalised_distance_between_measurements: float = 1.0, teleportation_portal: bool = True):
         r"""
         Constructor of the EventChainMediator class.  Note that this class works only with potential classes that
             inherit from EuclideanSubspacePotential (essentially continuous spaces).
@@ -126,11 +126,16 @@ class EventChainMediator(Mediator):
             distance_to_next_measurement += self._distance_between_measurements
             taken_measurement = False
             while True:
-                candidate_events = [self._potential.get_next_event(
-                                        self._positions, active_particle_index, self._temperature, movement_direction),
-                                    self._factor_field.get_next_event(
-                                        self._positions, active_particle_index, self._temperature, movement_direction)]
-                distance_to_next_event, vetoing_index, hop_displacement = min(candidate_events)
+                candidate_events = [
+                    (self._potential.get_next_event(
+                        self._positions, active_particle_index, self._temperature, movement_direction
+                    ), "potential"),
+                    (self._factor_field.get_next_event(
+                        self._positions, active_particle_index, self._temperature, movement_direction
+                    ), "factor_field"),
+                ]
+                (event, event_source) = min(candidate_events, key=lambda x: x[0][0])
+                distance_to_next_event, vetoing_index, hop_displacement = event
                 self._update_state_and_index_space_displacements(distance_to_next_event, active_particle_index,
                                                                  vetoing_index, hop_displacement)
 
@@ -164,29 +169,20 @@ class EventChainMediator(Mediator):
                         for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
 
-                    if self._teleportation_portal:
-                        portal_candidate = self._potential.get_portal_candidate(
+                    collision_occurred = (
+                    event_source == "potential"
+                    and vetoing_index is not None
+                    and np.isfinite(distance_to_next_event))
+
+                    if self._teleportation_portal and collision_occurred:
+                        self._potential.get_portal_candidate(
                             self._positions, active_particle_index, vetoing_index, movement_direction)
-                        if portal_candidate is None:
+                        if "HardDiskPotential" in str(self._potential):
+                            active_particle_index, movement_direction = self._potential.choose_next_active_particle(
+                                    self._positions, active_particle_index, movement_direction, vetoing_index)
+                        else:
                             active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                                 self._positions, active_particle_index, movement_direction, vetoing_index)
-                        else:
-                            potential_difference = self._potential.get_potential_difference(active_particle_index, portal_candidate, self._positions)
-                            accepted = (potential_difference < 0.0 or
-                                        np.random.uniform(0.0, 1.0) < np.exp(- potential_difference / self._temperature))
-                            if (potential_difference < 0.0 or np.random.uniform(0.0, 1.0) <
-                                    np.exp(- potential_difference / self._temperature)):
-                                if "HardDiskPotential" in str(self._potential):
-                                    veto_index = (active_particle_index + 1) % number_of_particles
-                                    veto_position = self._positions[veto_index]
-                                    self._positions[active_particle_index] = veto_position
-                                    self._positions[veto_index] = portal_candidate
-                                    active_particle_index = veto_index
-                                else:
-                                    self._positions[active_particle_index] = portal_candidate
-                            else:
-                                active_particle_index, movement_direction = self._potential.choose_next_active_particle(
-                                    self._positions, active_particle_index, movement_direction, vetoing_index)
                     else:
                         active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                             self._positions, active_particle_index, movement_direction, vetoing_index)

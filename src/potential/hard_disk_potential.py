@@ -430,18 +430,26 @@ class HardDiskPotential(EuclideanSubspacePotential):
         separation = np.linalg.norm(get_shortest_vectors_on_torus(positions[active_particle_index] -
                                                                   positions[veto_index]))
         if not math.isclose(separation, active_radius + veto_radius):
-            # return None
-            # raise ValueError("Have attempted a teleportation for non-touching hard spheres.")
-            print("Have attempted a teleportation for non-touching hard spheres.")
+            raise ValueError("Have attempted a teleportation for non-touching hard spheres.")
         veto_position = positions[veto_index, 0]
-        candidate_position = get_shortest_vectors_on_torus(veto_position + (veto_radius + active_radius))
+        #candidate_position = get_shortest_vectors_on_torus(veto_position + (veto_radius + active_radius))
         """Now change self._disk_radii() if candidate_position will be accepted be EventChainMediator."""
         next_index = (veto_index + 1) % number_of_particles
         next_radius = self._radius_for_index(next_index)
         next_position = positions[next_index, 0]
-        gap = (next_position - veto_position) % size_of_particle_space
-        required_gap = veto_radius + 2.0 * active_radius + next_radius
-        if gap < required_gap:
-             return None
+        previous_index = (active_particle_index - 1) % number_of_particles
+        previous_radius = self._radius_for_index(previous_index)
+        previous_position = positions[previous_index, 0]
+        left_gap = (positions[active_particle_index, 0] - previous_position) % size_of_particle_space
+        right_gap = (next_position - veto_position) % size_of_particle_space
+        required_left_gap = previous_radius + veto_radius
+        required_right_gap = active_radius + next_radius
+        if left_gap < required_left_gap or right_gap < required_right_gap:
+            return None
+        if veto_radius < active_radius:
+            return None
+        #print(active_particle_index)
+        #print(self._disk_radii)
         self._disk_radii[active_particle_index], self._disk_radii[veto_index] = veto_radius, active_radius
-        return candidate_position
+        #print(self._disk_radii)
+        return True
