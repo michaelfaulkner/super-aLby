@@ -37,3 +37,4 @@ class StandardPositionSampler(PositionSampler):
             The observation of the positions.
         """
         return positions
+

@@ -173,22 +173,23 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
                 final_position_wrt_factor_event = self._get_final_position_wrt_quartic_event(intermediate_position,
                                                                                               movement_direction, roots)
             else:
-                self._barrier_height = self._get_barrier_height(intermediate_position)
-                bottom_of_well *= -1
-                if ((movement_direction > 0 and initial_position < bottom_of_well) or
-                (movement_direction < 0 and initial_position > bottom_of_well)):
-                    """advance to the bottom of the potential well"""
-                    intermediate_position = bottom_of_well
-                intermediate_action = 0.5 * self._mass * self._timestep * self._omega_squared * intermediate_position ** 2 + \
-                        self._timestep * self._anharmonicity * intermediate_position**4
-                final_action = uphill_energy - self._barrier_height + intermediate_action
-                roots = np.roots([self._timestep * self._anharmonicity, 0.0, 
-                          0.5 * self._mass * self._timestep * self._omega_squared, 0.0, -final_action])
-                if np.isreal(roots).all():
-                    final_position_wrt_factor_event = self._get_final_position_wrt_quartic_event(intermediate_position,
-                                                                                              movement_direction, roots)
+                if (movement_direction > 0 and intermediate_position > np.abs(bottom_of_well)) or \
+                (movement_direction < 0 and intermediate_position < -np.abs(bottom_of_well)):
+                     final_position_wrt_factor_event = self._get_final_position_wrt_single_well_parabola_event(movement_direction, roots[np.isreal(roots)])
                 else:
-                    final_position_wrt_factor_event = self._get_final_position_wrt_single_well_parabola_event(movement_direction, roots[np.isreal(roots)])
+                    self._remaining_barrier_height = self._get_barrier_height(intermediate_position)
+                    bottom_of_well *= -1
+                    intermediate_position = bottom_of_well
+                    intermediate_action = 0.5 * self._mass * self._timestep * self._omega_squared * intermediate_position ** 2 + \
+                            self._timestep * self._anharmonicity * intermediate_position**4
+                    final_action = uphill_energy - self._remaining_barrier_height + intermediate_action
+                    roots = np.roots([self._timestep * self._anharmonicity, 0.0, 
+                            0.5 * self._mass * self._timestep * self._omega_squared, 0.0, -final_action])
+                    if np.isreal(roots).all():
+                        final_position_wrt_factor_event = self._get_final_position_wrt_quartic_event(intermediate_position,
+                                                                                                movement_direction, roots)
+                    else:
+                        final_position_wrt_factor_event = self._get_final_position_wrt_single_well_parabola_event(movement_direction, roots[np.isreal(roots)])
 
 
         else:
@@ -327,3 +328,4 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         """
         return self._timestep * self._anharmonicity * position**4 + \
             0.5 * self._mass * self._timestep * self._omega_squared * position**2 
+    

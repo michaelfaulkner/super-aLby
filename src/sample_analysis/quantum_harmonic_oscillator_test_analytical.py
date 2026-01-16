@@ -101,70 +101,70 @@ def main(values_filepath, config_folder):
         timestep_arr[index] = timestep
         analytical_x2_arr[index] = analytical_x2(mass * timestep, number_of_particles)
         
-    timestep = 0.01
-    number_of_equilibration_iterations = 1000
-    metropolis_001_31k = np.load(
-        "output/metropolis/mean_squared_positions/31000/sample_of_mean_squared_positions_001_0.npy")
-    metropolis_001_31k = get_sample_mean_and_error(metropolis_001_31k)
-    metropolis_001_31k = metropolis_001_31k[0] / timestep **2
+    # timestep = 0.01
+    # number_of_equilibration_iterations = 1000
+    # metropolis_001_31k = np.load(
+    #     "output/metropolis/mean_squared_positions/31000/sample_of_mean_squared_positions_001_0.npy")
+    # metropolis_001_31k = get_sample_mean_and_error(metropolis_001_31k)
+    # metropolis_001_31k = metropolis_001_31k[0] / timestep **2
 
-    metropolis_001_51k = np.load(
-        "output/metropolis/mean_squared_positions/51000/sample_of_mean_squared_positions_001_0.npy")
-    metropolis_001_51k = metropolis_001_51k[number_of_equilibration_iterations + 1:]
-    metropolis_001_51k = get_sample_mean_and_error(metropolis_001_51k)
-    metropolis_001_51k = metropolis_001_51k[0] / timestep**2
+    # metropolis_001_51k = np.load(
+    #     "output/metropolis/mean_squared_positions/51000/sample_of_mean_squared_positions_001_0.npy")
+    # metropolis_001_51k = metropolis_001_51k[number_of_equilibration_iterations + 1:]
+    # metropolis_001_51k = get_sample_mean_and_error(metropolis_001_51k)
+    # metropolis_001_51k = metropolis_001_51k[0] / timestep**2
 
-    metropolis_001_81k = np.load(
-        "output/metropolis/mean_squared_positions/81000/sample_of_mean_squared_positions_001_0.npy")
-    metropolis_001_81k = get_sample_mean_and_error(metropolis_001_81k)
-    metropolis_001_81k = metropolis_001_81k[0] / timestep**2
+    # metropolis_001_81k = np.load(
+    #     "output/metropolis/mean_squared_positions/81000/sample_of_mean_squared_positions_001_0.npy")
+    # metropolis_001_81k = get_sample_mean_and_error(metropolis_001_81k)
+    # metropolis_001_81k = metropolis_001_81k[0] / timestep**2
 
-    metropolis_001_101k = np.load(
-        "output/metropolis/mean_squared_positions/101000/sample_of_mean_squared_positions_001_0.npy")
-    metropolis_001_101k = get_sample_mean_and_error(metropolis_001_101k)
-    metropolis_001_101k = metropolis_001_101k[0] / timestep**2
+    # metropolis_001_101k = np.load(
+    #     "output/metropolis/mean_squared_positions/101000/sample_of_mean_squared_positions_001_0.npy")
+    # metropolis_001_101k = get_sample_mean_and_error(metropolis_001_101k)
+    # metropolis_001_101k = metropolis_001_101k[0] / timestep**2
 
-    sub_arr_len = 51000
-    num_sub_arrs = 20
-    metropolis_001_10e6 = np.zeros(sub_arr_len * num_sub_arrs)
-    for i in range(num_sub_arrs):
-        metropolis_001_10e6[i * sub_arr_len : (i+1) * sub_arr_len] = np.load(
-        f"output/metropolis_001_checkpoints/run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
+    # sub_arr_len = 51000
+    # num_sub_arrs = 20
+    # metropolis_001_10e6 = np.zeros(sub_arr_len * num_sub_arrs)
+    # for i in range(num_sub_arrs):
+    #     metropolis_001_10e6[i * sub_arr_len : (i+1) * sub_arr_len] = np.load(
+    #     f"output/metropolis_001_checkpoints/run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
 
-    metropolis_001_10e6 = metropolis_001_10e6[number_of_equilibration_iterations + 1:-18999]
-    metropolis_001_10e6 = get_sample_mean_and_error(metropolis_001_10e6)
-    metropolis_001_10e6 = metropolis_001_10e6[0] / timestep**2
+    # metropolis_001_10e6 = metropolis_001_10e6[number_of_equilibration_iterations + 1:-18999]
+    # metropolis_001_10e6 = get_sample_mean_and_error(metropolis_001_10e6)
+    # metropolis_001_10e6 = metropolis_001_10e6[0] / timestep**2
 
-    fig1, ax1 = plt.subplots(1,2, sharey = True, figsize = (10.0, 7.0))
-    ax1[0].set_title(r"Metropolis with $3\times 10^4$ samples",  fontsize=15)
-    ax1[0].scatter(timestep_arr[:], analytical_x2_arr[:], marker=".", s = 200.0, color="purple", label="analytical")
-    ax1[0].scatter(timestep_arr[:], numerical_x2[:], marker="x", s = 200.0, color="#f974ef", label="numerical")
+    fig1, ax1 = plt.subplots(1,1,)# sharey = True, figsize = (10.0, 7.0))
+    ax1.set_title(r"Metropolis with $3\times 10^4$ samples",  fontsize=15)
+    ax1.scatter(timestep_arr[:], analytical_x2_arr[:], marker=".", s = 200.0, color="purple", label="analytical")
+    ax1.scatter(timestep_arr[:], numerical_x2[:], marker="x", s = 200.0, color="#f974ef", label="numerical")
 
-    ax1[0].scatter(timestep, metropolis_001_31k,  marker="x", s = 200.0, color="#f974ef", label=r"$3\times 10^4$ ")
-    ax1[0].scatter(timestep, metropolis_001_51k,  marker="v", s = 200.0, color="#bd178b", label=r"$5\times 10^4$ ")
-    ax1[0].scatter(timestep, metropolis_001_81k,  marker="s", s = 200.0, color="#eb102e", label=r"$8\times 10^4$ ")
-    ax1[0].scatter(timestep, metropolis_001_101k,  marker="p", s = 200.0, color="#f0601d", label=r"$1\times 10^5$ ")
-    ax1[0].scatter(timestep, metropolis_001_10e6,  marker="*", s = 200.0, color="#f5d20f", label=r"$1\times 10^6$ ")
+    # ax1[0].scatter(timestep, metropolis_001_31k,  marker="x", s = 200.0, color="#f974ef", label=r"$3\times 10^4$ ")
+    # ax1[0].scatter(timestep, metropolis_001_51k,  marker="v", s = 200.0, color="#bd178b", label=r"$5\times 10^4$ ")
+    # ax1[0].scatter(timestep, metropolis_001_81k,  marker="s", s = 200.0, color="#eb102e", label=r"$8\times 10^4$ ")
+    # ax1[0].scatter(timestep, metropolis_001_101k,  marker="p", s = 200.0, color="#f0601d", label=r"$1\times 10^5$ ")
+    # ax1[0].scatter(timestep, metropolis_001_10e6,  marker="*", s = 200.0, color="#f5d20f", label=r"$1\times 10^6$ ")
 
-    ax1[1].set_title(r"ECMC, with $\lambda = 50.0$ and $3\times 10^4$  samples",  fontsize=15)
-    ax1[1].scatter(timestep_arr[:], analytical_x2_arr[:], marker=".", s = 200.0, color="purple", label="analytical")
-    ax1[1].scatter(timestep_arr[:], numerical_x2_e[:], marker="x", s = 200.0, color="#f974ef", label="numerical")
-    ax1[0].set_yscale('log')
-    ax1[1].set_yscale('log')
-    ax1[0].set_xscale('log')
-    ax1[1].set_xscale('log')
+    # ax1[1].set_title(r"ECMC, with $\lambda = 50.0$ and $3\times 10^4$  samples",  fontsize=15)
+    # ax1[1].scatter(timestep_arr[:], analytical_x2_arr[:], marker=".", s = 200.0, color="purple", label="analytical")
+    # ax1[1].scatter(timestep_arr[:], numerical_x2_e[:], marker="x", s = 200.0, color="#f974ef", label="numerical")
+    ax1.set_yscale('log')
+    #ax1[1].set_yscale('log')
+    ax1.set_xscale('log')
+    #ax1[1].set_xscale('log')
 
-    ax1[0].set_xlabel(r"$\delta \tau$",  fontsize=20)
-    ax1[1].set_xlabel(r"$\delta \tau$",  fontsize=20)
+    ax1.set_xlabel(r"$\delta \tau$",  fontsize=20)
+    #ax1[1].set_xlabel(r"$\delta \tau$",  fontsize=20)
 
-    ax1[0].set_ylabel(r"$\langle x^2 \rangle$",  fontsize=20)
-    ax1[0].legend()
-    ax1[1].legend()
+    ax1.set_ylabel(r"$\langle x^2 \rangle$",  fontsize=20)
+    ax1.legend()
+    #ax1[1].legend()
 
     plt.tight_layout()
-    plt.savefig("tau_arr.pdf")
+    plt.savefig("tau_arr.png")
   
-    print(f"analytical 0.01: {analytical_x2_arr[-1]}, ecmc: {numerical_x2_e[-1]}")
+    #print(f"analytical 0.01: {analytical_x2_arr[-1]}, ecmc: {numerical_x2_e[-1]}")
    
 
 if __name__ == '__main__':
