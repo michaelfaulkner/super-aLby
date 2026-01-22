@@ -69,7 +69,7 @@ def main(config_file_string):
         if not (len(samplers) == 1 and samplers[0] == "xy_magnetisation_norm_sampler"):
             raise ValueError("XY model reference data only available for XyMagnetisationNormSampler."
                              "  Please give only this value for samplers in the Mediator section.")
-    elif potential == "harmonic_chain_potential":
+    elif potential == "harmonic_chain_potential" or potential == "unfactorised_harmonic_chain_potential":
         if not (len(samplers) == 1 and samplers[0] == "structure_factor_sampler"):
             raise ValueError("Harmonic chain model reference data only available for StructureFactorSampler."
                              "  Please give only this value for samplers in the Mediator section.")

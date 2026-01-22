@@ -112,8 +112,9 @@ class EventChainMediator(Mediator):
                                              f"calculation of pressure estimates made via the pointer-hop distance "
                                              f"(though this is not fully understood).")
         """The following object is set in self._set_arrays_and_counters()"""
-        (self._total_number_of_events, self._state_space_displacement, self._total_event_distance,
-         self._index_space_displacement, self._number_of_index_space_moves) = None, None, None, None, None
+        (self._total_number_of_events, self._state_space_displacement, self._pos_state_space_displacement,
+         self._neg_state_space_displacement, self._total_event_distance,
+         self._index_space_displacement, self._number_of_index_space_moves) = None, None, [], [], None, None, None
         self._teleportation_portal = teleportation_portal
 
     def _run_markov_process(self):
@@ -204,8 +205,14 @@ class EventChainMediator(Mediator):
                 self._state_space_displacement / self._total_event_distance)
         index_space_velocity = None if self._number_of_index_space_moves == 0.0 else (
                 self._index_space_displacement / self._total_event_distance)
+        mean_event_rate = self._total_number_of_events / self._total_event_distance
         with open(os.path.join(self._output_directory, "state_and_index_space_velocities.json"), "w") as f:
-            json.dump({"state_space_velocity": state_space_velocity, "index_space_velocity": index_space_velocity}, f)
+            json.dump({"state_space_velocity": state_space_velocity, "index_space_velocity": index_space_velocity,
+                       "mean_neg_hop_displacement": np.mean(self._neg_state_space_displacement),
+                       "mean_pos_hop_displacement": np.mean(self._pos_state_space_displacement),
+                       "number_neg_hops": len(self._neg_state_space_displacement),
+                       "number_pos_hops": len(self._pos_state_space_displacement),
+                       "mean_event_rate": mean_event_rate}, f)
 
     def _update_state_and_index_space_displacements(self, displacement_distance, active_particle_index, vetoing_index,
                                                     hop_displacement):
@@ -217,11 +224,13 @@ class EventChainMediator(Mediator):
             piecewise trajectory (this may change at non-constant speed but we would have to check)."""
         # todo add functionality for greater than 1D particle space
         if dimensionality_of_particle_space == 1:
+            self._total_event_distance += displacement_distance[0]
             if hop_displacement:
                 self._state_space_displacement += hop_displacement[0]
-                self._total_event_distance += displacement_distance[0]
             if vetoing_index == (active_particle_index + 1) % number_of_particles:
+                self._pos_state_space_displacement.append(np.abs(hop_displacement))
                 self._index_space_displacement += 1
             elif vetoing_index == (active_particle_index - 1) % number_of_particles:
+                self._neg_state_space_displacement.append(np.abs(hop_displacement))
                 self._index_space_displacement -= 1
             self._number_of_index_space_moves += 1
