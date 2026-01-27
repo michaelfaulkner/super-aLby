@@ -316,9 +316,13 @@ class HardDiskPotential(EuclideanSubspacePotential):
                     (active_particle_index - 1) % number_of_particles)
             active_radius = self._radius_for_index(active_particle_index)
             veto_radius = self._radius_for_index(vetoing_particle_index)
-            separation = get_shortest_vectors_on_torus(
-                positions[vetoing_particle_index, 0] - positions[active_particle_index, 0])
-            distance_to_next_event = separation - (active_radius + veto_radius)
+            active_position = positions[active_particle_index, 0] % size_of_particle_space
+            veto_position = positions[vetoing_particle_index, 0] % size_of_particle_space
+            distance_to_next_event = ((veto_position - active_position) % size_of_particle_space) - (active_radius + veto_radius)
+            if distance_to_next_event < 0.0:
+                print(distance_to_next_event)
+                print(positions)
+                raise RuntimeError ('negative distance')
             hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index]
                                                              - positions[active_particle_index])
             return distance_to_next_event, vetoing_particle_index, hop_displacement
@@ -420,6 +424,25 @@ class HardDiskPotential(EuclideanSubspacePotential):
         return motion_index, other_index
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
+
+        
+        if dimensionality_of_particle_space != 1:
+            raise MediatorError("portals only implemented for 1D hard-sphere systems")
+        if veto_index is None or veto_index == active_particle_index or np.random.uniform() >= 0.5:
+            return None
+        active_radius = self._radius_for_index(active_particle_index)
+        veto_radius = self._radius_for_index(veto_index)
+        if active_radius == veto_radius:
+            return None
+        left_boundary = (positions[active_particle_index, 0] - active_radius) % size_of_particle_space
+        candidate_position_1 = left_boundary + veto_radius
+        candidate_position_2 = left_boundary + 2*veto_radius + active_radius
+        wrapped_position_1 = float(((candidate_position_1 + size_of_particle_space/2) % size_of_particle_space) - size_of_particle_space/2)
+        wrapped_position_2 = float(((candidate_position_2 + size_of_particle_space/2) % size_of_particle_space) - size_of_particle_space/2)
+        self._disk_radii[active_particle_index], self._disk_radii[veto_index] = veto_radius, active_radius
+        return wrapped_position_1, wrapped_position_2
+        
+        '''
         if dimensionality_of_particle_space != 1:
             raise MediatorError("portals only implemented for 1D hard-sphere systems.")
         if veto_index is None or veto_index == active_particle_index or np.random.uniform() >= 0.5:
@@ -435,6 +458,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
         if left_gap < required_left_gap or right_gap < required_right_gap:
             return None
         self._disk_radii[active_particle_index], self._disk_radii[veto_index] = veto_radius, active_radius
+        return None
+        '''
 
     def get_swap_candidate(self, positions, active_particle_index):
         """Propose candidate configuration via a Metropolis swap kernel."""

@@ -125,7 +125,19 @@ class EventChainMediator(Mediator):
         for markov_chain_index in range(self._total_number_of_iterations):
             distance_to_next_measurement += self._distance_between_measurements
             taken_measurement = False
+            loop_counter = 0
             while True:
+                loop_counter += 1 
+                if loop_counter > 1000000:  
+                    print(f"infinite loop: {markov_chain_index}")
+                    print(f"loop iterations: {loop_counter}")
+                    print(f"distance_to_next_measurement: {distance_to_next_measurement}")
+                    print(f"distance_to_next_event: {distance_to_next_event}")
+                    print(f"taken_measurement: {taken_measurement}")
+                    print(f"active_particle_index: {active_particle_index}")
+                    print(f"positions:{self._positions}")
+                    print(f"radii:  {self._potential._disk_radii}")
+                    raise RuntimeError("loop not progressing")
                 candidate_events = [
                     (self._potential.get_next_event(
                         self._positions, active_particle_index, self._temperature, movement_direction
@@ -168,15 +180,13 @@ class EventChainMediator(Mediator):
                         for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
 
-                    collision_occurred = (
-                    event_source == "potential"
-                    and vetoing_index is not None
-                    and np.isfinite(distance_to_next_event))
-
-                    if self._teleportation_portal and collision_occurred:
-                        self._potential.get_portal_candidate(
+                    if self._teleportation_portal and event_source == "potential":
+                        candidate_position = self._potential.get_portal_candidate(
                             self._positions, active_particle_index, vetoing_index, movement_direction)
-                        if "HardDiskPotential" in str(self._potential):
+                        if candidate_position is not None and "HardDiskPotential" in str(self._potential):
+                            candidate_position_1, candidate_position_2 = candidate_position
+                            self._positions[active_particle_index, 0] = candidate_position_1
+                            self._positions[vetoing_index, 0] = candidate_position_2
                             active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                                     self._positions, active_particle_index, movement_direction, vetoing_index)
                         else:
