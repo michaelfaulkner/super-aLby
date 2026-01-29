@@ -28,8 +28,6 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             The number of Cartesian dimensions of the lattice.
         mass : float
             The mass of the particle
-        omega_squared : float
-            The squared frequency of the oscillations
         timestep : float
             The size of the time step
         kwargs : Any
@@ -50,7 +48,6 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         self._lattice_dimensionality = lattice_dimensionality
         self._mass = mass
         self._timestep = timestep
-        self._omega_squared = omega_squared
 
     def get_value(self, positions):
         """

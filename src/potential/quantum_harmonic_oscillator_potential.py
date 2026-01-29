@@ -30,13 +30,14 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             The size of the time step, \delta \tau.
         """
         super().__init__(prefactor=prefactor, lattice_dimensionality=lattice_dimensionality, mass=mass,
-                          omega_squared=omega_squared, timestep=timestep)
+                         timestep=timestep)
         if prefactor != 1.0:
             raise ConfigurationError(f"Give a value of 1.0 for prefactor in {self.__class__.__name__} - functionality "
                                      f"for other values is not yet provided.")
         if lattice_dimensionality != 1:
             raise ConfigurationError(f"Give a value of 1 for lattice_dimensionality in {self.__class__.__name__} - "
                                      f"functionality for other dimensions not yet provided.")
+        self._omega_squared = omega_squared
         self._anharmonicity = anharmonicity
 
     def get_initial_positions(self):
@@ -148,7 +149,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         initial_position = positions[active_particle_index].item()
         uphill_energy = - np.log(np.random.uniform(0, 1))
 
-        if self._anharmonicity == 0:
+        if self._anharmonicity == 0.0:
             bottom_of_well = 0.0
         else:
             if self._omega_squared < 0 and self._anharmonicity > 0:
