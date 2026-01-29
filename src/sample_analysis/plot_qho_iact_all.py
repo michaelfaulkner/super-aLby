@@ -91,6 +91,12 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
     ax.errorbar(ecmc_sorted_N, ecmc_iact_mean_arr, ecmc_err, fmt='o', capsize=3, markersize=4, color="#e20acdff", label="ECMC")
     ax.errorbar(ff_sorted_N, ff_iact_mean_arr, ff_err, fmt='o', capsize=3, markersize=4, color="#950834ff", label="ECMC with Factor Fields")
 
+    ax.annotate(f"Coeff: {m_coeffs[0]:.2f}", xy = (8*10e1, 3*10e5))
+    ax.annotate(f"Coeff: {e_coeffs[0]:.2f}", xy = (4*10e2, 4*10e4))
+    ax.annotate(f"Coeff: {ff_coeffs[0]:.2f}", xy = (4*10e2, 4*10e1))
+
+
+
     
    
     ax.set_xlabel(r"$N_{\tau}$", fontsize=20, labelpad=-10)
@@ -104,7 +110,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
 
    # plt.title(f"Integrated Autocorrelation Time for ECMC, with {N} Repeats")
     plt.tight_layout()
-    plt.savefig("iact_all.png")
+    plt.savefig("iact_all.pdf")
     plt.clf()
 
 

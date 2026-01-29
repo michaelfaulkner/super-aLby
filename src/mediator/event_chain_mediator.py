@@ -125,10 +125,12 @@ class EventChainMediator(Mediator):
         distance_to_next_measurement = 0.0
         movement_direction = self._potential.get_random_event_chain_velocity()
         distance_to_next_velocity_refreshment = self._refreshment_distribution.get_refreshment_distance()
+        tunnelling_events = 0
         for markov_chain_index in range(self._total_number_of_iterations):
             distance_to_next_measurement += self._distance_between_measurements
             taken_measurement = False
             while True:
+                init_pos = self._positions[active_particle_index].copy()
                 candidate_events = [self._potential.get_next_event(
                                         self._positions, active_particle_index, self._temperature, movement_direction),
                                     self._factor_field.get_next_event(
@@ -191,13 +193,20 @@ class EventChainMediator(Mediator):
                     self._total_number_of_events += 1
                     distance_to_next_velocity_refreshment -= distance_to_next_event
                     distance_to_next_measurement -= distance_to_next_event
+                    
                     if taken_measurement:
                         break
+                fin_pos = self._positions[active_particle_index].copy()
+                tunnelled = self._potential.check_tunnelling_event(init_pos, fin_pos)
+                tunnelling_events += tunnelled
+                
+
 
             super()._print_sample_progress(markov_chain_index)
         self._write_state_and_index_space_velocities()
         print(f"total events: {self._total_number_of_events}, factor field events: {ff_events}" 
               f"\n {ff_events/ self._total_number_of_events} of events were ff")
+        print(f"tunneling events: {tunnelling_events/self._total_number_of_events * 100}%")
 
     def _print_markov_process_summary(self):
         """Prints a summary of the completed Markov process to the screen."""

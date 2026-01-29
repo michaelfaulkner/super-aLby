@@ -73,6 +73,8 @@ class ReversibleMediator(Mediator, metaclass=ABCMeta):
 
     def _run_markov_process(self):
         """Runs the Markov chain with model temperature equal to self._temperature."""
+        self.tunnelling_events = 0
+        self.events = 0
         for markov_chain_index in range(self._total_number_of_iterations):
             if markov_chain_index == self._number_of_equilibration_iterations:
                 self._number_of_accepted_trajectories = 0

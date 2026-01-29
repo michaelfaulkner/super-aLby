@@ -152,8 +152,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             bottom_of_well = 0.0
         else:
             if self._omega_squared < 0 and self._anharmonicity > 0:
-                bottom_of_well = np.sqrt(-self._mass * self._omega_squared * self._anharmonicity) \
-                / 2 * self._anharmonicity * np.sign(initial_position)
+                bottom_of_well = np.sqrt(-self._mass * self._omega_squared / 
+                                         (4 * self._anharmonicity)) * np.sign(initial_position)
 
         if ((movement_direction > 0 and initial_position < bottom_of_well) or
                 (movement_direction < 0 and initial_position > bottom_of_well)):
@@ -180,9 +180,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
                     self._remaining_barrier_height = self._get_barrier_height(intermediate_position)
                     bottom_of_well *= -1
                     intermediate_position = bottom_of_well
-                    intermediate_action = 0.5 * self._mass * self._timestep * self._omega_squared * intermediate_position ** 2 + \
-                            self._timestep * self._anharmonicity * intermediate_position**4
-                    final_action = uphill_energy - self._remaining_barrier_height + intermediate_action
+                    final_action -= self._remaining_barrier_height
                     roots = np.roots([self._timestep * self._anharmonicity, 0.0, 
                             0.5 * self._mass * self._timestep * self._omega_squared, 0.0, -final_action])
                     if np.isreal(roots).all():
@@ -190,8 +188,6 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
                                                                                                 movement_direction, roots)
                     else:
                         final_position_wrt_factor_event = self._get_final_position_wrt_single_well_parabola_event(movement_direction, roots[np.isreal(roots)])
-
-
         else:
             final_position_wrt_factor_event = self._get_final_position_wrt_single_well_parabola_event(movement_direction, roots)
 
@@ -204,8 +200,6 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             shortest_distance_to_next_factor_event = distance_to_next_factor_event
             vetoing_index = active_particle_index
 
-        if self._anharmonicity < 0 and not np.isreal(roots).all():
-            assert(distance_to_next_factor_event == np.inf)
         return shortest_distance_to_next_factor_event, vetoing_index, None
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
@@ -329,3 +323,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         return self._timestep * self._anharmonicity * position**4 + \
             0.5 * self._mass * self._timestep * self._omega_squared * position**2 
     
+    def check_tunnelling_event(self, initial_position, final_position):
+        if np.sign(final_position) != np.sign(initial_position):
+            return True
+        else:
+            return False
