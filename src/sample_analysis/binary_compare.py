@@ -32,10 +32,18 @@ def main(config_file_string_1, config_file_string_2):
                                                    number_of_equilibration_iterations_2).flatten()
     sample1_cdf = get_cumulative_distribution(sample_1)
     sample2_cdf = get_cumulative_distribution(sample_2)
+
+    iact_1 = get_iact(sample_1)
+    iact_2 = get_iact(sample_2)
     
-    plt.plot(sample1_cdf[0], sample1_cdf[1], color='r', linewidth=3, linestyle='-', label='Event Chain')
-    plt.plot(sample2_cdf[0], sample2_cdf[1], color='k', linewidth=2, linestyle='-', label='Metropolis')
-    legend = plt.legend(['Event Chain', 'Metropolis'], loc='lower right', fontsize=10)
+    plt.plot(sample1_cdf[0], sample1_cdf[1], color='r', linewidth=3, linestyle='-', label=f'Event Chain\n IACT: {iact_1:.3f}')
+    plt.plot(sample2_cdf[0], sample2_cdf[1], color='k', linewidth=2, linestyle='-', label=f'metropolis\n IACT: {iact_2:.3f}')
+    plt.tick_params(axis='both', which='major', labelsize=14, pad=10)
+    legend = plt.legend(loc='lower right', fontsize=10)
+    legend.get_frame().set_edgecolor('k')
+    legend.get_frame().set_lw(1.5)
+    plt.tight_layout()
+    plt.show()
 
     plt.savefig("binary_compare.png")
 

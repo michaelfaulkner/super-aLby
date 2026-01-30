@@ -143,7 +143,7 @@ class EventChainMediator(Mediator):
                         self._positions, active_particle_index, self._temperature, movement_direction
                     ), "potential"),
                     (self._factor_field.get_next_event(
-                        self._positions, active_particle_index, self._temperature, movement_direction
+                        self._positions, self._potential._disk_radii, active_particle_index, self._temperature, movement_direction
                     ), "factor_field"),
                 ]
                 (event, event_source) = min(candidate_events, key=lambda x: x[0][0])
@@ -183,6 +183,9 @@ class EventChainMediator(Mediator):
                     if self._teleportation_portal and event_source == "potential":
                         candidate_position = self._potential.get_portal_candidate(
                             self._positions, active_particle_index, vetoing_index, movement_direction)
+                        if candidate_position == 'arrangements explored':
+                            print(f"iterations: {markov_chain_index}")
+                            raise RuntimeError("all arrangements explored")
                         if candidate_position is not None and "HardDiskPotential" in str(self._potential):
                             candidate_position_1, candidate_position_2 = candidate_position
                             self._positions[active_particle_index, 0] = candidate_position_1

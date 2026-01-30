@@ -79,6 +79,15 @@ class HardDiskPotential(EuclideanSubspacePotential):
         self._disk_radius = disk_radius_a if dimensionality_of_particle_space > 1 else None
         self._packing_fraction = packing_fraction
         self._disk_radii = np.array([self._disk_radius_a if (i % 2) == 0 else self._disk_radius_b for i in range(number_of_particles)], dtype=float)
+        #self._disk_radii = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0])
+        '''
+        self._array = set()
+        self._counter = math.comb(number_of_particles, 4) - 1
+        binary = (self._disk_radii == self._disk_radius_a).astype(int)
+        number = int(''.join(map(str, binary)))
+        print(self._counter)
+        self._array.add(number)
+        '''
         number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * max(self._disk_radius_a, self._disk_radius_b)))
         if dimensionality_of_particle_space > 1:
             if not math.isclose(size_of_particle_space[0], size_of_particle_space[1]):
@@ -440,6 +449,16 @@ class HardDiskPotential(EuclideanSubspacePotential):
         wrapped_position_1 = float(((candidate_position_1 + size_of_particle_space/2) % size_of_particle_space) - size_of_particle_space/2)
         wrapped_position_2 = float(((candidate_position_2 + size_of_particle_space/2) % size_of_particle_space) - size_of_particle_space/2)
         self._disk_radii[active_particle_index], self._disk_radii[veto_index] = veto_radius, active_radius
+        '''
+        binary = (self._disk_radii == self._disk_radius_a).astype(int)
+        number = int(''.join(map(str, binary)))
+        if number not in self._array:
+            self._array.add(number)
+            self._counter -=1
+            #print(self._counter)
+            if self._counter == 0:
+                return 'arrangements explored'
+        '''
         return wrapped_position_1, wrapped_position_2
         
         '''
