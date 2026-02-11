@@ -190,8 +190,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             else:
                 if ((movement_direction > 0 and intermediate_position > 0.0) or
                         (movement_direction < 0 and intermediate_position < 0.0)):
-                     final_position = self._get_final_position_wrt_single_well_parabola_event(movement_direction,
-                                                                                              roots[np.isreal(roots)])
+                     final_position = self._get_final_position_of_single_well_event(movement_direction,
+                                                                                    roots[np.isreal(roots)])
                 else:
                     remaining_barrier_height = self._get_barrier_height(intermediate_position)
                     bottom_of_well *= -1
@@ -203,9 +203,10 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
                         final_position = self._get_final_position_of_non_tunnel_event(intermediate_position,
                                                                                       movement_direction, roots)
                     else:
-                        final_position = self._get_final_position_wrt_single_well_parabola_event(movement_direction, roots[np.isreal(roots)])
+                        final_position = self._get_final_position_of_single_well_event(movement_direction,
+                                                                                       roots[np.isreal(roots)])
         else:
-            final_position = self._get_final_position_wrt_single_well_parabola_event(movement_direction, roots)
+            final_position = self._get_final_position_of_single_well_event(movement_direction, roots)
 
         distance_to_next_factor_event = np.abs(final_position - initial_position)
 
