@@ -332,8 +332,9 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         """
         return self._timestep * self._anharmonicity * position**4 + \
             0.5 * self._mass * self._timestep * self._omega_squared * position**2 
-    
-    def check_tunnelling_event(self, initial_position, final_position):
+
+    @staticmethod
+    def check_tunnelling_event(initial_position, final_position):
         if np.sign(final_position) != np.sign(initial_position):
             return True
         else:
