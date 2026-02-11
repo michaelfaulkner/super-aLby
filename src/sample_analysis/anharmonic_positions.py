@@ -52,7 +52,7 @@ def main(config_file_string):
 
     plt.legend()
     plt.tight_layout()
-    plt.savefig("ecmc_trajectories_8.png")
+    plt.savefig("metropolis_trajectories_2_start_05.png")
 
 
     fig1, ax1 = plt.subplots(1,1)
@@ -73,7 +73,7 @@ def main(config_file_string):
     #ax.plot(np.arange(0, number_of_particles), np.mean(position_sample, axis=0), color='black')
 
     plt.tight_layout()
-    plt.savefig("ecmc_single_particle_8.png")
+    plt.savefig("metropolis_single_particle_2_start_05.png")
 
 if __name__ == '__main__':
     main(sys.argv[1])

@@ -289,14 +289,14 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
 
         if position < 0.0: # A < x < B, i.e. in first well
             if movement_direction > 0:
-                return roots[1]
+                return sorted_roots[1]
             else:
-                return roots[0]
+                return sorted_roots[0]
         elif position > 0.0: # C < x < D i.e. in second well
             if movement_direction > 0:
-                return roots[3]
+                return sorted_roots[3]
             else:
-                return roots[2]
+                return sorted_roots[2]
 
         
     def _get_barrier_height(self, position):
