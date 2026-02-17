@@ -15,7 +15,8 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         U = prefactor * sum(x_tilde[i] ** 2) / 2 and subject to the constraint sum(x_tilde[i]) = L.
     """
 
-    def __init__(self, prefactor: float = 1.0, equilibrium_length: float = 0.0, use_cell_veto: bool = False):
+    def __init__(self, prefactor: float = 1.0, equilibrium_length: float = 0.0, use_cell_veto: bool = False,
+                 cell_veto_horizon: float = None):
         """
         The constructor of the HarmonicChainPotential class.
 
@@ -25,6 +26,10 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             The prefactor k of the potential.
         equilibrium_length : float
             The separation of particles associated with the minimum of the potential.
+        use_cell_veto : bool
+            Determines whether to use cell veto method.
+        cell_veto_horizon : float
+            Horizon over which to measure maximum potential gradient.
 
         Raises
         ------
@@ -36,7 +41,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         self._equilibrium_length = equilibrium_length
         self._use_cell_veto = use_cell_veto
         if use_cell_veto:
-            self._cell_veto_horizon = np.array([1.0])
+            self._cell_veto_horizon = np.array([cell_veto_horizon])
             self._cell_veto_accepted_moves = 0
             self._cell_veto_proposed_moves = 0
         if len(size_of_particle_space) > 1:
@@ -279,7 +284,6 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
                     (distance_to_next_pos_factor_event, pos_neighbour_index, pos_neighbour_position
                      - active_particle_position)))
 
-        print(self._cell_veto_accepted_moves / self._cell_veto_proposed_moves)
         return shortest_distance_to_next_factor_event, vetoing_index, hop_displacement
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
