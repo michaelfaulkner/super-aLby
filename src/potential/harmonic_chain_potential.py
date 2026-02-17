@@ -15,7 +15,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         U = prefactor * sum(x_tilde[i] ** 2) / 2 and subject to the constraint sum(x_tilde[i]) = L.
     """
 
-    def __init__(self, prefactor: float = 1.0, equilibrium_length: float = 0.0):
+    def __init__(self, prefactor: float = 1.0, equilibrium_length: float = 0.0, use_cell_veto: bool = False):
         """
         The constructor of the HarmonicChainPotential class.
 
@@ -34,6 +34,11 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         super().__init__(prefactor=prefactor)
         self._potential_constant = 0.5 * prefactor
         self._equilibrium_length = equilibrium_length
+        self._use_cell_veto = use_cell_veto
+        if use_cell_veto:
+            self._cell_veto_horizon = np.array([1.0])
+            self._cell_veto_accepted_moves = 0
+            self._cell_veto_proposed_moves = 0
         if len(size_of_particle_space) > 1:
             raise ConfigurationError(f'{self.__class__.__name__} only supports 1D space. Provided: '
                                      f'{len(size_of_particle_space)}')
@@ -209,7 +214,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         hop_displacement : numpy.ndarray
             Net displacement through state space from active to vetoing particle.
         """
-        active_particle_position = positions[active_particle_index].copy()
+        active_particle_position = positions[active_particle_index]
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(active_particle_index)
         neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index].copy(),
                                                           positions[pos_neighbour_index].copy())
@@ -219,23 +224,62 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         elif active_particle_index == 0:
             neg_neighbour_position -= size_of_particle_space
 
-        neg_dist_to_eq, pos_dist_to_eq = (neg_neighbour_position + self._equilibrium_length - active_particle_position,
-                                          pos_neighbour_position - self._equilibrium_length - active_particle_position)
-        neg_dist_to_eq *= movement_direction
-        pos_dist_to_eq *= movement_direction
-        rand_neg, rand_pos = (- temperature * np.log(np.random.uniform(0.0, 1.0)) / self._potential_constant,
-                              - temperature * np.log(np.random.uniform(0.0, 1.0)) / self._potential_constant)
-        distance_to_next_neg_factor_event = (neg_dist_to_eq + rand_neg ** 0.5 if neg_dist_to_eq > 0
-                                             else neg_dist_to_eq + (rand_neg + (-neg_dist_to_eq) ** 2) ** 0.5)
-        distance_to_next_pos_factor_event = (pos_dist_to_eq + rand_pos ** 0.5 if pos_dist_to_eq > 0
-                                             else pos_dist_to_eq + (rand_pos + (-pos_dist_to_eq) ** 2) ** 0.5)
+        if self._use_cell_veto:
+            active_particle_position += self._cell_veto_horizon * movement_direction
+            max_pos_grad, max_neg_grad = self.get_single_particle_gradient(positions, active_particle_index)
+            active_particle_position -= self._cell_veto_horizon * movement_direction
 
-        shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
-            min((distance_to_next_neg_factor_event, neg_neighbour_index, neg_neighbour_position
-                 - active_particle_position),
-                (distance_to_next_pos_factor_event, pos_neighbour_index, pos_neighbour_position
-                 - active_particle_position)))
+            max_rate_pos = np.maximum(0.0, movement_direction * max_pos_grad)
+            max_rate_neg = np.maximum(0.0, movement_direction * max_neg_grad)
+            total_max_rate = max_rate_pos + max_rate_neg
 
+            candidate_distance_to_next_factor_event = np.inf if total_max_rate < 1e-12 else (
+                    -np.log(np.random.uniform(0.0, 1.0)) / total_max_rate)
+
+            if candidate_distance_to_next_factor_event > self._cell_veto_horizon:
+                shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
+                    self._cell_veto_horizon.copy(), active_particle_index, 0.0)
+            else:
+                active_particle_position += candidate_distance_to_next_factor_event * movement_direction
+                actual_pos_grad, actual_neg_grad = self.get_single_particle_gradient(positions, active_particle_index)
+                active_particle_position -= candidate_distance_to_next_factor_event * movement_direction
+
+                actual_rate_pos = np.maximum(0.0, movement_direction * actual_pos_grad)
+                actual_rate_neg = np.maximum(0.0, movement_direction * actual_neg_grad)
+                total_actual_rate = actual_rate_pos + actual_rate_neg
+
+                if np.random.uniform(0.0, 1.0) < total_actual_rate / total_max_rate:
+                    probs = np.array([actual_rate_neg, actual_rate_pos]).flatten() / total_actual_rate
+                    vetoing_index = np.random.choice([neg_neighbour_index, pos_neighbour_index], p=probs)
+                    hop_displacement = positions[vetoing_index] - active_particle_position
+                    shortest_distance_to_next_factor_event = candidate_distance_to_next_factor_event
+                    self._cell_veto_accepted_moves += 1
+                else:
+                    shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
+                        candidate_distance_to_next_factor_event, active_particle_index, 0.0)
+            self._cell_veto_proposed_moves += 1
+
+        else:
+            neg_dist_to_eq, pos_dist_to_eq = (neg_neighbour_position + self._equilibrium_length -
+                                              active_particle_position,
+                                              pos_neighbour_position - self._equilibrium_length -
+                                              active_particle_position)
+            neg_dist_to_eq *= movement_direction
+            pos_dist_to_eq *= movement_direction
+            rand_neg, rand_pos = (- temperature * np.log(np.random.uniform(0.0, 1.0)) / self._potential_constant,
+                                  - temperature * np.log(np.random.uniform(0.0, 1.0)) / self._potential_constant)
+            distance_to_next_neg_factor_event = (neg_dist_to_eq + rand_neg ** 0.5 if neg_dist_to_eq > 0
+                                                 else neg_dist_to_eq + (rand_neg + (-neg_dist_to_eq) ** 2) ** 0.5)
+            distance_to_next_pos_factor_event = (pos_dist_to_eq + rand_pos ** 0.5 if pos_dist_to_eq > 0
+                                                 else pos_dist_to_eq + (rand_pos + (-pos_dist_to_eq) ** 2) ** 0.5)
+
+            shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
+                min((distance_to_next_neg_factor_event, neg_neighbour_index, neg_neighbour_position
+                     - active_particle_position),
+                    (distance_to_next_pos_factor_event, pos_neighbour_index, pos_neighbour_position
+                     - active_particle_position)))
+
+        print(self._cell_veto_accepted_moves / self._cell_veto_proposed_moves)
         return shortest_distance_to_next_factor_event, vetoing_index, hop_displacement
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
@@ -262,6 +306,37 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             The next active-particle direction of motion.
         """
         return veto_index, movement_direction
+
+    def get_single_particle_gradient(self, positions, single_particle_index):
+        """
+        Returns the gradient of the potential for a single particle position.
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents one Cartesian component of the position of a single particle.
+        single_particle_index : int
+            Index of particle in positions array to evaluate the gradient of the potential with respect to.
+
+        Returns
+        -------
+        tuple
+            Value of the gradient of the potential for the single particle.
+        """
+        single_particle_position = positions[single_particle_index]
+        neg_neighbour_index, pos_neighbour_index = self._get_neighbours(single_particle_index)
+        neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index].copy(),
+                                                          positions[pos_neighbour_index].copy())
+        if single_particle_index == number_of_particles - 1:
+            pos_neighbour_position += size_of_particle_space
+        elif single_particle_index == 0:
+            neg_neighbour_position -= size_of_particle_space
+
+        pos_gradient_value = single_particle_position - pos_neighbour_position + self._equilibrium_length
+        neg_gradient_value = single_particle_position - neg_neighbour_position - self._equilibrium_length
+
+        return 2.0 * self._potential_constant * pos_gradient_value, 2.0 * self._potential_constant * neg_gradient_value
 
     @staticmethod
     def update_position(positions, displacement_distance, active_particle_index, movement_direction):
