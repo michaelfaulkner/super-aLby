@@ -48,7 +48,11 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
                                      f"in {self.__class__.__name__} to ensure a well-defined probability distribution.")
         self._omega_squared = omega_squared
         self._anharmonicity = anharmonicity
-        self._magnitude_of_double_well_position = np.sqrt(-self._mass * self._omega_squared / (4 * self._anharmonicity))
+        if self._anharmonicity != 0.0:
+            self._magnitude_of_double_well_position = np.sqrt(-self._mass * self._omega_squared /
+                                                               (4 * self._anharmonicity))
+        else:
+            self._magnitude_of_double_well_position = 0.0
 
     def get_initial_positions(self):
         """

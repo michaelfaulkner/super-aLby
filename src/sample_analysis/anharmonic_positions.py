@@ -40,40 +40,40 @@ def main(config_file_string):
                                 0.5 * mass * timestep * omega_squared * bottom_of_well **2))
     fig, ax = plt.subplots(1,1)
    
-    for i in range(40,50,20):
-        subsample = position_sample[i, :]
-        ax.plot(np.arange(0, number_of_particles), subsample, linestyle="-", color="black")
-        ax.scatter(np.arange(0, number_of_particles), subsample, marker = "x", color="black")
-        ax.hlines(np.mean(subsample), xmin=0, xmax = number_of_particles, color="purple", label = "mean of x")
-        ax.hlines(np.mean(np.abs(subsample)), xmin=0, xmax = number_of_particles, color="pink", label = "mean of |x|")
-        ax.hlines(bottom_of_well, xmin=0, xmax = number_of_particles,linestyle=":", color = "gray")
-        ax.hlines(-bottom_of_well, xmin=0, xmax = number_of_particles,linestyle=":", color = "gray")
-        ax.hlines(0.0, xmin=0, xmax = number_of_particles,linestyle=":", color = "gray")
+    # for i in range(40,50,20):
+    #     subsample = position_sample[i, :]
+    #     ax.plot(np.arange(0, number_of_particles), subsample, linestyle="-", color="black")
+    #     ax.scatter(np.arange(0, number_of_particles), subsample, marker = "x", color="black")
+    #     ax.hlines(np.mean(subsample), xmin=0, xmax = number_of_particles, color="purple", label = "mean of x")
+    #     ax.hlines(np.mean(np.abs(subsample)), xmin=0, xmax = number_of_particles, color="pink", label = "mean of |x|")
+    #     ax.hlines(bottom_of_well, xmin=0, xmax = number_of_particles,linestyle=":", color = "gray")
+    #     ax.hlines(-bottom_of_well, xmin=0, xmax = number_of_particles,linestyle=":", color = "gray")
+    #     ax.hlines(0.0, xmin=0, xmax = number_of_particles,linestyle=":", color = "gray")
 
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig("metropolis_trajectories_2_start_05.png")
+    # plt.legend()
+    # plt.tight_layout()
+    # plt.savefig("metropolis_trajectories_2_start_05.png")
+
+    for index in range(0, number_of_particles, 10):
+        fig1, ax1 = plt.subplots(1,1)
+        ax1.plot(np.arange(0, len(position_sample)), position_sample[:,20],linestyle="-", color="black")
+        ax1.scatter(np.arange(0, len(position_sample))[np.nonzero(position_sample[:,20]>0.0)], position_sample[:,20][np.nonzero(position_sample[:,20]>0.0)], marker = "x", color = "blue")
+        ax1.scatter(np.arange(0, len(position_sample))[np.nonzero(position_sample[:,20]<0.0)], position_sample[:,20][np.nonzero(position_sample[:,20]<0.0)], marker = "x", color = "red")
+
+        ax1.hlines(bottom_of_well, xmin=0, xmax = len(position_sample),linestyle=":", color = "gray")
+        ax1.hlines(-bottom_of_well, xmin=0, xmax = len(position_sample),linestyle=":", color = "gray")
+        ax1.hlines(0.0, xmin=0, xmax = len(position_sample),linestyle=":", color = "gray")
+        #ax1.set_xlim(200, 400)
 
 
-    fig1, ax1 = plt.subplots(1,1)
-    ax1.plot(np.arange(0, len(position_sample)), position_sample[:,20],linestyle="-", color="black")
-    ax1.scatter(np.arange(0, len(position_sample))[np.nonzero(position_sample[:,20]>0.0)], position_sample[:,20][np.nonzero(position_sample[:,20]>0.0)], marker = "x", color = "blue")
-    ax1.scatter(np.arange(0, len(position_sample))[np.nonzero(position_sample[:,20]<0.0)], position_sample[:,20][np.nonzero(position_sample[:,20]<0.0)], marker = "x", color = "red")
+            #ax.scatter(np.arange(0, number_of_particles)[np.nonzero(subsample>0.0)], subsample[np.nonzero(subsample>0.0)], color="red")
+            #ax.scatter(np.arange(0, number_of_particles)[np.nonzero(subsample<0.0)], subsample[np.nonzero(subsample<0.0)], color="blue")
+            
 
-    ax1.hlines(bottom_of_well, xmin=0, xmax = len(position_sample),linestyle=":", color = "gray")
-    ax1.hlines(-bottom_of_well, xmin=0, xmax = len(position_sample),linestyle=":", color = "gray")
-    ax1.hlines(0.0, xmin=0, xmax = len(position_sample),linestyle=":", color = "gray")
-    #ax1.set_xlim(200, 400)
+        #ax.plot(np.arange(0, number_of_particles), np.mean(position_sample, axis=0), color='black')
 
-
-        #ax.scatter(np.arange(0, number_of_particles)[np.nonzero(subsample>0.0)], subsample[np.nonzero(subsample>0.0)], color="red")
-        #ax.scatter(np.arange(0, number_of_particles)[np.nonzero(subsample<0.0)], subsample[np.nonzero(subsample<0.0)], color="blue")
-        
-
-    #ax.plot(np.arange(0, number_of_particles), np.mean(position_sample, axis=0), color='black')
-
-    plt.tight_layout()
-    plt.savefig("metropolis_single_particle_2_start_05.png")
+        plt.tight_layout()
+        plt.savefig(f"metropolis_single_particle_trajectory_{index}.png")
 
 if __name__ == '__main__':
     main(sys.argv[1])
