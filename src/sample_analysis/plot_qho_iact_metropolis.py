@@ -19,18 +19,13 @@ def main(iact_data_path, N):
         iact_data = iact_data[argsorted_data] 
         storage_arr[:, index] = iact_data
 
-    print(sorted_timestep)
-    print(np.nonzero(sorted_timestep >= 0.05))
-    print(storage_arr[np.nonzero(sorted_timestep >= 0.05)])
 
-
-
-    iact_mean_arr = np.mean(storage_arr[np.nonzero(sorted_timestep >= 0.05)], axis = 1)
-    err = np.std(storage_arr[np.nonzero(sorted_timestep >= 0.05)], axis=1)
+    iact_mean_arr = np.mean(storage_arr[np.nonzero(sorted_timestep >= 0.01)], axis = 1)
+    err = np.std(storage_arr[np.nonzero(sorted_timestep >= 0.01)], axis=1)
     
     fig, ax = plt.subplots(1, 1)
     #ax.scatter(timestep_data_0, iact_mean_arr)
-    ax.errorbar(sorted_timestep[np.nonzero(sorted_timestep >= 0.05)], iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="orange")
+    ax.errorbar(sorted_timestep[np.nonzero(sorted_timestep >= 0.01)], iact_mean_arr, err, fmt='o', capsize=3, markersize=3.5, color="orange")
     ax.set_xlabel(r"$\delta \tau$", fontsize=16, labelpad=-10)
     ax.set_ylabel("IACT", fontsize=15, labelpad=0)
     ax.set_xscale("log")
@@ -40,7 +35,7 @@ def main(iact_data_path, N):
 
 
     plt.title(f"Integrated Autocorrelation Time for Metropolis MC, with {N} Repeats")
-    plt.savefig("iact_metropolis.png")
+    plt.savefig("anharmonic_iact_metropolis.png")
     plt.clf()
 
 

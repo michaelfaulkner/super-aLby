@@ -24,11 +24,9 @@ def main(config_folder, N):
 
         for index, folder in enumerate(os.listdir(config_folder)):
             config_file_string = os.path.join(config_folder, folder, f"{i}.ini")
-
             config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-            (config_file_mediator, potential, _, samplers, sample_directory, temperature,
-             number_of_equilibration_iterations, number_of_observations, number_of_particles,
-             _) = helper_methods.get_basic_config_data(config_file_string)
+            (config_file_mediator, potential, _, samplers, sample_directory, temperature, number_of_equilibration_iterations,
+            number_of_observations, number_of_particles, size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
 
             timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
             number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
@@ -45,12 +43,6 @@ def main(config_folder, N):
                     mean_sample[i * sub_arr_len : (i+1) * sub_arr_len] = sample_getter.get_mean_positions(
                         sample_directory, temperature, number_of_particles,
                         None, thinning_level=thinning_level)[1:, 0]
-
-                    """
-                    np.load(os.path.join(sample_directory, 
-                                         f"run_{i:02d}_sample_of_mean_positions.npy"))[1:, 0]
-                    """
-                #mean_sample = mean_sample[50000:129999]
             
             else:
                 mean_sample = sample_getter.get_mean_positions(sample_directory, temperature, number_of_particles,

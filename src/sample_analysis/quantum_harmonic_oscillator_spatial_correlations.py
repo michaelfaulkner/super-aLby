@@ -16,7 +16,7 @@ parsing = importlib.import_module("base.parsing")
 strings = importlib.import_module("base.strings")
 matplotlib.rcParams['mathtext.fontset'] = 'cm'
 
-def spatial_correlation_function(positions, length):
+def spatial_correlation_function(positions, length, number_of_particles):
     """
     returns spatial correlation function for the positions sample. 
     C(r) = <x_{0} x_{r}> - <x_{0}><x_{r}>
@@ -28,13 +28,19 @@ def spatial_correlation_function(positions, length):
     length: float
         The distance between the first and second indices of the correlation function.
     """
-    return np.mean(positions[:, 0] * positions[:, length]) - np.mean(positions[:, 0]) * np.mean(positions[:, length])
+    corr_func = np.zeros(number_of_particles)
+    for particle_index in range(number_of_particles):
+        corr_func[particle_index] = np.mean(positions[:, particle_index] * positions[:, (particle_index + length)%number_of_particles]) - \
+            np.mean(positions[:, particle_index]) * np.mean(positions[:, (particle_index + length)%number_of_particles])
+
+    return np.mean(corr_func)
 
 
-def main(config_file_string, min_length, max_length):
+def main(config_file_string, min_length, max_length, N_repeats):
 
     min_length = int(min_length)
     max_length = int(max_length)
+    N_repeats = int(N_repeats)
 
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     (config_file_mediator, potential, _, samplers, sample_directory, temperature, number_of_equilibration_iterations,
@@ -42,24 +48,55 @@ def main(config_file_string, min_length, max_length):
     
 
     thinning_level = None
-    position_sample = sample_getter.get_positions(sample_directory, temperature, 0, number_of_particles,
-                                                  number_of_equilibration_iterations, thinning_level=thinning_level)
     timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
 
-    lengths = np.arange(min_length, max_length)
-    spatial_correlations = np.zeros(len(lengths))
+    lengths = np.arange(min_length, max_length, step = 5)
+    spatial_correlations = np.zeros((len(lengths), N_repeats))
+    #spatial_correlations_err = np.zeros(len(lengths))
 
-    for index, length in enumerate(lengths):
-        spatial_correlations[index] = spatial_correlation_function(position_sample, length)
+    for n in range(N_repeats):
+        print(n)
+        n_sample_directory = os.path.join(sample_directory, f"{n}")
+        position_sample = sample_getter.get_positions(n_sample_directory, temperature, 0, number_of_particles,
+                                                  number_of_equilibration_iterations, thinning_level=thinning_level)
+        for index, length in enumerate(lengths):
+            spatial_correlations[index, n]= spatial_correlation_function(position_sample, length, number_of_particles)
+    
+    spatial_correlations_err = np.std(spatial_correlations, axis = 1)
+    spatial_correlations = np.mean(spatial_correlations, axis = 1)
 
+    print(np.shape(spatial_correlations_err))
+    print(np.shape(spatial_correlations))
+
+
+    print(spatial_correlations[spatial_correlations < 0])
     fig, ax = plt.subplots(1,1)
 
-    ax.scatter(lengths, spatial_correlations)
-    ax.set_xlabel(r"length of correlation function (units of $\delta \tau$)")
+    ax.errorbar(lengths[spatial_correlations_err>0], spatial_correlations[spatial_correlations_err>0], yerr = spatial_correlations_err[spatial_correlations_err>0], fmt="o", capsize=5)
+
+
+    ax.set_xlabel(r"$\Delta \tau$")
     ax.set_ylabel("C(r)")
+    ax.set_yscale("log")
+    ax.set_xscale("linear")
+    print(ax.get_ylim())
+    #plt.legend()
+    
 
     plt.savefig("correlation_func.png")
 
+    fig, ax = plt.subplots(1,1)
+
+    ax.errorbar(lengths, spatial_correlations, yerr = spatial_correlations_err, fmt="o", capsize=5)
+
+
+    ax.set_xlabel(r"$\Delta \tau$")
+    ax.set_ylabel("C(r)")
+    ax.set_yscale("linear")
+    ax.set_xscale("linear")
+    print(ax.get_ylim())
+    plt.savefig("correlation_func_linear.png")
+
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2], sys.argv[3])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
