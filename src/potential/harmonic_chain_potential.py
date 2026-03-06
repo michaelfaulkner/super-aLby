@@ -231,7 +231,8 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
 
         if self._use_cell_veto:
             active_particle_position += self._cell_veto_horizon * movement_direction
-            max_pos_grad, max_neg_grad = self.get_single_particle_gradient(positions, active_particle_index)
+            max_pos_grad, max_neg_grad = self.get_single_particle_gradient(positions, active_particle_index,
+                                                                           movement_direction)
             active_particle_position -= self._cell_veto_horizon * movement_direction
 
             max_rate_pos = np.maximum(0.0, movement_direction * max_pos_grad)
@@ -246,7 +247,8 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
                     self._cell_veto_horizon.copy(), active_particle_index, 0.0)
             else:
                 active_particle_position += candidate_distance_to_next_factor_event * movement_direction
-                actual_pos_grad, actual_neg_grad = self.get_single_particle_gradient(positions, active_particle_index)
+                actual_pos_grad, actual_neg_grad = self.get_single_particle_gradient(positions, active_particle_index,
+                                                                                     movement_direction)
                 active_particle_position -= candidate_distance_to_next_factor_event * movement_direction
 
                 actual_rate_pos = np.maximum(0.0, movement_direction * actual_pos_grad)
@@ -254,10 +256,10 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
                 total_actual_rate = actual_rate_pos + actual_rate_neg
 
                 if np.random.uniform(0.0, 1.0) < total_actual_rate / total_max_rate:
+                    shortest_distance_to_next_factor_event = candidate_distance_to_next_factor_event
                     probs = np.array([actual_rate_neg, actual_rate_pos]).flatten() / total_actual_rate
                     vetoing_index = np.random.choice([neg_neighbour_index, pos_neighbour_index], p=probs)
                     hop_displacement = positions[vetoing_index] - active_particle_position
-                    shortest_distance_to_next_factor_event = candidate_distance_to_next_factor_event
                     self._cell_veto_accepted_moves += 1
                 else:
                     shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
@@ -311,7 +313,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         """
         return veto_index, movement_direction
 
-    def get_single_particle_gradient(self, positions, single_particle_index):
+    def get_single_particle_gradient(self, positions, single_particle_index, movement_direction):
         """
         Returns the gradient of the potential for a single particle position.
 
@@ -322,6 +324,8 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             is a float and represents one Cartesian component of the position of a single particle.
         single_particle_index : int
             Index of particle in positions array to evaluate the gradient of the potential with respect to.
+        movement_direction : float
+            The direction of motion of the active particle.
 
         Returns
         -------
@@ -337,8 +341,11 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         elif single_particle_index == 0:
             neg_neighbour_position -= size_of_particle_space
 
-        pos_gradient_value = single_particle_position - pos_neighbour_position + self._equilibrium_length
-        neg_gradient_value = single_particle_position - neg_neighbour_position - self._equilibrium_length
+        pos_multiplier, neg_multiplier = (1, -1) if movement_direction > 0.0 else (-1, 1)
+        pos_gradient_value = (single_particle_position - pos_neighbour_position + pos_multiplier *
+                              self._equilibrium_length)
+        neg_gradient_value = (single_particle_position - neg_neighbour_position + neg_multiplier *
+                              self._equilibrium_length)
 
         return 2.0 * self._potential_constant * pos_gradient_value, 2.0 * self._potential_constant * neg_gradient_value
 

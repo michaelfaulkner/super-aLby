@@ -112,8 +112,9 @@ class EventChainMediator(Mediator):
                                              f"calculation of pressure estimates made via the pointer-hop distance "
                                              f"(though this is not fully understood).")
         """The following object is set in self._set_arrays_and_counters()"""
-        (self._total_number_of_events, self._total_number_of_events_at_samples, self._state_space_displacement,
-         self._total_event_distance, self._index_space_displacement) = None, [0], None, None, None
+        (self._total_number_of_events, self._total_number_of_proposed_events, self._total_number_of_events_at_samples,
+         self._state_space_displacement, self._total_event_distance, self._index_space_displacement) = (
+            None, None, [0], None, None, None)
         self._teleportation_portal = teleportation_portal
 
     def _run_markov_process(self):
@@ -182,9 +183,11 @@ class EventChainMediator(Mediator):
                             active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                                 self._positions, active_particle_index, movement_direction, vetoing_index)
                     else:
+                        self._total_number_of_proposed_events += 1
+                        if active_particle_index != vetoing_index:
+                            self._total_number_of_events += 1
                         active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                             self._positions, active_particle_index, movement_direction, vetoing_index)
-                    self._total_number_of_events += 1
                     distance_to_next_velocity_refreshment -= distance_to_next_event
                     distance_to_next_measurement -= distance_to_next_event
                     if taken_measurement:
@@ -200,8 +203,8 @@ class EventChainMediator(Mediator):
     def _set_arrays_and_counters(self):
         """Sets the arrays (e.g. the sample array) and counters before the Markov process."""
         super()._set_arrays_and_counters()
-        (self._total_number_of_events, self._state_space_displacement, self._total_event_distance,
-         self._index_space_displacement) = 0.0, 0.0, 0.0, 0.0
+        (self._total_number_of_events, self._total_number_of_proposed_events, self._state_space_displacement,
+         self._total_event_distance, self._index_space_displacement) = 0.0, 0.0, 0.0, 0.0, 0.0
 
     def _write_sim_params(self):
         """Saves simulation parameters, including mean event rate, number of events occurred at each sample,
@@ -214,9 +217,11 @@ class EventChainMediator(Mediator):
                 self._index_space_displacement / self._total_event_distance)
         mean_event_rate = None if self._total_event_distance == 0.0 else (
                 self._total_number_of_events / self._total_event_distance)
+        acceptance_rate = None if self._total_number_of_proposed_events == 0 else (
+                self._total_number_of_events / self._total_number_of_proposed_events)
         with open(os.path.join(self._output_directory, "sim_params.json"), "w") as f:
             json.dump({"state_space_velocity": state_space_velocity, "index_space_velocity": index_space_velocity,
-                       "mean_event_rate": mean_event_rate}, f)
+                       "mean_event_rate": mean_event_rate, "acceptance_rate": acceptance_rate}, f)
 
     def _update_state_and_index_space_displacements(self, displacement_distance, active_particle_index, vetoing_index,
                                                     hop_displacement):
