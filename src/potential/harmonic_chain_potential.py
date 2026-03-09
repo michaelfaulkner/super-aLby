@@ -42,8 +42,6 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         self._use_cell_veto = use_cell_veto
         if use_cell_veto:
             self._cell_veto_horizon = np.array([cell_veto_horizon])
-            self._cell_veto_accepted_moves = 0
-            self._cell_veto_proposed_moves = 0
         if len(size_of_particle_space) > 1:
             raise ConfigurationError(f'{self.__class__.__name__} only supports 1D space. Provided: '
                                      f'{len(size_of_particle_space)}')
@@ -237,10 +235,14 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
 
             max_rate_pos = np.maximum(0.0, movement_direction * max_pos_grad)
             max_rate_neg = np.maximum(0.0, movement_direction * max_neg_grad)
-            total_max_rate = max_rate_pos + max_rate_neg
 
-            candidate_distance_to_next_factor_event = np.inf if total_max_rate < 1e-12 else (
-                    -np.log(np.random.uniform(0.0, 1.0)) / total_max_rate)
+            candidate_distance_to_next_factor_event_pos = np.inf if max_rate_pos < 1e-12 else (
+                    -np.log(np.random.uniform(0.0, 1.0)) / max_rate_pos)
+            candidate_distance_to_next_factor_event_neg = np.inf if max_rate_neg < 1e-12 else (
+                    -np.log(np.random.uniform(0.0, 1.0)) / max_rate_neg)
+            candidate_distance_to_next_factor_event, vetoing_index, max_rate = (
+                min((candidate_distance_to_next_factor_event_pos, pos_neighbour_index, max_rate_pos),
+                    (candidate_distance_to_next_factor_event_neg, neg_neighbour_index, max_rate_neg)))
 
             if candidate_distance_to_next_factor_event > self._cell_veto_horizon:
                 shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
@@ -251,20 +253,17 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
                                                                                      movement_direction)
                 active_particle_position -= candidate_distance_to_next_factor_event * movement_direction
 
-                actual_rate_pos = np.maximum(0.0, movement_direction * actual_pos_grad)
-                actual_rate_neg = np.maximum(0.0, movement_direction * actual_neg_grad)
-                total_actual_rate = actual_rate_pos + actual_rate_neg
+                if vetoing_index == pos_neighbour_index:
+                    actual_rate = np.maximum(0.0, movement_direction * actual_pos_grad)
+                else:
+                    actual_rate = np.maximum(0.0, movement_direction * actual_neg_grad)
 
-                if np.random.uniform(0.0, 1.0) < total_actual_rate / total_max_rate:
+                if np.random.uniform(0.0, 1.0) < actual_rate / max_rate:
                     shortest_distance_to_next_factor_event = candidate_distance_to_next_factor_event
-                    probs = np.array([actual_rate_neg, actual_rate_pos]).flatten() / total_actual_rate
-                    vetoing_index = np.random.choice([neg_neighbour_index, pos_neighbour_index], p=probs)
                     hop_displacement = positions[vetoing_index] - active_particle_position
-                    self._cell_veto_accepted_moves += 1
                 else:
                     shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
                         candidate_distance_to_next_factor_event, active_particle_index, 0.0)
-            self._cell_veto_proposed_moves += 1
 
         else:
             neg_dist_to_eq, pos_dist_to_eq = (neg_neighbour_position + self._equilibrium_length -
@@ -313,7 +312,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         """
         return veto_index, movement_direction
 
-    def get_single_particle_gradient(self, positions, single_particle_index, movement_direction):
+    def get_single_particle_gradient(self, positions, single_particle_index, movement_direction=1.0):
         """
         Returns the gradient of the potential for a single particle position.
 
