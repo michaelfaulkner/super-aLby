@@ -242,9 +242,10 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
                     intermediate_position = initial_position
                 initial_action = 0.5 * (self._mass / self._timestep) * (intermediate_position - neighbour_position) ** 2
                 final_action = uphill_energy + initial_action
-                roots = np.roots([0.5 * self._mass / self._timestep, -(self._mass / self._timestep)
-                                    * neighbour_position, (0.5 * self._mass / self._timestep) * neighbour_position ** 2
-                                    - final_action])
+                #roots = np.roots([0.5 * self._mass / self._timestep, -(self._mass / self._timestep)
+                                   # * neighbour_position, (0.5 * self._mass / self._timestep) * neighbour_position ** 2
+                                   # - final_action])
+                roots = self._analytic_kinetic_term_roots(neighbour_position, final_action)
                 final_position = self._get_final_position_of_single_well_event(movement_direction, roots)
                 distance_to_candidate_kinetic_event = np.abs(final_position - initial_position)
                 
@@ -298,6 +299,32 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             The active-particle direction of motion.
         """
         raise NotImplementedError
+    
+    def _analytic_kinetic_term_roots(self, neighbour_position, final_action):
+        """
+        Returns the final position due to a kinetic event with the neighbouring particle at neighbour_position
+
+        Parameters
+        ----------
+        neighbour_position : float 
+            The position of the neighbouring particle
+        final_action : float
+            The value of the final action for the kinetic term at this event time
+        Returns
+        -------
+            ndarray containing both roots of the equqation
+
+        """
+        roots = np.zeros(2)
+        
+        a = 0.5 * self._mass / self._timestep
+        b = - self._mass / self._timestep * neighbour_position
+        c = a * neighbour_position**2 - final_action
+
+        roots[0] = (-b + np.emath.sqrt(b**2 - 4 * a * c)) / (2 * a)
+        roots[1] = (-b - np.emath.sqrt(b**2 - 4 * a * c)) / (2 * a)
+
+        return roots
 
     @staticmethod
     def _get_final_position_of_single_well_event(movement_direction, roots):

@@ -4,6 +4,7 @@ import sys
 import os
 import matplotlib
 matplotlib.rcParams['mathtext.fontset'] = 'cm'
+matplotlib.use('Agg')
 
 def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data_path, N, ff_N):
 
@@ -22,10 +23,10 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
         metropolis_storage_arr[:, index] = metropolis_iact_data
 
     metropolis_iact_mean_arr = np.mean(metropolis_storage_arr, axis = 1)
-    metropolis_iact_mean_arr = metropolis_iact_mean_arr[metropolis_sorted_timestep >= 0.05]
+    metropolis_iact_mean_arr = metropolis_iact_mean_arr[metropolis_sorted_timestep >= 0.01]
     metropolis_err = np.std(metropolis_storage_arr, axis=1)
-    metropolis_err = metropolis_err[metropolis_sorted_timestep >= 0.05]
-    metropolis_sorted_timestep = metropolis_sorted_timestep[metropolis_sorted_timestep >= 0.05]
+    metropolis_err = metropolis_err[metropolis_sorted_timestep >= 0.01]
+    metropolis_sorted_timestep = metropolis_sorted_timestep[metropolis_sorted_timestep >= 0.01]
     metropolis_sorted_N = 120 / metropolis_sorted_timestep
 
 
@@ -68,12 +69,14 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
         ff_err = ff_err[ff_sorted_timestep >= 0.01]
         ff_sorted_timestep = ff_sorted_timestep[ff_sorted_timestep >= 0.01]
         ff_sorted_N = 120 / ff_sorted_timestep
+        ff_data = True
 
     except:
         ff_data = False
 
-    m_fit_trim = -1#-7
-    e_fit_trim = -1 #-13
+    m_fit_trim = -9#-7
+    e_fit_trim = -13 #-13
+    ff_fit_trim = -13
     m_coeffs = np.polyfit(np.log(metropolis_sorted_N[:m_fit_trim]), np.log(metropolis_iact_mean_arr[:m_fit_trim]), deg=1)
     e_coeffs = np.polyfit(np.log(ecmc_sorted_N[:e_fit_trim]), np.log(ecmc_iact_mean_arr[:e_fit_trim]), deg=1)
 
@@ -84,25 +87,27 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
 
     print(m_coeffs)
     print(e_coeffs)
-    
+
     fig, ax = plt.subplots(1, 1)
-    #ax.plot(metropolis_sorted_N[:m_fit_trim], np.exp(fitted_m), color="#f9a37bff")
-    #ax.plot(ecmc_sorted_N[:e_fit_trim], np.exp(fitted_e), color="#d97dd9ff")
+
+    ax.plot(metropolis_sorted_N[:m_fit_trim], np.exp(fitted_m), color="#f9a37bff")
+    ax.plot(ecmc_sorted_N[:e_fit_trim], np.exp(fitted_e), color="#d97dd9ff")
 
     if ff_data:
-        ff_coeffs = np.polyfit(np.log(ff_sorted_N[:-13]), np.log(ff_iact_mean_arr[:-13]), deg=1)
-        fitted_ff = ff_coeffs[1] + np.multiply(np.log(ff_sorted_N[:-13]), ff_coeffs[0])
+   
+        ff_coeffs = np.polyfit(np.log(ff_sorted_N[:ff_fit_trim]), np.log(ff_iact_mean_arr[:ff_fit_trim]), deg=1)
+        fitted_ff = ff_coeffs[1] + np.multiply(np.log(ff_sorted_N[:ff_fit_trim]), ff_coeffs[0])
         print(ff_coeffs)
-        ax.plot(ff_sorted_N[:-13], np.exp(fitted_ff), color="#a7385eff")
+        ax.plot(ff_sorted_N[:ff_fit_trim], np.exp(fitted_ff), color="#a7385eff")
         ax.errorbar(ff_sorted_N, ff_iact_mean_arr, ff_err, fmt='o', capsize=3, markersize=4, color="#950834ff", label="ECMC with Factor Fields")
-        ax.annotate(f"Coeff: {ff_coeffs[0]:.2f}", xy = (4*10e2, 4*10e1))
+        ax.annotate(f"FF coeff: {ff_coeffs[0]:.2f}", xy = (4*10e2, 0.7*10e1))
 
     ax.errorbar(metropolis_sorted_N, metropolis_iact_mean_arr, metropolis_err, fmt='^', capsize=3, markersize=4, color="#e16f04ff", label="Metropolis MC")
     ax.errorbar(ecmc_sorted_N, ecmc_iact_mean_arr, ecmc_err, fmt='o', capsize=3, markersize=4, color="#e20acdff", label="ECMC")
     
 
-    ax.annotate(f"Coeff: {m_coeffs[0]:.2f}", xy = (8*10e1, 3*10e5))
-    ax.annotate(f"Coeff: {e_coeffs[0]:.2f}", xy = (4*10e2, 4*10e4))
+    ax.annotate(f"M coeff: {m_coeffs[0]:.2f}", xy = (8*10e1, 3*10e1))
+    ax.annotate(f"E coeff: {e_coeffs[0]:.2f}", xy = (4*10e2, 4*10e1))
     
 
 
@@ -120,7 +125,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
 
    # plt.title(f"Integrated Autocorrelation Time for ECMC, with {N} Repeats")
     plt.tight_layout()
-    plt.savefig("iact_all_anharmonic.pdf")
+    plt.savefig("iact_all_rerun.pdf")
     plt.clf()
 
 

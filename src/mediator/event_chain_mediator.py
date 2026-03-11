@@ -130,7 +130,6 @@ class EventChainMediator(Mediator):
             distance_to_next_measurement += self._distance_between_measurements
             taken_measurement = False
             while True:
-                init_pos = self._positions[active_particle_index].copy()
                 candidate_events = [self._potential.get_next_event(
                                         self._positions, active_particle_index, self._temperature, movement_direction),
                                     self._factor_field.get_next_event(
@@ -196,9 +195,6 @@ class EventChainMediator(Mediator):
                     
                     if taken_measurement:
                         break
-                fin_pos = self._positions[active_particle_index].copy()
-                tunnelled = self._potential.check_tunnelling_event(init_pos, fin_pos)
-                tunnelling_events += tunnelled
                 
 
 
@@ -206,7 +202,6 @@ class EventChainMediator(Mediator):
         self._write_state_and_index_space_velocities()
         print(f"total events: {self._total_number_of_events}, factor field events: {ff_events}" 
               f"\n {ff_events/ self._total_number_of_events} of events were ff")
-        print(f"tunneling events: {tunnelling_events/self._total_number_of_events * 100}%")
 
     def _print_markov_process_summary(self):
         """Prints a summary of the completed Markov process to the screen."""

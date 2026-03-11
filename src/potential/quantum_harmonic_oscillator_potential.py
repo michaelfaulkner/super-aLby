@@ -1,5 +1,6 @@
 """Module for the QuantumHarmonicOscillatorPotential class"""
 import numpy as np
+import cmath
 from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError
 from helper_methods import get_initial_positions_of_smooth_potential
@@ -184,8 +185,13 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         initial_action = 0.5 * self._mass * self._timestep * self._omega_squared * intermediate_position ** 2 + \
                         self._timestep * self._anharmonicity * intermediate_position ** 4
         final_action = uphill_energy  + initial_action
-        roots = np.roots([self._timestep * self._anharmonicity, 0.0, 
-                          0.5 * self._mass * self._timestep * self._omega_squared, 0.0, -final_action])
+
+        if self._anharmonicity == 0.0:
+            roots = self._get_harmonic_potential_roots(final_action)
+        else:
+            roots = self._get_anharmonic_potential_roots(final_action)
+        #roots = np.roots([self._timestep * self._anharmonicity, 0.0, 
+                        #  0.5 * self._mass * self._timestep * self._omega_squared, 0.0, -final_action])
         
         if self._anharmonicity > 0.0 > self._omega_squared:
             if np.isreal(roots).all():
@@ -344,3 +350,59 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             return True
         else:
             return False
+        
+    def _get_harmonic_potential_roots(self, final_action): #NOTE there is repeated code here with 
+        #self.worldline_potential._analytic_kinetic_term_roots()
+        """
+        Returns the final position due to a potential event with a harmonic potential
+
+        Parameters
+        ----------
+        final_action : float
+            The value of the final action for the kinetic term at this event time
+        Returns
+        -------
+            ndarray containing both roots of the equqation
+        """
+
+        roots = np.zeros(2)
+
+        a = 0.5 * self._mass * self._timestep * self._omega_squared
+        b = 0.0
+        c = -final_action
+
+        roots[0] = (-b + np.emath.sqrt(b**2 - 4 * a * c)) / (2 * a)
+        roots[1] = (-b - np.emath.sqrt(b**2 - 4 * a * c)) / (2 * a)
+
+        return roots
+    
+    def _get_anharmonic_potential_roots(self, final_action):
+
+        """
+        Returns the final position due to a potential event with an anharmonic potential. Treats the potential as a 
+        quadratic where u = x**2
+
+        Parameters
+        ----------
+        final_action : float
+            The value of the final action for the kinetic term at this event time
+        Returns
+        -------
+            ndarray containing all 4 roots of the equqation
+        """
+        roots = np.zeros(4, dtype=complex)
+
+        a = self._timestep * self._anharmonicity
+        b = 0.5 * self._mass * self._timestep * self._omega_squared
+        c = -final_action
+
+        u0 = (-b + np.emath.sqrt(b**2 - 4 * a * c)) / (2 * a)
+        u1 = (-b - np.emath.sqrt(b**2 - 4 * a * c)) / (2 * a)
+
+        roots[0] = cmath.sqrt(u0)
+        roots[1] = -cmath.sqrt(u0)
+        roots[2] = cmath.sqrt(u1)
+        roots[3] = -cmath.sqrt(u1)
+
+        return roots
+
