@@ -52,7 +52,7 @@ class HarmonicChainFactorField(FactorField):
         hop_displacement : numpy.ndarray
             Net displacement through state space from active to vetoing particle.
         """
-        if self._prefactor < 10e-10:
+        if self._prefactor < 1.0e-10:
             return np.inf, None, None
         neg_neighbour_index, pos_neighbour_index = ((active_particle_index - 1) % number_of_particles,
                                                     (active_particle_index + 1) % number_of_particles)

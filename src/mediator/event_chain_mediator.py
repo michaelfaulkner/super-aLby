@@ -146,9 +146,9 @@ class EventChainMediator(Mediator):
                                 None, self._positions, self._potential)
                         distance_to_next_velocity_refreshment -= distance_to_next_measurement
                         distance_to_next_event -= distance_to_next_measurement
-                        self._total_number_of_events_at_samples.append(self._total_number_of_events)
                         distance_to_next_measurement = self._distance_between_measurements
                         markov_chain_index += 1
+                        self._total_number_of_events_at_samples.append(self._total_number_of_events)
                         super()._print_sample_progress(markov_chain_index)
                     taken_measurement = True
                     distance_to_next_measurement = 0.0
@@ -204,7 +204,7 @@ class EventChainMediator(Mediator):
         """Sets the arrays (e.g. the sample array) and counters before the Markov process."""
         super()._set_arrays_and_counters()
         (self._total_number_of_events, self._total_number_of_proposed_events, self._state_space_displacement,
-         self._total_event_distance, self._index_space_displacement) = 0.0, 0.0, 0.0, 0.0, 0.0
+         self._total_event_distance, self._index_space_displacement) = 0, 0, 0.0, 0.0, 0.0
 
     def _write_sim_params(self):
         """Saves simulation parameters, including mean event rate, number of events occurred at each sample,
