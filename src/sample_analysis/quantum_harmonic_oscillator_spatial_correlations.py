@@ -36,66 +36,69 @@ def spatial_correlation_function(positions, length, number_of_particles):
     return np.mean(corr_func)
 
 
-def main(config_file_string, min_length, max_length, N_repeats):
+def main(config_file_string, min_length, max_length, N_repeats, timesteps):
 
     min_length = int(min_length)
     max_length = int(max_length)
     N_repeats = int(N_repeats)
 
-    config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-    (config_file_mediator, potential, _, samplers, sample_directory, temperature, number_of_equilibration_iterations,
-     _, number_of_particles, size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
-    
+    correlation_length = np.zeros(len(timesteps))
 
-    thinning_level = None
-    timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
+    for t_index, timestep in enumerate(timesteps):
+        #####
+        # iteration for a single timstep
 
-    lengths = np.arange(min_length, max_length, step = 5)
-    spatial_correlations = np.zeros((len(lengths), N_repeats))
-    #spatial_correlations_err = np.zeros(len(lengths))
+        config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
+        (config_file_mediator, potential, _, samplers, sample_directory, temperature, number_of_equilibration_iterations,
+        _, number_of_particles, size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
+        
 
-    for n in range(N_repeats):
-        print(n)
-        n_sample_directory = os.path.join(sample_directory, f"{n}")
-        position_sample = sample_getter.get_positions(n_sample_directory, temperature, 0, number_of_particles,
-                                                  number_of_equilibration_iterations, thinning_level=thinning_level)
-        for index, length in enumerate(lengths):
-            spatial_correlations[index, n]= spatial_correlation_function(position_sample, length, number_of_particles)
-    
-    spatial_correlations_err = np.std(spatial_correlations, axis = 1)
-    spatial_correlations = np.mean(spatial_correlations, axis = 1)
+        thinning_level = None
+        timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
 
-    print(np.shape(spatial_correlations_err))
-    print(np.shape(spatial_correlations))
+        lengths = np.arange(min_length, max_length, step = 5)
+        spatial_correlations = np.zeros((len(lengths), N_repeats))
+        spatial_correlations_pm_1 = np.zeros((len(lengths), N_repeats))
 
 
-    print(spatial_correlations[spatial_correlations < 0])
-    fig, ax = plt.subplots(1,1)
+        for n in range(N_repeats):
+            print(n)
+            n_sample_directory = os.path.join(sample_directory, f"{n}")
+            position_sample = sample_getter.get_positions(n_sample_directory, temperature, 0, number_of_particles,
+                                                    number_of_equilibration_iterations, thinning_level=thinning_level)
+            for index, length in enumerate(lengths):
+                spatial_correlations[index, n]= spatial_correlation_function(position_sample, length, number_of_particles)
+                if 2.0 <= length <= 39:
+                    spatial_correlations_pm_1[index, n]= spatial_correlation_function(position_sample, length-1, number_of_particles) / \
+                                                    spatial_correlation_function(position_sample, length+1, number_of_particles)
+            
+            spatial_correlations_pm_1 = 0.5 * np.log(spatial_correlations_pm_1)
 
-    ax.errorbar(lengths[spatial_correlations_err>0], spatial_correlations[spatial_correlations_err>0], yerr = spatial_correlations_err[spatial_correlations_err>0], fmt="o", capsize=5)
+        spatial_correlations_err = np.std(spatial_correlations, axis = 1)
+        spatial_correlations = np.mean(spatial_correlations, axis = 1)
+
+        spatial_correlations_pm_1_err = np.std(spatial_correlations_pm_1, axis = 1)
+        spatial_correlations_pm_1 = np.mean(spatial_correlations_pm_1, axis = 1)
+
+        correlation_length[t_index] = timestep / np.mean(spatial_correlations_pm_1) 
+
+      
+        fig, ax = plt.subplots(1,1)
+
+        ax.errorbar(lengths[spatial_correlations_err>0], spatial_correlations[spatial_correlations_err>0], yerr = spatial_correlations_err[spatial_correlations_err>0], fmt="o", capsize=5)
 
 
-    ax.set_xlabel(r"$\Delta \tau$")
-    ax.set_ylabel("C(r)")
-    ax.set_yscale("log")
-    ax.set_xscale("linear")
-    print(ax.get_ylim())
-    #plt.legend()
-    
+        ax.set_xlabel(r"$\Delta \tau$")
+        ax.set_ylabel("C(r)")
+        ax.set_yscale("log")
+        ax.set_xscale("linear")
+        print(ax.get_ylim())
+        #plt.legend()
+        
 
-    plt.savefig("correlation_func.png")
-
-    fig, ax = plt.subplots(1,1)
-
-    ax.errorbar(lengths, spatial_correlations, yerr = spatial_correlations_err, fmt="o", capsize=5)
+        plt.savefig("correlation_func.png")
 
 
-    ax.set_xlabel(r"$\Delta \tau$")
-    ax.set_ylabel("C(r)")
-    ax.set_yscale("linear")
-    ax.set_xscale("linear")
-    print(ax.get_ylim())
-    plt.savefig("correlation_func_linear.png")
 
 
 if __name__ == '__main__':

@@ -100,25 +100,26 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
         print(ff_coeffs)
         ax.plot(ff_sorted_N[:ff_fit_trim], np.exp(fitted_ff), color="#a7385eff")
         ax.errorbar(ff_sorted_N, ff_iact_mean_arr, ff_err, fmt='o', capsize=3, markersize=4, color="#950834ff", label="ECMC with Factor Fields")
-        ax.annotate(f"FF coeff: {ff_coeffs[0]:.2f}", xy = (4*10e2, 0.7*10e1))
+        ax.annotate(f"FF coeff: {ff_coeffs[0]:.2f}", xy = (4*10e2, 0.7*10e1), weight = "bold")
 
     ax.errorbar(metropolis_sorted_N, metropolis_iact_mean_arr, metropolis_err, fmt='^', capsize=3, markersize=4, color="#e16f04ff", label="Metropolis MC")
     ax.errorbar(ecmc_sorted_N, ecmc_iact_mean_arr, ecmc_err, fmt='o', capsize=3, markersize=4, color="#e20acdff", label="ECMC")
     
 
-    ax.annotate(f"M coeff: {m_coeffs[0]:.2f}", xy = (8*10e1, 3*10e1))
-    ax.annotate(f"E coeff: {e_coeffs[0]:.2f}", xy = (4*10e2, 4*10e1))
+    ax.annotate(f"M coeff: {m_coeffs[0]:.2f}", xy = (8*10e1, 3*10e1), weight = "bold")
+    ax.annotate(f"E coeff: {e_coeffs[0]:.2f}", xy = (4*10e2, 4*10e1), weight = "bold")
     
 
 
 
     
    
-    ax.set_xlabel(r"$N_{\tau}$", fontsize=20, labelpad=-10)
-    ax.set_ylabel("IACT", fontsize=15)
+    ax.set_xlabel(r"$N_{\tau}$", fontsize=20, labelpad=-10, weight = "bold")
+    ax.set_ylabel("IACT", fontsize=15, weight = "bold")
     ax.set_xscale("log")
     ax.set_yscale("log")
-    plt.legend()
+    legend_properties = {'weight':'bold'}
+    plt.legend(prop=legend_properties)
     #ax.set_ylim(0.17e5, 0.8e7)
    
 
