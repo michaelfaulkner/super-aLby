@@ -246,9 +246,9 @@ class EventChainMediator(Mediator):
             piecewise trajectory (this may change at non-constant speed but we would have to check)."""
         # todo add functionality for greater than 1D particle space
         if dimensionality_of_particle_space == 1:
-            self._total_event_distance += displacement_distance[0]
+            self._total_event_distance += displacement_distance
             if hop_displacement:
-                self._state_space_displacement += hop_displacement[0]
+                self._state_space_displacement += hop_displacement
             if vetoing_index == (active_particle_index + 1) % number_of_particles:
                 self._index_space_displacement += 1
             elif vetoing_index == (active_particle_index - 1) % number_of_particles:
