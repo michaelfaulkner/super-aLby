@@ -52,8 +52,8 @@ class HardDiskFactorField(FactorField):
         vetoing_index = neg_neighbour_index if movement_direction > 0.0 else pos_neighbour_index
         # pressure = number_of_particles * temperature / (size_of_particle_space -
         #                                                2.0 * number_of_particles * self._disk_radius)
-        distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0, 1)) / self._prefactor * temperature
+        distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0)) / self._prefactor * temperature
         hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_index, 0]
-                                                         - positions[active_particle_index, 0])
+                                                         - positions[active_particle_index, 0])[0]
         return distance_to_next_factor_event, vetoing_index, hop_displacement
 

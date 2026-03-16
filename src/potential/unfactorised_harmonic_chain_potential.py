@@ -218,6 +218,8 @@ class UnfactorisedHarmonicChainPotential(EuclideanSubspacePotential):
     def _get_vetoing_index(self):
         rates = np.maximum(0, -self._gradients)
         total_rate = rates.sum()
+        if total_rate < 1.0e-10:
+            return np.random.choice(np.arange(len(self._gradients)))
         probs = rates / total_rate
         return np.random.choice(np.arange(len(self._gradients)), p=probs)
 
@@ -246,18 +248,18 @@ class UnfactorisedHarmonicChainPotential(EuclideanSubspacePotential):
         hop_displacement : numpy.ndarray
             Net displacement through state space from active to vetoing particle.
         """
-        active_particle_position = positions[active_particle_index].copy()
+        active_particle_position = positions[active_particle_index]
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(active_particle_index)
-        neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index].copy(),
-                                                          positions[pos_neighbour_index].copy())
+        neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index][0],
+                                                          positions[pos_neighbour_index][0])
 
         if active_particle_index == number_of_particles - 1:
-            pos_neighbour_position += size_of_particle_space
+            pos_neighbour_position += size_of_particle_space[0]
         elif active_particle_index == 0:
-            neg_neighbour_position -= size_of_particle_space
+            neg_neighbour_position -= size_of_particle_space[0]
 
         midpoint = (neg_neighbour_position + pos_neighbour_position) / 2.0
-        net_dist_to_eq = (midpoint - active_particle_position) * movement_direction
+        net_dist_to_eq = (midpoint - active_particle_position[0]) * movement_direction
         rand_net = -temperature * np.log(np.random.uniform(0.0, 1.0)) / (2.0 * self._potential_constant)
         if net_dist_to_eq > 0:
             distance_to_next_event = net_dist_to_eq + rand_net ** 0.5
@@ -272,7 +274,7 @@ class UnfactorisedHarmonicChainPotential(EuclideanSubspacePotential):
 
         vetoing_index = self._get_vetoing_index()
 
-        hop_displacement = positions[vetoing_index] - active_particle_position
+        hop_displacement = positions[vetoing_index][0] - active_particle_position[0]
 
         return distance_to_next_event, vetoing_index, hop_displacement
 

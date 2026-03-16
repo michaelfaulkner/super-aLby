@@ -297,7 +297,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
             vetoing_particle_index = (active_particle_index + 1) % number_of_particles if movement_direction > 0 else (
                     (active_particle_index - 1) % number_of_particles)
             vetoing_particle_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index]
-                                                                          - positions[active_particle_index])
+                                                                          - positions[active_particle_index])[0]
             distance_to_next_event = np.abs(vetoing_particle_displacement) - 2.0 * self._disk_radius
             return distance_to_next_event, vetoing_particle_index, vetoing_particle_displacement
         self.pointer_hop_distance = 0.0
