@@ -15,8 +15,8 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         U = prefactor * sum(x_tilde[i] ** 2) / 2 and subject to the constraint sum(x_tilde[i]) = L.
     """
 
-    def __init__(self, prefactor: float = 1.0, equilibrium_length: float = 0.0, use_cell_veto: bool = False,
-                 cell_veto_horizon: float = None):
+    def __init__(self, prefactor: float = 1.0, equilibrium_length: float = 0.0, use_cell_horizon: bool = False,
+                 cell_horizon: float = None):
         """
         The constructor of the HarmonicChainPotential class.
 
@@ -26,9 +26,9 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             The prefactor k of the potential.
         equilibrium_length : float
             The separation of particles associated with the minimum of the potential.
-        use_cell_veto : bool
-            Determines whether to use cell veto method.
-        cell_veto_horizon : float
+        use_cell_horizon : bool
+            Determines whether to use cell horizon method.
+        cell_horizon : float
             Horizon over which to measure maximum potential gradient.
 
         Raises
@@ -39,9 +39,9 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         super().__init__(prefactor=prefactor)
         self._potential_constant = 0.5 * prefactor
         self._equilibrium_length = equilibrium_length
-        self._use_cell_veto = use_cell_veto
-        if use_cell_veto:
-            self._cell_veto_horizon = np.array([cell_veto_horizon])
+        self._use_cell_horizon = use_cell_horizon
+        if use_cell_horizon:
+            self._cell_horizon = np.array([cell_horizon])
         if len(size_of_particle_space) > 1:
             raise ConfigurationError(f'{self.__class__.__name__} only supports 1D space. Provided: '
                                      f'{len(size_of_particle_space)}')
@@ -227,11 +227,17 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         elif active_particle_index == 0:
             neg_neighbour_position -= size_of_particle_space
 
-        if self._use_cell_veto:
-            active_particle_position += self._cell_veto_horizon * movement_direction
+        if self._use_cell_horizon:
+            active_particle_position += self._cell_horizon * movement_direction
             max_pos_grad, max_neg_grad = self.get_single_particle_gradient(positions, active_particle_index,
                                                                            movement_direction)
-            active_particle_position -= self._cell_veto_horizon * movement_direction
+            active_particle_position -= self._cell_horizon * movement_direction
+            if movement_direction > 0.0:
+                max_pos_grad += self._equilibrium_length
+                max_neg_grad -= self._equilibrium_length
+            else:
+                max_pos_grad -= self._equilibrium_length
+                max_neg_grad += self._equilibrium_length
 
             max_rate_pos = np.maximum(0.0, movement_direction * max_pos_grad)
             max_rate_neg = np.maximum(0.0, movement_direction * max_neg_grad)
@@ -240,18 +246,29 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
                     -np.log(np.random.uniform(0.0, 1.0)) / max_rate_pos)
             candidate_distance_to_next_factor_event_neg = np.inf if max_rate_neg < 1e-12 else (
                     -np.log(np.random.uniform(0.0, 1.0)) / max_rate_neg)
+
+            if max_rate_pos < 1e-12 and max_rate_neg < 1e-12:
+                return self._cell_horizon.copy(), active_particle_index, self._cell_horizon.copy()
+
             candidate_distance_to_next_factor_event, vetoing_index, max_rate = (
                 min((candidate_distance_to_next_factor_event_pos, pos_neighbour_index, max_rate_pos),
                     (candidate_distance_to_next_factor_event_neg, neg_neighbour_index, max_rate_neg)))
 
-            if candidate_distance_to_next_factor_event > self._cell_veto_horizon:
+            if candidate_distance_to_next_factor_event > self._cell_horizon:
                 shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
-                    self._cell_veto_horizon.copy(), active_particle_index, 0.0)
+                    self._cell_horizon.copy(), active_particle_index, self._cell_horizon.copy())
+
             else:
                 active_particle_position += candidate_distance_to_next_factor_event * movement_direction
                 actual_pos_grad, actual_neg_grad = self.get_single_particle_gradient(positions, active_particle_index,
                                                                                      movement_direction)
                 active_particle_position -= candidate_distance_to_next_factor_event * movement_direction
+                if movement_direction > 0.0:
+                    actual_pos_grad += self._equilibrium_length
+                    actual_neg_grad -= self._equilibrium_length
+                else:
+                    actual_pos_grad -= self._equilibrium_length
+                    actual_neg_grad += self._equilibrium_length
 
                 if vetoing_index == pos_neighbour_index:
                     actual_rate = np.maximum(0.0, movement_direction * actual_pos_grad)
@@ -263,7 +280,8 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
                     hop_displacement = positions[vetoing_index] - active_particle_position
                 else:
                     shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
-                        candidate_distance_to_next_factor_event, active_particle_index, 0.0)
+                        candidate_distance_to_next_factor_event, active_particle_index,
+                        candidate_distance_to_next_factor_event)
 
         else:
             neg_dist_to_eq, pos_dist_to_eq = (neg_neighbour_position + self._equilibrium_length -
@@ -340,11 +358,9 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         elif single_particle_index == 0:
             neg_neighbour_position -= size_of_particle_space
 
-        pos_multiplier, neg_multiplier = (1, -1) if movement_direction > 0.0 else (-1, 1)
-        pos_gradient_value = (single_particle_position - pos_neighbour_position + pos_multiplier *
-                              self._equilibrium_length)
-        neg_gradient_value = (single_particle_position - neg_neighbour_position + neg_multiplier *
-                              self._equilibrium_length)
+        # pos_multiplier, neg_multiplier = (1, -1) if movement_direction > 0.0 else (-1, 1)
+        pos_gradient_value = (single_particle_position - pos_neighbour_position)
+        neg_gradient_value = (single_particle_position - neg_neighbour_position)
 
         return 2.0 * self._potential_constant * pos_gradient_value, 2.0 * self._potential_constant * neg_gradient_value
 
