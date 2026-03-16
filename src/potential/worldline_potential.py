@@ -242,9 +242,6 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
                     intermediate_position = initial_position
                 initial_action = 0.5 * (self._mass / self._timestep) * (intermediate_position - neighbour_position) ** 2
                 final_action = uphill_energy + initial_action
-                #roots = np.roots([0.5 * self._mass / self._timestep, -(self._mass / self._timestep)
-                                   # * neighbour_position, (0.5 * self._mass / self._timestep) * neighbour_position ** 2
-                                   # - final_action])
                 roots = self._analytic_kinetic_term_roots(neighbour_position, final_action)
                 final_position = self._get_final_position_of_single_well_event(movement_direction, roots)
                 distance_to_candidate_kinetic_event = np.abs(final_position - initial_position)
@@ -312,18 +309,35 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             The value of the final action for the kinetic term at this event time
         Returns
         -------
-            ndarray containing both roots of the equqation
+            ndarray containing both roots of the equation
 
         """
-        roots = np.zeros(2)
-        
         a = 0.5 * self._mass / self._timestep
         b = - self._mass / self._timestep * neighbour_position
         c = a * neighbour_position**2 - final_action
+        return self._get_quadratic_roots(a, b, c)
 
-        roots[0] = (-b + np.emath.sqrt(b**2 - 4 * a * c)) / (2 * a)
-        roots[1] = (-b - np.emath.sqrt(b**2 - 4 * a * c)) / (2 * a)
+    @staticmethod
+    def _get_quadratic_roots(a, b, c):
+        """
+        Returns the two roots of the quadratic equation a*x^2 + b*x + c = 0.
 
+        Parameters
+        ----------
+        a : float
+            Coefficient of the quadratic term.
+        b : float
+            Coefficient of the linear term.
+        c : float
+            Coefficient of the constant term.
+        Returns
+        -------
+            ndarray containing both roots of the quadratic equation
+
+        """
+        roots = np.zeros(2)
+        roots[0] = (-b + np.emath.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+        roots[1] = (-b - np.emath.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
         return roots
 
     @staticmethod
