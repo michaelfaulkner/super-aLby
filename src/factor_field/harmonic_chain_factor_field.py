@@ -22,7 +22,7 @@ class HarmonicChainFactorField(FactorField):
         Raises
         ------
         base.exceptions.ConfigurationError
-            If prefactor is not greater than 0.0.
+            If prefactor is less than 0.0.
         """
         super().__init__(prefactor)
         self._prefactor = prefactor
@@ -52,6 +52,8 @@ class HarmonicChainFactorField(FactorField):
         hop_displacement : numpy.ndarray
             Net displacement through state space from active to vetoing particle.
         """
+        if self._prefactor < 1.0e-10:
+            return np.inf, None, None
         neg_neighbour_index, pos_neighbour_index = ((active_particle_index - 1) % number_of_particles,
                                                     (active_particle_index + 1) % number_of_particles)
         vetoing_index = pos_neighbour_index if movement_direction > 0.0 else neg_neighbour_index
