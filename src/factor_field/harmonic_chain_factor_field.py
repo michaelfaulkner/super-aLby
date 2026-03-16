@@ -59,12 +59,12 @@ class HarmonicChainFactorField(FactorField):
         vetoing_index = pos_neighbour_index if movement_direction > 0.0 else neg_neighbour_index
         distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0, 1)) / self._prefactor * temperature
 
-        active_particle_position = positions[active_particle_index].copy()
-        vetoing_particle_position = positions[vetoing_index].copy()
+        active_particle_position = positions[active_particle_index][0]
+        vetoing_particle_position = positions[vetoing_index][0]
         if active_particle_index == number_of_particles - 1 and vetoing_index == 0:
-            vetoing_particle_position += size_of_particle_space
+            vetoing_particle_position += size_of_particle_space[0]
         elif active_particle_index == 0 and vetoing_index == number_of_particles - 1:
-            vetoing_particle_position -= size_of_particle_space
+            vetoing_particle_position -= size_of_particle_space[0]
 
         return distance_to_next_factor_event, vetoing_index, vetoing_particle_position - active_particle_position
 
