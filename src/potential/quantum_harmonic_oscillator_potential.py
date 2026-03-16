@@ -190,8 +190,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             roots = self._get_harmonic_potential_roots(final_action)
         else:
             roots = self._get_anharmonic_potential_roots(final_action)
-        #roots = np.roots([self._timestep * self._anharmonicity, 0.0, 
-                        #  0.5 * self._mass * self._timestep * self._omega_squared, 0.0, -final_action])
+       
         
         if self._anharmonicity > 0.0 > self._omega_squared:
             if np.isreal(roots).all():
@@ -207,8 +206,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
                     bottom_of_well *= -1
                     intermediate_position = bottom_of_well
                     final_action -= remaining_barrier_height
-                    roots = np.roots([self._timestep * self._anharmonicity, 0.0, 
-                            0.5 * self._mass * self._timestep * self._omega_squared, 0.0, -final_action])
+                    roots = self._get_anharmonic_potential_roots(final_action)
                     if np.isreal(roots).all():
                         final_position = self._get_final_position_of_non_tunnel_event(intermediate_position,
                                                                                       movement_direction, roots)
