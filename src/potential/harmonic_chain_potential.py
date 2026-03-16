@@ -229,9 +229,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
 
         if self._use_cell_horizon:
             active_particle_position += self._cell_horizon * movement_direction
-            max_pos_grad, max_neg_grad = self.get_single_particle_gradient(positions, active_particle_index,
-                                                                           movement_direction)
-
+            max_pos_grad, max_neg_grad = self._get_single_particle_gradient(positions, active_particle_index)
             active_particle_position -= self._cell_horizon * movement_direction
             if movement_direction > 0.0:
                 max_pos_grad += self._equilibrium_length
@@ -261,8 +259,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
 
             else:
                 active_particle_position += candidate_distance_to_next_factor_event * movement_direction
-                actual_pos_grad, actual_neg_grad = self.get_single_particle_gradient(positions, active_particle_index,
-                                                                                     movement_direction)
+                actual_pos_grad, actual_neg_grad = self._get_single_particle_gradient(positions, active_particle_index)
                 active_particle_position -= candidate_distance_to_next_factor_event * movement_direction
                 if movement_direction > 0.0:
                     actual_pos_grad += self._equilibrium_length
@@ -331,7 +328,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         """
         return veto_index, movement_direction
 
-    def get_single_particle_gradient(self, positions, single_particle_index, movement_direction=1.0):
+    def _get_single_particle_gradient(self, positions, single_particle_index):
         """
         Returns the gradient of the potential for a single particle position.
 
@@ -342,8 +339,6 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             is a float and represents one Cartesian component of the position of a single particle.
         single_particle_index : int
             Index of particle in positions array to evaluate the gradient of the potential with respect to.
-        movement_direction : float
-            The direction of motion of the active particle.
 
         Returns
         -------
