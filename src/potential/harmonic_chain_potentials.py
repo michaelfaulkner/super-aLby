@@ -8,7 +8,7 @@ from model_settings import size_of_particle_space, number_of_particles
 class HarmonicChainPotentials(EuclideanSubspacePotential, metaclass=ABCMeta):
     """
     This class provides harmonic-chain functionality that is common to both HarmonicChainPotential and
-        UnfoactorisedHarmonicChainPotential.
+        UnfactorisedHarmonicChainPotential.
     """
 
     def __init__(self, prefactor: float = 1.0, equilibrium_length: float = 0.0):
