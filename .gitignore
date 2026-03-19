@@ -85,6 +85,9 @@ env/
 vals.txt
 vals1.txt
 
+#VSCode
+.vscode/
+
 # helper filesfor HPC
 src/generate_bash_scripts.py
 src/generate_configs.py
