@@ -79,11 +79,13 @@ struct next_event get_next_kinetic_event(int active_particle_index, int number_o
             intermediate_position = bottom_of_well;
         }
         else {
+
             intermediate_position = initial_position;
         }
 
         double initial_action = 0.5 * (mass / timestep) * pow((intermediate_position - neighbour_position), 2);
         double final_action = uphill_energy + initial_action;
+        std::cout << "final_action = " << final_action << std::endl;
 
         double a = 0.5 * mass / timestep;
         double b = - mass / timestep * neighbour_position;
@@ -91,14 +93,19 @@ struct next_event get_next_kinetic_event(int active_particle_index, int number_o
 
         std::array<std::complex<double>, 2> roots_arr; //pointer to adress of roots array returned from root-finding 
         roots_arr = get_quadratic_roots(a, b, c);
+  
+
 
         std::array<double, 2> quadratic_roots;
         for(int i = 0; i < 2; i++){
             quadratic_roots.at(i) = real(roots_arr.at(i));
         }
-        double final_position = get_final_position_of_single_well_event(movement_direction, quadratic_roots);
 
-        double distance_to_candidate_kinetic_event = abs(final_position - initial_position);
+        double final_position = get_final_position_of_single_well_event(movement_direction, quadratic_roots);
+        std::cout << "final_position = " << final_position << std::endl;
+
+
+        double distance_to_candidate_kinetic_event = std::abs((final_position - initial_position));
         std::cout << "candidate kinetic event dist = " << distance_to_candidate_kinetic_event << std::endl;
 
 
@@ -167,6 +174,8 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
     double initial_action = 0.5 * mass * timestep * omega_squared * pow(intermediate_position, 2)
                             + timestep * anharmonicity * pow(intermediate_position, 4);
     double final_action = uphill_energy + initial_action;
+    std::cout << "final_action = " << final_action << std::endl;
+
 
     std::vector<std::complex<double>> roots_vect; 
     if(anharmonicity == 0){
@@ -198,6 +207,8 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
                 bottom_of_well *= -1;
                 intermediate_position = bottom_of_well;
                 final_action -= remaining_barrier_height;
+                std::cout << "final_action = " << final_action << std::endl;
+
                 roots_vect = get_anharmonic_potential_roots(mass, timestep, anharmonicity, omega_squared, final_action);
                 bool real_roots = check_all_roots_real(roots_vect);
                 std::vector<double> real_roots_arr = get_real_elements(roots_vect);
@@ -216,7 +227,7 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
         //std::cout << "line 211 passed std::vector<double> real_roots_arr to get_final_position_of_single_well_event()" << std::endl;
         final_position = get_final_position_of_single_well_event(movement_direction, real_roots_arr);
     }
-    double distance_to_next_factor_event = abs(final_position - initial_position);
+    double distance_to_next_factor_event = std::abs(final_position - initial_position);
     std::cout << "distance to next potential event " << distance_to_next_factor_event << std::endl;
     std::cout << "distance to next kinetic event " << next_kinetic_event.shortest_distance_to_next_event << std::endl;
 
@@ -232,7 +243,7 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
 }
 
 double get_barrier_height(double position, double timestep, double mass, double anharmonicity, double omega_squared){
-  return abs(-(timestep * anharmonicity * pow(position, 4) + 0.5 * mass * timestep * omega_squared * pow(position, 2)));
+  return std::abs(-(timestep * anharmonicity * pow(position, 4) + 0.5 * mass * timestep * omega_squared * pow(position, 2)));
 }
 
 std::vector<double> get_real_elements(std::vector<std::complex<double>> complex_arr){
