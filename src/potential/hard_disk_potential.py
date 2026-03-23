@@ -296,12 +296,10 @@ class HardDiskPotential(EuclideanSubspacePotential):
         if dimensionality_of_particle_space == 1:
             vetoing_particle_index = (active_particle_index + 1) % number_of_particles if movement_direction > 0 else (
                     (active_particle_index - 1) % number_of_particles)
-            distance_to_next_event = get_shortest_vectors_on_torus(
-                (positions[vetoing_particle_index, 0] - positions[active_particle_index, 0])) - 2.0 * self._disk_radius
-            hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index]
-                                                             - positions[active_particle_index])
-            return distance_to_next_event, vetoing_particle_index, hop_displacement
-        # todo fix bug in 2D hard-disk code that appeared after correcting EventChainMediator structure
+            vetoing_particle_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index]
+                                                                          - positions[active_particle_index])[0]
+            distance_to_next_event = np.abs(vetoing_particle_displacement) - 2.0 * self._disk_radius
+            return distance_to_next_event, vetoing_particle_index, vetoing_particle_displacement
         self.pointer_hop_distance = 0.0
         active_particle_position = positions[active_particle_index]
         if self.cell_boundary_event:
