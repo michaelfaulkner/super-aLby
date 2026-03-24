@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <array>
 #include <vector>
+#include "get_next_event.hpp"
+#include <pybind11/pybind11.h>
 
 struct next_event{
   double shortest_distance_to_next_event;
