@@ -1,4 +1,6 @@
-
+#include <vector>
+#include <complex>
+#include <array>
 
 // function declarations
 double get_barrier_height(double position, double timestep, double mass, double anharmonicity, double omega_squared);
