@@ -217,7 +217,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         hop_displacement : numpy.ndarray
             Net displacement through state space from active to vetoing particle.
         """
-        active_particle_position = positions[active_particle_index]
+        active_particle_position = positions[active_particle_index][0]
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(active_particle_index)
         neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index][0],
                                                           positions[pos_neighbour_index][0])
@@ -242,9 +242,9 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
             max_rate_neg = np.maximum(0.0, movement_direction * max_neg_grad)
 
             candidate_distance_to_next_factor_event_pos = np.inf if max_rate_pos < 1e-12 else (
-                    -np.log(np.random.uniform(0.0, 1.0)) / max_rate_pos)
+                    -np.log(np.random.uniform(0.0, 1.0)) * temperature / max_rate_pos)
             candidate_distance_to_next_factor_event_neg = np.inf if max_rate_neg < 1e-12 else (
-                    -np.log(np.random.uniform(0.0, 1.0)) / max_rate_neg)
+                    -np.log(np.random.uniform(0.0, 1.0)) * temperature / max_rate_neg)
 
             if max_rate_pos < 1e-12 and max_rate_neg < 1e-12:
                 return self._cell_horizon, active_particle_index, self._cell_horizon
