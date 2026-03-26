@@ -162,6 +162,13 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
                                 self._get_east_worldline_neighbour(active_particle_index)]
 
+        # print(f"passing: active_particle_index = {active_particle_index}, number_of_quantum_particles = {number_of_quantum_particles} \n \
+        # number_of_timeslices = {number_of_timeslices}, active_particle_position = {positions[active_particle_index].item()} \n \
+        # east_neighbour_position = {positions[worldline_neighbours[1]].item()}, west_neighbour_position = {positions[worldline_neighbours[0]].item()} \n \
+        # mass = {self._mass}, timestep = {self._timestep}, movement_direction = { movement_direction} \n \
+        # anharmonicity = {self._anharmonicity}, omega_squared = {self._omega_squared} \n \
+        # magnitude_of_double_well_position = {self._magnitude_of_double_well_position} \n \
+        # ------------------------------------------------------------------------------------------------------------")
         event = c_imp_get_next_event.get_next_event(active_particle_index, number_of_quantum_particles,
                                                     number_of_timeslices, positions[active_particle_index].item(),
                                                     positions[worldline_neighbours[1]].item(),

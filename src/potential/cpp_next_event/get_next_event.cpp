@@ -44,14 +44,14 @@ struct next_event get_next_kinetic_event(int active_particle_index, int number_o
     double active_particle_position, double east_neighbour_position, double west_neighbour_position, double mass,
     double timestep, int movement_direction){
 
-    struct next_event e;
+    struct next_event proposed_kinetic_event;
     
-    double shortest_distance_to_next_kinetic_event = 1.0e10;
-    e.shortest_distance_to_next_event = 1.0e10;
-    e.vetoing_index = 0;
+ 
+    proposed_kinetic_event.shortest_distance_to_next_event = 1.0e10;
+    proposed_kinetic_event.vetoing_index = 0;
 
 
-    int vetoing_index = 0;
+
     double initial_position = active_particle_position;
     for (int neighbour = 0; neighbour < 2; neighbour++){
         std::minstd_rand gen(std::random_device{}());
@@ -93,7 +93,7 @@ struct next_event get_next_kinetic_event(int active_particle_index, int number_o
         double b = - mass / timestep * neighbour_position;
         double c = a * pow(neighbour_position, 2) - final_action;
 
-        std::array<std::complex<double>, 2> roots_arr; //pointer to adress of roots array returned from root-finding 
+        std::array<std::complex<double>, 2> roots_arr; 
         roots_arr = get_quadratic_roots(a, b, c);
   
 
@@ -110,20 +110,34 @@ struct next_event get_next_kinetic_event(int active_particle_index, int number_o
         double distance_to_candidate_kinetic_event = std::abs((final_position - initial_position));
         //std::cout << "candidate kinetic event dist = " << distance_to_candidate_kinetic_event << std::endl;
 
-
-        double shortest_distance_to_next_kinetic_event;
-        if (distance_to_candidate_kinetic_event < shortest_distance_to_next_kinetic_event){
-            e.shortest_distance_to_next_event = distance_to_candidate_kinetic_event;
-            e.vetoing_index = possible_veto;
+        
+        if (distance_to_candidate_kinetic_event < proposed_kinetic_event.shortest_distance_to_next_event){
+            proposed_kinetic_event.shortest_distance_to_next_event = distance_to_candidate_kinetic_event;
+            proposed_kinetic_event.vetoing_index = possible_veto;
         } 
     }
-  return e;
+  return proposed_kinetic_event;
 
 }
 
 struct next_event get_next_event(int active_particle_index, int number_of_quantum_particles, int number_of_timeslices, 
     double active_particle_position, double east_neighbour_position, double west_neighbour_position, double mass,
     double timestep, int movement_direction, double anharmonicity, double omega_squared, double magnitude_of_double_well_position){
+    
+
+    // std::cout << "recieved int active_particle_index = " << active_particle_index << ", int number_of_quantum_particles = " <<
+    // number_of_quantum_particles << std::endl;
+    // std::cout << ", int number_of_timeslices = " << number_of_timeslices << ", double active_particle_position = " << active_particle_position <<
+    // std::endl;
+    // std::cout << ", double east_neighbour_position = " << east_neighbour_position << ", double west_neighbour_position = " <<
+    // west_neighbour_position << std::endl;
+    // std::cout << ", double mass = " << mass << ", double timestep = " << timestep << std::endl;
+    // std::cout << ", int movement_direction = " << movement_direction << ", double anharmonicity = " << 
+    // anharmonicity << std::endl;
+    // std::cout << ",  double omega_squared = " << omega_squared << ", double magnitude_of_double_well_position = " <<
+    // magnitude_of_double_well_position << std::endl;
+
+
 
     struct next_event next_kinetic_event ;
     next_kinetic_event = get_next_kinetic_event(active_particle_index, number_of_quantum_particles, number_of_timeslices, 
@@ -152,7 +166,13 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
     }
     else{
         if(initial_position != 0.0){
-            bottom_of_well = magnitude_of_double_well_position * (initial_position / initial_position);
+            if(initial_position < 0.0){
+                bottom_of_well = -magnitude_of_double_well_position;
+            }
+            else{
+                bottom_of_well = magnitude_of_double_well_position;
+            }
+            //bottom_of_well = magnitude_of_double_well_position * (initial_position / std::abs(initial_position));
         }
         else{
             if(movement_direction > 0){
@@ -189,7 +209,7 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
     }
     double final_position;
 
-    if(anharmonicity > 0.0 > omega_squared){
+    if(anharmonicity > 0.0 && 0.0 > omega_squared){
         bool real_roots = check_all_roots_real(roots_vect);
         if(real_roots){
             std::vector<double> real_roots_arr = get_real_elements(roots_vect);
@@ -233,12 +253,10 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
     //std::cout << "distance to next potential event " << distance_to_next_factor_event << std::endl;
     //std::cout << "distance to next kinetic event " << next_kinetic_event.shortest_distance_to_next_event << std::endl;
 
-    next_potential_event.shortest_distance_to_next_event = distance_to_next_factor_event;
-    next_potential_event.vetoing_index = active_particle_index;
 
     if(next_potential_event.shortest_distance_to_next_event < next_kinetic_event.shortest_distance_to_next_event){
-        shortest_event.shortest_distance_to_next_event = next_potential_event.shortest_distance_to_next_event;
-        shortest_event.vetoing_index = next_potential_event.vetoing_index;
+        shortest_event.shortest_distance_to_next_event = distance_to_next_factor_event;
+        shortest_event.vetoing_index = active_particle_index;
     }
 
     return shortest_event;
@@ -257,7 +275,7 @@ std::vector<double> get_real_elements(std::vector<std::complex<double>> complex_
    // std::cout << std::endl;
 
     std::vector<double> real_arr;
-    for(int i = 0; i < complex_arr.size(); i++){
+    for(long unsigned int i = 0; i < complex_arr.size(); i++){
         std::complex<double> ith_root = complex_arr.at(i);
         if(ith_root.imag() == 0.0){
             real_arr.push_back(ith_root.real());
@@ -275,6 +293,7 @@ std::vector<double> get_real_elements(std::vector<std::complex<double>> complex_
 }
 
 double get_final_position_of_non_tunnel_event(double position, int movement_direction, std::vector<double> roots){
+
     std::sort(roots.begin(), roots.end());
 
     if(position < 0.0){
