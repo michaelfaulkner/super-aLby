@@ -11,13 +11,15 @@ double get_final_position_of_non_tunnel_event(double position, int movement_dire
 
 bool check_all_roots_real(std::vector<std::complex<double>> roots);
 
-std::vector<std::complex<double>>  get_harmonic_potential_roots(double mass, double timestep, double omega_squared,
+std::vector<double>  get_harmonic_potential_roots(double mass, double timestep, double omega_squared,
                                                                     double final_action);
 
 std::vector<std::complex<double>> get_anharmonic_potential_roots(double mass, double timestep, double anharmonicity,
                                                                         double omega_squared, double final_action);
 
 std::array<std::complex<double>, 2> get_quadratic_roots(double a, double b, double c);
+
+std::array<double, 2> get_real_quadratic_roots(double a, double b, double c);
 
 double get_final_position_of_single_well_event(int movement_direction, std::array<double, 2> roots);
 

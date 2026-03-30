@@ -21,7 +21,7 @@ struct next_event get_next_kinetic_event(int active_particle_index, int number_o
 
     struct next_event proposed_kinetic_event;
 
-    double shortest_distance_to_next_kinetic_event = 1.0e10;
+    double shortest_distance_to_next_kinetic_event = 1.0e+10;
     int vetoing_index = 0;
 
 
@@ -62,19 +62,13 @@ struct next_event get_next_kinetic_event(int active_particle_index, int number_o
         //std::cout << "final_action = " << final_action << std::endl;
 
         double a = 0.5 * mass / timestep;
-        double b = - mass / timestep * neighbour_position;
+        double b = - (mass / timestep) * neighbour_position;
         double c = a * pow(neighbour_position, 2) - final_action;
 
-        std::array<std::complex<double>, 2> roots_arr; 
-        roots_arr = get_quadratic_roots(a, b, c);
-  
+        std::array<double, 2> roots_arr; 
+        roots_arr = get_real_quadratic_roots(a, b, c);
 
-        std::array<double, 2> quadratic_roots;
-        for(int i = 0; i < 2; i++){
-            quadratic_roots.at(i) = real(roots_arr.at(i));
-        }
-
-        double final_position = get_final_position_of_single_well_event(movement_direction, quadratic_roots);
+        double final_position = get_final_position_of_single_well_event(movement_direction, roots_arr);
         //std::cout << "final_position = " << final_position << std::endl;
 
 
@@ -169,10 +163,10 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
     //std::cout << "final_action = " << final_action << std::endl;
 
 
+    std::vector<double> real_roots_vect;
     std::vector<std::complex<double>> roots_vect; 
-    if(anharmonicity == 0){
-        
-        roots_vect = get_harmonic_potential_roots(mass, timestep, omega_squared, final_action);
+    if(anharmonicity == 0){ 
+        real_roots_vect = get_harmonic_potential_roots(mass, timestep, omega_squared, final_action);
     }
     else{
         roots_vect = get_anharmonic_potential_roots(mass, timestep, anharmonicity, omega_squared, final_action);
@@ -215,9 +209,9 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
         }
     }
     else{
-        std::vector<double> real_roots_arr = get_real_elements(roots_vect);
+        //std::vector<double> real_roots_arr = get_real_elements(roots_vect);
         //std::cout << "line 211 passed std::vector<double> real_roots_arr to get_final_position_of_single_well_event()" << std::endl;
-        final_position = get_final_position_of_single_well_event(movement_direction, real_roots_arr);
+        final_position = get_final_position_of_single_well_event(movement_direction, real_roots_vect);
     }
     double distance_to_next_factor_event = std::abs(final_position - initial_position);
     //std::cout << "distance to next potential event " << distance_to_next_factor_event << std::endl;
@@ -227,7 +221,7 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
     next_potential_event.shortest_distance_to_next_event = distance_to_next_factor_event;
     next_potential_event.vetoing_index = active_particle_index;
 
-    if(next_potential_event.shortest_distance_to_next_event < next_kinetic_event.shortest_distance_to_next_event){
+    if(next_potential_event.shortest_distance_to_next_event < shortest_event.shortest_distance_to_next_event){
         shortest_event.shortest_distance_to_next_event = distance_to_next_factor_event;
         shortest_event.vetoing_index = active_particle_index;
     }
@@ -299,15 +293,15 @@ bool check_all_roots_real(std::vector<std::complex<double>> roots){
     return real_roots;
 }
 
-std::vector<std::complex<double>>  get_harmonic_potential_roots(double mass, double timestep, double omega_squared, double final_action){
+std::vector<double>  get_harmonic_potential_roots(double mass, double timestep, double omega_squared, double final_action){
   
-    std::array<std::complex<double>, 2> roots; 
+    std::array<double, 2> roots; 
     double a = 0.5 * mass * timestep * omega_squared;
     double b = 0.0;
     double c = -final_action;
 
-    roots = get_quadratic_roots(a, b, c);
-    std::vector<std::complex<double>> roots_vect(roots.begin(), roots.end());
+    roots = get_real_quadratic_roots(a, b, c);
+    std::vector<double> roots_vect(roots.begin(), roots.end());
 
     return roots_vect;
 }
@@ -338,6 +332,16 @@ std::array<std::complex<double>, 2> get_quadratic_roots(double a, double b, doub
     // complex type because we could sqrt a -ve number here
     std::array<std::complex<double>, 2> roots; 
     std::complex<double> discriminant = pow(b, 2) - 4 * a * c;
+    roots.at(0) = (-b + std::sqrt(discriminant)) / (2 * a);
+    roots.at(1) = (-b - std::sqrt(discriminant)) / (2 * a);
+
+    return roots;
+}
+
+std::array<double, 2> get_real_quadratic_roots(double a, double b, double c){
+
+    std::array<double, 2> roots; 
+    double discriminant = pow(b, 2) - 4 * a * c;
     roots.at(0) = (-b + std::sqrt(discriminant)) / (2 * a);
     roots.at(1) = (-b - std::sqrt(discriminant)) / (2 * a);
 
@@ -386,8 +390,17 @@ int get_east_worldline_neighbour(int lattice_site_index, int number_of_quantum_p
 }
 
 int get_west_worldline_neighbour(int lattice_site_index, int number_of_quantum_particles, int number_of_timeslices){
-    return (lattice_site_index - number_of_quantum_particles) %
-            (number_of_timeslices * number_of_quantum_particles);
+    // the result of a%b is calculated in C++ using truncate division:
+    //      r = a - b* trunc(a/b)
+    // whereaas is Python it is calcu
+    // the following corrects for the unexpected behaviour created by a%b, a<0
+    // when using truncate division
+    return (((lattice_site_index - number_of_quantum_particles) %
+            (number_of_timeslices * number_of_quantum_particles)) +
+             (number_of_timeslices * number_of_quantum_particles)) %
+              (number_of_timeslices * number_of_quantum_particles);
+
+    
 }
 
 int main() {
