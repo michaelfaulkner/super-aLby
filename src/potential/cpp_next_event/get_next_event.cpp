@@ -129,6 +129,8 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
         bottom_of_well = 0.0;
     }
     else{
+        //////////////////////////////////////////////////////////////
+        // vvvvvvvvvvvvvvvv
         if(initial_position != 0.0){
             if(initial_position < 0.0){
                 bottom_of_well = -magnitude_of_double_well_position;
@@ -147,6 +149,8 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
             }
         }
     }
+    // ^^^^^^^^^^^^^^^^
+    /////////////////////////////////////////////////////////////////////
 
     double intermediate_position;
     if ((movement_direction > 0  && initial_position < bottom_of_well)
@@ -168,11 +172,17 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
     if(anharmonicity == 0){ 
         real_roots_vect = get_harmonic_potential_roots(mass, timestep, omega_squared, final_action);
     }
+    ///////////////////////////////////////////////
+    // vvvvvvvvvvvvvvvvvvvv
     else{
         roots_vect = get_anharmonic_potential_roots(mass, timestep, anharmonicity, omega_squared, final_action);
     }
+    // ^^^^^^^^^^^^^^^^^^^^^
+    //////////////////////////////////////////////////
     double final_position;
 
+    ////////////////////////////////////////////////////////////////////
+    // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     if(anharmonicity > 0.0 && 0.0 > omega_squared){
         bool real_roots = check_all_roots_real(roots_vect);
         if(real_roots){
@@ -208,6 +218,8 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
             }
         }
     }
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    //////////////////////////////////////////////////////////////////
     else{
         //std::vector<double> real_roots_arr = get_real_elements(roots_vect);
         //std::cout << "line 211 passed std::vector<double> real_roots_arr to get_final_position_of_single_well_event()" << std::endl;
@@ -228,7 +240,8 @@ struct next_event get_next_event(int active_particle_index, int number_of_quantu
 
     return shortest_event;
 }
-
+////////////////////////////////////
+// vvvvvvvvvvv
 double get_barrier_height(double position, double timestep, double mass, double anharmonicity, double omega_squared){
   return std::abs(-(timestep * anharmonicity * pow(position, 4) + 0.5 * mass * timestep * omega_squared * pow(position, 2)));
 }
@@ -293,19 +306,22 @@ bool check_all_roots_real(std::vector<std::complex<double>> roots){
     return real_roots;
 }
 
+// ^^^^^^^^^^^^^^
+///////////////////////////////////
+
 std::vector<double>  get_harmonic_potential_roots(double mass, double timestep, double omega_squared, double final_action){
   
-    std::array<double, 2> roots; 
+    std::vector<double> roots_vect; 
     double a = 0.5 * mass * timestep * omega_squared;
     double b = 0.0;
     double c = -final_action;
 
-    roots = get_real_quadratic_roots(a, b, c);
-    std::vector<double> roots_vect(roots.begin(), roots.end());
-
+    roots_vect = get_real_quadratic_roots(a, b, c);
     return roots_vect;
 }
 
+///////////////////////////////////////////
+// vvvvvvvvvvvvvvvvvvvvvvvvvvv
 std::vector<std::complex<double>> get_anharmonic_potential_roots(double mass, double timestep, double anharmonicity,
                       double omega_squared, double final_action){
     std::array<std::complex<double>, 2> roots_ptr; 
@@ -327,7 +343,6 @@ std::vector<std::complex<double>> get_anharmonic_potential_roots(double mass, do
   
 }
 
-
 std::array<std::complex<double>, 2> get_quadratic_roots(double a, double b, double c){
     // complex type because we could sqrt a -ve number here
     std::array<std::complex<double>, 2> roots; 
@@ -337,10 +352,22 @@ std::array<std::complex<double>, 2> get_quadratic_roots(double a, double b, doub
 
     return roots;
 }
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//////////////////////////////////////
 
 std::array<double, 2> get_real_quadratic_roots(double a, double b, double c){
 
     std::array<double, 2> roots; 
+    double discriminant = pow(b, 2) - 4 * a * c;
+    roots.at(0) = (-b + std::sqrt(discriminant)) / (2 * a);
+    roots.at(1) = (-b - std::sqrt(discriminant)) / (2 * a);
+
+    return roots;
+}
+
+std::vector<double> get_real_quadratic_roots(double a, double b, double c){
+
+    std::vector<double> roots; 
     double discriminant = pow(b, 2) - 4 * a * c;
     roots.at(0) = (-b + std::sqrt(discriminant)) / (2 * a);
     roots.at(1) = (-b - std::sqrt(discriminant)) / (2 * a);
