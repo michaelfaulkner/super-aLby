@@ -8,7 +8,7 @@ import os
 import sample_getter
 import sys
 
-
+matplotlib.use('Agg')
 # Add the directory that contains the module plotting_functions to sys.path
 this_directory = os.path.dirname(os.path.abspath(__file__))
 src_directory = os.path.abspath(this_directory + "/../")
@@ -312,13 +312,14 @@ def main(config_file_string):
                                                  number_of_equilibration_iterations).flatten()
 
         sample_cdf = get_cumulative_distribution(sample)
-        iact = get_iact(sample)
-        ref_iact = get_iact(reference_sample)
+        #iact = get_iact(sample)
+        #ref_iact = get_iact(reference_sample)
+
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-',
-                 label=f'reference data\n IACT: {ref_iact:.3f}')
+                 label=f'reference data')#\n IACT: {ref_iact:.3f}')
         plt.plot(sample_cdf[0], sample_cdf[1], color='k', linewidth=2, linestyle='-',
-                 label=f'super-aLby data\n IACT: {iact:.3f}')
+                 label=f'super-aLby data')#\n IACT: {iact:.3f}')
         plt.xlabel(r"$x$", fontsize=15, labelpad=10)
         plt.ylabel(r"$ F_n \left( X < x \right)$", fontsize=15, labelpad=10)
         plt.tick_params(axis='both', which='major', labelsize=14, pad=10)

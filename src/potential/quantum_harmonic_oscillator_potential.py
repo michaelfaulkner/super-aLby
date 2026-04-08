@@ -161,6 +161,12 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         
         worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
                                 self._get_east_worldline_neighbour(active_particle_index)]
+        
+        self._kinetic_U_west = - np.log(np.random.uniform(0.0, 1.0))
+        self._kinetic_U_east = - np.log(np.random.uniform(0.0, 1.0))
+        self._potential_U = - np.log(np.random.uniform(0.0, 1.0))
+
+
 
         # print(f"passing: active_particle_index = {active_particle_index}, number_of_quantum_particles = {number_of_quantum_particles} \n \
         # number_of_timeslices = {number_of_timeslices}, active_particle_position = {positions[active_particle_index].item()} \n \
@@ -169,78 +175,81 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         # anharmonicity = {self._anharmonicity}, omega_squared = {self._omega_squared} \n \
         # magnitude_of_double_well_position = {self._magnitude_of_double_well_position} \n \
         # ------------------------------------------------------------------------------------------------------------")
-        event = c_imp_get_next_event.get_next_event(active_particle_index, number_of_quantum_particles,
+        event = c_imp_get_next_event.get_next_event(active_particle_index, worldline_neighbours[1], worldline_neighbours[0], number_of_quantum_particles,
                                                     number_of_timeslices, positions[active_particle_index].item(),
                                                     positions[worldline_neighbours[1]].item(),
                                                     positions[worldline_neighbours[0]].item(), self._mass, self._timestep,
                                                     movement_direction, self._anharmonicity, self._omega_squared,
-                                                    self._magnitude_of_double_well_position)
+                                                    self._magnitude_of_double_well_position, self._kinetic_U_west, self._kinetic_U_east, self._potential_U)
 
 
-        (shortest_distance_to_next_event, vetoing_index) = \
-            self._get_next_kinetic_event(positions, active_particle_index, movement_direction, worldline_neighbours)
-        """now consider the potential part of the action"""
-        initial_position = positions[active_particle_index].item()
-        uphill_energy = - np.log(np.random.uniform(0.0, 1.0))
+        # (shortest_distance_to_next_event, vetoing_index) = \
+        #     self._get_next_kinetic_event(positions, active_particle_index, movement_direction, worldline_neighbours)
+        # """now consider the potential part of the action"""
+        # initial_position = positions[active_particle_index].item()
+        # uphill_energy = self._potential_U  #- np.log(np.random.uniform(0.0, 1.0))
 
-        if self._anharmonicity == 0.0 or self._omega_squared == 0.0:
-            bottom_of_well = 0.0
-        else:
-            if initial_position != 0.0:
-                bottom_of_well = self._magnitude_of_double_well_position * np.sign(initial_position)
-            else:
-                if movement_direction > 0:
-                    bottom_of_well = self._magnitude_of_double_well_position
-                else:
-                    bottom_of_well = -self._magnitude_of_double_well_position
+        # if self._anharmonicity == 0.0 or self._omega_squared == 0.0:
+        #     bottom_of_well = 0.0
+        # else:
+        #     if initial_position != 0.0:
+        #         bottom_of_well = self._magnitude_of_double_well_position * np.sign(initial_position)
+        #     else:
+        #         if movement_direction > 0:
+        #             bottom_of_well = self._magnitude_of_double_well_position
+        #         else:
+        #             bottom_of_well = -self._magnitude_of_double_well_position
 
-        if ((movement_direction > 0 and initial_position < bottom_of_well) or 
-                (movement_direction < 0 and initial_position > bottom_of_well)):
-            """advance to the bottom of the potential well"""
-            intermediate_position = bottom_of_well
-        else:
-            intermediate_position = initial_position
+        # if ((movement_direction > 0 and initial_position < bottom_of_well) or 
+        #         (movement_direction < 0 and initial_position > bottom_of_well)):
+        #     """advance to the bottom of the potential well"""
+        #     intermediate_position = bottom_of_well
+        # else:
+        #     intermediate_position = initial_position
                 
-        initial_action = 0.5 * self._mass * self._timestep * self._omega_squared * intermediate_position ** 2 + \
-                        self._timestep * self._anharmonicity * intermediate_position ** 4
-        final_action = uphill_energy  + initial_action
+        # initial_action = 0.5 * self._mass * self._timestep * self._omega_squared * intermediate_position ** 2 + \
+        #                 self._timestep * self._anharmonicity * intermediate_position ** 4
+        # final_action = uphill_energy  + initial_action
 
-        if self._anharmonicity == 0.0:
-            roots = self._get_harmonic_potential_roots(final_action)
-        else:
-            roots = self._get_anharmonic_potential_roots(final_action)
+        # if self._anharmonicity == 0.0:
+        #     roots = self._get_harmonic_potential_roots(final_action)
+        # else:
+        #     roots = self._get_anharmonic_potential_roots(final_action)
 
-        if self._anharmonicity > 0.0 > self._omega_squared:
-            if np.isreal(roots).all():
-                final_position = self._get_final_position_of_non_tunnel_event(intermediate_position, movement_direction,
-                                                                              roots)
-            else:
-                if ((movement_direction > 0 and intermediate_position > 0.0) or
-                        (movement_direction < 0 and intermediate_position < 0.0)):
-                     final_position = self._get_final_position_of_single_well_event(movement_direction,
-                                                                                    roots[np.isreal(roots)])
-                else:
-                    remaining_barrier_height = self._get_barrier_height(intermediate_position)
-                    bottom_of_well *= -1
-                    intermediate_position = bottom_of_well
-                    final_action -= remaining_barrier_height
-                    roots = self._get_anharmonic_potential_roots(final_action)
-                    if np.isreal(roots).all():
-                        final_position = self._get_final_position_of_non_tunnel_event(intermediate_position,
-                                                                                      movement_direction, roots)
-                    else:
-                        final_position = self._get_final_position_of_single_well_event(movement_direction,
-                                                                                       roots[np.isreal(roots)])
-        else:
-            final_position = self._get_final_position_of_single_well_event(movement_direction, roots)
+        # if self._anharmonicity > 0.0 > self._omega_squared:
+        #     if np.isreal(roots).all():
+        #         final_position = self._get_final_position_of_non_tunnel_event(intermediate_position, movement_direction,
+        #                                                                       roots)
+        #     else:
+        #         if ((movement_direction > 0 and intermediate_position > 0.0) or
+        #                 (movement_direction < 0 and intermediate_position < 0.0)):
+        #              final_position = self._get_final_position_of_single_well_event(movement_direction,
+        #                                                                             roots[np.isreal(roots)])
+        #         else:
+        #             remaining_barrier_height = self._get_barrier_height(intermediate_position)
+        #             bottom_of_well *= -1
+        #             intermediate_position = bottom_of_well
+        #             final_action -= remaining_barrier_height
+        #             roots = self._get_anharmonic_potential_roots(final_action)
+        #             if np.isreal(roots).all():
+        #                 final_position = self._get_final_position_of_non_tunnel_event(intermediate_position,
+        #                                                                               movement_direction, roots)
+        #             else:
+        #                 final_position = self._get_final_position_of_single_well_event(movement_direction,
+        #                                                                                roots[np.isreal(roots)])
+        # else:
+        #     final_position = self._get_final_position_of_single_well_event(movement_direction, roots)
 
-        distance_to_next_factor_event = np.abs(final_position - initial_position)
+        # distance_to_next_factor_event = np.abs(final_position - initial_position)
+        # #print(f"py potential proposed: {distance_to_next_factor_event}, {active_particle_index}")
 
-        if distance_to_next_factor_event < shortest_distance_to_next_event:
-            shortest_distance_to_next_event = distance_to_next_factor_event
-            vetoing_index = active_particle_index
-
+        # if distance_to_next_factor_event < shortest_distance_to_next_event:
+        #     shortest_distance_to_next_event = distance_to_next_factor_event
+        #     vetoing_index = active_particle_index
+        #print(f"py accepted event : {shortest_distance_to_next_event}, {vetoing_index}")
+        #print(f"Python got {event.shortest_distance_to_next_event}, {event.vetoing_index}")
         return event.shortest_distance_to_next_event, event.vetoing_index, None
+       # return shortest_distance_to_next_event, vetoing_index, None
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """

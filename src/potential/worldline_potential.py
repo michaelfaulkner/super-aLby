@@ -229,9 +229,12 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         vetoing_index = None
         initial_position = positions[active_particle_index].item()
 
-        for worldline_neighbour in worldline_neighbours:
+        for i, worldline_neighbour in enumerate(worldline_neighbours):
             if worldline_neighbour != active_particle_index:
-                uphill_energy = - np.log(np.random.uniform(0, 1))
+                if i == 0:
+                    uphill_energy = self._kinetic_U_west #- np.log(np.random.uniform(0, 1))
+                else:
+                    uphill_energy = self._kinetic_U_east
                 neighbour_position = positions[worldline_neighbour].item()
                 bottom_of_well = neighbour_position
                 if ((movement_direction > 0 and initial_position < bottom_of_well) or
@@ -245,7 +248,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
                 roots = self._analytic_kinetic_term_roots(neighbour_position, final_action)
                 final_position = self._get_final_position_of_single_well_event(movement_direction, roots)
                 distance_to_candidate_kinetic_event = np.abs(final_position - initial_position)
-                
+                #print(f"py kinetic proposed: {distance_to_candidate_kinetic_event}, {worldline_neighbour}")
                 if distance_to_candidate_kinetic_event < shortest_distance_to_next_kinetic_event:
                     shortest_distance_to_next_kinetic_event = distance_to_candidate_kinetic_event
                     vetoing_index = worldline_neighbour
