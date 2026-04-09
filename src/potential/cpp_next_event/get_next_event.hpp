@@ -2,15 +2,17 @@
 #include <complex>
 
 
-struct next_event get_next_kinetic_event(int active_particle_index, int east_neighbour_index, int west_neighbour_index, int number_of_quantum_particles, int number_of_timeslices, 
-    double active_particle_position, double east_neighbour_position, double west_neighbour_position, double mass,
-    double timestep, int movement_direction, double U_west,
-    double U_east);
+struct next_event get_next_kinetic_event(int active_particle_index, int east_neighbour_index, int west_neighbour_index,
+    int number_of_quantum_particles, int number_of_timeslices, double active_particle_position,
+    double east_neighbour_position, double west_neighbour_position, double mass, double timestep,
+    int movement_direction, double uphill_energy_west, double uphill_energy_east);
 
-struct next_event get_next_event(int active_particle_index,  int east_neighbour_index, int west_neighbour_index, int number_of_quantum_particles, int number_of_timeslices, 
-    double active_particle_position, double east_neighbour_position, double west_neighbour_position, double mass,
-    double timestep, int movement_direction, double anharmonicity, double omega_squared, double magnitude_of_double_well_position,double U_west,
-    double U_east, double U_potential);
+struct next_event get_next_event(int active_particle_index,  int east_neighbour_index, int west_neighbour_index,
+    int number_of_quantum_particles, int number_of_timeslices, double active_particle_position,
+    double east_neighbour_position, double west_neighbour_position, double mass, double timestep,
+    int movement_direction, double anharmonicity, double omega_squared, double magnitude_of_double_well_position, 
+    double uphill_energy_west, double uphill_energy_east, double uphill_energy_potential);
+
 double get_barrier_height(double position, double timestep, double mass, double anharmonicity, double omega_squared);
 
 double get_barrier_height(double position, double timestep, double mass, double anharmonicity, double omega_squared);
@@ -21,7 +23,8 @@ double get_final_position_of_non_tunnel_event(double position, int movement_dire
 
 bool check_all_roots_real(std::vector<std::complex<double>> roots);
 
-std::vector<double> get_harmonic_potential_roots(double mass, double timestep, double omega_squared, double final_action);
+std::vector<double> get_harmonic_potential_roots(double mass, double timestep, double omega_squared,
+    double final_action);
 
 std::vector<std::complex<double>> get_anharmonic_potential_roots(double mass, double timestep, double anharmonicity,
                       double omega_squared, double final_action);
