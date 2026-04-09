@@ -312,8 +312,8 @@ def main(config_file_string):
                                                  number_of_equilibration_iterations).flatten()
 
         sample_cdf = get_cumulative_distribution(sample)
-        #iact = get_iact(sample)
-        #ref_iact = get_iact(reference_sample)
+        iact = get_iact(sample)
+        ref_iact = get_iact(reference_sample)
 
 
         plt.plot(reference_cdf[0], reference_cdf[1], color='r', linewidth=3, linestyle='-',

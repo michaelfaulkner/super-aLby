@@ -4,7 +4,7 @@ from .euclidean_subspace_potential import EuclideanSubspacePotential
 from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
 from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
-from model_settings import dimensionality_of_particle_space
+from model_settings import dimensionality_of_particle_space 
 
 
 class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
@@ -13,7 +13,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         of the system.
     """
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0, omega_squared: float = 1.0,
-                 timestep: float = 1.0, **kwargs):
+                 timestep: float = 1.0, cpp_implementation: bool = False, **kwargs):
         """
         The constructor of the WorldlinePotential class.
 
@@ -30,6 +30,8 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             The mass of the particle
         timestep : float
             The size of the time step
+        cpp_implementation : bool
+            Whether or not to use the C++ implementation of the get_next_event() function -- provides a large speedup.
         kwargs : Any
             Additional kwargs which are passed to the __init__ method of the next class in the MRO.
 
@@ -48,6 +50,9 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         self._lattice_dimensionality = lattice_dimensionality
         self._mass = mass
         self._timestep = timestep
+        self._cpp_implementation = cpp_implementation
+        if self._cpp_implementation: #TODO check if using ECMC
+            print(f"Using C++ implementation of get_next_event() for ECMC")
 
     def get_value(self, positions):
         """
@@ -116,6 +121,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         float
             The dimensionless-action difference.
         """
+  
         current_dimensionless_action = (
                 self._get_pairwise_dimensionless_action(
                     positions, self._get_west_worldline_neighbour(active_particle_index),
@@ -132,7 +138,8 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
                 self._get_pairwise_dimensionless_action(
                     positions, active_particle_index, candidate_position,
                     positions[self._get_east_worldline_neighbour(active_particle_index)]))
-        return candidate_dimensionless_action - current_dimensionless_action
+        
+        return (candidate_dimensionless_action - current_dimensionless_action)
 
     def _get_pairwise_dimensionless_action(self, positions, active_particle_index, position_at_active_particle_index,
                                            position_at_neighbouring_worldline_index):
@@ -177,8 +184,8 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         float
             The kinetic energy contribution to the pairwise dimensionless action.
         """
-        return 0.5 * self._mass * (
-                position_at_neighbouring_worldline_index - position_at_active_particle_index) ** 2 / self._timestep
+        return 0.5 * self._mass * \
+        (position_at_neighbouring_worldline_index - position_at_active_particle_index) ** 2 / self._timestep
     
     @abstractmethod
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):

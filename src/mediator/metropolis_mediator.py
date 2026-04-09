@@ -73,8 +73,6 @@ class MetropolisMediator(DiffusiveMediator):
         particles_to_update = [index for index in range(number_of_particles)]
         random.shuffle(particles_to_update)  # randomises order of elements in particles_to_update
         for active_particle_index in particles_to_update:
-            init_pos = self._positions[active_particle_index].copy()
-            #print(f"initial:{init_pos}")
             candidate_position = self._noise_distribution.get_candidate_position(active_particle_index, self._positions)
             potential_difference = self._potential.get_potential_difference(active_particle_index, candidate_position,
                                                                             self._positions)
@@ -82,12 +80,8 @@ class MetropolisMediator(DiffusiveMediator):
                     np.exp(- potential_difference / self._temperature)):
                 self._positions[active_particle_index] = candidate_position
                 self._number_of_accepted_trajectories += 1
-                fin_pos = candidate_position
                 self.events += 1
-                #print(f"final:{fin_pos}")
-                tunnelled = self._potential.check_tunnelling_event(init_pos, fin_pos)
-                self.tunnelling_events += tunnelled
-                #print(f"tunnelled:{tunnelled}")
+       
 
     def _proposal_dynamics_adaptor(self):
         """Tunes the size of either the numerical integration step or the width of the proposal distribution."""
