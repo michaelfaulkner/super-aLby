@@ -117,7 +117,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         py_diff = super().get_potential_difference(active_particle_index, candidate_position, positions)
 
         if(round(py_diff[0], 6) == round(diff, 6)):
-            return diff
+            return py_diff
         else:
             raise Exception(f"{round(diff, 6)} did not equal {round(py_diff[0], 6)}")
 
