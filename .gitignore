@@ -14,7 +14,9 @@ src/sample_analysis/test_convergence_copy.py
 src/sample_analysis/quantum_harmonic_oscillator_analysis.py
 src/vals_0.txt
 src/config_files/factor_fields*
-
+src/config_files/qho_iact
+settings.json
+c_cpp_properties.json
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
