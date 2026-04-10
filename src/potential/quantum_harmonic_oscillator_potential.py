@@ -100,26 +100,21 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         float
             The dimensionless-action difference.
         """
-        #if self._cpp_implementation:
+        if self._cpp_implementation:
     
-        active_particle_positiom = positions[active_particle_index]
-        west_neighbour_position = positions[self._get_west_worldline_neighbour(active_particle_index)]
-        east_neighbour_position = positions[self._get_east_worldline_neighbour(active_particle_index)]
+            active_particle_positiom = positions[active_particle_index]
+            west_neighbour_position = positions[self._get_west_worldline_neighbour(active_particle_index)]
+            east_neighbour_position = positions[self._get_east_worldline_neighbour(active_particle_index)]
 
-
-        diff = c_imp_get_potential_difference.get_potential_difference(active_particle_positiom,
-                west_neighbour_position, east_neighbour_position, self._mass, self._timestep, self._omega_squared,
-                self._anharmonicity, candidate_position)
-
-            #return diff
+            diff = c_imp_get_potential_difference.get_potential_difference(active_particle_positiom,
+                    west_neighbour_position, east_neighbour_position, self._mass, self._timestep, self._omega_squared,
+                    self._anharmonicity, candidate_position)
+            
+            return diff
         
-        #else:
-        py_diff = super().get_potential_difference(active_particle_index, candidate_position, positions)
-
-        if(round(py_diff[0], 6) == round(diff, 6)):
-            return py_diff
         else:
-            raise Exception(f"{round(diff, 6)} did not equal {round(py_diff[0], 6)}")
+            return super().get_potential_difference(active_particle_index, candidate_position, positions)
+
 
     def _get_gradient_at_index(self, positions, active_particle_index):
         """
