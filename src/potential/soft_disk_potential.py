@@ -11,8 +11,8 @@ class SoftDiskPotential(EuclideanSubspacePotential):
     This class implements the soft disk potential U = epsilon * (sigma / r) ** power.
     """
 
-    def __init__(self, epsilon: float = 1.0, sigma: float = 1.0, power: float = 12.0, cutoff: float = 1.0,
-                 factor_field_prefactor: float = 0.0, use_cell_horizon: bool = False, cell_horizon: float = 1.0):
+    def __init__(self, epsilon: float = 1.0, sigma: float = 1.0, power: float = 12.0, cutoff: float = None,
+                 factor_field_prefactor: float = 0.0, use_cell_horizon: bool = False):
         """
         The constructor of the SoftDiskPotential class.
 
@@ -30,8 +30,6 @@ class SoftDiskPotential(EuclideanSubspacePotential):
             Prefactor of the factor field contribution to the potential.
         use_cell_horizon : bool
             Determines whether to use cell horizon method.
-        cell_horizon : float
-            Horizon over which to measure maximum potential gradient.
 
         Raises
         ------
@@ -44,9 +42,7 @@ class SoftDiskPotential(EuclideanSubspacePotential):
         self._power = power
         self._factor_field_prefactor = factor_field_prefactor
         self._use_cell_horizon = use_cell_horizon
-        self._cutoff = cutoff * sigma
-        if use_cell_horizon:
-            self._cell_horizon = cell_horizon
+        self._cutoff = size_of_particle_space if cutoff is None else cutoff
         if len(size_of_particle_space) > 1:
             raise ConfigurationError(f'{self.__class__.__name__} only supports 1D space. Provided: '
                                      f'{len(size_of_particle_space)}')
@@ -151,7 +147,7 @@ class SoftDiskPotential(EuclideanSubspacePotential):
             numpy array (of integers) of length dimensionality_of_particle_space, where the nth component represents the
             velocity of the active particle along the nth Cartesian direction.
         """
-        return -1
+        return 1
 
     def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
@@ -179,42 +175,54 @@ class SoftDiskPotential(EuclideanSubspacePotential):
             Net displacement through state space from active to vetoing particle.
         """
         active_particle_position = positions[active_particle_index][0]
-        pos_neighbour_index = (active_particle_index + 1) % number_of_particles
-        neg_neighbour_index = (active_particle_index - 1) % number_of_particles
-
-        front_neighbour_index = pos_neighbour_index if movement_direction > 0 else neg_neighbour_index
-        back_neighbour_index = neg_neighbour_index if movement_direction > 0 else pos_neighbour_index
+        final_candidate_distance_to_next_factor_event = np.inf
+        vetoing_index = active_particle_index
 
         if self._use_cell_horizon:
-            final_candidate_distance_to_next_factor_event = np.inf
             final_max_rate = None
-            vetoing_index = active_particle_index
 
-            nearest_neighbour_separation = positions[front_neighbour_index][0] - active_particle_position
-            nearest_neighbour_separation -= size_of_particle_space[0] * np.round(
-                nearest_neighbour_separation / size_of_particle_space[0])
+            pos_neighbour_index, neg_neighbour_index = ((active_particle_index + 1) % number_of_particles,
+                                                        (active_particle_index - 1) % number_of_particles)
+            front_neighbour_index = pos_neighbour_index if movement_direction > 0 else neg_neighbour_index
+            back_neighbour_index = neg_neighbour_index if movement_direction > 0 else pos_neighbour_index
+            front_neighbour_separation = ((positions[front_neighbour_index][0] - active_particle_position)
+                                          * movement_direction)
+            front_neighbour_separation = front_neighbour_separation % size_of_particle_space[0]
+
+            alpha = (-np.log(np.random.uniform(0.0, 1.0)) * temperature /
+                     (self._epsilon * self._sigma ** self._power) + 1 / front_neighbour_separation ** self._power)
+            front_distance_to_next_factor_event = front_neighbour_separation - alpha ** (-1 / self._power)
+            final_candidate_distance_to_next_factor_event = front_distance_to_next_factor_event
+            vetoing_index = front_neighbour_index
 
             for particle_index in range(number_of_particles):
-                if particle_index == active_particle_index:
+                if particle_index == active_particle_index or particle_index == front_neighbour_index:
                     continue
                 particle_separation = positions[particle_index][0] - active_particle_position
-                particle_separation -= size_of_particle_space[0] * np.round(
-                    particle_separation / size_of_particle_space[0])
+                particle_separation -= size_of_particle_space[0] * np.round(particle_separation /
+                                                                            size_of_particle_space[0])
                 abs_separation = np.abs(particle_separation)
-
                 if particle_separation * movement_direction > 0.0:
                     max_rate = None
                     alpha = (-np.log(np.random.uniform(0.0, 1.0)) * temperature /
                              (self._epsilon * self._sigma ** self._power) + 1 / abs_separation ** self._power)
                     candidate_distance_to_next_factor_event = abs_separation - alpha ** (-1 / self._power)
                 else:
-                    max_separation = abs_separation + abs(nearest_neighbour_separation)
+                    max_separation = abs_separation + front_distance_to_next_factor_event
                     if particle_index == back_neighbour_index:
                         max_rate = max(0.0, self._get_potential_gradient(max_separation) + self._factor_field_prefactor)
+                        candidate_distance_to_next_factor_event = np.inf if max_rate < 1.0e-10 else (
+                                -np.log(np.random.uniform(0.0, 1.0)) * temperature / max_rate)
+                    elif max_separation < size_of_particle_space[0] / 2.0:
+                        continue
                     else:
-                        max_rate = max(0.0, self._get_potential_gradient(max_separation))
-                    candidate_distance_to_next_factor_event = np.inf if max_rate < 1.0e-10 else (
-                            -np.log(np.random.uniform(0.0, 1.0)) * temperature / max_rate)
+                        max_rate = None
+                        free_distance = size_of_particle_space[0] / 2 - abs_separation
+                        abs_separation = size_of_particle_space[0] / 2
+                        alpha = (-np.log(np.random.uniform(0.0, 1.0)) * temperature /
+                                 (self._epsilon * self._sigma ** self._power) + 1 / abs_separation ** self._power)
+                        candidate_distance_to_next_factor_event = abs_separation - alpha ** (-1 / self._power)
+                        candidate_distance_to_next_factor_event += free_distance
 
                 if candidate_distance_to_next_factor_event < final_candidate_distance_to_next_factor_event:
                     final_candidate_distance_to_next_factor_event = candidate_distance_to_next_factor_event
@@ -244,18 +252,15 @@ class SoftDiskPotential(EuclideanSubspacePotential):
                 particle_separation -= size_of_particle_space[0] * np.round(
                     particle_separation / size_of_particle_space[0])
                 abs_separation = np.abs(particle_separation)
-
                 max_grad = -self._get_potential_gradient(abs_separation)
                 if vetoing_index == front_neighbour_index:
                     actual_grad = max_grad - self._factor_field_prefactor
                 else:
                     actual_grad = max_grad
-
                 max_rate = max(0.0, max_grad)
                 actual_rate = max(0.0, actual_grad)
-
                 if actual_rate > 0.0 and np.random.uniform(0.0, 1.0) < actual_rate / max_rate:
-                    hop_displacement = shortest_distance_to_next_factor_event * movement_direction
+                    hop_displacement = (positions[vetoing_index][0] - active_particle_position) * movement_direction
                 else:
                     vetoing_index, hop_displacement = (active_particle_index,
                                                        shortest_distance_to_next_factor_event * movement_direction)
@@ -273,7 +278,7 @@ class SoftDiskPotential(EuclideanSubspacePotential):
                     actual_rate = max(0.0, self._get_potential_gradient(abs_separation))
 
                 if actual_rate > 0.0 and np.random.uniform(0.0, 1.0) < actual_rate / final_max_rate:
-                    hop_displacement = shortest_distance_to_next_factor_event * movement_direction
+                    hop_displacement = (positions[vetoing_index][0] - active_particle_position) * movement_direction
                 else:
                     vetoing_index, hop_displacement = (active_particle_index,
                                                        shortest_distance_to_next_factor_event * movement_direction)
@@ -299,6 +304,7 @@ class SoftDiskPotential(EuclideanSubspacePotential):
                 if candidate_distance_to_next_factor_event < final_candidate_distance_to_next_factor_event:
                     final_candidate_distance_to_next_factor_event = candidate_distance_to_next_factor_event
                     vetoing_index = particle_index
+
             shortest_distance_to_next_factor_event, hop_displacement = (
                 final_candidate_distance_to_next_factor_event, (positions[vetoing_index][0] - active_particle_position)
                 * movement_direction)
@@ -330,13 +336,13 @@ class SoftDiskPotential(EuclideanSubspacePotential):
         """
         return veto_index, movement_direction
 
-    def _get_potential_gradient(self, particle_separation):
+    def _get_potential_gradient(self, abs_separation):
         """
         Calculates the potential gradient for a given separation.
         """
-        if 0.0 < particle_separation < self._cutoff:
+        if 0.0 < abs_separation < self._cutoff:
             return (-self._power * self._epsilon * (self._sigma ** self._power) /
-                    (particle_separation ** (self._power + 1)))
+                    (abs_separation ** (self._power + 1)))
         return 0.0
 
     def _get_single_particle_potential(self, active_particle_index, particle_position, positions):
@@ -350,9 +356,9 @@ class SoftDiskPotential(EuclideanSubspacePotential):
                 continue
             particle_separation = positions[particle_index][0] - particle_position
             particle_separation -= size_of_particle_space * np.round(particle_separation / size_of_particle_space[0])
-            particle_separation = float(np.abs(particle_separation))
-            if 0.0 < particle_separation < self._cutoff:
-                potential += self._epsilon * (self._sigma / particle_separation) ** self._power
+            abs_separation = abs(particle_separation)
+            if 0.0 < abs_separation < self._cutoff:
+                potential += self._epsilon * (self._sigma / abs_separation) ** self._power
         return potential
 
     def get_single_particle_gradient(self, positions, single_particle_index):

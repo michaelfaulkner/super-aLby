@@ -217,7 +217,7 @@ class HarmonicChainPotential(EuclideanSubspacePotential):
         hop_displacement : numpy.ndarray
             Net displacement through state space from active to vetoing particle.
         """
-        active_particle_position = positions[active_particle_index][0]
+        active_particle_position = positions[active_particle_index]
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(active_particle_index)
         neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index][0],
                                                           positions[pos_neighbour_index][0])
