@@ -349,12 +349,17 @@ in the [README](https://github.com/michaelfaulkner/xy-type-models/blob/main/READ
 All other figures are either TikZ-based or some heuristic curve made using matplotlib in a simple Python script.
 
 ## Draft: C++ Functionality Using Pybind11
-We provide a (draft) functionality to call the slowest functions within the `EventChainMediator` and `MetropolisMediator` classes using an implementation in C++. Note that this functionality is currently only available for the `QuantumHarmonicOScillatorPotential`. The C++ functions are 'bound' using [`pybind11`](https://pybind11.readthedocs.io/en/stable/index.html), allowing them to be called from Python. This requires the bindings to be [built](https://pybind11.readthedocs.io/en/stable/compiling.html). Currently the way that this should be done for super-aLby is by building manually on the command line (see below).
+We provide functionality to call the slowest functions within the `EventChainMediator` and `MetropolisMediator` classes using an implementation in C++. Note that this functionality is currently only available for the `QuantumHarmonicOScillatorPotential`. The C++ functions are 'bound' using [`pybind11`](https://pybind11.readthedocs.io/en/stable/index.html), allowing them to be called from Python. This requires the bindings to be [built](https://pybind11.readthedocs.io/en/stable/compiling.html), either using Make or by building manually (see below).
 ### Structure of C++ code and bindings
 For each `Potential` class that C++ functionality is provided for (currently `QuantumHarmonicOScillatorPotential` only), the C++ code for each mediator is in the `src/potential/cpp_{function_name}` folder. For the `EventChainMediator` it is in `src/potential/cpp_next_event`, and for the `MetropolisMediator` it is in the `src/potential/cpp_potential_difference` folder. The folder contains `{function_name}.cpp`, `{function_name}.hpp`, which provide the C++ versions of the required functions; `bindings.cpp`, which provides the information that `pybind11` requires to compile the functions into callable Python; and `__init__.py`, to tell Python that the folder (when built) will contain a Python module. 
+### Building with Make 
+The C++ bindings should be built using the Makefile. We provide a bash script to load the correct environment and subsequently `make` the bindings. From the top directory, run: 
+`$ ./create_env.sh` 
+Which will create an executable, `super-alby`, which can be run with a config file in order to carry out simulations: 
+`$ super-alby path/to/config.ini` 
 ### Building manually
-Currently, to build manually on Linux users should run, from the top directory and with a valid Python environment active:  
-(Note, example given for the `cpp_next_event` folder, folders must be built separately).
+It is possible, but not preferred, to build manually. On Linux users should run, from the top directory and with a valid Python environment active:  
+(Note, example given for the `cpp_next_event` folder, folders must be built separately). 
 `$ cd src`  
 `$ pip install pybind11`  
 `$ cd potential/cpp_next_event`  

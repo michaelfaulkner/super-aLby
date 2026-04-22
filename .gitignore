@@ -94,3 +94,6 @@ src/generate_configs.py
 
 # VSCode
 .vscode/
+
+# .so files
+*.so
