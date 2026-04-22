@@ -97,3 +97,6 @@ src/generate_configs.py
 
 # .so files
 *.so
+
+super-alby
+*super-alby

@@ -58,14 +58,14 @@ else
 fi
 
 # Create a simple runner wrapper only when creating/updating the env.
-WRAPPER="$REPO_ROOT/super-alby"
+WRAPPER="$REPO_ROOT/src/super-alby"
 cat <<'WRAPPER_EOF' > "$WRAPPER"
 #!/usr/bin/env bash
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 ENV_NAME="super-alby"
-RUN_PY="$REPO_ROOT/src/run.py"
+RUN_PY="$REPO_ROOT/run.py"
 
 if [ ! -f "$RUN_PY" ]; then
   echo "Error: $RUN_PY not found." >&2
