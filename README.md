@@ -7,8 +7,16 @@ algorithms.
 For a closely connected discussion of kinetic-energy choice in Hamiltonian/hybrid Monte Carlo, see 
 [\[Livingstone2019\]](https://academic.oup.com/biomet/article-abstract/106/2/303/5476364), where we first introduced 
 super-relativistic Monte Carlo (though we did not name it).  super-aLby in fact started life as an application for 
-Hamiltonian and super-relativistic Monte Carlo (hence the name super-aLby, in reference to Einstein).
-
+Hamiltonian and super-relativistic Monte Carlo (hence the name super-aLby, in reference to Einstein). 
+## Contents
+1. [Installation](#installation)
+2. [Implementation](#implementation)
+3. [Configuration files](#configuration-files)
+4. [Running multiple simulations](#running-multiple-simulations)
+5. [Checkpointing](#checkpointing)
+6. [*Emergent electrostatics in planar XY spin models*](#emergent-electrostatics-in-planar-xy-spin-models)
+7. [*Sampling algorithms in statistical physics*](#sampling-algorithms-in-statistical-physics)
+8. [C++ Functionality Using Pybind11](#c++-functionality-using-pybind11) 
 ## Installation
 
 To install super-aLby, clone this repository.
