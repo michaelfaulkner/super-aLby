@@ -16,7 +16,7 @@ Hamiltonian and super-relativistic Monte Carlo (hence the name super-aLby, in re
 5. [Checkpointing](#checkpointing)
 6. [*Emergent electrostatics in planar XY spin models*](#emergent-electrostatics-in-planar-xy-spin-models)
 7. [*Sampling algorithms in statistical physics*](#sampling-algorithms-in-statistical-physics)
-8. [C++ Functionality Using Pybind11](#c++-functionality-using-pybind11) 
+8. [C++ Functionality Using Pybind11](#c-functionality-using-pybind11) 
 ## Installation
 
 To install super-aLby, clone this repository.
@@ -310,7 +310,8 @@ thousand samples but the HPC is likely to timeout before this is achieved, the u
 in the configuration file and run the simulation ten times.
 
 
-## *Emergent electrostatics in planar XY spin models* [\[Faulkner2025\]](https://doi.org/10.1088/1367-2630/add7fd)
+## *Emergent electrostatics in planar XY spin models*
+From [\[Faulkner2025\]](https://doi.org/10.1088/1367-2630/add7fd) 
 
 This details how to make its Ising-related figures.
 
@@ -335,7 +336,8 @@ eventually integrate [xy-type-models](https://github.com/michaelfaulkner/xy-type
 All other figures are either TikZ-based or some heuristic curve made using matplotlib in a simple Python script.
 
 
-## *Sampling algorithms in statistical physics* [\[Faulkner2024\]](https://doi.org/10.1214/23-STS893)
+## *Sampling algorithms in statistical physics* 
+From [\[Faulkner2024\]](https://doi.org/10.1214/23-STS893) 
 
 This details how to make its Ising-related figures.
 
