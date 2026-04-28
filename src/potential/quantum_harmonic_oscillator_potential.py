@@ -15,7 +15,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         where m and \omega are the mass and frequency, respectively.
     """
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0, omega_squared: float = 1.0,
-                 timestep: float = 0.1, cpp_implementation: bool = False, anharmonicity: float = 0.0):
+                 timestep: float = 0.1, cpp_implementation: bool = True, anharmonicity: float = 0.0):
         r"""
         The constructor of the QuantumHarmonicOscillatorPotential class
 
@@ -102,13 +102,13 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         """
         if self._cpp_implementation:
     
-            active_particle_positiom = positions[active_particle_index]
+            active_particle_position = positions[active_particle_index]
             west_neighbour_position = positions[self._get_west_worldline_neighbour(active_particle_index)]
             east_neighbour_position = positions[self._get_east_worldline_neighbour(active_particle_index)]
 
-            diff = c_imp_get_potential_difference.get_potential_difference(active_particle_positiom,
-                    west_neighbour_position, east_neighbour_position, self._mass, self._timestep, self._omega_squared,
-                    self._anharmonicity, candidate_position)
+            diff = c_imp_get_potential_difference.get_potential_difference(active_particle_position.item(),
+                    west_neighbour_position.item(), east_neighbour_position.item(), self._mass, self._timestep, self._omega_squared,
+                    self._anharmonicity, candidate_position.item())
             
             return diff
         
