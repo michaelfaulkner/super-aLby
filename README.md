@@ -7,8 +7,16 @@ algorithms.
 For a closely connected discussion of kinetic-energy choice in Hamiltonian/hybrid Monte Carlo, see 
 [\[Livingstone2019\]](https://academic.oup.com/biomet/article-abstract/106/2/303/5476364), where we first introduced 
 super-relativistic Monte Carlo (though we did not name it).  super-aLby in fact started life as an application for 
-Hamiltonian and super-relativistic Monte Carlo (hence the name super-aLby, in reference to Einstein).
-
+Hamiltonian and super-relativistic Monte Carlo (hence the name super-aLby, in reference to Einstein). 
+## Contents
+1. [Installation](#installation)
+2. [Implementation](#implementation)
+3. [Configuration files](#configuration-files)
+4. [Running multiple simulations](#running-multiple-simulations)
+5. [Checkpointing](#checkpointing)
+6. [*Emergent electrostatics in planar XY spin models*](#emergent-electrostatics-in-planar-xy-spin-models)
+7. [*Sampling algorithms in statistical physics*](#sampling-algorithms-in-statistical-physics)
+8. [C++ Functionality Using Pybind11](#c-functionality-using-pybind11) 
 ## Installation
 
 To install super-aLby, clone this repository.
@@ -302,7 +310,8 @@ thousand samples but the HPC is likely to timeout before this is achieved, the u
 in the configuration file and run the simulation ten times.
 
 
-## *Emergent electrostatics in planar XY spin models* [\[Faulkner2025\]](https://doi.org/10.1088/1367-2630/add7fd)
+## *Emergent electrostatics in planar XY spin models*
+From [\[Faulkner2025\]](https://doi.org/10.1088/1367-2630/add7fd) 
 
 This details how to make its Ising-related figures.
 
@@ -327,7 +336,8 @@ eventually integrate [xy-type-models](https://github.com/michaelfaulkner/xy-type
 All other figures are either TikZ-based or some heuristic curve made using matplotlib in a simple Python script.
 
 
-## *Sampling algorithms in statistical physics* [\[Faulkner2024\]](https://doi.org/10.1214/23-STS893)
+## *Sampling algorithms in statistical physics* 
+From [\[Faulkner2024\]](https://doi.org/10.1214/23-STS893) 
 
 This details how to make its Ising-related figures.
 
@@ -348,8 +358,9 @@ in the [README](https://github.com/michaelfaulkner/xy-type-models/blob/main/READ
 
 All other figures are either TikZ-based or some heuristic curve made using matplotlib in a simple Python script.
 
-## Draft: C++ Functionality Using Pybind11
-We provide functionality to call the slowest functions within the `EventChainMediator` and `MetropolisMediator` classes using an implementation in C++. Note that this functionality is currently only available for the `QuantumHarmonicOScillatorPotential`. The C++ functions are 'bound' using [`pybind11`](https://pybind11.readthedocs.io/en/stable/index.html), allowing them to be called from Python. This requires the bindings to be [built](https://pybind11.readthedocs.io/en/stable/compiling.html), either using Make or by building manually (see below).
+## C++ Functionality Using Pybind11
+We provide functionality to call the slowest functions within the `EventChainMediator` and `MetropolisMediator` classes using an implementation in C++. Note that this functionality is currently only available for the `QuantumHarmonicOScillatorPotential`. The C++ functions are 'bound' using [`pybind11`](https://pybind11.readthedocs.io/en/stable/index.html), allowing them to be called from Python. This requires the bindings to be [built](https://pybind11.readthedocs.io/en/stable/compiling.html), either using Make or by building manually (see below). 
+
 ### Structure of C++ code and bindings
 For each `Potential` class that C++ functionality is provided for (currently `QuantumHarmonicOScillatorPotential` only), the C++ code for each mediator is in the `src/potential/cpp_{function_name}` folder. For the `EventChainMediator` it is in `src/potential/cpp_next_event`, and for the `MetropolisMediator` it is in the `src/potential/cpp_potential_difference` folder. The folder contains `{function_name}.cpp`, `{function_name}.hpp`, which provide the C++ versions of the required functions; `bindings.cpp`, which provides the information that `pybind11` requires to compile the functions into callable Python; and `__init__.py`, to tell Python that the folder (when built) will contain a Python module. 
 ### Building with Make 
