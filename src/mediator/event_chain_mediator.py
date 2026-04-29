@@ -236,7 +236,16 @@ class EventChainMediator(Mediator):
             self._total_event_distance += displacement_distance
             if hop_displacement:
                 self._state_space_displacement += hop_displacement
-            if vetoing_index == (active_particle_index + 1) % number_of_particles:
-                self._index_space_displacement += 1
-            elif vetoing_index == (active_particle_index - 1) % number_of_particles:
-                self._index_space_displacement -= 1
+            if 'SoftDiskPotential' in str(self._potential):
+                particle_separation = self._positions[vetoing_index][0] - self._positions[active_particle_index][0]
+                particle_separation -= size_of_particle_space[0] * np.round(particle_separation /
+                                                                            size_of_particle_space[0])
+                if particle_separation > 0.0:
+                    self._index_space_displacement += (vetoing_index - active_particle_index) % number_of_particles
+                else:
+                    self._index_space_displacement -= (active_particle_index - vetoing_index) % number_of_particles
+            else:
+                if vetoing_index == (active_particle_index + 1) % number_of_particles:
+                    self._index_space_displacement += 1
+                elif vetoing_index == (active_particle_index - 1) % number_of_particles:
+                    self._index_space_displacement -= 1

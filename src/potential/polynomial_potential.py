@@ -14,8 +14,8 @@ class PolynomialPotential(EuclideanSubspacePotential):
 
     """
 
-    def __init__(self, powers: typing.Sequence[float] = None, prefactors: typing.Sequence[float] = None, factor_field_prefactor: float = 0.0,
-                 cell_horizon: float = 1.0):
+    def __init__(self, powers: typing.Sequence[float] = None, prefactors: typing.Sequence[float] = None,
+                 factor_field_prefactor: float = 0.0, cell_horizon: float = 1.0):
         """
         The constructor of the PolynomialPotential class.
 
@@ -82,7 +82,7 @@ class PolynomialPotential(EuclideanSubspacePotential):
             if particle_index == 0:
                 neg_neighbour_position -= size_of_particle_space
             for power, prefactor in zip(self._powers, self._prefactors):
-                potential += prefactor * (positions[particle_index] - neg_neighbour_position) ** power
+                potential += prefactor * (abs(positions[particle_index] - neg_neighbour_position)) ** power
         return potential
 
     def get_gradient(self, positions):
@@ -107,8 +107,10 @@ class PolynomialPotential(EuclideanSubspacePotential):
             neg_neighbour_position = positions[neg_neighbour_index][0]
             if particle_index == 0:
                 neg_neighbour_position -= size_of_particle_space
+            separation = positions[particle_index][0] - neg_neighbour_position
+            sign = 1.0 if separation >= 0.0 else -1.0
             for power, prefactor in zip(self._powers, self._prefactors):
-                gradient_value += prefactor * power * (positions[particle_index] - neg_neighbour_position) ** (power - 1)
+                gradient_value += prefactor * power * (abs(separation)) ** (power - 1) * sign
         return gradient_value
 
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
@@ -167,7 +169,7 @@ class PolynomialPotential(EuclideanSubspacePotential):
         neg_displacement, pos_displacement = (candidate_position - neg_neighbour_position,
                                               pos_neighbour_position - candidate_position)
         for power, prefactor in zip(self._powers, self._prefactors):
-            potential += prefactor * pos_displacement ** power + prefactor * neg_displacement ** power
+            potential += prefactor * abs(pos_displacement) ** power + prefactor * abs(neg_displacement) ** power
         return potential
 
     @staticmethod
@@ -276,7 +278,9 @@ class PolynomialPotential(EuclideanSubspacePotential):
 
             if np.random.uniform(0.0, 1.0) < actual_rate / max_rate:
                 shortest_distance_to_next_factor_event = candidate_distance_to_next_factor_event
-                hop_displacement = positions[vetoing_index][0] - active_particle_position[0]
+                hop_displacement = pos_neighbour_position - active_particle_position[0] if (
+                        vetoing_index == pos_neighbour_index) else (
+                        neg_neighbour_position - active_particle_position[0])
             else:
                 shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
                     candidate_distance_to_next_factor_event, active_particle_index,
@@ -335,11 +339,13 @@ class PolynomialPotential(EuclideanSubspacePotential):
             pos_neighbour_position += size_of_particle_space[0]
         elif single_particle_index == 0:
             neg_neighbour_position -= size_of_particle_space[0]
+        neg_separation = single_particle_position - neg_neighbour_position
+        pos_separation = pos_neighbour_position - single_particle_position
+        neg_sign = 1.0 if neg_separation >= 0.0 else -1.0
+        pos_sign = 1.0 if pos_separation >= 0.0 else -1.0
         for power, prefactor in zip(self._powers, self._prefactors):
-            pos_gradient_value += -prefactor * power * (pos_neighbour_position -
-                                                        single_particle_position) ** (power - 1)
-            neg_gradient_value += prefactor * power * (single_particle_position -
-                                                       neg_neighbour_position) ** (power - 1)
+            neg_gradient_value += prefactor * power * (abs(neg_separation)) ** (power - 1) * neg_sign
+            pos_gradient_value += -prefactor * power * (abs(pos_separation)) ** (power - 1) * pos_sign
         return pos_gradient_value, neg_gradient_value
 
     @staticmethod

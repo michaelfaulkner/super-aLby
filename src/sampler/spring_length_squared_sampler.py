@@ -35,7 +35,7 @@ class SpringLengthSquaredSampler(ObservationSampler):
         numpy.ndarray
             Numpy array of zeros of the required structure.
         """
-        return np.zeros((total_number_of_iterations, 1))
+        return np.zeros((total_number_of_iterations, number_of_particles, 1))
 
     def get_observation(self, momenta, positions, potential):
         """
@@ -66,8 +66,8 @@ class SpringLengthSquaredSampler(ObservationSampler):
             neg_neighbour_position = positions[neg_neighbour_index].copy()
             if particle_index == 0:
                 neg_neighbour_position -= size_of_particle_space
-            spring_lengths_squared.append((positions[particle_index] - neg_neighbour_position) ** 2)
-        return np.mean(spring_lengths_squared)
+            spring_lengths_squared.append((abs(positions[particle_index] - neg_neighbour_position)))
+        return np.array(spring_lengths_squared).copy()
 
     def output_sample(self, sample, checkpoint_index, output_directory):
         """
