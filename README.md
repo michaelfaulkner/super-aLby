@@ -243,15 +243,15 @@ but is not a requirement.
 We provide functionality to call the slowest functions within the `EventChainMediator` and `MetropolisMediator` classes using an implementation in C++. Note that this functionality is currently only available for the `QuantumHarmonicOScillatorPotential`. The C++ functions are 'bound' using [`pybind11`](https://pybind11.readthedocs.io/en/stable/index.html), allowing them to be called from Python. This requires the bindings to be [built](https://pybind11.readthedocs.io/en/stable/compiling.html), either using Make or by building manually (see below). 
 
 ### Structure of C++ code and bindings
-For each `Potential` class that C++ functionality is provided for (currently `QuantumHarmonicOScillatorPotential` only), the C++ code for each mediator is in the `src/potential/cpp_{function_name}` folder. For the `EventChainMediator` it is in `src/potential/cpp_next_event`, and for the `MetropolisMediator` it is in the `src/potential/cpp_potential_difference` folder. The folder contains `{function_name}.cpp`, `{function_name}.hpp`, which provide the C++ versions of the required functions; `bindings.cpp`, which provides the information that `pybind11` requires to compile the functions into callable Python; and `__init__.py`, to tell Python that the folder (when built) will contain a Python module. 
+For each `Potential` class that C++ functionality is provided for (currently `QuantumHarmonicOScillatorPotential` only), the C++ code for that potential is in the `src/potential/cpp_{potential_name}` directory. For the `QuantumHarmonicOscillator` it is in `src/potential/cpp_quantum_harmonic_oscillator`. The folder contains `cpp_{potential_name}.cpp`, `cpp_{potential_name}.hpp`, which provide the C++ versions of the required functions; `bindings.cpp`, which provides the information that `pybind11` requires to compile the functions into callable Python; and `__init__.py`, to tell Python that the folder (when built) will contain a Python module. 
 
 ### Building manually
 It is possible, but not preferred, to build manually. On Linux users should run, from the top directory and with a valid Python environment active:  
-(Note, example given for the `cpp_next_event` folder, folders must be built separately). 
+(Note, example given for the `cpp_quantum_harmonic_oscillator` folder, folders must be built separately). 
 `$ cd src`  
 `$ pip install pybind11`  
-`$ cd potential/cpp_next_event`  
-`$ c++ -O3 -Wall -shared -std=c++11 -fPIC $(python3 -m pybind11 --includes) bindings.cpp -o c_imp_get_next_event.so`  
+`$ cd potential/cpp_quantum_harmonic_oscillato`  
+`$ c++ -O3 -Wall -shared -std=c++11 -fPIC $(python3 -m pybind11 --includes) bindings.cpp -o cpp_qho.so`  
 
 ## Running multiple simulations
 
