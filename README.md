@@ -12,11 +12,13 @@ Hamiltonian and super-relativistic Monte Carlo (hence the name super-aLby, in re
 1. [Installation](#installation)
 2. [Implementation](#implementation)
 3. [Configuration files](#configuration-files)
-4. [Running multiple simulations](#running-multiple-simulations)
-5. [Checkpointing](#checkpointing)
-6. [*Emergent electrostatics in planar XY spin models*](#emergent-electrostatics-in-planar-xy-spin-models)
-7. [*Sampling algorithms in statistical physics*](#sampling-algorithms-in-statistical-physics)
-8. [C++ Functionality Using Pybind11](#c-functionality-using-pybind11) 
+4. [C++ Functionality Using Pybind11](#c-functionality-using-pybind11) 
+5. [Running multiple simulations](#running-multiple-simulations)
+6. [Checkpointing](#checkpointing)
+7. [Published works](#published-works)
+    1. [*Emergent electrostatics in planar XY spin models*](#emergent-electrostatics-in-planar-xy-spin-models)
+    2. [*Sampling algorithms in statistical physics*](#sampling-algorithms-in-statistical-physics)
+
 ## Installation
 
 To install super-aLby, clone this repository.
@@ -27,15 +29,20 @@ this). It has been tested with CPython.
 super-aLby depends on [`numpy`](https://numpy.org). Some of the sample-analysis code (i.e. scripts contained in the 
 [`sample_analysis`](src/sample_analysis) directory) also depends on [`matplotlib`](https://matplotlib.org).
 
+### Building with Make 
+super-aLby should be built using the Makefile. We provide a bash script to load the correct environment and subsequently run the Makefile. From the top directory, run: 
+`$ ./create_env.sh` 
+Which will create an executable, `super-alby` in the `src` directory, which can be run with a config file in order to carry out simulations. 
+
 ## Implementation
 
-The user interface of the super-aLby application consists of the [`run.py`](src/run.py) script and a configuration 
-file. The [`run.py`](src/run.py) script expects the path to the configuration file as the first positional argument. 
+The user interface of the super-aLby application consists of the super-alby executable and a configuration 
+file. The super-alby executable script expects the path to the configuration file as the first positional argument. 
 Configuration files should be located in the [`config_files`](src/config_files) directory and follow the [INI-file 
-format](https://en.wikipedia.org/wiki/INI_file). The [`run.py`](src/run.py) script is located in the [`src`](src) 
+format](https://en.wikipedia.org/wiki/INI_file). The super-alby executable calls the [`run.py`](src/run.py) script, which is located in the [`src`](src) 
 directory. 
 
-To run the super-aLby application, open your terminal, navigate to the [`src`](src) directory and enter `python run.py 
+To run the super-aLby application, open your terminal, navigate to the [`src`](src) directory and enter `./super-alby
 <configuration file>`. The generated sample data will then appear at a location defined in the configuration file (we 
 advise this location to be contained within the [`output`](src/output) directory). Sample analysis can then be 
 performed via scripts within the [`sample_analysis`](src/sample_analysis) directory.
@@ -44,7 +51,7 @@ We also provide bash-script functionality for running multiple simulations (poss
 different fixed values of model parameters.  This is described below in the section 
 [Running multiple simulations](#running-multiple-simulations).
 
-The [`run.py`](src/run.py) script also takes optional arguments. These are:
+The super-alby script also takes optional arguments. These are:
 - `-h`, `--help`: Show the help message and exit.
 - `-V`, `--version`: Show program's version number and exit.
 
@@ -218,7 +225,7 @@ event-chain Monte Carlo simulation).  In addition, the first / second example se
 units of the potential energy, which may be dimensionless).
 
 Some example configuration files are located in the [`src/config_files`](src/config_files) directory. To get a feel for the 
-application, run `python run.py 
+application, run `./super-alby
 config_files/convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini`, 
 before running `python sample_analysis/test_convergence.py 
 config_files/convergence_tests/exponential_power_potential_power_equals_4/super_relativistic_kinetic_energy.ini` once 
@@ -232,6 +239,19 @@ to the relevant sampler.  We advise that `output_directory` mirrors the location
 `config_files/remaining_path/config_file_name.ini`.  This stores samples within the [`output`](src/output) directory 
 but is not a requirement.
 
+## C++ Functionality Using Pybind11
+We provide functionality to call the slowest functions within the `EventChainMediator` and `MetropolisMediator` classes using an implementation in C++. Note that this functionality is currently only available for the `QuantumHarmonicOScillatorPotential`. The C++ functions are 'bound' using [`pybind11`](https://pybind11.readthedocs.io/en/stable/index.html), allowing them to be called from Python. This requires the bindings to be [built](https://pybind11.readthedocs.io/en/stable/compiling.html), either using Make or by building manually (see below). 
+
+### Structure of C++ code and bindings
+For each `Potential` class that C++ functionality is provided for (currently `QuantumHarmonicOScillatorPotential` only), the C++ code for each mediator is in the `src/potential/cpp_{function_name}` folder. For the `EventChainMediator` it is in `src/potential/cpp_next_event`, and for the `MetropolisMediator` it is in the `src/potential/cpp_potential_difference` folder. The folder contains `{function_name}.cpp`, `{function_name}.hpp`, which provide the C++ versions of the required functions; `bindings.cpp`, which provides the information that `pybind11` requires to compile the functions into callable Python; and `__init__.py`, to tell Python that the folder (when built) will contain a Python module. 
+
+### Building manually
+It is possible, but not preferred, to build manually. On Linux users should run, from the top directory and with a valid Python environment active:  
+(Note, example given for the `cpp_next_event` folder, folders must be built separately). 
+`$ cd src`  
+`$ pip install pybind11`  
+`$ cd potential/cpp_next_event`  
+`$ c++ -O3 -Wall -shared -std=c++11 -fPIC $(python3 -m pybind11 --includes) bindings.cpp -o c_imp_get_next_event.so`  
 
 ## Running multiple simulations
 
@@ -305,29 +325,28 @@ to a previous simulation of the same configuration file) the application will lo
 start from that state.
 
 N.B. Unlike typical checkpointing methods in which the configuration is periodically outputted during the simulation, 
-this method outputs the configuration only when the current simulation has finished.  Supposing the target is 100 
-thousand samples but the HPC is likely to timeout before this is achieved, the user might then request 10,000 samples 
+this method outputs the configuration only when the current simulation has finished.  Supposing the target is 100,000 samples but the simulation is likely to timeout before this is achieved, the user might then request 10,000 samples 
 in the configuration file and run the simulation ten times.
 
-
-## *Emergent electrostatics in planar XY spin models*
+## Published Works 
+### *Emergent electrostatics in planar XY spin models*
 From [\[Faulkner2025\]](https://doi.org/10.1088/1367-2630/add7fd) 
 
 This details how to make its Ising-related figures.
 
-### Figure 1
+#### Figure 1
 
 Run the script `python sample_analysis/make_ising_spec_heat_and_mag_density_figs.py False`.
 
-### Figure 2
+#### Figure 2
 
 1. Run each configuration file in [`config_files/emergent_electrostatics_ising_figs`](
 src/config_files/emergent_electrostatics_ising_figs) via the command 
-`python run.py config_files/emergent_electrostatics_ising_figs/4x4_metropolis.ini`, etc.  
+`./super-alby config_files/emergent_electrostatics_ising_figs/4x4_metropolis.ini`, etc.  
 2. Once all simulations are complete, run the relevant sample-analysis script via the command 
 `python sample_analysis/make_ising_trace_plots.py False`.
 
-### Other figures
+#### Other figures
 
 For Figures 5-9, 11 and 14-17, go to [xy-type-models](https://github.com/michaelfaulkner/xy-type-models) and follow the 
 instructions in the [README](https://github.com/michaelfaulkner/xy-type-models/blob/main/README.md).  We aim to 
@@ -336,13 +355,13 @@ eventually integrate [xy-type-models](https://github.com/michaelfaulkner/xy-type
 All other figures are either TikZ-based or some heuristic curve made using matplotlib in a simple Python script.
 
 
-## *Sampling algorithms in statistical physics* 
+### *Sampling algorithms in statistical physics* 
 From [\[Faulkner2024\]](https://doi.org/10.1214/23-STS893) 
 
 This details how to make its Ising-related figures.
 
 To make Figures 2, 9, 10 and 11, first run each configuration file in [`config_files/sampling_algos_ising_figs`](
-src/config_files/sampling_algos_ising_figs) via the command `python run.py 
+src/config_files/sampling_algos_ising_figs) via the command `./super-alby
 config_files/sampling_algos_ising_figs/4x4_metropolis.ini`, etc.  
 
 Then, once all simulations are complete, run the relevant sample-analysis scripts via the commands 
@@ -357,21 +376,3 @@ in the [README](https://github.com/michaelfaulkner/xy-type-models/blob/main/READ
 [xy-type-models](https://github.com/michaelfaulkner/xy-type-models) into super-aLby.
 
 All other figures are either TikZ-based or some heuristic curve made using matplotlib in a simple Python script.
-
-## C++ Functionality Using Pybind11
-We provide functionality to call the slowest functions within the `EventChainMediator` and `MetropolisMediator` classes using an implementation in C++. Note that this functionality is currently only available for the `QuantumHarmonicOScillatorPotential`. The C++ functions are 'bound' using [`pybind11`](https://pybind11.readthedocs.io/en/stable/index.html), allowing them to be called from Python. This requires the bindings to be [built](https://pybind11.readthedocs.io/en/stable/compiling.html), either using Make or by building manually (see below). 
-
-### Structure of C++ code and bindings
-For each `Potential` class that C++ functionality is provided for (currently `QuantumHarmonicOScillatorPotential` only), the C++ code for each mediator is in the `src/potential/cpp_{function_name}` folder. For the `EventChainMediator` it is in `src/potential/cpp_next_event`, and for the `MetropolisMediator` it is in the `src/potential/cpp_potential_difference` folder. The folder contains `{function_name}.cpp`, `{function_name}.hpp`, which provide the C++ versions of the required functions; `bindings.cpp`, which provides the information that `pybind11` requires to compile the functions into callable Python; and `__init__.py`, to tell Python that the folder (when built) will contain a Python module. 
-### Building with Make 
-The C++ bindings should be built using the Makefile. We provide a bash script to load the correct environment and subsequently `make` the bindings. From the top directory, run: 
-`$ ./create_env.sh` 
-Which will create an executable, `super-alby`, which can be run with a config file in order to carry out simulations: 
-`$ super-alby path/to/config.ini` 
-### Building manually
-It is possible, but not preferred, to build manually. On Linux users should run, from the top directory and with a valid Python environment active:  
-(Note, example given for the `cpp_next_event` folder, folders must be built separately). 
-`$ cd src`  
-`$ pip install pybind11`  
-`$ cd potential/cpp_next_event`  
-`$ c++ -O3 -Wall -shared -std=c++11 -fPIC $(python3 -m pybind11 --includes) bindings.cpp -o c_imp_get_next_event.so`  
