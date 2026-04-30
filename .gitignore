@@ -100,3 +100,6 @@ src/generate_configs.py
 
 super-alby
 *super-alby
+
+run_spawned_configs_alt.sh
+example.sh

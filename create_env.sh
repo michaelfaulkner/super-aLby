@@ -87,4 +87,4 @@ WRAPPER_EOF
 chmod +x "$WRAPPER"
 
 echo "Environment '$ENV_NAME' ready. Wrapper created at '$WRAPPER'." 
-echo "Use './super-alby <config-file>' to run."
+echo "Navigate to the src directory and use './super-alby <config-file>' to run."

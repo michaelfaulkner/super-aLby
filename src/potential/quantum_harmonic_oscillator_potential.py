@@ -5,8 +5,7 @@ from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError
 from helper_methods import get_initial_positions_of_smooth_potential
 from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
-from potential.cpp_next_event import c_imp_get_next_event
-from potential.cpp_potential_difference import c_imp_get_potential_difference 
+from potential.cpp_quantum_harmonic_oscillator import cpp_qho 
 class QuantumHarmonicOscillatorPotential(WorldlinePotential):
     r"""
     This class implements the (currently one-dimensional) potential for the quantum harmonic oscillator resulting
@@ -106,7 +105,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             west_neighbour_position = positions[self._get_west_worldline_neighbour(active_particle_index)]
             east_neighbour_position = positions[self._get_east_worldline_neighbour(active_particle_index)]
 
-            diff = c_imp_get_potential_difference.get_potential_difference(active_particle_position.item(),
+            diff = cpp_qho.get_potential_difference(active_particle_position.item(),
                     west_neighbour_position.item(), east_neighbour_position.item(), self._mass, self._timestep, self._omega_squared,
                     self._anharmonicity, candidate_position.item())
             
@@ -210,7 +209,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         self._potential_U = - np.log(np.random.uniform(0.0, 1.0))
 
         if self._cpp_implementation:
-            event = c_imp_get_next_event.get_next_event(active_particle_index, worldline_neighbours[1],
+            event = cpp_qho.get_next_event(active_particle_index, worldline_neighbours[1],
                     worldline_neighbours[0], number_of_quantum_particles, number_of_timeslices,
                     positions[active_particle_index].item(), positions[worldline_neighbours[1]].item(),
                     positions[worldline_neighbours[0]].item(), self._mass, self._timestep, movement_direction,
