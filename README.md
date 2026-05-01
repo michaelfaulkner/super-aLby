@@ -21,31 +21,37 @@ Hamiltonian and super-relativistic Monte Carlo (hence the name super-aLby, in re
 
 ## Installation
 
-To install super-aLby, clone this repository.
+super-aLby was written using Python 3.8 and C++ but is likely to support any Python version >= 3.6 (though we need to 
+check this). It has been tested with CPython.
 
-super-aLby was written using Python 3.8 but is likely to support any Python version >= 3.6 (though we need to check 
-this). It has been tested with CPython.
+super-aLby requires up-to-date versions of Python and a C++ compiler.  The following installation instructions apply if 
+you have a working C++ compiler. 
 
-super-aLby depends on [`numpy`](https://numpy.org). Some of the sample-analysis code (i.e. scripts contained in the 
+To install super-aLby, clone this repository then navigate to the top directory and execute `./create_env.sh`.  This 
+builds the `super-aLby` executable in the [`src`](src) directory.  The bash script [`create_env.sh`](create_env.sh) 
+loads the correct Python environment then runs [`Makefile`](Makefile) which builds the executable.  This Make 
+functionality was introduced in order to allow for rewriting slow Python functions in C++.  This is achieved via 
+[C++ Functionality Using Pybind11](#c-functionality-using-pybind11).
+
+**If you do not have a working C++ compiler**, all is not lost!  It is possible to use the majority of super-aLby 
+without building the `super-aLby` executable (see [Implementation](#implementation)).  For this, clone this repository 
+then activate a Python environment with [`numpy`](https://numpy.org) and [`matplotlib`](https://matplotlib.org) installed.  This is 
+required because the main code base (i.e. the part that performs the Monte Carlo simulations) depends on 
+[`numpy`](https://numpy.org), while some of the sample-analysis code (i.e. scripts contained in the 
 [`sample_analysis`](src/sample_analysis) directory) also depends on [`matplotlib`](https://matplotlib.org).
-
-### Building with Make 
-super-aLby should be built using the Makefile. We provide a bash script to load the correct environment and subsequently run the Makefile. From the top directory, run: 
-`$ ./create_env.sh` 
-Which will create an executable, `super-alby` in the `src` directory, which can be run with a config file in order to carry out simulations. 
 
 ## Implementation
 
-The user interface of the super-aLby application consists of the super-alby executable and a configuration 
-file. The super-alby executable script expects the path to the configuration file as the first positional argument. 
+The user interface of the super-aLby application consists of the `super-alby` executable and a configuration 
+file. The `super-alby` executable expects the path to the configuration file as the first positional argument. 
 Configuration files should be located in the [`config_files`](src/config_files) directory and follow the [INI-file 
-format](https://en.wikipedia.org/wiki/INI_file). The super-alby executable calls the [`run.py`](src/run.py) script, which is located in the [`src`](src) 
+format](https://en.wikipedia.org/wiki/INI_file). The `super-alby` executable calls the [`run.py`](src/run.py) script, which is located in the [`src`](src) 
 directory. 
 
-To run the super-aLby application, open your terminal, navigate to the [`src`](src) directory and enter `./super-alby
-<configuration file>`. The generated sample data will then appear at a location defined in the configuration file (we 
-advise this location to be contained within the [`output`](src/output) directory). Sample analysis can then be 
-performed via scripts within the [`sample_analysis`](src/sample_analysis) directory.
+To run the super-aLby application with the `super-alby` executable, open your terminal, navigate to the [`src`](src) 
+directory and enter `./super-alby <configuration file>`.  The generated sample data will then appear at a location 
+defined in the configuration file (we advise this location to be contained within the [`output`](src/output) directory).
+Sample analysis can then be performed via scripts within the [`sample_analysis`](src/sample_analysis) directory.
 
 We also provide bash-script functionality for running multiple simulations (possibly in parallel) with the same and/or 
 different fixed values of model parameters.  This is described below in the section 
@@ -54,6 +60,12 @@ different fixed values of model parameters.  This is described below in the sect
 The super-alby script also takes optional arguments. These are:
 - `-h`, `--help`: Show the help message and exit.
 - `-V`, `--version`: Show program's version number and exit.
+
+**If you do not have a working C++ compiler and cannot therefore build the `super-alby` executable:** 
+
+The majority of the `super-aLby` application can be run via the [`run.py`](src/run.py) script directly.  If your 
+configuration file does not use any C++ functionality, you can run the corresponding simulation by navigating to the 
+[`src`](src) directory and entering `run.py <configuration file>`.
 
 ## Configuration files
 
@@ -240,18 +252,34 @@ to the relevant sampler.  We advise that `output_directory` mirrors the location
 but is not a requirement.
 
 ## C++ Functionality Using Pybind11
-We provide functionality to call the slowest functions within the `EventChainMediator` and `MetropolisMediator` classes using an implementation in C++. Note that this functionality is currently only available for the `QuantumHarmonicOScillatorPotential`. The C++ functions are 'bound' using [`pybind11`](https://pybind11.readthedocs.io/en/stable/index.html), allowing them to be called from Python. This requires the bindings to be [built](https://pybind11.readthedocs.io/en/stable/compiling.html), either using Make or by building manually (see below). 
+We provide functionality to call some functions using C++.  This has been used to accelerate the slowest functions 
+(of certain models) used by `EventChainMediator` and `MetropolisMediator`, n.b. this functionality is currently only 
+available for `QuantumHarmonicOscillatorPotential`.
+
+The C++ functions are 'bound' using [`pybind11`](https://pybind11.readthedocs.io/en/stable/index.html), allowing them to be called from Python.  This requires the 
+bindings to be [built](https://pybind11.readthedocs.io/en/stable/compiling.html), either using Make (see [Installation](#installation)) or manually (see 
+[Building manually](#building-manually)).
+
+Note that this is the reason for building the executable `super-aLby` (see [Installation](#installation)).
 
 ### Structure of C++ code and bindings
-For each `Potential` class that C++ functionality is provided for (currently `QuantumHarmonicOScillatorPotential` only), the C++ code for that potential is in the `src/potential/cpp_{potential_name}` directory. For the `QuantumHarmonicOscillator` it is in `src/potential/cpp_quantum_harmonic_oscillator`. The folder contains `cpp_{potential_name}.cpp`, `cpp_{potential_name}.hpp`, which provide the C++ versions of the required functions; `bindings.cpp`, which provides the information that `pybind11` requires to compile the functions into callable Python; and `__init__.py`, to tell Python that the folder (when built) will contain a Python module. 
+For each `Potential` class for which C++ functionality is provided, the corresponding C++ code is in the 
+`src/potential/cpp_{potential_name}` directory.  For example, for `QuantumHarmonicOscillator`, it is in 
+`src/potential/cpp_quantum_harmonic_oscillator`.  The directory contains: 
+1. `cpp_{potential_name}.cpp` and `cpp_{potential_name}.hpp`, which provide the C++ versions of the required functions.
+2. `bindings.cpp`, which provides the information that `pybind11` requires to compile the functions into callable Python.
+3. `__init__.py`, which tells Python that the directory (when built) contains a Python module. 
 
 ### Building manually
-It is possible, but not preferred, to build manually. On Linux users should run, from the top directory and with a valid Python environment active:  
-(Note, example given for the `cpp_quantum_harmonic_oscillator` folder, folders must be built separately). 
-`$ cd src`  
-`$ pip install pybind11`  
-`$ cd potential/cpp_quantum_harmonic_oscillato`  
+It is possible (but not preferred) to build manually.  On Linux and for `QuantumHarmonicOscillator`, users should 
+activate a valid Python environment then navigate to the top directory and run:  
+ 
+`$ cd src`
+`$ pip install pybind11`
+`$ cd potential/cpp_quantum_harmonic_oscillator`
 `$ c++ -O3 -Wall -shared -std=c++11 -fPIC $(python3 -m pybind11 --includes) bindings.cpp -o cpp_qho.so`  
+
+(N.B. this builds the `cpp_quantum_harmonic_oscillator` directory; other directories must be built separately.)
 
 ## Running multiple simulations
 
@@ -278,6 +306,13 @@ This example is [config_files/convergence_tests/ising_potential/metropolis.sh](c
 and accompanies [config_files/convergence_tests/ising_potential/metropolis.ini](config_files/convergence_tests/ising_potential/metropolis.ini),
 as set by `TEMPLATE_INI`.  The files are located in the same directory and have mirrored names.  We suggest applying 
 this convention to all configuration-bash file pairs.
+
+**If you do not have a working C++ compiler and cannot therefore build the `super-alby` executable:** replace 
+`./super-alby` with `python run.py` in [`run_spawned_configs.sh`](src/run_spawned_configs.sh).
+
+The majority of the `super-aLby` application can be run via the [`run.py`](src/run.py) script directly.  If your 
+configuration file does not use any C++ functionality, you can run the corresponding simulation by navigating to the 
+[`src`](src) directory and entering `run.py <configuration file>`.
 
 ### Bash-file parameters
 
@@ -328,7 +363,8 @@ N.B. Unlike typical checkpointing methods in which the configuration is periodic
 this method outputs the configuration only when the current simulation has finished.  Supposing the target is 100,000 samples but the simulation is likely to timeout before this is achieved, the user might then request 10,000 samples 
 in the configuration file and run the simulation ten times.
 
-## Published Works 
+## Published works
+
 ### *Emergent electrostatics in planar XY spin models*
 From [\[Faulkner2025\]](https://doi.org/10.1088/1367-2630/add7fd) 
 
