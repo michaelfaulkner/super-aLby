@@ -33,13 +33,13 @@ application.
 To install super-aLby without the C++ functionality, clone this repository.
 
 super-aLby depends on [`numpy`](https://numpy.org).  Some of the sample-analysis code (i.e. scripts contained in the 
-[`sample_analysis`](src/sample_analysis) directory) also depends on [`matplotlib`](https://matplotlib.org).  
-Plug-and-play installation therefore requires these packages.
+[`sample_analysis`](src/sample_analysis) directory) also depends on 
+[`matplotlib`](https://matplotlib.org).  Plug-and-play installation therefore requires these packages.
 
 ### Full installation
 
 To install super-aLby with the C++ functionality, clone this repository then navigate to the top directory and execute 
-`./create_env.sh`.  This builds the `super-aLby` executable in the [`src`](src) directory.  The bash script 
+`./create_env.sh`.  This builds the `super-alby` executable in the [`src`](src) directory.  The bash script 
 [`create_env.sh`](create_env.sh) loads the correct Python environment then runs [`Makefile`](Makefile) which builds the 
 executable.  This Make functionality allows developers to rewrite slow Python functions in C++.  This is achieved via 
 [C++ Functionality Using Pybind11](#c-functionality-using-pybind11).
