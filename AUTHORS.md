@@ -10,3 +10,5 @@ All additional contributing authors are listed below in chronological order.
 [Rachel Kane](https://github.com/rachel-kane)
 
 [James Gulliford](https://github.com/jamesgulliford57)
+
+[Chris Brady](https://github.com/csbrady-warwick)

@@ -21,37 +21,49 @@ Hamiltonian and super-relativistic Monte Carlo (hence the name super-aLby, in re
 
 ## Installation
 
-super-aLby was written using Python 3.8 and C++ but is likely to support any Python version >= 3.6 (though we need to 
-check this). It has been tested with CPython.
+super-aLby was written using Python 3.8 and C++ but is likely to support any Python version >= 3.6.  It has been tested 
+with CPython.
 
-super-aLby requires up-to-date versions of Python and a C++ compiler.  The following installation instructions apply if 
-you have a working C++ compiler. 
+The C++ functionality was introduced to rewrite slow Python functions in C++, but the majority of the application runs 
+independently of any C++ code  (see [Implementation](#implementation)).  As such, there are two methods for installing the 
+application.
 
-To install super-aLby, clone this repository then navigate to the top directory and execute `./create_env.sh`.  This 
-builds the `super-aLby` executable in the [`src`](src) directory.  The bash script [`create_env.sh`](create_env.sh) 
-loads the correct Python environment then runs [`Makefile`](Makefile) which builds the executable.  This Make 
-functionality was introduced in order to allow for rewriting slow Python functions in C++.  This is achieved via 
+### Plug-and-play installation
+
+To install super-aLby without the C++ functionality, clone this repository.
+
+super-aLby depends on [`numpy`](https://numpy.org).  Some of the sample-analysis code (i.e. scripts contained in the 
+[`sample_analysis`](src/sample_analysis) directory) also depends on [`matplotlib`](https://matplotlib.org).  
+Plug-and-play installation therefore requires these packages.
+
+### Full installation
+
+To install super-aLby with the C++ functionality, clone this repository then navigate to the top directory and execute 
+`./create_env.sh`.  This builds the `super-aLby` executable in the [`src`](src) directory.  The bash script 
+[`create_env.sh`](create_env.sh) loads the correct Python environment then runs [`Makefile`](Makefile) which builds the 
+executable.  This Make functionality allows developers to rewrite slow Python functions in C++.  This is achieved via 
 [C++ Functionality Using Pybind11](#c-functionality-using-pybind11).
 
-**If you do not have a working C++ compiler**, all is not lost!  It is possible to use the majority of super-aLby 
-without building the `super-aLby` executable (see [Implementation](#implementation)).  For this, clone this repository 
-then activate a Python environment with [`numpy`](https://numpy.org) and [`matplotlib`](https://matplotlib.org) installed.  This is 
-required because the main code base (i.e. the part that performs the Monte Carlo simulations) depends on 
-[`numpy`](https://numpy.org), while some of the sample-analysis code (i.e. scripts contained in the 
-[`sample_analysis`](src/sample_analysis) directory) also depends on [`matplotlib`](https://matplotlib.org).
+This full installation of super-aLby requires up-to-date versions of Python and a C++ compiler.
 
 ## Implementation
 
-The user interface of the super-aLby application consists of the `super-alby` executable and a configuration 
-file. The `super-alby` executable expects the path to the configuration file as the first positional argument. 
-Configuration files should be located in the [`config_files`](src/config_files) directory and follow the [INI-file 
-format](https://en.wikipedia.org/wiki/INI_file). The `super-alby` executable calls the [`run.py`](src/run.py) script, which is located in the [`src`](src) 
-directory. 
+The user interface of the super-aLby application consists of a configuration file and the [`run.py`](src/run.py) script 
+(plug-and-play implementation) or the `super-alby` executable (full implementation).  Note that the `super-alby` 
+executable calls the [`run.py`](src/run.py) script, which is located in the [`src`](src) directory. 
 
-To run the super-aLby application with the `super-alby` executable, open your terminal, navigate to the [`src`](src) 
-directory and enter `./super-alby <configuration file>`.  The generated sample data will then appear at a location 
-defined in the configuration file (we advise this location to be contained within the [`output`](src/output) directory).
-Sample analysis can then be performed via scripts within the [`sample_analysis`](src/sample_analysis) directory.
+The [`run.py`](src/run.py) script and `super-alby` executable expect the path to the configuration file as the first 
+positional argument.  Configuration files should be located in the [`config_files`](src/config_files) directory and follow the 
+[INI-file format](https://en.wikipedia.org/wiki/INI_file).
+
+To run the super-aLby application, open your terminal, navigate to the [`src`](src) directory and enter `python run.py 
+<configuration file>` (plug-and-play implementation) or `./super-alby <configuration file>` (full implementation).  The 
+generated sample data will then appear at a location defined in the configuration file (we advise this location to be 
+contained within the [`output`](src/output) directory).  Sample analysis can then be performed via scripts within the 
+[`sample_analysis`](src/sample_analysis) directory.
+
+Note that the plug-and-play implementation requires that your configuration file does not use any C++ functionality. All
+references to plug-and-play implementation will assume that this is the case.
 
 We also provide bash-script functionality for running multiple simulations (possibly in parallel) with the same and/or 
 different fixed values of model parameters.  This is described below in the section 
@@ -60,12 +72,6 @@ different fixed values of model parameters.  This is described below in the sect
 The super-alby script also takes optional arguments. These are:
 - `-h`, `--help`: Show the help message and exit.
 - `-V`, `--version`: Show program's version number and exit.
-
-**If you do not have a working C++ compiler and cannot therefore build the `super-alby` executable:** 
-
-The majority of the `super-aLby` application can be run via the [`run.py`](src/run.py) script directly.  If your 
-configuration file does not use any C++ functionality, you can run the corresponding simulation by navigating to the 
-[`src`](src) directory and entering `run.py <configuration file>`.
 
 ## Configuration files
 
