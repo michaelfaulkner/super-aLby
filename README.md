@@ -313,13 +313,6 @@ and accompanies [config_files/convergence_tests/ising_potential/metropolis.ini](
 as set by `TEMPLATE_INI`.  The files are located in the same directory and have mirrored names.  We suggest applying 
 this convention to all configuration-bash file pairs.
 
-**If you do not have a working C++ compiler and cannot therefore build the `super-alby` executable:** replace 
-`./super-alby` with `python run.py` in [`run_spawned_configs.sh`](src/run_spawned_configs.sh).
-
-The majority of the `super-aLby` application can be run via the [`run.py`](src/run.py) script directly.  If your 
-configuration file does not use any C++ functionality, you can run the corresponding simulation by navigating to the 
-[`src`](src) directory and entering `run.py <configuration file>`.
-
 ### Bash-file parameters
 
 1. `TEMPLATE_INI` sets the base configuration file from which the bash file constructs the different simulations.
