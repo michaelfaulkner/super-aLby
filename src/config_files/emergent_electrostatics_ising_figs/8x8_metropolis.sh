@@ -1,5 +1,6 @@
 #!/bin/bash
 export TEMPLATE_INI=config_files/emergent_electrostatics_ising_figs/8x8_metropolis.ini
+export RUN_WITH_EXECUTABLE=false
 export NUM_JOBS=1
 export START=1.0
 export END=3.666666666666666
