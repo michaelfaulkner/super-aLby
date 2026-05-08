@@ -297,6 +297,7 @@ corresponding configuration file:
 ```
 #!/bin/bash
 export TEMPLATE_INI=config_files/convergence_tests/ising_potential/metropolis.ini
+export RUN_WITH_EXECUTABLE=false
 export NUM_JOBS=1
 export START=1.2
 export END=3.0
@@ -316,21 +317,24 @@ this convention to all configuration-bash file pairs.
 ### Bash-file parameters
 
 1. `TEMPLATE_INI` sets the base configuration file from which the bash file constructs the different simulations.
-2. `CONFIG_VARIABLE` sets the parameter (located in the `CONFIG_HEADER` section of `TEMPLATE_INI`) over which the bash file iterates independent simulations.
-3. `START` should be equal to the value of `CONFIG_VARIABLE` in `TEMPLATE_INI`.
-4. `END` should be equal to the desired final value of `CONFIG_VARIABLE`.
-5. `NUM_INCREMENTS` sets the number of equally spaced values of `CONFIG_VARIABLE` between and including `START` and 
+2. `RUN_WITH_EXECUTABLE` is a boolean that chooses whether to use the `super-alby` executable 
+(`RUN_WITH_EXECUTABLE=true`) or the [`run.py`](src/run.py) script (`RUN_WITH_EXECUTABLE=false`).
+3. `CONFIG_VARIABLE` sets the parameter (located in the `CONFIG_HEADER` section of `TEMPLATE_INI`) over which the bash 
+file iterates independent simulations.
+4. `START` should be equal to the value of `CONFIG_VARIABLE` in `TEMPLATE_INI`.
+5. `END` should be equal to the desired final value of `CONFIG_VARIABLE`.
+6. `NUM_INCREMENTS` sets the number of equally spaced values of `CONFIG_VARIABLE` between and including `START` and 
 `END`.  It must be an integer greater than or equal to zero. In the above example, `CONFIG_VARIABLE=temperature`, 
 `START=1.2`, `END=3.0` and `NUM_INCREMENTS=1`, which means that the bash file will run independent simulations with the 
 value of `temperature` set to 1.2 and 3.0. If `NUM_INCREMENTS` had been set to 2, then the bash file would run 
 independent simulations with the value of `temperature` set to 1.2, 2.1 and 3.0.
-6. `NUM_JOBS` sets the number of independent simulations at each fixed set of model parameters.  It must be an 
+7. `NUM_JOBS` sets the number of independent simulations at each fixed set of model parameters.  It must be an 
 integer greater than or equal to one.  In the above example, `NUM_JOBS=1`, which means that the bash file will run a 
 single simulation at each `CONFIG_VARIABLE` increment. The user may choose to run multiple simulations with fixed model 
 parameters.  In this case, set `NUM_INCREMENTS=0` and ensure that `START` and `END` are both equal to the value of 
 `CONFIG_VARIABLE` in `TEMPLATE_INI`.  The bash file will then run `NUM_JOBS` simulations with the same value of 
-`CONFIG_VARIABLE`.
-7. Independent simulations may also be run in parallel.  `MAX_CPUS` sets the maximum number of CPUs that may be accessed 
+`CONFIG_VARIABLE`. 
+8. Independent simulations may also be run in parallel.  `MAX_CPUS` sets the maximum number of CPUs that may be accessed 
 in parallel. In this example, `MAX_CPUS=2`, which means that the bash file will run the simulations at both 
 `CONFIG_VARIABLE` increments in parallel (assuming two CPUs are indeed available). `MAX_CPUS` should be chosen to 
 avoid overloading personal machines.
