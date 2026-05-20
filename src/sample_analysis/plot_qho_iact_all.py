@@ -12,23 +12,29 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
     ff_N = int(ff_N)
     propertime = float(propertime)
 
-    metropolis_timestep_data = np.load(os.path.join(metropolis_iact_data_path, "iact_metropolis_0.npy"))[:, 1]
-    metropolis_storage_arr = np.zeros((len(metropolis_timestep_data), N))
-    metropolis_sorted_timestep = metropolis_timestep_data[np.argsort(metropolis_timestep_data)]
-    for index in range(N):
-        metropolis_iact_timestep =  np.load(os.path.join(metropolis_iact_data_path, f"iact_metropolis_{index}.npy"))
-        metropolis_iact_data = metropolis_iact_timestep[:, 0] 
-        metropolis_timestep_data = metropolis_iact_timestep[:, 1] 
-        argsorted_data = np.argsort(metropolis_timestep_data)
-        metropolis_iact_data = metropolis_iact_data[argsorted_data] 
-        metropolis_storage_arr[:, index] = metropolis_iact_data
+    try:
 
-    metropolis_iact_mean_arr = np.mean(metropolis_storage_arr, axis = 1)
-    metropolis_iact_mean_arr = metropolis_iact_mean_arr[metropolis_sorted_timestep >= 0.01]
-    metropolis_err = np.std(metropolis_storage_arr, axis=1)
-    metropolis_err = metropolis_err[metropolis_sorted_timestep >= 0.01]
-    metropolis_sorted_timestep = metropolis_sorted_timestep[metropolis_sorted_timestep >= 0.01]
-    metropolis_sorted_N = propertime / metropolis_sorted_timestep
+        metropolis_timestep_data = np.load(os.path.join(metropolis_iact_data_path, "iact_metropolis_0.npy"))[:, 1]
+        metropolis_storage_arr = np.zeros((len(metropolis_timestep_data), N))
+        metropolis_sorted_timestep = metropolis_timestep_data[np.argsort(metropolis_timestep_data)]
+        for index in range(N):
+            metropolis_iact_timestep =  np.load(os.path.join(metropolis_iact_data_path, f"iact_metropolis_{index}.npy"))
+            metropolis_iact_data = metropolis_iact_timestep[:, 0] 
+            metropolis_timestep_data = metropolis_iact_timestep[:, 1] 
+            argsorted_data = np.argsort(metropolis_timestep_data)
+            metropolis_iact_data = metropolis_iact_data[argsorted_data] 
+            metropolis_storage_arr[:, index] = metropolis_iact_data
+
+        metropolis_iact_mean_arr = np.mean(metropolis_storage_arr, axis = 1)
+        metropolis_iact_mean_arr = metropolis_iact_mean_arr[metropolis_sorted_timestep >= 0.01]
+        metropolis_err = np.std(metropolis_storage_arr, axis=1)
+        metropolis_err = metropolis_err[metropolis_sorted_timestep >= 0.01]
+        metropolis_sorted_timestep = metropolis_sorted_timestep[metropolis_sorted_timestep >= 0.01]
+        metropolis_sorted_N = propertime / metropolis_sorted_timestep
+
+        metrop_data = True
+    except:
+        metrop_data = False
 
 
     ecmc_timestep_data = np.load(os.path.join(ecmc_iact_data_path, "iact_ecmc_0.npy"))[:, 1]
@@ -75,24 +81,32 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
     except:
         ff_data = False
 
-    m_fit_trim = -9#-7
+    if metrop_data:
+        m_fit_trim = -9#-7
+        m_coeffs = np.polyfit(np.log(metropolis_sorted_N[:m_fit_trim]), np.log(metropolis_iact_mean_arr[:m_fit_trim]), deg=1)
+        fitted_m = m_coeffs[1] + np.multiply(np.log(metropolis_sorted_N[:m_fit_trim]), m_coeffs[0])
+        print(m_coeffs)
+
     e_fit_trim = -13 #-13
     ff_fit_trim = -13
-    m_coeffs = np.polyfit(np.log(metropolis_sorted_N[:m_fit_trim]), np.log(metropolis_iact_mean_arr[:m_fit_trim]), deg=1)
+  
     e_coeffs = np.polyfit(np.log(ecmc_sorted_N[:e_fit_trim]), np.log(ecmc_iact_mean_arr[:e_fit_trim]), deg=1)
 
-
-    fitted_m = m_coeffs[1] + np.multiply(np.log(metropolis_sorted_N[:m_fit_trim]), m_coeffs[0])
     fitted_e = e_coeffs[1] + np.multiply(np.log(ecmc_sorted_N[:e_fit_trim]), e_coeffs[0])
 
 
-    print(m_coeffs)
+    
     print(e_coeffs)
 
     fig, ax = plt.subplots(1, 1)
 
-    ax.plot(metropolis_sorted_N[:m_fit_trim], np.exp(fitted_m), color="#f9a37bff")
+    if metrop_data:
+        ax.plot(metropolis_sorted_N[:m_fit_trim], np.exp(fitted_m), color="#f9a37bff")
+        ax.errorbar(metropolis_sorted_N, metropolis_iact_mean_arr, metropolis_err, fmt='^', capsize=3, markersize=4, color="#e16f04ff", label="Metropolis MC")
+        ax.annotate(f"M coeff: {m_coeffs[0]:.2f}", xy = (8*10e1, 3*10e1), weight = "bold")
+    
     ax.plot(ecmc_sorted_N[:e_fit_trim], np.exp(fitted_e), color="#d97dd9ff")
+
 
     if ff_data:
    
@@ -103,11 +117,11 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
         ax.errorbar(ff_sorted_N, ff_iact_mean_arr, ff_err, fmt='o', capsize=3, markersize=4, color="#950834ff", label="ECMC with Factor Fields")
         ax.annotate(f"FF coeff: {ff_coeffs[0]:.2f}", xy = (4*10e2, 0.7*10e1), weight = "bold")
 
-    ax.errorbar(metropolis_sorted_N, metropolis_iact_mean_arr, metropolis_err, fmt='^', capsize=3, markersize=4, color="#e16f04ff", label="Metropolis MC")
+    
     ax.errorbar(ecmc_sorted_N, ecmc_iact_mean_arr, ecmc_err, fmt='o', capsize=3, markersize=4, color="#e20acdff", label="ECMC")
     
 
-    ax.annotate(f"M coeff: {m_coeffs[0]:.2f}", xy = (8*10e1, 3*10e1), weight = "bold")
+    
     ax.annotate(f"E coeff: {e_coeffs[0]:.2f}", xy = (4*10e2, 4*10e1), weight = "bold")
     
 
@@ -127,7 +141,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
 
     #plt.title(f"Integrated Autocorrelation Time for anharmonic oscillator, with {N} Repeats")
     plt.tight_layout()
-    plt.savefig("iact_all_no_ff.png")
+    plt.savefig("iact_a_ecmc.png")
     plt.clf()
 
 

@@ -73,7 +73,7 @@ struct next_event get_next_event(int active_particle_index, int east_neighbour_i
     int number_of_quantum_particles, int number_of_timeslices, double active_particle_position,
     double east_neighbour_position, double west_neighbour_position, double mass, double timestep,
     int movement_direction, double anharmonicity, double omega_squared, double magnitude_of_double_well_position,
-    double uphill_energy_west, double uphill_energy_east, double uphill_energy_potential){
+    double uphill_energy_west, double uphill_energy_east, double uphill_energy_potential, double x_shift){
     
 
 
@@ -118,14 +118,14 @@ struct next_event get_next_event(int active_particle_index, int east_neighbour_i
         intermediate_position = initial_position;
     }
 
-    double initial_action = 0.5 * mass * timestep * omega_squared * pow(intermediate_position, 2)
+    double initial_action = 0.5 * mass * timestep * omega_squared * pow((intermediate_position + x_shift), 2)
                             + timestep * anharmonicity * pow(intermediate_position, 4);
     double final_action = uphill_energy + initial_action;
 
     std::vector<double> real_roots_arr;
     std::vector<std::complex<double>> roots_arr; 
     if(std::abs(anharmonicity) <= 0){ 
-        real_roots_arr = get_harmonic_potential_roots(mass, timestep, omega_squared, final_action);
+        real_roots_arr = get_harmonic_potential_roots(mass, timestep, omega_squared, final_action, x_shift);
     }
     else{
         roots_arr = get_anharmonic_potential_roots(mass, timestep, anharmonicity, omega_squared, final_action);
@@ -231,12 +231,12 @@ bool check_all_roots_real(std::vector<std::complex<double>> roots){
     return real_roots;
 }
 
-std::vector<double> get_harmonic_potential_roots(double mass, double timestep, double omega_squared, double final_action){
+std::vector<double> get_harmonic_potential_roots(double mass, double timestep, double omega_squared, double final_action, double x_shift){
   
     std::vector<double> roots; 
     double a = 0.5 * mass * timestep * omega_squared;
-    double b = 0.0;
-    double c = -final_action;
+    double b = mass * omega_squared * timestep * x_shift;
+    double c = 0.5 * mass * omega_squared * timestep * pow(x_shift, 2) - final_action;
 
     roots = get_real_quadratic_roots(a, b, c);
     return roots;

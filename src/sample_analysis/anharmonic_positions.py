@@ -20,7 +20,7 @@ def main(config_file_string):
 
     config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
     (config_file_mediator, potential, _, samplers, sample_directory, temperature, number_of_equilibration_iterations,
-     _, number_of_particles, size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
+     number_of_observations, number_of_particles, size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
     
 
     thinning_level = None
@@ -33,36 +33,38 @@ def main(config_file_string):
     mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
     omega_squared = parsing.get_value(config, strings.to_camel_case(potential), "omega_squared")
     anharmonicity = parsing.get_value(config, strings.to_camel_case(potential), "anharmonicity")
+    number_of_timeslices = parsing.get_value(config, "ModelSettings", "number_of_timeslices")
+
+
+
     bottom_of_well = np.sqrt(-mass * omega_squared * anharmonicity) \
             / 2 * anharmonicity 
             
     barrier_height = np.abs( -(timestep * anharmonicity * bottom_of_well **4 + 
                                 0.5 * mass * timestep * omega_squared * bottom_of_well **2))
-    fig, ax = plt.subplots(1,1)
+    len_sample = 500
    
-    # for i in range(40,50,20):
-    #     subsample = position_sample[i, :]
-    #     ax.plot(np.arange(0, number_of_particles), subsample, linestyle="-", color="black")
-    #     ax.scatter(np.arange(0, number_of_particles), subsample, marker = "x", color="black")
-    #     ax.hlines(np.mean(subsample), xmin=0, xmax = number_of_particles, color="purple", label = "mean of x")
-    #     ax.hlines(np.mean(np.abs(subsample)), xmin=0, xmax = number_of_particles, color="pink", label = "mean of |x|")
-    #     ax.hlines(bottom_of_well, xmin=0, xmax = number_of_particles,linestyle=":", color = "gray")
-    #     ax.hlines(-bottom_of_well, xmin=0, xmax = number_of_particles,linestyle=":", color = "gray")
-    #     ax.hlines(0.0, xmin=0, xmax = number_of_particles,linestyle=":", color = "gray")
+    for sample_index in range(0, number_of_observations, 10000):
+        fig0, ax0 = plt.subplots(1,1)
+        ax0.plot(np.arange(0, number_of_timeslices), position_sample[sample_index, :],linestyle="-", color="black")
+        ax0.hlines(bottom_of_well, xmin=0, xmax = len(position_sample[sample_index, :]),linestyle=":", color = "gray")
+        ax0.hlines(-bottom_of_well, xmin=0, xmax = len(position_sample[sample_index, :]),linestyle=":", color = "gray")
+        ax0.hlines(0.0, xmin=0, xmax = len(position_sample[sample_index, :]),linestyle=":", color = "gray")
 
-    # plt.legend()
-    # plt.tight_layout()
-    # plt.savefig("metropolis_trajectories_2_start_05.png")
+        plt.tight_layout()
+        plt.savefig(f"worldline_{sample_index}.png")
+
+    plt.clf()
 
     for index in range(0, number_of_particles, 10):
         fig1, ax1 = plt.subplots(1,1)
-        ax1.plot(np.arange(0, len(position_sample)), position_sample[:,20],linestyle="-", color="black")
-        ax1.scatter(np.arange(0, len(position_sample))[np.nonzero(position_sample[:,20]>0.0)], position_sample[:,20][np.nonzero(position_sample[:,20]>0.0)], marker = "x", color = "blue")
-        ax1.scatter(np.arange(0, len(position_sample))[np.nonzero(position_sample[:,20]<0.0)], position_sample[:,20][np.nonzero(position_sample[:,20]<0.0)], marker = "x", color = "red")
+        ax1.plot(np.arange(0, len(position_sample[:len_sample,index])), position_sample[:len_sample,index],linestyle="-", color="black")
+        ax1.scatter(np.arange(0, len(position_sample[:len_sample,index]))[np.nonzero(position_sample[:len_sample,index]>0.0)], position_sample[:len_sample,index][np.nonzero(position_sample[:len_sample,index]>0.0)], marker = "x", color = "blue")
+        ax1.scatter(np.arange(0, len(position_sample[:len_sample,index]))[np.nonzero(position_sample[:len_sample,index]<0.0)], position_sample[:len_sample,index][np.nonzero(position_sample[:len_sample,index]<0.0)], marker = "x", color = "red")
 
-        ax1.hlines(bottom_of_well, xmin=0, xmax = len(position_sample),linestyle=":", color = "gray")
-        ax1.hlines(-bottom_of_well, xmin=0, xmax = len(position_sample),linestyle=":", color = "gray")
-        ax1.hlines(0.0, xmin=0, xmax = len(position_sample),linestyle=":", color = "gray")
+        ax1.hlines(bottom_of_well, xmin=0, xmax = len(position_sample[:len_sample,index]),linestyle=":", color = "gray")
+        ax1.hlines(-bottom_of_well, xmin=0, xmax = len(position_sample[:len_sample,index]),linestyle=":", color = "gray")
+        ax1.hlines(0.0, xmin=0, xmax = len(position_sample[:len_sample,index]),linestyle=":", color = "gray")
         #ax1.set_xlim(200, 400)
 
 
@@ -73,7 +75,7 @@ def main(config_file_string):
         #ax.plot(np.arange(0, number_of_particles), np.mean(position_sample, axis=0), color='black')
 
         plt.tight_layout()
-        plt.savefig(f"metropolis_single_particle_trajectory_{index}.png")
+        plt.savefig(f"single_particle_trajectory_{index}.png")
 
 if __name__ == '__main__':
     main(sys.argv[1])

@@ -29,6 +29,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
         metropolis_err = metropolis_err[metropolis_sorted_timestep >= 0.01]
         metropolis_sorted_timestep = metropolis_sorted_timestep[metropolis_sorted_timestep >= 0.01]
         metropolis_sorted_N = propertime / metropolis_sorted_timestep
+        metrop_data = True
 
     except:
         metrop_data = False
@@ -135,9 +136,9 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
    
 
 
-    plt.title(f"Integrated Autocorrelation Time for anharmonic oscillator w^2 = -25, with {N} Repeats")
+    plt.title(f"Integrated Autocorrelation Time for anharmonic oscillator, with {N} Repeats")
     plt.tight_layout()
-    plt.savefig("iact_all_anharmonic_high_w.pdf")
+    plt.savefig("iact_all_anharmonic_positions.pdf")
     plt.clf()
 
 

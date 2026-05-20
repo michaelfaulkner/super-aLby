@@ -11,7 +11,7 @@ struct next_event get_next_event(int active_particle_index,  int east_neighbour_
     int number_of_quantum_particles, int number_of_timeslices, double active_particle_position,
     double east_neighbour_position, double west_neighbour_position, double mass, double timestep,
     int movement_direction, double anharmonicity, double omega_squared, double magnitude_of_double_well_position, 
-    double uphill_energy_west, double uphill_energy_east, double uphill_energy_potential);
+    double uphill_energy_west, double uphill_energy_east, double uphill_energy_potential, double x_shift);
 
 double get_barrier_height(double position, double timestep, double mass, double anharmonicity, double omega_squared);
 

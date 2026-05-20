@@ -103,7 +103,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
     ax.set_xlabel(r"$\omega ^2$", fontsize=20, labelpad=-10, weight = "bold")
     ax.set_ylabel("IACT", fontsize=15, weight = "bold")
     #ax.set_xscale("log")
-    #ax.set_yscale("log")
+    ax.set_yscale("log")
     #ax.set_ylim(10e-1, 40e2)
     legend_properties = {'weight':'bold'}
     plt.legend(prop=legend_properties)
@@ -113,7 +113,8 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
 
     plt.title(f"Integrated Autocorrelation Time for anharmonic oscillator with {N} Repeats")
     plt.tight_layout()
-    plt.savefig("iact_anharmonic_vary_w.pdf")
+    plt.savefig("iact_anharmonic_vary_w_005.pdf")
+    print(ecmc_sorted_omega)
     plt.clf()
 
 

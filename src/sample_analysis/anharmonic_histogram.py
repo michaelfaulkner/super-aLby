@@ -25,6 +25,7 @@ def main(config_file_string):
     thinning_level = None
     position_sample = sample_getter.get_positions(sample_directory, temperature, 0, number_of_particles,
                                                   number_of_equilibration_iterations, thinning_level=thinning_level)
+    print(np.shape(position_sample))
     
     mod_squared_position = np.square(np.abs(position_sample))
     
@@ -46,7 +47,7 @@ def main(config_file_string):
 
 
 
-    plt.savefig("anharmonic_hist.png")
+    plt.savefig("anharmonic_hist_w125_dt0025.png")
 
 
 if __name__ == '__main__':

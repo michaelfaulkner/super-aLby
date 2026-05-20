@@ -15,6 +15,7 @@ src/sample_analysis/quantum_harmonic_oscillator_analysis.py
 src/vals_0.txt
 src/config_files/factor_fields*
 src/config_files/qho_iact
+src/config_files/anharmonic
 settings.json
 c_cpp_properties.json
 
