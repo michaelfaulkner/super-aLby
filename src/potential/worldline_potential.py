@@ -209,7 +209,8 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def _get_next_kinetic_event(self, positions, active_particle_index, movement_direction, worldline_neighbours):
+    def _get_next_kinetic_event(self, positions, active_particle_index, movement_direction, worldline_neighbours,
+                                kinetic_U_west, kinetic_U_east):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -224,6 +225,10 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             The active-particle direction of motion.
         worldline_neighbours : List[int]
             A one-dimensional list containing the particles indices of the worldline neighbours of the active particle.
+        kinetic_U_west : float
+            Randomly drawn uphill energy for the west kinetic-energy term.
+        kinetic_U_east : float
+            Randomly drawn uphill energy for the east kinetic-energy term.
         
         Returns
         ----------
@@ -239,9 +244,9 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         for i, worldline_neighbour in enumerate(worldline_neighbours):
             if worldline_neighbour != active_particle_index:
                 if i == 0:
-                    uphill_energy = self._kinetic_U_west #- np.log(np.random.uniform(0, 1))
+                    uphill_energy = kinetic_U_west #- np.log(np.random.uniform(0, 1))
                 else:
-                    uphill_energy = self._kinetic_U_east
+                    uphill_energy = kinetic_U_east
                 neighbour_position = positions[worldline_neighbour].item()
                 bottom_of_well = neighbour_position
                 if ((movement_direction > 0 and initial_position < bottom_of_well) or

@@ -1,5 +1,6 @@
 #!/bin/bash
 export TEMPLATE_INI=config_files/sampling_algos_ising_figs/32x32_metropolis.ini
+export RUN_WITH_EXECUTABLE=false
 export NUM_JOBS=28
 export START=1.0
 export END=3.6

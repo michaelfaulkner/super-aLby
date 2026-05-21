@@ -206,26 +206,27 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
                                 self._get_east_worldline_neighbour(active_particle_index)]
         
-        self._kinetic_U_west = - np.log(np.random.uniform(0.0, 1.0))
-        self._kinetic_U_east = - np.log(np.random.uniform(0.0, 1.0))
-        self._potential_U = - np.log(np.random.uniform(0.0, 1.0))
+        kinetic_U_west = - np.log(np.random.uniform(0.0, 1.0))
+        kinetic_U_east = - np.log(np.random.uniform(0.0, 1.0))
+        potential_U = - np.log(np.random.uniform(0.0, 1.0))
 
         if self._cpp_implementation:
             event = cpp_qho.get_next_event(active_particle_index, worldline_neighbours[1],
                     worldline_neighbours[0], number_of_quantum_particles, number_of_timeslices,
                     positions[active_particle_index].item(), positions[worldline_neighbours[1]].item(),
                     positions[worldline_neighbours[0]].item(), self._mass, self._timestep, movement_direction,
-                    self._anharmonicity, self._omega_squared, self._magnitude_of_double_well_position,
-                    self._kinetic_U_west, self._kinetic_U_east, self._potential_U, self._x_shift)
+                    self._anharmonicity, self._omega_squared, self._magnitude_of_double_well_position, kinetic_U_west,
+                                           kinetic_U_east, potential_U)
             
             return event.shortest_distance_to_next_event, event.vetoing_index, None
         
         else:
             (shortest_distance_to_next_event, vetoing_index) = \
-                self._get_next_kinetic_event(positions, active_particle_index, movement_direction, worldline_neighbours)
+                self._get_next_kinetic_event(positions, active_particle_index, movement_direction, worldline_neighbours,
+                                             kinetic_U_west, kinetic_U_east)
             """now consider the potential part of the action"""
             initial_position = positions[active_particle_index].item()
-            uphill_energy = self._potential_U  #- np.log(np.random.uniform(0.0, 1.0))
+            uphill_energy = potential_U  #- np.log(np.random.uniform(0.0, 1.0))
 
             if self._anharmonicity == 0.0 or self._omega_squared == 0.0:
                 bottom_of_well = 0.0
