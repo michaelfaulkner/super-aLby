@@ -88,7 +88,7 @@ struct next_event get_next_event(int active_particle_index, int east_neighbour_i
     double bottom_of_well;
 
     if(std::abs(anharmonicity) <= epsilon || std::abs(omega_squared) <= epsilon){
-        bottom_of_well = 0.0;
+        bottom_of_well = -x_shift;
     }
     else{
         if(std::abs(initial_position) >= epsilon){
@@ -124,7 +124,7 @@ struct next_event get_next_event(int active_particle_index, int east_neighbour_i
 
     std::vector<double> real_roots_arr;
     std::vector<std::complex<double>> roots_arr; 
-    if(std::abs(anharmonicity) <= 0){ 
+    if(std::abs(anharmonicity) <= 0.0){ 
         real_roots_arr = get_harmonic_potential_roots(mass, timestep, omega_squared, final_action, x_shift);
     }
     else{
@@ -285,7 +285,6 @@ double get_final_position_of_single_well_event(int movement_direction, std::vect
 
     std::sort(roots.begin(), roots.end());
     double return_root;
-
     if(movement_direction > 0){
        return_root = roots.at(1);
     }
@@ -297,27 +296,27 @@ double get_final_position_of_single_well_event(int movement_direction, std::vect
 
 double get_potential_difference(double active_particle_position, double west_neighbour_position,
     double east_neighbour_position, double mass, double timestep,
-    double omega_squared, double anharmonicity, double candidate_position){
+    double omega_squared, double anharmonicity, double candidate_position, double x_shift){
 
     double current_action = get_pairwise_action(west_neighbour_position, active_particle_position, mass, timestep,
-        omega_squared, anharmonicity) +
+        omega_squared, anharmonicity, x_shift) +
         get_pairwise_action(active_particle_position, east_neighbour_position, mass, timestep,
-        omega_squared, anharmonicity);
+        omega_squared, anharmonicity, x_shift);
 
     double candidate_action = get_pairwise_action(west_neighbour_position, candidate_position, mass, timestep,
-        omega_squared, anharmonicity) +
+        omega_squared, anharmonicity, x_shift) +
         get_pairwise_action(candidate_position, east_neighbour_position, mass, timestep,
-        omega_squared, anharmonicity);
+        omega_squared, anharmonicity, x_shift);
     
     return candidate_action - current_action;
 }
 
 
 double get_pairwise_action(double active_particle_position, double neighbour_position, double mass,
-        double timestep, double omega_squared, double anharmonicity){
+        double timestep, double omega_squared, double anharmonicity, double x_shift){
     
     return get_kinetic_action_term(active_particle_position, neighbour_position, mass, timestep) +
-        get_potential_action_term(active_particle_position, mass, timestep, omega_squared, anharmonicity);
+        get_potential_action_term(active_particle_position, mass, timestep, omega_squared, anharmonicity, x_shift);
 }
 
 double get_kinetic_action_term(double active_particle_position, double neighbour_position, double mass,
@@ -327,9 +326,9 @@ double get_kinetic_action_term(double active_particle_position, double neighbour
 }
 
 double get_potential_action_term(double active_particle_position, double mass, double timestep, double omega_squared,
-    double anharmonicity){
+    double anharmonicity, double x_shift){
     
-        return 0.5 * mass * timestep * omega_squared * pow(active_particle_position, 2) +
+        return 0.5 * mass * timestep * omega_squared * pow((active_particle_position + x_shift), 2) +
             anharmonicity * timestep * pow(active_particle_position, 4);
 }
 

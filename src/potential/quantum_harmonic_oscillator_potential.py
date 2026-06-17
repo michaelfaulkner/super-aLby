@@ -109,7 +109,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
 
             diff = cpp_qho.get_potential_difference(active_particle_position.item(),
                     west_neighbour_position.item(), east_neighbour_position.item(), self._mass, self._timestep, self._omega_squared,
-                    self._anharmonicity, candidate_position.item())
+                    self._anharmonicity, candidate_position.item(), self._x_shift)
             
             return diff
         
@@ -216,7 +216,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
                     positions[active_particle_index].item(), positions[worldline_neighbours[1]].item(),
                     positions[worldline_neighbours[0]].item(), self._mass, self._timestep, movement_direction,
                     self._anharmonicity, self._omega_squared, self._magnitude_of_double_well_position, kinetic_U_west,
-                                           kinetic_U_east, potential_U)
+                                           kinetic_U_east, potential_U, self._x_shift)
             
             return event.shortest_distance_to_next_event, event.vetoing_index, None
         

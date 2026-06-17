@@ -1,0 +1,109 @@
+from markov_chain_diagnostics import get_iact_and_acf
+import importlib
+import math
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import sample_getter
+import sys
+
+
+this_directory = os.path.dirname(os.path.abspath(__file__))
+src_directory = os.path.abspath(this_directory + "/../")
+sys.path.insert(0, src_directory)
+helper_methods = importlib.import_module("helper_methods")
+parsing = importlib.import_module("base.parsing")
+strings = importlib.import_module("base.strings")
+
+
+def main(config_folder, min, max, min_timestep, save_folder, max_timestep=3.0):
+    min = int(min)
+    max = int(max)
+    min_timestep = float(min_timestep)
+    max_timestep = float(max_timestep)
+
+    for iact_index in range(min, max):
+
+        iact_arr = np.zeros(len(os.listdir(config_folder)))
+        timestep_arr = np.zeros(len(os.listdir(config_folder)))
+
+        for index, folder in enumerate(os.listdir(config_folder)):
+            config_file_string = os.path.join(
+                config_folder, folder, f"{iact_index}.ini")
+            print(config_file_string)
+            config = parsing.read_config(
+                parsing.parse_options([config_file_string]).config_file)
+            (config_file_mediator, potential, _, samplers, sample_directory, temperature,
+             number_of_equilibration_iterations, number_of_observations, number_of_particles,
+             size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
+
+            mass = parsing.get_value(
+                config, strings.to_camel_case(potential), "mass")
+            timestep = parsing.get_value(
+                config, strings.to_camel_case(potential), "timestep")
+            omega_squared = parsing.get_value(
+                config, strings.to_camel_case(potential), "omega_squared")
+            anharmonicity =  parsing.get_value(
+                config, strings.to_camel_case(potential), "anharmonicity")
+            sample_directory = sample_directory
+            temperature_index = 0
+            thinning_level = None
+            if timestep >= min_timestep and timestep <= max_timestep:
+                print(timestep)
+                timestep_arr[index] = timestep
+                bottom_of_well = np.sqrt(-mass * omega_squared / 4 * anharmonicity)
+
+                checkpointing_index = sample_getter.get_checkpointing_indices(sample_directory)
+                if checkpointing_index != 0:
+                    max_len = 0
+                    for i in range(checkpointing_index + 1):
+                        new_len = len(sample_getter.get_positions(
+                            sample_directory, temperature, i, number_of_particles, 
+                            None, thinning_level=thinning_level)[:, 0])
+                        if new_len > max_len:
+                            max_len = new_len
+
+                    mean_sample = np.zeros(max_len * (checkpointing_index + 1))
+                    for i in range(checkpointing_index + 1):
+                        sub_arr = sample_getter.get_positions(
+                            sample_directory, temperature, i, number_of_particles, 
+                            None, thinning_level=thinning_level)[:, 0]
+                        try:
+                            mean_sample[i * max_len : (i) * max_len + len(sub_arr)] = sub_arr
+                        except:
+                            mean_sample[i * max_len : (i) * max_len + len(sub_arr)] = sub_arr[1:]
+
+                    mean_sample = mean_sample[np.nonzero(mean_sample)]
+                    mean_sample = mean_sample - bottom_of_well
+                    mean_sample = np.mean(np.square(mean_sample), axis = 1)
+                    mean_sample = mean_sample[3000:]
+                        
+                else:
+                    mean_sample = sample_getter.get_positions(sample_directory, temperature, 0, number_of_particles, number_of_equilibration_iterations,
+                                    thinning_level=thinning_level)
+                    mean_sample = mean_sample - bottom_of_well
+                    mean_sample = np.mean(np.square(mean_sample), axis = 1)
+
+                
+                if len(np.shape(mean_sample)) > 1:
+                    mean_sample = mean_sample[:,0]
+        
+
+                iact, acf = get_iact_and_acf(mean_sample[:])
+
+                iact_arr[index] = iact
+        argsort = np.argsort(timestep_arr)
+        timestep_arr = timestep_arr[argsort]
+        iact_arr = iact_arr[argsort]
+        timestep_arr = np.trim_zeros(timestep_arr, trim = "fb")
+        iact_arr = np.trim_zeros(iact_arr, trim = "fb")
+        save_arr = np.zeros((len(iact_arr), 2))
+        save_arr[:, 0] = iact_arr
+        save_arr[:, 1] = timestep_arr
+
+        np.save(f"output/{save_folder}/iact_ecmc_{iact_index}.npy", save_arr)
+
+
+if __name__ == '__main__':
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])

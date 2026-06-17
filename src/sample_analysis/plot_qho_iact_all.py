@@ -82,13 +82,13 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
         ff_data = False
 
     if metrop_data:
-        m_fit_trim = -9#-7
+        m_fit_trim = -1#-7
         m_coeffs = np.polyfit(np.log(metropolis_sorted_N[:m_fit_trim]), np.log(metropolis_iact_mean_arr[:m_fit_trim]), deg=1)
         fitted_m = m_coeffs[1] + np.multiply(np.log(metropolis_sorted_N[:m_fit_trim]), m_coeffs[0])
         print(m_coeffs)
 
-    e_fit_trim = -13 #-13
-    ff_fit_trim = -13
+    e_fit_trim = -1 #-13
+    ff_fit_trim = -1
   
     e_coeffs = np.polyfit(np.log(ecmc_sorted_N[:e_fit_trim]), np.log(ecmc_iact_mean_arr[:e_fit_trim]), deg=1)
 
@@ -139,9 +139,9 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
    
 
 
-    #plt.title(f"Integrated Autocorrelation Time for anharmonic oscillator, with {N} Repeats")
+    #plt.title(f"IACT of x^2 for QHO with (x+2)^2")
     plt.tight_layout()
-    plt.savefig("iact_a_ecmc.png")
+    plt.savefig("test_x-A.png")
     plt.clf()
 
 

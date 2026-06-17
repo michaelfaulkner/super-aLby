@@ -24,7 +24,7 @@ double get_final_position_of_non_tunnel_event(double position, int movement_dire
 bool check_all_roots_real(std::vector<std::complex<double>> roots);
 
 std::vector<double> get_harmonic_potential_roots(double mass, double timestep, double omega_squared,
-    double final_action);
+    double final_action, double x_shift);
 
 std::vector<std::complex<double>> get_anharmonic_potential_roots(double mass, double timestep, double anharmonicity,
                       double omega_squared, double final_action);
@@ -37,13 +37,13 @@ double get_final_position_of_single_well_event(int movement_direction, std::vect
 
 double get_potential_difference(double active_particle_position, double west_neighbour_position,
     double east_neighbour_position, double mass, double timestep,
-    double omega_squared, double anharmonicity, double candidate_position);
+    double omega_squared, double anharmonicity, double candidate_position, double x_shift);
 
 double get_pairwise_action(double active_particle_position, double neighbour_position, double mass,
-    double timestep, double omega_squared, double anharmonicity);
+    double timestep, double omega_squared, double anharmonicity, double x_shift);
 
 double get_kinetic_action_term(double active_particle_position, double neighbour_position, double mass,
                         double timestep);
 
 double get_potential_action_term(double active_particle_position, double mass, double timestep, double omega_squared,
-    double anharmonicity);
+    double anharmonicity, double x_shift);

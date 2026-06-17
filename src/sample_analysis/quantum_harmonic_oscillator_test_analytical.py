@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import sample_getter
 import sys
 from markov_chain_diagnostics import get_sample_mean_and_error
-
+import matplotlib
 
 this_directory = os.path.dirname(os.path.abspath(__file__))
 src_directory = os.path.abspath(this_directory + "/../")
@@ -14,158 +14,123 @@ helper_methods = importlib.import_module("helper_methods")
 parsing = importlib.import_module("base.parsing")
 strings = importlib.import_module("base.strings")
 
+matplotlib.rcParams['mathtext.fontset'] = 'cm'
+matplotlib.use('Agg')
+def analytical_x2(mass, omega, N_tau, timestep):
+    # dim_omega = dim_m
+    # auxiliary = 1 + dim_omega ** 2 / 2 - dim_omega * np.sqrt(1 + dim_omega**2 / 4)
+    # return (1 / (2 * dim_m * dim_omega * np.sqrt(1 + 0.25 * dim_omega ** 2))) * (
+    #         (1 + auxiliary ** N_tau) / (1 - auxiliary ** N_tau))
 
-def analytical_x2(dim_m, N_tau):
-    dim_omega = dim_m
-    auxiliary = 1 + dim_omega ** 2 / 2 - dim_omega * np.sqrt(1 + dim_omega**2 / 4)
-    return (1 / (2 * dim_m * dim_omega * np.sqrt(1 + 0.25 * dim_omega ** 2))) * (
-            (1 + auxiliary ** N_tau) / (1 - auxiliary ** N_tau))
+    auxilliary = 1.0 + 0.5 * timestep**2 * omega**2 - timestep * \
+        omega * np.sqrt(1 + 0.25 * timestep**2 * omega**2)
+
+    return (1.0 / (2.0 * mass * omega * np.sqrt(1.0 + 0.25 * timestep**2 * omega**2))) * ((1 + auxilliary**N_tau) /
+                                                                                          (1 - auxilliary**N_tau))
 
 
-def main(values_filepath, config_folder):
+def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
     r"""
     Produces plots comparing the numerical and analytical values of <x^2> for the 1D quantum harmonic oscillator
         potential.
-
-    Parameters
-        ----------
-        values_filepath : str
-            The path to the N and \delta \tau values file. This file is expected to be a .txt file, formatted like:
-            1 001 10000 
-            2 005 2000 
-            etc.
-            This is an artefact of using SLURM array jobs to produce several simulations with differing input values.
-        config_folder : str
-            The path to the folder containing the corresponding configuration files. These are expected to be named like
-            metropolis_001_10000.ini
     """
-    N_tau_data = np.loadtxt(values_filepath, dtype='str')
-    tau_values = N_tau_data[:,1]
-    N_values = N_tau_data[:,2]
 
-    analytical_x2_arr = np.zeros(len(tau_values))
-    numerical_x2 = np.zeros(len(tau_values))
-    timestep_arr = np.zeros(len(tau_values))
-    N_arr = np.zeros(len(tau_values))
-    m_arr = np.zeros(len(tau_values))
+    N = int(N)
+    propertime = float(propertime)
+    mass = float(mass)
+    omega = float(omega)
 
-    for index, string in enumerate(tau_values):
-        if string != "001":
-       
-            config_file_string = os.path.join(config_folder, f"metropolis/metropolis_{string}.ini")
-            print(config_file_string)
-            config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-            (config_file_mediator, potential, _, samplers, sample_directory, temperature,
-             number_of_equilibration_iterations, number_of_observations, number_of_particles,
-             _) = helper_methods.get_basic_config_data(config_file_string)
-            
-            mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
-            timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
-            number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
-            # lambda_value = parsing.get_value(config, "EventChainMediator", "normalised_distance_between_measurements")
-            temperature_index = 0
-            thinning_level = None
-            mean_sample = sample_getter.get_mean_positions(sample_directory, temperature, number_of_particles,
-                                                           number_of_equilibration_iterations, thinning_level)
-            # position_sample = sample_getter.get_positions(sample_directory, temperature, number_of_particles,
-            #                                               number_of_equilibration_iterations, thinning_level)
-            mean_sample_mean = get_sample_mean_and_error(mean_sample)
-            numerical_x2[index] = mean_sample_mean[0] / timestep**2
-   
-        timestep_arr[index] = timestep
-        # print(f"timestep was {timestep_arr[index]}, mean {numerical_x2[index]}")
+    timestep_data = np.load(os.path.join(x2_data_path, "x2_ecmc_0.npy"))[:, 1]
+    storage_arr = np.zeros((len(timestep_data), N))
+    sorted_timestep = timestep_data[np.argsort(timestep_data)]
 
-    numerical_x2_e = np.zeros(len(tau_values))
-    for index, string in enumerate(tau_values):
+    for index in range(N):
+        x2_timestep = np.load(os.path.join(
+            x2_data_path, f"x2_ecmc_{index}.npy"))
+        x2_data = x2_timestep[:, 0]
+        timestep_data = x2_timestep[:, 1]
+        argsorted_data = np.argsort(timestep_data)
+        timestep_argsorted = timestep_data[argsorted_data]
+        x2_data = x2_data[argsorted_data]
+        storage_arr[:, index] = x2_data
 
-        config_file_string = os.path.join(config_folder, f"ecmc_lambda_50/event_chain_{string}.ini")
-        print(config_file_string)
-        config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-        (config_file_mediator, potential, samplers, sample_directory, temperature,
-         number_of_equilibration_iterations, number_of_observations, number_of_particles, _
-         ) = helper_methods.get_basic_config_data(config_file_string)
-        
-        mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
-        timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
-        number_of_particles = parsing.get_value(config, "ModelSettings", "number_of_particles")
-        # lambda_value = parsing.get_value(config, "EventChainMediator", "normalised_distance_between_measurements")
-        temperature_index = 0
-        thinning_level = None
- 
-        mean_sample = sample_getter.get_mean_positions(sample_directory, temperature, number_of_particles,
-                                                       number_of_equilibration_iterations, thinning_level)
-        mean_sample = mean_sample[:30000]
+    x2_mean_arr = np.mean(storage_arr, axis=1)
 
-        mean_sample_mean = get_sample_mean_and_error(mean_sample)
-        numerical_x2_e[index] = mean_sample_mean[0] / timestep ** 2
-        timestep_arr[index] = timestep
-        analytical_x2_arr[index] = analytical_x2(mass * timestep, number_of_particles)
-        
-    # timestep = 0.01
-    # number_of_equilibration_iterations = 1000
-    # metropolis_001_31k = np.load(
-    #     "output/metropolis/mean_squared_positions/31000/sample_of_mean_squared_positions_001_0.npy")
-    # metropolis_001_31k = get_sample_mean_and_error(metropolis_001_31k)
-    # metropolis_001_31k = metropolis_001_31k[0] / timestep **2
+    x2_mean_arr = x2_mean_arr[sorted_timestep >= 0.01]
+    err = np.std(storage_arr, axis=1)
+    err = err[sorted_timestep >= 0.01]
+    sorted_timestep = sorted_timestep[sorted_timestep >= 0.01]
+    sorted_N = propertime / sorted_timestep
+    analytical_data = np.zeros(len(x2_mean_arr))
 
-    # metropolis_001_51k = np.load(
-    #     "output/metropolis/mean_squared_positions/51000/sample_of_mean_squared_positions_001_0.npy")
-    # metropolis_001_51k = metropolis_001_51k[number_of_equilibration_iterations + 1:]
-    # metropolis_001_51k = get_sample_mean_and_error(metropolis_001_51k)
-    # metropolis_001_51k = metropolis_001_51k[0] / timestep**2
+    for t_index, timestep in enumerate(sorted_timestep):
+        print(timestep)
+        analytical_x2_val = analytical_x2(
+            mass, omega, propertime/timestep, timestep)
+        analytical_data[t_index] = analytical_x2_val
 
-    # metropolis_001_81k = np.load(
-    #     "output/metropolis/mean_squared_positions/81000/sample_of_mean_squared_positions_001_0.npy")
-    # metropolis_001_81k = get_sample_mean_and_error(metropolis_001_81k)
-    # metropolis_001_81k = metropolis_001_81k[0] / timestep**2
+    fig, ax1 = plt.subplots(2, 1, sharex = True, sharey = True, figsize=(6.0, 3.0))
 
-    # metropolis_001_101k = np.load(
-    #     "output/metropolis/mean_squared_positions/101000/sample_of_mean_squared_positions_001_0.npy")
-    # metropolis_001_101k = get_sample_mean_and_error(metropolis_001_101k)
-    # metropolis_001_101k = metropolis_001_101k[0] / timestep**2
+    ax1[0].scatter(analytical_data, x2_mean_arr, color = "#e20acdff", label = "ECMC", marker = "x")
+    fig.supxlabel(r"analytical $\bar{x}^2$", y = 0.08, fontsize = 15, weight = "bold")
+    fig.supylabel(r"numerical $\bar{x}^2$", x = 0.05,  y = 0.6, fontsize = 15, weight = "bold")
+    #ax1[0].set_yscale('log')
+    #ax1[0].set_xscale('log')
 
-    # sub_arr_len = 51000
-    # num_sub_arrs = 20
-    # metropolis_001_10e6 = np.zeros(sub_arr_len * num_sub_arrs)
-    # for i in range(num_sub_arrs):
-    #     metropolis_001_10e6[i * sub_arr_len : (i+1) * sub_arr_len] = np.load(
-    #     f"output/metropolis_001_checkpoints/run_{i:02d}_sample_of_mean_positions.npy")[1:, 0]
 
-    # metropolis_001_10e6 = metropolis_001_10e6[number_of_equilibration_iterations + 1:-18999]
-    # metropolis_001_10e6 = get_sample_mean_and_error(metropolis_001_10e6)
-    # metropolis_001_10e6 = metropolis_001_10e6[0] / timestep**2
+    #ax1[0].set_xlabel(r"$\langle x^2 \rangle$ analytical",  fontsize=15)
+    # ax1[1].set_xlabel(r"$\delta \tau$",  fontsize=20)
 
-    fig1, ax1 = plt.subplots(1,1,)# sharey = True, figsize = (10.0, 7.0))
-    ax1.set_title(r"Metropolis with $3\times 10^4$ samples",  fontsize=15)
-    ax1.scatter(timestep_arr[:], analytical_x2_arr[:], marker=".", s = 200.0, color="purple", label="analytical")
-    ax1.scatter(timestep_arr[:], numerical_x2[:], marker="x", s = 200.0, color="#f974ef", label="numerical")
+    #ax1[0].set_ylabel(r"$\langle x^2 \rangle$ numerical",  fontsize=15)
 
-    # ax1[0].scatter(timestep, metropolis_001_31k,  marker="x", s = 200.0, color="#f974ef", label=r"$3\times 10^4$ ")
-    # ax1[0].scatter(timestep, metropolis_001_51k,  marker="v", s = 200.0, color="#bd178b", label=r"$5\times 10^4$ ")
-    # ax1[0].scatter(timestep, metropolis_001_81k,  marker="s", s = 200.0, color="#eb102e", label=r"$8\times 10^4$ ")
-    # ax1[0].scatter(timestep, metropolis_001_101k,  marker="p", s = 200.0, color="#f0601d", label=r"$1\times 10^5$ ")
-    # ax1[0].scatter(timestep, metropolis_001_10e6,  marker="*", s = 200.0, color="#f5d20f", label=r"$1\times 10^6$ ")
+    timestep_data = np.load(os.path.join(x2_data_path_metrop, "x2_metropolis_0.npy"))[:, 1]
+    storage_arr = np.zeros((len(timestep_data), N))
+    sorted_timestep = timestep_data[np.argsort(timestep_data)]
 
-    # ax1[1].set_title(r"ECMC, with $\lambda = 50.0$ and $3\times 10^4$  samples",  fontsize=15)
-    # ax1[1].scatter(timestep_arr[:], analytical_x2_arr[:], marker=".", s = 200.0, color="purple", label="analytical")
-    # ax1[1].scatter(timestep_arr[:], numerical_x2_e[:], marker="x", s = 200.0, color="#f974ef", label="numerical")
-    ax1.set_yscale('log')
+    for index in range(N):
+        x2_timestep = np.load(os.path.join(
+            x2_data_path_metrop, f"x2_metropolis_{index}.npy"))
+        x2_data = x2_timestep[:, 0]
+        timestep_data = x2_timestep[:, 1]
+        argsorted_data = np.argsort(timestep_data)
+        timestep_argsorted = timestep_data[argsorted_data]
+        x2_data = x2_data[argsorted_data]
+        storage_arr[:, index] = x2_data
+
+    x2_mean_arr = np.mean(storage_arr, axis=1)
+
+    x2_mean_arr = x2_mean_arr[sorted_timestep >= 0.01]
+    err = np.std(storage_arr, axis=1)
+    err = err[sorted_timestep >= 0.01]
+    sorted_timestep = sorted_timestep[sorted_timestep >= 0.01]
+    sorted_N = propertime / sorted_timestep
+    analytical_data = np.zeros(len(x2_mean_arr))
+
+    for t_index, timestep in enumerate(sorted_timestep):
+        print(timestep)
+        analytical_x2_val = analytical_x2(
+            mass, omega, propertime/timestep, timestep)
+        analytical_data[t_index] = analytical_x2_val    
+
+    ax1[1].scatter(analytical_data, x2_mean_arr, color = "#e16f04ff", label = "Metropolis MC", marker = "x")
     #ax1[1].set_yscale('log')
-    ax1.set_xscale('log')
     #ax1[1].set_xscale('log')
 
-    ax1.set_xlabel(r"$\delta \tau$",  fontsize=20)
-    #ax1[1].set_xlabel(r"$\delta \tau$",  fontsize=20)
+    #ax1[1].set_xlabel(r"$\langle x^2 \rangle$ analytical",  fontsize=15)
+    # ax1[1].set_xlabel(r"$\delta \tau$",  fontsize=20)
 
-    ax1.set_ylabel(r"$\langle x^2 \rangle$",  fontsize=20)
-    ax1.legend()
+    #ax1[1].set_ylabel(r"$\langle x^2 \rangle$ numerical",  fontsize=15)
+    legend_properties = {'weight':'bold'}
+    #plt.legend(prop=legend_properties)
+    fig.legend(loc  = "upper center", prop=legend_properties)
     #ax1[1].legend()
-
+    ax1[0].set_ylim(2e-1, 6e-1)
+    ax1[1].set_ylim(2e-1, 6e-1)
     plt.tight_layout()
-    plt.savefig("tau_arr.png")
-  
-    #print(f"analytical 0.01: {analytical_x2_arr[-1]}, ecmc: {numerical_x2_e[-1]}")
-   
+    plt.savefig("qho_x_shift.png", bbox_inches='tight' )
+
+    # print(f"analytical 0.01: {analytical_x2_arr[-1]}, ecmc: {numerical_x2_e[-1]}")
+
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
