@@ -37,9 +37,9 @@ def main(config_folder, min, max, min_timestep, max_timestep=3.0):
             thinning_level = None
             if timestep >= min_timestep and timestep <= max_timestep:
          
-                old_filepath = os.path.join(sample_directory, "temperature_00_run_00_sample_of_mean_positions.npy")
+                old_filepath = os.path.join(sample_directory, "run_index.txt")
 
-                new_filepath = os.path.join(sample_directory, "checkpoint_00_sample_of_mean_squared_positions.npy")
+                new_filepath = os.path.join(sample_directory, "checkpoint_index.txt")
 
                 os.rename(old_filepath, new_filepath)
 

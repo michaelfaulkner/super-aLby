@@ -13,7 +13,9 @@ sys.path.insert(0, src_directory)
 helper_methods = importlib.import_module("helper_methods")
 parsing = importlib.import_module("base.parsing")
 strings = importlib.import_module("base.strings")
+
 matplotlib.rcParams['mathtext.fontset'] = 'cm'
+matplotlib.use('Agg')
 
 def main(config_file_string):
 
@@ -27,22 +29,18 @@ def main(config_file_string):
                                                   number_of_equilibration_iterations, thinning_level=thinning_level)
     print(np.shape(position_sample))
     
-    mod_squared_position = np.square(np.abs(position_sample))
-    
-    timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
-    mass = parsing.get_value(config, strings.to_camel_case(potential), "mass")
-    omega_squared = parsing.get_value(config, strings.to_camel_case(potential), "omega_squared")
     
    
 
     fig, ax = plt.subplots(1,1)
+    print("line 39")
     ax.hist(position_sample.flatten(), bins = 50, density = True)
     ax.set_xlabel(r"$x$", fontsize = 16)
     ax.set_ylabel(r"$|\psi_0 (x)|^2$", fontsize = 16)
 
 
 
-    plt.savefig("qho_hist_ecmc_-2.png")
+    plt.savefig("qho_hist.png")
 
 
 if __name__ == '__main__':

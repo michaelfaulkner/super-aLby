@@ -69,7 +69,7 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
             mass, omega, propertime/timestep, timestep)
         analytical_data[t_index] = analytical_x2_val
 
-    fig, ax1 = plt.subplots(2, 1, sharex = True, sharey = True, figsize=(6.0, 3.0))
+    fig, ax1 = plt.subplots(1,2, sharex = True, sharey = True, figsize=(6.0, 4.0))
 
     ax1[0].scatter(analytical_data, x2_mean_arr, color = "#e20acdff", label = "ECMC", marker = "x")
     fig.supxlabel(r"analytical $\bar{x}^2$", y = 0.08, fontsize = 15, weight = "bold")
@@ -83,13 +83,13 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
 
     #ax1[0].set_ylabel(r"$\langle x^2 \rangle$ numerical",  fontsize=15)
 
-    timestep_data = np.load(os.path.join(x2_data_path_metrop, "x2_metropolis_0.npy"))[:, 1]
+    timestep_data = np.load(os.path.join(x2_data_path_metrop, "x2_ecmc_0.npy"))[:, 1]
     storage_arr = np.zeros((len(timestep_data), N))
     sorted_timestep = timestep_data[np.argsort(timestep_data)]
 
     for index in range(N):
         x2_timestep = np.load(os.path.join(
-            x2_data_path_metrop, f"x2_metropolis_{index}.npy"))
+            x2_data_path_metrop, f"x2_ecmc_{index}.npy"))
         x2_data = x2_timestep[:, 0]
         timestep_data = x2_timestep[:, 1]
         argsorted_data = np.argsort(timestep_data)
@@ -97,14 +97,14 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
         x2_data = x2_data[argsorted_data]
         storage_arr[:, index] = x2_data
 
-    x2_mean_arr = np.mean(storage_arr, axis=1)
+    x2_mean_arr_metrop = np.mean(storage_arr, axis=1)
 
-    x2_mean_arr = x2_mean_arr[sorted_timestep >= 0.01]
+    x2_mean_arr_metrop = x2_mean_arr_metrop[sorted_timestep >= 0.01]
     err = np.std(storage_arr, axis=1)
     err = err[sorted_timestep >= 0.01]
     sorted_timestep = sorted_timestep[sorted_timestep >= 0.01]
     sorted_N = propertime / sorted_timestep
-    analytical_data = np.zeros(len(x2_mean_arr))
+    analytical_data = np.zeros(len(x2_mean_arr_metrop))
 
     for t_index, timestep in enumerate(sorted_timestep):
         print(timestep)
@@ -112,7 +112,7 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
             mass, omega, propertime/timestep, timestep)
         analytical_data[t_index] = analytical_x2_val    
 
-    ax1[1].scatter(analytical_data, x2_mean_arr, color = "#e16f04ff", label = "Metropolis MC", marker = "x")
+    ax1[1].scatter(analytical_data, x2_mean_arr_metrop, color = "#e16f04ff", label = "Metropolis MC", marker = "x")
     #ax1[1].set_yscale('log')
     #ax1[1].set_xscale('log')
 
@@ -127,7 +127,8 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
     ax1[0].set_ylim(2e-1, 6e-1)
     ax1[1].set_ylim(2e-1, 6e-1)
     plt.tight_layout()
-    plt.savefig("qho_x_shift.png", bbox_inches='tight' )
+    plt.savefig("qho_x2_analytical_FSEM_poster.pdf", bbox_inches='tight' , transparent =True)
+
 
     # print(f"analytical 0.01: {analytical_x2_arr[-1]}, ecmc: {numerical_x2_e[-1]}")
 
