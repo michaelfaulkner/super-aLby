@@ -43,6 +43,7 @@ def main(config_file_string):
     except:
         sample = sample_getter.get_positions(sample_directory, temperature, 0, number_of_particles, number_of_equilibration_iterations,
                                     thinning_level=thinning_level)
+        print(np.shape(sample))
         sample = np.mean(np.square(sample-2), axis = 1)
     
     #sample = sample[30000:50000]
@@ -50,21 +51,19 @@ def main(config_file_string):
     if len(np.shape(sample)) > 1:
         sample = sample[:,0]
 
-    sample = sample[:300]
+    sample = sample[:15]
     iact, acf = get_iact_and_acf(sample[:])
 
 
     print(np.shape(acf))
     print(iact)
 
-    np.save(f"acf_1_x0_2_x-a.npy", acf)
-
-    plt.scatter(np.arange(len(acf)), acf)
+    plt.plot(np.arange(len(acf)), acf)
     plt.ylim(-1.75, 1.75)
 
     plt.annotate(f"IACT = {iact}", (1000, 1.0))
 
-    plt.savefig(f"acf_1_x0_2_x-a.png")
+    plt.savefig(f"acf_005_x0_2_x-a.png")
 
 
 if __name__ == '__main__':

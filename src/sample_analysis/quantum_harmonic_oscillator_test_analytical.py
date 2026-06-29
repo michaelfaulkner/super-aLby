@@ -72,8 +72,8 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
     fig, ax1 = plt.subplots(1,2, sharex = True, sharey = True, figsize=(6.0, 4.0))
 
     ax1[0].scatter(analytical_data, x2_mean_arr, color = "#e20acdff", label = "ECMC", marker = "x")
-    fig.supxlabel(r"analytical $\bar{x}^2$", y = 0.08, fontsize = 15, weight = "bold")
-    fig.supylabel(r"numerical $\bar{x}^2$", x = 0.05,  y = 0.6, fontsize = 15, weight = "bold")
+    fig.supxlabel(r"analytical $\langle x^2 \rangle$", y = 0.08, fontsize = 15, weight = "bold")
+    fig.supylabel(r"numerical $\overline{x^2}$", x = 0.05,  y = 0.6, fontsize = 15, weight = "bold")
     #ax1[0].set_yscale('log')
     #ax1[0].set_xscale('log')
 

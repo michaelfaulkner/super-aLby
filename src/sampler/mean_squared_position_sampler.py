@@ -2,13 +2,12 @@
 from .observation_sampler import ObservationSampler
 import numpy as np
 
-
 class MeanSquaredPositionSampler(ObservationSampler):
     """
     Class for taking observations of the mean squared particle positions without correcting for periodic boundaries.
     """
 
-    def __init__(self, timestep: float = 0.1):
+    def __init__(self, timestep: float = 0.1, x_shift: float = 0.0):
         """
         The constructor of the MeanSquaredPositionSampler class.
 
@@ -19,6 +18,7 @@ class MeanSquaredPositionSampler(ObservationSampler):
         """
         super().__init__()
         self._timestep = timestep
+        self._x_shift = x_shift
 
     def get_empty_sample_array(self, total_number_of_iterations):
         """
@@ -58,7 +58,7 @@ class MeanSquaredPositionSampler(ObservationSampler):
             The observation of the positions.
         """
 
-        return np.mean(np.square(positions))
+        return np.mean(np.square(positions + self.x_shift))
 
     def output_sample(self, sample, checkpoint_index, output_directory):
         """

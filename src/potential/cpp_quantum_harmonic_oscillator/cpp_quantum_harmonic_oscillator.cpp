@@ -88,7 +88,7 @@ struct next_event get_next_event(int active_particle_index, int east_neighbour_i
     double bottom_of_well;
 
     if(std::abs(anharmonicity) <= epsilon || std::abs(omega_squared) <= epsilon){
-        bottom_of_well = -x_shift;
+        bottom_of_well = x_shift;
     }
     else{
         if(std::abs(initial_position) >= epsilon){
@@ -118,7 +118,7 @@ struct next_event get_next_event(int active_particle_index, int east_neighbour_i
         intermediate_position = initial_position;
     }
 
-    double initial_action = 0.5 * mass * timestep * omega_squared * pow((intermediate_position + x_shift), 2)
+    double initial_action = 0.5 * mass * timestep * omega_squared * pow((intermediate_position - x_shift), 2)
                             + timestep * anharmonicity * pow(intermediate_position, 4);
     double final_action = uphill_energy + initial_action;
 
@@ -235,7 +235,7 @@ std::vector<double> get_harmonic_potential_roots(double mass, double timestep, d
   
     std::vector<double> roots; 
     double a = 0.5 * mass * timestep * omega_squared;
-    double b = mass * omega_squared * timestep * x_shift;
+    double b = - mass * omega_squared * timestep * x_shift;
     double c = 0.5 * mass * omega_squared * timestep * pow(x_shift, 2) - final_action;
 
     roots = get_real_quadratic_roots(a, b, c);
@@ -328,7 +328,7 @@ double get_kinetic_action_term(double active_particle_position, double neighbour
 double get_potential_action_term(double active_particle_position, double mass, double timestep, double omega_squared,
     double anharmonicity, double x_shift){
     
-        return 0.5 * mass * timestep * omega_squared * pow((active_particle_position + x_shift), 2) +
+        return 0.5 * mass * timestep * omega_squared * pow((active_particle_position - x_shift), 2) +
             anharmonicity * timestep * pow(active_particle_position, 4);
 }
 

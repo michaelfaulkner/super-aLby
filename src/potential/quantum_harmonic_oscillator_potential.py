@@ -62,6 +62,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             self._magnitude_of_double_well_position = 0.0
         
         self._x_shift = x_shift
+
+
         
 
     def get_initial_positions(self):

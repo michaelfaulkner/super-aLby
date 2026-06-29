@@ -21,6 +21,7 @@ class ObservationSampler(Sampler, metaclass=ABCMeta):
             If dimensionality_of_particle_space does not equal 1.
         """
         super().__init__()
+        self._test = 0.0
 
     @abstractmethod
     def get_empty_sample_array(self, total_number_of_iterations):
