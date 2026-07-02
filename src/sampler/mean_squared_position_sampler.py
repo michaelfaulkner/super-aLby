@@ -58,7 +58,7 @@ class MeanSquaredPositionSampler(ObservationSampler):
             The observation of the positions.
         """
 
-        return np.mean(np.square(positions + self.x_shift))
+        return np.mean(np.square(positions - self._x_shift))
 
     def output_sample(self, sample, checkpoint_index, output_directory):
         """

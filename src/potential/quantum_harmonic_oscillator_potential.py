@@ -4,8 +4,8 @@ import cmath
 from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError
 from helper_methods import get_initial_positions_of_smooth_potential
-from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
-from potential.cpp_quantum_harmonic_oscillator import cpp_qho 
+from model_settings import number_of_quantum_particles, number_of_timeslices
+
 class QuantumHarmonicOscillatorPotential(WorldlinePotential):
     r"""
     This class implements the (currently one-dimensional) potential for the quantum harmonic oscillator resulting
@@ -60,11 +60,9 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
                                                                (4 * self._anharmonicity))
         else:
             self._magnitude_of_double_well_position = 0.0
-        
         self._x_shift = x_shift
-
-
-        
+        if cpp_implementation:
+            from potential.cpp_quantum_harmonic_oscillator import cpp_qho
 
     def get_initial_positions(self):
         """
