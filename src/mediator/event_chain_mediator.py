@@ -142,7 +142,6 @@ class EventChainMediator(Mediator):
                     ff_events += 1
                 else:
                     FF_event = False
-                #print(f"distance to next event: {distance_to_next_event}, FF: {FF_event}")
                 self._update_state_and_index_space_displacements(distance_to_next_event, active_particle_index,
                                                                  vetoing_index, hop_displacement)
 

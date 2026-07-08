@@ -124,7 +124,7 @@ struct next_event get_next_event(int active_particle_index, int east_neighbour_i
 
     std::vector<double> real_roots_arr;
     std::vector<std::complex<double>> roots_arr; 
-    if(std::abs(anharmonicity) <= 0.0){ 
+    if(std::abs(anharmonicity) <= epsilon){ 
         real_roots_arr = get_harmonic_potential_roots(mass, timestep, omega_squared, final_action, x_shift);
     }
     else{

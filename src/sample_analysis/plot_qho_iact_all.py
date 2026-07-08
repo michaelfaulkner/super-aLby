@@ -141,7 +141,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
 
     #plt.title(f"IACT of x^2 for QHO with (x+2)^2")
     plt.tight_layout()
-    plt.savefig("iact_x-a2.png")#, transparent=True)
+    plt.savefig("iact_ecmc.png")#, transparent=True)
     plt.clf()
 
 

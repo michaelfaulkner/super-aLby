@@ -55,13 +55,15 @@ class Mediator(metaclass=ABCMeta):
         """
         super().__init__(**kwargs)
         if not isinstance(potential, Potential):
-            raise ConfigurationError(f"Give a potential class as the value for potential in {self.__class__.__name__}.")
+            raise ConfigurationError(
+                f"Give a potential class as the value for potential in {self.__class__.__name__}.")
         for sampler in samplers:
             if not isinstance(sampler, Sampler):
                 raise ConfigurationError(f"Give a list of sampler classes as the value for samplers in "
                                          f"{self.__class__.__name__}.")
         if temperature < 0.0:
-            raise ConfigurationError(f"Give a value not less than 0.0 as temperature in {self.__class__.__name__}.")
+            raise ConfigurationError(
+                f"Give a value not less than 0.0 as temperature in {self.__class__.__name__}.")
         if number_of_equilibration_iterations < 0:
             raise ConfigurationError(f"Give a value not less than 0 as number_of_equilibration_iterations in "
                                      f"{self.__class__.__name__}.")
@@ -69,15 +71,20 @@ class Mediator(metaclass=ABCMeta):
             raise ConfigurationError(f"Give a value greater than 0 as number_of_observations in "
                                      f"{self.__class__.__name__}.")
         if type(output_directory) is not str:
-            raise ConfigurationError(f"Give a value of type str as output_directory in {self.__class__.__name__}.")
+            raise ConfigurationError(
+                f"Give a value of type str as output_directory in {self.__class__.__name__}.")
         self._potential = potential
-        self._samplers = [sampler for sampler in samplers if 'event' not in str(sampler)]
-        self._event_samplers = [sampler for sampler in samplers if 'event' in str(sampler)]
+        self._samplers = [
+            sampler for sampler in samplers if 'event' not in str(sampler)]
+        self._event_samplers = [
+            sampler for sampler in samplers if 'event' in str(sampler)]
         self._temperature = temperature
         self._number_of_equilibration_iterations = number_of_equilibration_iterations
         self._number_of_observations = number_of_observations
-        self._total_number_of_iterations = number_of_equilibration_iterations + number_of_observations
-        self._number_of_observations_between_screen_prints_for_clock = int(self._total_number_of_iterations / 10)
+        self._total_number_of_iterations = number_of_equilibration_iterations + \
+            number_of_observations
+        self._number_of_observations_between_screen_prints_for_clock = int(
+            self._total_number_of_iterations / 10)
         self._output_directory = output_directory
         """The following objects are set in self._set_arrays_and_counters()"""
         self._momenta = None
@@ -88,7 +95,7 @@ class Mediator(metaclass=ABCMeta):
         self._initial_event_samples = None
         self._checkpoint_index = None
         # """Set in self._get_initial_sample if ActiveParticleSampler is used"""
-        # self._active_particle_sampler_index = None 
+        # self._active_particle_sampler_index = None
 
     def generate_sample(self, restart_flag):
         """Generates a sample with the model temperature equal to self._temperature."""
@@ -109,7 +116,7 @@ class Mediator(metaclass=ABCMeta):
         [sampler.output_sample(self._samples[sampler_index], self._checkpoint_index, self._output_directory)
          for sampler_index, sampler in enumerate(self._samplers)]
         [event_sampler.output_sample(self._event_samples[event_sampler_index], self._checkpoint_index,
-                                     self._output_directory) for event_sampler_index, event_sampler in
+                                     self._) for event_sampler_index, event_sampler in
          enumerate(self._event_samplers)]
         self._write_checkpoint_index_and_configuration()
         self._print_markov_process_summary()
@@ -118,13 +125,16 @@ class Mediator(metaclass=ABCMeta):
     def _set_arrays_and_counters(self):
         """Sets the arrays (e.g. the sample array) and counters before the Markov process."""
         self._positions = self._potential.get_initial_positions()
-        self._samples = [sampler.get_empty_sample_array(self._total_number_of_iterations) for sampler in self._samplers]
-        self._event_samples = [event_sampler.get_empty_sample_array() for event_sampler in self._event_samplers]
+        self._samples = [sampler.get_empty_sample_array(
+            self._total_number_of_iterations) for sampler in self._samplers]
+        self._event_samples = [event_sampler.get_empty_sample_array(
+        ) for event_sampler in self._event_samplers]
         self._checkpoint_index = 0
 
     def _reload_configuration_from_file_and_reset(self):
         """Reloads position data from a previous sub-run in the case of checkpointing."""
-        self._positions = np.load(os.path.join(os.getcwd(), self._output_directory, "configuration_at_checkpoint.npy"))
+        self._positions = np.load(os.path.join(
+            os.getcwd(), self._output_directory, "configuration_at_checkpoint.npy"))
 
     def get_checkpoint_index(self):
         """Finds run index if checkpointing is being used."""
@@ -132,11 +142,15 @@ class Mediator(metaclass=ABCMeta):
                               dtype='int')) + 1
 
     def _get_initial_sample(self):
-        self._initial_samples = [sampler.get_empty_sample_array(1) for sampler in self._samplers]
-        self._initial_event_samples = [event_sampler.get_empty_sample_array() for event_sampler in self._event_samplers]
+        self._initial_samples = [sampler.get_empty_sample_array(
+            1) for sampler in self._samplers]
+        self._initial_event_samples = [
+            event_sampler.get_empty_sample_array() for event_sampler in self._event_samplers]
         for sampler_index, sampler in enumerate(self._samplers):
             if "PressureSampler" in str(sampler):
-                self._initial_samples[sampler_index][0, :] = number_of_particles / system_volume  # ideal-gas pressure
+                # ideal-gas pressure
+                self._initial_samples[sampler_index][0,
+                                                     :] = number_of_particles / system_volume
             else:
                 self._initial_samples[sampler_index][0, :] = sampler.get_observation(self._momenta, self._positions,
                                                                                      self._potential)
@@ -158,8 +172,9 @@ class Mediator(metaclass=ABCMeta):
     def _write_checkpoint_index_and_configuration(self):
         """Saves current run index and final position state of the system."""
         np.savetxt(os.path.join(os.getcwd(),  self._output_directory, "checkpoint_index.txt"),
-               [self._checkpoint_index], fmt="%02d")
-        np.save(os.path.join(os.getcwd(),  self._output_directory, "configuration_at_checkpoint.npy"), self._positions)
+                   [self._checkpoint_index], fmt="%02d")
+        np.save(os.path.join(os.getcwd(),  self._output_directory,
+                "configuration_at_checkpoint.npy"), self._positions)
 
     @abstractmethod
     def _print_markov_process_summary(self):
