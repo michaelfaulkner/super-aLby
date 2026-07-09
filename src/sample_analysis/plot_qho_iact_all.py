@@ -96,7 +96,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
 
 
     
-    print(e_coeffs)
+    #print(e_coeffs)
 
     fig, ax = plt.subplots(1, 1)
 
@@ -122,7 +122,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, factor_fields_iact_data
     
 
     
-    ax.annotate(f"E coeff: {e_coeffs[0]:.2f}", xy = (4*10e2, 4*10e1), weight = "bold")
+    #ax.annotate(f"E coeff: {e_coeffs[0]:.2f}", xy = (4*10e2, 4*10e1), weight = "bold")
     
 
 
