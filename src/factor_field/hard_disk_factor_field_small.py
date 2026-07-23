@@ -5,7 +5,7 @@ from model_settings import number_of_particles
 from base.vectors import get_shortest_vectors_on_torus
 
 
-class HardDiskFactorField(FactorField):
+class HardDiskFactorFieldSmall(FactorField):
     """
     Class for implementing factor fields (in event-chain Monte Carlo) for the hard disk model.
     """

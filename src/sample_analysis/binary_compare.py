@@ -42,6 +42,9 @@ def main(config_file_string_1, config_file_string_2):
     legend = plt.legend(loc='lower right', fontsize=10)
     legend.get_frame().set_edgecolor('k')
     legend.get_frame().set_lw(1.5)
+    plt.xlabel("$S(k)$", fontsize=14)
+    plt.ylabel("CDF", fontsize=14)
+    plt.title("CDF vs $S(k)$ | probability=0.5, packing_fraction=0.8, N=8, ratio=1:1")
     plt.tight_layout()
     plt.show()
 

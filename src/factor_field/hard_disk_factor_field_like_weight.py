@@ -5,7 +5,7 @@ from model_settings import number_of_particles
 from base.vectors import get_shortest_vectors_on_torus
 
 
-class HardDiskFactorField(FactorField):
+class HardDiskFactorFieldLikeWeight(FactorField):
     """
     Class for implementing factor fields (in event-chain Monte Carlo) for the hard disk model.
     """
@@ -47,7 +47,7 @@ class HardDiskFactorField(FactorField):
         hop_displacement : numpy.ndarray
             Net displacement through state space from active to vetoing particle.
         """
-        
+        '''
         if disk_radii[active_particle_index] != 1.0:
             return float('inf'), None, None
         for index in range(1, number_of_particles):
@@ -58,8 +58,8 @@ class HardDiskFactorField(FactorField):
                                                                     - positions[active_particle_index, 0])
                 return distance_to_next_factor_event, vetoing_index, hop_displacement
         return float('inf'), None, None
-       
-        '''
+       '''
+        
         vetoing_index = None
         for index in range(1, number_of_particles):
             candidate = (active_particle_index - index) % number_of_particles
@@ -67,14 +67,20 @@ class HardDiskFactorField(FactorField):
                 vetoing_index = candidate
                 break
         if vetoing_index is not None:
-            distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0, 1)) / self._prefactor * temperature
-            hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_index, 0]
-                                                            - positions[active_particle_index, 0])
-            return distance_to_next_factor_event, vetoing_index, hop_displacement
+            if disk_radii[active_particle_index] == 1.0:
+                distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0, 1)) / (self._prefactor * (3/4) * temperature)
+                hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_index, 0]
+                                                                - positions[active_particle_index, 0])
+                return distance_to_next_factor_event, vetoing_index, hop_displacement
+            if disk_radii[active_particle_index] == 2.0:
+                distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0, 1)) / (self._prefactor * (1/4) * temperature)
+                hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_index, 0]
+                                                                - positions[active_particle_index, 0])
+                return distance_to_next_factor_event, vetoing_index, hop_displacement
         else:
             return float('inf'), None, None
         
-
+        '''
         neg_neighbour_index, pos_neighbour_index = ((active_particle_index - 1) % number_of_particles,
                                                 (active_particle_index + 1) % number_of_particles)
         vetoing_index = neg_neighbour_index if movement_direction > 0.0 else pos_neighbour_index

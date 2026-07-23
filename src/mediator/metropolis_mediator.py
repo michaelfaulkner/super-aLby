@@ -78,7 +78,11 @@ class MetropolisMediator(DiffusiveMediator):
         for active_particle_index in particles_to_update:
             """n.b. swap functionality only provided for hard-sphere models (accept-reject step needed otherwise)"""
             if self._particle_swap:
-                self._potential.get_swap_candidate(self._positions, active_particle_index)
+                swap_result = self._potential.get_swap_candidate(self._positions, active_particle_index)
+                if swap_result == 'arrangements explored':
+                    print("All arrangements explored — stopping Metropolis simulation.")
+                    print(f"iterations: {markov_chain_step_index}")
+                    raise RuntimeError("all arrangements explored")
             candidate_position = self._noise_distribution.get_candidate_position(active_particle_index, self._positions)
             potential_difference = self._potential.get_potential_difference(active_particle_index, candidate_position,
                                                                             self._positions)

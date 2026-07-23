@@ -202,7 +202,7 @@ class EventChainMediator(Mediator):
                     self._total_number_of_events += 1
                     distance_to_next_velocity_refreshment -= distance_to_next_event
                     distance_to_next_measurement -= distance_to_next_event
-                    if taken_measurement:
+                    if taken_measurement: 
                         break
 
             super()._print_sample_progress(markov_chain_index)
@@ -216,8 +216,8 @@ class EventChainMediator(Mediator):
     def _set_arrays_and_counters(self):
         """Sets the arrays (e.g. the sample array) and counters before the Markov process."""
         super()._set_arrays_and_counters()
-        self._total_number_of_events, self._number_of_index_space_moves = 0, 0
-        self._state_space_displacement, self._total_event_distance, self._index_space_displacement = 0.0, 0.0, 0.0
+        self._total_number_of_events, self._number_of_index_space_moves, self._number_of_index_space_moves_small, self._number_of_index_space_moves_large = 0, 0, 0, 0
+        self._state_space_displacement, self._total_event_distance, self._index_space_displacement, self._index_space_displacement_small, self._index_space_displacement_large = 0.0, 0.0, 0.0, 0.0, 0.0
 
     def _write_state_and_index_space_velocities(self):
         """Saves average state space and index space velocities"""
@@ -225,8 +225,17 @@ class EventChainMediator(Mediator):
                 self._state_space_displacement / self._total_event_distance)
         index_space_velocity = None if self._number_of_index_space_moves == 0.0 else (
                 self._index_space_displacement / self._number_of_index_space_moves)
+        index_velocity_small = None if self._number_of_index_space_moves_small == 0 else (
+            self._index_space_displacement_small / self._number_of_index_space_moves_small)
+        index_velocity_large = None if self._number_of_index_space_moves_large == 0 else (
+            self._index_space_displacement_large / self._number_of_index_space_moves_large)
         with open(os.path.join(self._output_directory, "state_and_index_space_velocities.json"), "w") as f:
-            json.dump({"state_space_velocity": state_space_velocity, "index_space_velocity": index_space_velocity}, f)
+            json.dump({
+                "state_space_velocity": state_space_velocity,
+                "index_space_velocity": index_space_velocity,
+                "index_velocity_small": index_velocity_small,
+                "index_velocity_large": index_velocity_large
+            }, f)
 
     def _update_state_and_index_space_displacements(self, displacement_distance, active_particle_index, vetoing_index,
                                                     hop_displacement):
@@ -242,7 +251,17 @@ class EventChainMediator(Mediator):
                 self._state_space_displacement += hop_displacement[0]
                 self._total_event_distance += displacement_distance[0]
             if vetoing_index == (active_particle_index + 1) % number_of_particles:
-                self._index_space_displacement += 1
-            elif vetoing_index == (active_particle_index - 1) % number_of_particles:
-                self._index_space_displacement -= 1
-            self._number_of_index_space_moves += 1
+                displacement = 1
+            elif vetoing_index is not None:
+                displacement = -((active_particle_index - vetoing_index) % number_of_particles)
+            else:
+                displacement = 0
+            if (self._potential._disk_radii[active_particle_index] == 1.0):
+                self._index_space_displacement_small += displacement
+                self._number_of_index_space_moves_small += 1
+            else:
+                self._index_space_displacement_large += displacement
+                self._number_of_index_space_moves_large += 1
+            self._index_space_displacement += displacement
+            if displacement != 0:
+                self._number_of_index_space_moves += 1

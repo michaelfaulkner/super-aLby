@@ -3,6 +3,7 @@
 import itertools
 import math
 import numpy as np
+from sympy import totient
 from .euclidean_subspace_potential import EuclideanSubspacePotential
 from base.exceptions import ConfigurationError, MediatorError
 from base.vectors import get_shortest_vectors_on_torus
@@ -38,7 +39,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
             discarding 10^5 equilibration samples.
     """
 
-    def __init__(self, prefactor: float = 1.0, disk_radius_a: float = 1.0, disk_radius_b: float = 1.0, packing_fraction: float = 0.5):
+    def __init__(self, prefactor: float = 1.0, disk_radius_a: float = 1.0, disk_radius_b: float = 1.0, packing_fraction: float = 0.5, prob: float = 0.5, ratio: int = 2):
         r"""
         The constructor of the HardDiskPotential class
 
@@ -76,18 +77,26 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                      f"{self.__class__.__name__}.")
         self._disk_radius_a = disk_radius_a
         self._disk_radius_b = disk_radius_b
+        self._prob = prob
         self._disk_radius = disk_radius_a if dimensionality_of_particle_space > 1 else None
         self._packing_fraction = packing_fraction
-        self._disk_radii = np.array([self._disk_radius_a if (i % 2) == 0 else self._disk_radius_b for i in range(number_of_particles)], dtype=float)
+        self._disk_radii = np.array([self._disk_radius_a if (i % ratio != 0) else self._disk_radius_b for i in range(number_of_particles)], dtype=float)
+        print(self._disk_radii)
         #self._disk_radii = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0])
         '''
         self._array = set()
-        self._counter = math.comb(number_of_particles, 4) - 1
+        total = 0
+        n = number_of_particles // 2  
+        for d in range(1, n + 1):  
+            if n % d != 0:
+                continue
+            total += totient(n // d) * math.comb(2*d, d)  
+        burnside = total // (2 * n)  
+        self._counter = burnside - 1
         binary = (self._disk_radii == self._disk_radius_a).astype(int)
-        number = int(''.join(map(str, binary)))
-        print(self._counter)
+        number = tuple(binary)
         self._array.add(number)
-        '''
+        ''' 
         number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * max(self._disk_radius_a, self._disk_radius_b)))
         if dimensionality_of_particle_space > 1:
             if not math.isclose(size_of_particle_space[0], size_of_particle_space[1]):
@@ -102,6 +111,9 @@ class HardDiskPotential(EuclideanSubspacePotential):
     def _radius_for_index(self, idx: int) -> float:
         """Return disk radius for a given particle index."""
         return float(self._disk_radii[idx])
+
+    def lowest_rotation(self, binary):
+        return min(binary[i:] + binary[:i] for i in range(number_of_particles))
 
     def get_value(self, positions):
         """
@@ -437,7 +449,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
         
         if dimensionality_of_particle_space != 1:
             raise MediatorError("portals only implemented for 1D hard-sphere systems")
-        if veto_index is None or veto_index == active_particle_index or np.random.uniform() >= 0.5:
+        if veto_index is None or veto_index == active_particle_index or np.random.uniform() >= self._prob:
             return None
         active_radius = self._radius_for_index(active_particle_index)
         veto_radius = self._radius_for_index(veto_index)
@@ -450,8 +462,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
         wrapped_position_2 = float(((candidate_position_2 + size_of_particle_space/2) % size_of_particle_space) - size_of_particle_space/2)
         self._disk_radii[active_particle_index], self._disk_radii[veto_index] = veto_radius, active_radius
         '''
-        binary = (self._disk_radii == self._disk_radius_a).astype(int)
-        number = int(''.join(map(str, binary)))
+        binary = tuple((self._disk_radii == self._disk_radius_a).astype(int))
+        number = self.lowest_rotation(binary)
         if number not in self._array:
             self._array.add(number)
             self._counter -=1
@@ -491,4 +503,14 @@ class HardDiskPotential(EuclideanSubspacePotential):
         overlap_exists = self._check_for_disk_overlaps(positions)[0]
         if overlap_exists:
             self._disk_radii[active_particle_index], self._disk_radii[random_particle_index] = active_radius, random_radius
-        
+            return None
+        '''
+        binary = tuple((self._disk_radii == self._disk_radius_a).astype(int))
+        number = self.lowest_rotation(binary)
+        if number not in self._array:
+            self._array.add(number)
+            self._counter -= 1
+            if self._counter == 0:
+                return 'arrangements explored'
+        return None
+        '''

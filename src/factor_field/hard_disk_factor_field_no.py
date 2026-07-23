@@ -5,7 +5,7 @@ from model_settings import number_of_particles
 from base.vectors import get_shortest_vectors_on_torus
 
 
-class HardDiskFactorField(FactorField):
+class HardDiskFactorFieldNo(FactorField):
     """
     Class for implementing factor fields (in event-chain Monte Carlo) for the hard disk model.
     """
@@ -47,7 +47,7 @@ class HardDiskFactorField(FactorField):
         hop_displacement : numpy.ndarray
             Net displacement through state space from active to vetoing particle.
         """
-        
+        '''
         if disk_radii[active_particle_index] != 1.0:
             return float('inf'), None, None
         for index in range(1, number_of_particles):
@@ -59,7 +59,7 @@ class HardDiskFactorField(FactorField):
                 return distance_to_next_factor_event, vetoing_index, hop_displacement
         return float('inf'), None, None
        
-        '''
+       
         vetoing_index = None
         for index in range(1, number_of_particles):
             candidate = (active_particle_index - index) % number_of_particles
@@ -86,6 +86,6 @@ class HardDiskFactorField(FactorField):
         return distance_to_next_factor_event, vetoing_index, hop_displacement
         ''' 
 
-        #return float('inf'), None, None
+        return float('inf'), None, None
         
 
