@@ -3,7 +3,7 @@
 import itertools
 import math
 import numpy as np
-from sympy import totient
+import sympy
 from .euclidean_subspace_potential import EuclideanSubspacePotential
 from base.exceptions import ConfigurationError, MediatorError
 from base.vectors import get_shortest_vectors_on_torus
@@ -39,7 +39,9 @@ class HardDiskPotential(EuclideanSubspacePotential):
             discarding 10^5 equilibration samples.
     """
 
-    def __init__(self, prefactor: float = 1.0, disk_radius_a: float = 1.0, disk_radius_b: float = 1.0, packing_fraction: float = 0.5, prob: float = 0.5, ratio: int = 2):
+    def __init__(self, prefactor: float = 1.0, disk_radius_a: float = 1.0, disk_radius_b: float = 1.0,
+                 packing_fraction: float = 0.5, portal_probability: float = 0.5, particle_ratio: int = 2,
+                 measure_particle_orderings: bool = False):
         r"""
         The constructor of the HardDiskPotential class
 
@@ -47,10 +49,22 @@ class HardDiskPotential(EuclideanSubspacePotential):
         ----------
         prefactor : float, optional
             The prefactor k of the potential.
-        disk_radius : float, optional
-            The radius of each disk.
+        disk_radius_a : float, optional
+            The radius of each disk of species a (this class allows for a binary mixture of hard disks in 1D, n.b. we
+            require disk_radius_a = disk_radius_b for dimensionality_of_particle_space > 1).
+        disk_radius_b : float, optional
+            The radius of each disk of species b (this class allows for a binary mixture of hard disks in 1D, n.b. we
+            require disk_radius_a = disk_radius_b for dimensionality_of_particle_space > 1).
         packing_fraction : float, optional
             The packing fraction of the disks.  This corresponds to the mean disk density.
+        portal_probability : float, optional
+            The probability of proposing a teleportation portal at an event-chain collision.
+        particle_ratio : int, optional
+            The ratio of the number of particles in species a to the number of particles in species b.
+        measure_particle_orderings : bool, optional
+            When True, the total number of unique particle orderings (in a 1D binary mixture) are tracked throughout
+            the simulation.  Using this functionality terminates the simulation once all orderings have been explored.
+            Note that we use the totient function to calculate the total number of possible orderings.
 
         Raises
         ------
@@ -77,27 +91,27 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                      f"{self.__class__.__name__}.")
         self._disk_radius_a = disk_radius_a
         self._disk_radius_b = disk_radius_b
-        self._prob = prob
+        self._portal_probability = portal_probability
         self._disk_radius = disk_radius_a if dimensionality_of_particle_space > 1 else None
         self._packing_fraction = packing_fraction
-        self._disk_radii = np.array([self._disk_radius_a if (i % ratio != 0) else self._disk_radius_b for i in range(number_of_particles)], dtype=float)
-        print(self._disk_radii)
-        #self._disk_radii = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0])
-        '''
-        self._array = set()
-        total = 0
-        n = number_of_particles // 2  
-        for d in range(1, n + 1):  
-            if n % d != 0:
-                continue
-            total += totient(n // d) * math.comb(2*d, d)  
-        burnside = total // (2 * n)  
-        self._counter = burnside - 1
-        binary = (self._disk_radii == self._disk_radius_a).astype(int)
-        number = tuple(binary)
-        self._array.add(number)
-        ''' 
-        number_of_cells_in_each_direction = np.int_(size_of_particle_space / (2.0 * max(self._disk_radius_a, self._disk_radius_b)))
+        self._disk_radii = np.array([self._disk_radius_a if (i % particle_ratio != 0) else self._disk_radius_b
+                                     for i in range(number_of_particles)], dtype=float)
+        self._measure_particle_orderings = measure_particle_orderings
+        if self._measure_particle_orderings:
+            self._array_of_explored_orderings = set()
+            total = 0
+            n = number_of_particles // 2
+            for d in range(1, n + 1):
+                if n % d != 0:
+                    continue
+                total += sympy.totient(n // d) * math.comb(2*d, d)
+            burnside = total // (2 * n)
+            self._counter_of_remaining_orderings = burnside - 1
+            binary_ordering_config = tuple((self._disk_radii == self._disk_radius_a).astype(int))
+            self._array_of_explored_orderings.add(binary_ordering_config)
+
+        number_of_cells_in_each_direction = np.int_(size_of_particle_space /
+                                                    (2.0 * max(self._disk_radius_a, self._disk_radius_b)))
         if dimensionality_of_particle_space > 1:
             if not math.isclose(size_of_particle_space[0], size_of_particle_space[1]):
                 raise ConfigurationError(
@@ -107,13 +121,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
         self._active_cell_index = 0
         print(f"System length along each Cartesian dimension is {size_of_particle_space}.")
         print(f"Number of cells along each Cartesian dimension is {number_of_cells_in_each_direction}.")
-
-    def _radius_for_index(self, idx: int) -> float:
-        """Return disk radius for a given particle index."""
-        return float(self._disk_radii[idx])
-
-    def lowest_rotation(self, binary):
-        return min(binary[i:] + binary[:i] for i in range(number_of_particles))
 
     def get_value(self, positions):
         """
@@ -154,9 +161,9 @@ class HardDiskPotential(EuclideanSubspacePotential):
         float
             The potential difference resulting from moving the single active particle to candidate_position.
         """
-        active_radius = self._radius_for_index(active_particle_index)
+        active_radius = self._get_disk_radius(active_particle_index)
         for neighbour_index in range(number_of_particles):
-            neighbour_radius = self._radius_for_index(neighbour_index)
+            neighbour_radius = self._get_disk_radius(neighbour_index)
             minimum_allowed_separation = active_radius + neighbour_radius
             if (neighbour_index != active_particle_index and np.linalg.norm(get_shortest_vectors_on_torus(
                     positions[neighbour_index] - candidate_position)) < minimum_allowed_separation):
@@ -266,8 +273,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
         if dimensionality_of_particle_space == 1:
             positions[0, 0] = 0.0
             for index in range(1, number_of_particles):
-                previous_radius = self._radius_for_index(index - 1)
-                current_radius = self._radius_for_index(index)
+                previous_radius = self._get_disk_radius(index - 1)
+                current_radius = self._get_disk_radius(index)
                 step = 1.00001 * (previous_radius + current_radius) / self._packing_fraction
                 positions[index, 0] = positions[index - 1, 0] + step
             positions = get_shortest_vectors_on_torus(positions)
@@ -335,15 +342,11 @@ class HardDiskPotential(EuclideanSubspacePotential):
         if dimensionality_of_particle_space == 1:
             vetoing_particle_index = (active_particle_index + 1) % number_of_particles if movement_direction > 0 else (
                     (active_particle_index - 1) % number_of_particles)
-            active_radius = self._radius_for_index(active_particle_index)
-            veto_radius = self._radius_for_index(vetoing_particle_index)
+            active_radius = self._get_disk_radius(active_particle_index)
+            veto_radius = self._get_disk_radius(vetoing_particle_index)
             active_position = positions[active_particle_index, 0] % size_of_particle_space
             veto_position = positions[vetoing_particle_index, 0] % size_of_particle_space
             distance_to_next_event = ((veto_position - active_position) % size_of_particle_space) - (active_radius + veto_radius)
-            if distance_to_next_event < 0.0:
-                print(distance_to_next_event)
-                print(positions)
-                raise RuntimeError ('negative distance')
             hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index]
                                                              - positions[active_particle_index])
             return distance_to_next_event, vetoing_particle_index, hop_displacement
@@ -426,9 +429,9 @@ class HardDiskPotential(EuclideanSubspacePotential):
 
     def _check_for_disk_overlaps(self, positions):
         for particle_index_1 in range(number_of_particles):
-            radius_particle_index_1 = self._radius_for_index(particle_index_1)
+            radius_particle_index_1 = self._get_disk_radius(particle_index_1)
             for particle_index_2 in range(particle_index_1 + 1, number_of_particles):
-                radius_particle_index_2 = self._radius_for_index(particle_index_2)
+                radius_particle_index_2 = self._get_disk_radius(particle_index_2)
                 minimal_separation_distance = np.linalg.norm(get_shortest_vectors_on_torus(positions[particle_index_1] -
                                                                                            positions[particle_index_2]))
                 if (minimal_separation_distance < (radius_particle_index_1 + radius_particle_index_2) and not
@@ -449,10 +452,10 @@ class HardDiskPotential(EuclideanSubspacePotential):
         
         if dimensionality_of_particle_space != 1:
             raise MediatorError("portals only implemented for 1D hard-sphere systems")
-        if veto_index is None or veto_index == active_particle_index or np.random.uniform() >= self._prob:
+        if veto_index is None or veto_index == active_particle_index or np.random.uniform() >= self._portal_probability:
             return None
-        active_radius = self._radius_for_index(active_particle_index)
-        veto_radius = self._radius_for_index(veto_index)
+        active_radius = self._get_disk_radius(active_particle_index)
+        veto_radius = self._get_disk_radius(veto_index)
         if active_radius == veto_radius:
             return None
         left_boundary = (positions[active_particle_index, 0] - active_radius) % size_of_particle_space
@@ -461,56 +464,42 @@ class HardDiskPotential(EuclideanSubspacePotential):
         wrapped_position_1 = float(((candidate_position_1 + size_of_particle_space/2) % size_of_particle_space) - size_of_particle_space/2)
         wrapped_position_2 = float(((candidate_position_2 + size_of_particle_space/2) % size_of_particle_space) - size_of_particle_space/2)
         self._disk_radii[active_particle_index], self._disk_radii[veto_index] = veto_radius, active_radius
-        '''
-        binary = tuple((self._disk_radii == self._disk_radius_a).astype(int))
-        number = self.lowest_rotation(binary)
-        if number not in self._array:
-            self._array.add(number)
-            self._counter -=1
-            #print(self._counter)
-            if self._counter == 0:
-                return 'arrangements explored'
-        '''
+        if self._measure_particle_orderings:
+            binary_ordering_config = tuple((self._disk_radii == self._disk_radius_a).astype(int))
+            number = self._get_lowest_rotation(binary_ordering_config)
+            if number not in self._array_of_explored_orderings:
+                self._array_of_explored_orderings.add(number)
+                self._counter_of_remaining_orderings -=1
+                #print(self._counter)
+                if self._counter_of_remaining_orderings == 0:
+                    return 'arrangements explored'
         return wrapped_position_1, wrapped_position_2
-        
-        '''
-        if dimensionality_of_particle_space != 1:
-            raise MediatorError("portals only implemented for 1D hard-sphere systems.")
-        if veto_index is None or veto_index == active_particle_index or np.random.uniform() >= 0.5:
-            return None
-        active_radius = self._radius_for_index(active_particle_index)
-        veto_radius = self._radius_for_index(veto_index)
-        next_index = (veto_index + 1) % number_of_particles
-        previous_index = (active_particle_index - 1) % number_of_particles
-        left_gap = (positions[active_particle_index, 0] - positions[previous_index, 0]) % size_of_particle_space
-        right_gap = (positions[next_index, 0] - positions[veto_index, 0]) % size_of_particle_space
-        required_left_gap = self._radius_for_index(previous_index) + veto_radius
-        required_right_gap = active_radius + self._radius_for_index(next_index)
-        if left_gap < required_left_gap or right_gap < required_right_gap:
-            return None
-        self._disk_radii[active_particle_index], self._disk_radii[veto_index] = veto_radius, active_radius
-        return None
-        '''
 
     def get_swap_candidate(self, positions, active_particle_index):
         """Propose candidate configuration via a Metropolis swap kernel."""
         random_particle_index = np.random.randint(0, number_of_particles)
         while random_particle_index == active_particle_index:
             random_particle_index = np.random.randint(0, number_of_particles)
-        random_radius = self._radius_for_index(random_particle_index)
-        active_radius = self._radius_for_index(active_particle_index) 
+        random_radius = self._get_disk_radius(random_particle_index)
+        active_radius = self._get_disk_radius(active_particle_index)
         self._disk_radii[active_particle_index], self._disk_radii[random_particle_index] = random_radius, active_radius
         overlap_exists = self._check_for_disk_overlaps(positions)[0]
         if overlap_exists:
             self._disk_radii[active_particle_index], self._disk_radii[random_particle_index] = active_radius, random_radius
-            return None
-        '''
-        binary = tuple((self._disk_radii == self._disk_radius_a).astype(int))
-        number = self.lowest_rotation(binary)
-        if number not in self._array:
-            self._array.add(number)
-            self._counter -= 1
-            if self._counter == 0:
-                return 'arrangements explored'
+        if self._measure_particle_orderings:
+            binary_ordering_config = tuple((self._disk_radii == self._disk_radius_a).astype(int))
+            number = self._get_lowest_rotation(binary_ordering_config)
+            if number not in self._array_of_explored_orderings:
+                self._array_of_explored_orderings.add(number)
+                self._counter_of_remaining_orderings -= 1
+                if self._counter_of_remaining_orderings == 0:
+                    return 'arrangements explored'
         return None
-        '''
+
+    def _get_disk_radius(self, particle_index: int) -> float:
+        """Return disk radius for a given particle index."""
+        return float(self._disk_radii[particle_index])
+
+    @staticmethod
+    def _get_lowest_rotation(self, binary):
+        return min(binary[i:] + binary[:i] for i in range(number_of_particles))

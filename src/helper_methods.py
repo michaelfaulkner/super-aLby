@@ -74,13 +74,12 @@ def get_basic_config_data(config_file_string):
                 packing_fraction = parsing.get_value(config, "HardDiskPotential", "packing_fraction")
                 disk_radius_a = parsing.get_value(config, "HardDiskPotential", "disk_radius_a")
                 disk_radius_b = parsing.get_value(config,"HardDiskPotential", "disk_radius_b")
-                prob = parsing.get_value(config,"HardDiskPotential", "prob")
-                ratio = parsing.get_value(config,"HardDiskPotential", "ratio")
                 if dimensionality_of_particle_space == 1:
                     total_particle_length = 2.0 * ((number_of_particles // 2) * disk_radius_b +
                                                    (number_of_particles - (number_of_particles // 2)) * disk_radius_a)
                     size_of_particle_space = total_particle_length / packing_fraction
                 else:
+                    # nb, HardDiskPotential currently enforces disk_radius_a = disk_radius_b for d > 1
                     linear_system_size = math.sqrt(number_of_particles * math.pi / packing_fraction) * disk_radius_a
                     size_of_particle_space = [linear_system_size, linear_system_size]
             else:
