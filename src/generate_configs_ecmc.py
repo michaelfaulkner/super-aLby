@@ -19,7 +19,7 @@ def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_po
     x_shift = float(x_shift)
     N = int(N)
     for i in range(N):
-        output_dir = f"config_files/hpc/sd_1000/ecmc/{input_save_str}/{i}.ini"
+        output_dir = f"config_files/hpc/sd_500/ecmc/{input_save_str}/{i}.ini"
         print(f"{output_dir}")
         if not os.path.exists(output_dir):
             try:

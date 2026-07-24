@@ -8,8 +8,10 @@ from .mediator import Mediator
 from factor_field.factor_field import FactorField
 from factor_field.no_factor_field import NoFactorField
 from refreshment_distribution.refreshment_distribution import RefreshmentDistribution
+from refreshment_distribution.no_refreshment_distribution import NoRefreshmentDistribution
 from refreshment_distribution.constant_refreshment_distribution import ConstantRefreshmentDistribution
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
+from potential.worldline_potential import WorldlinePotential
 from sampler.sampler import Sampler
 from typing import Sequence
 from model_settings import number_of_particles, size_of_particle_space, dimensionality_of_particle_space
@@ -88,6 +90,8 @@ class EventChainMediator(Mediator):
         """Re-instantiate self._potential as EuclideanSubspacePotential contains additional abstract methods."""
         self._potential = potential
         self._factor_field = factor_field
+        if isinstance(potential, WorldlinePotential):
+            refreshment_distribution = NoRefreshmentDistribution()
         self._refreshment_distribution = refreshment_distribution
         if normalised_distance_between_measurements <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 for normalised_distance_between_measurements in "

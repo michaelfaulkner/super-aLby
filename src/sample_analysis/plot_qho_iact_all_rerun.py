@@ -8,7 +8,8 @@ matplotlib.use('Agg')
 
 def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_path_2, ecmc_iact_data_path_2, ecmc_iact_data_path_3,
           ecmc_iact_data_path_4, ecmc_iact_data_path_5, ecmc_iact_data_path_6, ecmc_iact_data_path_7, ecmc_iact_data_path_8,
-          ecmc_iact_data_path_9, ecmc_iact_data_path_10, ecmc_iact_data_path_11, ecmc_iact_data_path_12, N, ff_N, propertime):
+          ecmc_iact_data_path_9, ecmc_iact_data_path_10, ecmc_iact_data_path_11, ecmc_iact_data_path_12, ecmc_iact_data_path_13,
+          ecmc_iact_data_path_14, N, ff_N, propertime):
 
     N = int(N)
     ff_N = int(ff_N)
@@ -312,6 +313,46 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
     ecmc_sorted_timestep_12 = ecmc_sorted_timestep_12[ecmc_sorted_timestep_12 >= 0.01]
     ecmc_sorted_N_12 = propertime / ecmc_sorted_timestep_12
 
+    
+    ecmc_timestep_data_13 = np.load(os.path.join(ecmc_iact_data_path_13, "iact_ecmc_0.npy"))[:, 1]
+    ecmc_storage_arr_13 = np.zeros((len(ecmc_timestep_data_13), N))
+    ecmc_sorted_timestep_13 = ecmc_timestep_data_13[np.argsort(ecmc_timestep_data_13)]
+
+    for index_13 in range(N):
+        ecmc_iact_timestep_13 =  np.load(os.path.join(ecmc_iact_data_path_13, f"iact_ecmc_{index_13}.npy"))
+        ecmc_iact_data_13 = ecmc_iact_timestep_13[:, 0] 
+        ecmc_timestep_data_13 = ecmc_iact_timestep_13[:, 1] 
+        argsorted_data_13 = np.argsort(ecmc_timestep_data_13)
+        ecmc_timestep_argsorted_13 = ecmc_timestep_data_13[argsorted_data_13]
+        ecmc_iact_data_13 = ecmc_iact_data_13[argsorted_data_13] 
+        ecmc_storage_arr_13[:, index_13] = ecmc_iact_data_13
+
+    ecmc_iact_mean_arr_13 = np.mean(ecmc_storage_arr_13, axis = 1)
+    ecmc_iact_mean_arr_13 = ecmc_iact_mean_arr_13[ecmc_sorted_timestep_13 >= 0.01]
+    ecmc_err_13 = np.std(ecmc_storage_arr_13, axis=1)
+    ecmc_err_13 = ecmc_err_13[ecmc_sorted_timestep_13 >= 0.01]
+    ecmc_sorted_timestep_13 = ecmc_sorted_timestep_13[ecmc_sorted_timestep_13 >= 0.01]
+    ecmc_sorted_N_13 = propertime / ecmc_sorted_timestep_13
+
+    ecmc_timestep_data_14 = np.load(os.path.join(ecmc_iact_data_path_14, "iact_ecmc_0.npy"))[:, 1]
+    ecmc_storage_arr_14 = np.zeros((len(ecmc_timestep_data_14), N))
+    ecmc_sorted_timestep_14 = ecmc_timestep_data_14[np.argsort(ecmc_timestep_data_14)]
+
+    for index_14 in range(N):
+        ecmc_iact_timestep_14 =  np.load(os.path.join(ecmc_iact_data_path_14, f"iact_ecmc_{index_14}.npy"))
+        ecmc_iact_data_14 = ecmc_iact_timestep_14[:, 0] 
+        ecmc_timestep_data_14 = ecmc_iact_timestep_14[:, 1] 
+        argsorted_data_14 = np.argsort(ecmc_timestep_data_14)
+        ecmc_timestep_argsorted_14 = ecmc_timestep_data_14[argsorted_data_14]
+        ecmc_iact_data_14 = ecmc_iact_data_14[argsorted_data_14] 
+        ecmc_storage_arr_14[:, index_14] = ecmc_iact_data_14
+
+    ecmc_iact_mean_arr_14 = np.mean(ecmc_storage_arr_14, axis = 1)
+    ecmc_iact_mean_arr_14 = ecmc_iact_mean_arr_14[ecmc_sorted_timestep_14 >= 0.01]
+    ecmc_err_14 = np.std(ecmc_storage_arr_14, axis=1)
+    ecmc_err_14 = ecmc_err_14[ecmc_sorted_timestep_14 >= 0.01]
+    ecmc_sorted_timestep_14 = ecmc_sorted_timestep_14[ecmc_sorted_timestep_14 >= 0.01]
+    ecmc_sorted_N_14 = propertime / ecmc_sorted_timestep_14
 
     if metrop_data:
         m_fit_trim = -1#-7
@@ -353,7 +394,11 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
     #ax.errorbar(ecmc_sorted_N_9, ecmc_iact_mean_arr_9, ecmc_err_9, fmt='o', capsize=3, markersize=4, color="#64e15dff", label="ECMC sd = 500, rf = 10e12")
     ax.errorbar(ecmc_sorted_N_10, ecmc_iact_mean_arr_10, ecmc_err_10, fmt='*', capsize=3, markersize=9, color="#b8aaffff", label="ECMC sd = 500, rf = inf")
     #ax.errorbar(ecmc_sorted_N_11, ecmc_iact_mean_arr_11, ecmc_err_11, fmt='o', capsize=3, markersize=4, color="#00f7ffff", label="ECMC sd = Nt, rf = inf")
-    #ax.errorbar(ecmc_sorted_N_12, ecmc_iact_mean_arr_12, ecmc_err_12, fmt='o', capsize=3, markersize=4, color="#00f7ffff", label="ECMC sd = 500, rf = 10e12")
+    ax.errorbar(ecmc_sorted_N_12, ecmc_iact_mean_arr_12, ecmc_err_12, fmt='o', capsize=3, markersize=4, color="#00f7ffff", label="ECMC sd = 500, rf = Nt")
+    ax.errorbar(ecmc_sorted_N_13, ecmc_iact_mean_arr_13, ecmc_err_13, fmt='o', capsize=3, markersize=4, color="#00ff2fff", label="ECMC sd = 50, rf = inf")
+    ax.errorbar(ecmc_sorted_N_14, ecmc_iact_mean_arr_14, ecmc_err_14, fmt='o', capsize=3, markersize=4, color="#982be6ff", label="ECMC sd = 200, rf = inf")
+
+
 
 
 
@@ -446,4 +491,5 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
 
 if __name__ == '__main__':
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8], sys.argv[9],
-         sys.argv[10], sys.argv[11], sys.argv[12], sys.argv[13], sys.argv[14], sys.argv[15], sys.argv[16], sys.argv[17])
+         sys.argv[10], sys.argv[11], sys.argv[12], sys.argv[13], sys.argv[14], sys.argv[15], sys.argv[16], sys.argv[17],
+         sys.argv[18], sys.argv[19])
