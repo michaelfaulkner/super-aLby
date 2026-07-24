@@ -96,7 +96,10 @@ class EventChainMediator(Mediator):
         if normalised_distance_between_measurements <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 for normalised_distance_between_measurements in "
                                      f"{self.__class__.__name__}.")
-        self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
+        if isinstance(potential, WorldlinePotential):
+            self._distance_between_measurements = normalised_distance_between_measurements
+        else:
+            self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
         if "HardDiskPotential" in str(potential) and len(size_of_particle_space) > 1:
             self._distance_between_measurements *= np.min(size_of_particle_space)
         self._free_space = np.atleast_1d(size_of_particle_space)[0]
