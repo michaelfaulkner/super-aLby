@@ -2,7 +2,8 @@ import sys
 import os
 import errno
 
-def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_position, sampling_dist, anharmonicity, omega_squared, input_save_str, dir, x_shift):
+def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_position, sampling_dist, anharmonicity,
+         omega_squared, input_save_str, dir, x_shift, lifting_scheme):
     timestep_str = timestep.replace(".", "")
     timestep_str = timestep_str.rstrip("0")
     mass_str = mass.replace(".", "")
@@ -19,7 +20,7 @@ def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_po
     x_shift = float(x_shift)
     N = int(N)
     for i in range(N):
-        output_dir = f"config_files/hpc/sd_500/ecmc/{input_save_str}/{i}.ini"
+        output_dir = f"config_files/hpc/lifting_scheme/ecmc/{input_save_str}/{i}.ini"
         print(f"{output_dir}")
         if not os.path.exists(output_dir):
             try:
@@ -50,6 +51,7 @@ def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_po
             f"anharmonicity = {anharmonicity} \n" \
             f"omega_squared = {omega_squared} \n" \
             f"x_shift = {x_shift} \n" \
+            f"fixed_lifting_scheme = {lifting_scheme} \n" \
             "\n" \
             "[MeanSquaredPositionSampler] \n" \
             f"x_shift = {x_shift} \n" \
@@ -71,4 +73,5 @@ def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_po
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8], sys.argv[9], sys.argv[10], sys.argv[11], sys.argv[12], sys.argv[13], sys.argv[14])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8],
+         sys.argv[9], sys.argv[10], sys.argv[11], sys.argv[12], sys.argv[13], sys.argv[14], sys.argv[15])

@@ -13,8 +13,9 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         \delta\tau \sum_{i=1}^{N_{\tau}}[0.5 * m(x_{i+1} - x_i)^2 / (\delta\tau)^2 + 0.5 * m * \omega^2 * x_i^2],
         where m and \omega are the mass and frequency, respectively.
     """
-    def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0, omega_squared: float = 1.0,
-                 timestep: float = 0.1, cpp_implementation: bool = True, anharmonicity: float = 0.0, x_shift : float = 0.0):
+    def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0,
+                 omega_squared: float = 1.0, timestep: float = 0.1, cpp_implementation: bool = True,
+                 anharmonicity: float = 0.0, x_shift : float = 0.0, fixed_lifting_scheme : bool = True):
         r"""
         The constructor of the QuantumHarmonicOscillatorPotential class
 
@@ -63,6 +64,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         self._x_shift = x_shift
         if cpp_implementation:
             from potential.cpp_quantum_harmonic_oscillator import cpp_qho
+        self._fixed_lifting_scheme = fixed_lifting_scheme
 
     def get_initial_positions(self):
         """
@@ -311,17 +313,41 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         movement_direction : int
             The next active-particle direction of motion.
         """
-        initial_a = active_particle_index
-        initial_v = movement_direction
-  
-        if veto_index == active_particle_index:
-            movement_direction = movement_direction * -1
+
+        if self._fixed_lifting_scheme:
+            initial_a = active_particle_index
+            initial_v = movement_direction
+    
+            if veto_index == active_particle_index:
+                movement_direction = movement_direction * -1
+            else:
+                active_particle_index = veto_index
+            if active_particle_index == initial_a and movement_direction == initial_v:
+                raise Exception("The same combination of active particle index and direction of motion has been chosen "
+                                "twice in a row.")
+            return active_particle_index, movement_direction
         else:
-            active_particle_index = veto_index
-        if active_particle_index == initial_a and movement_direction == initial_v:
-            raise Exception("The same combination of active particle index and direction of motion has been chosen "
-                            "twice in a row.")
-        return active_particle_index, movement_direction
+
+            i_prob = movement_direction * self._action_gradient(active_particle_index, positions, veto_index)[0]
+            veto_prob = -movement_direction * self._action_gradient(active_particle_index, positions, veto_index)[0]
+
+            i_prob = np.max([0.0, i_prob])
+            veto_prob = np.max([0.0, veto_prob])
+
+            rand = np.random.uniform(0.0, 1.0)
+
+            if rand < i_prob:
+                # choose i, -v
+                movement_direction *= -1
+            else:
+                # choose veto_index, v
+                active_particle_index = veto_index
+        
+            return active_particle_index, movement_direction
+
+
+
+            
 
     def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
         """
@@ -452,3 +478,16 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         roots[3] = -cmath.sqrt(u1)
 
         return roots
+
+    def _action_gradient(self, active_particle_index, positions, veto_index):
+
+        east = self._get_east_worldline_neighbour(active_particle_index)
+        west = self._get_west_worldline_neighbour(active_particle_index)
+
+        if veto_index == east: #i+1
+            return -self._mass / self._timestep * (positions[east] - positions[active_particle_index])
+
+        elif veto_index == west: #i-1
+            return self._mass / self._timestep * (positions[active_particle_index] - positions[west])
+        else:
+            return self._mass * self._timestep * self._omega_squared * positions[active_particle_index]
