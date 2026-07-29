@@ -5,7 +5,10 @@ from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError
 from helper_methods import get_initial_positions_of_smooth_potential
 from model_settings import number_of_quantum_particles, number_of_timeslices
-from potential.cpp_quantum_harmonic_oscillator import cpp_qho 
+try:
+    from potential.cpp_quantum_harmonic_oscillator import cpp_qho
+except:
+    cpp_qho = None
 class QuantumHarmonicOscillatorPotential(WorldlinePotential):
     r"""
     This class implements the (currently one-dimensional) potential for the quantum harmonic oscillator resulting
@@ -62,8 +65,6 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         else:
             self._magnitude_of_double_well_position = 0.0
         self._x_shift = x_shift
-        if cpp_implementation:
-            from potential.cpp_quantum_harmonic_oscillator import cpp_qho
         self._fixed_lifting_scheme = fixed_lifting_scheme
 
     def get_initial_positions(self):
@@ -319,7 +320,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             initial_v = movement_direction
     
             if veto_index == active_particle_index:
-                movement_direction = movement_direction * -1
+                movement_direction *= -1
             else:
                 active_particle_index = veto_index
             if active_particle_index == initial_a and movement_direction == initial_v:
@@ -327,16 +328,9 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
                                 "twice in a row.")
             return active_particle_index, movement_direction
         else:
-
-            i_prob = movement_direction * self._action_gradient(active_particle_index, positions, veto_index)[0]
-            veto_prob = -movement_direction * self._action_gradient(active_particle_index, positions, veto_index)[0]
-
-            i_prob = np.max([0.0, i_prob])
-            veto_prob = np.max([0.0, veto_prob])
-
-            rand = np.random.uniform(0.0, 1.0)
-
-            if rand < i_prob:
+            if veto_index == active_particle_index:
+                movement_direction *= -1
+            elif np.random.uniform(0.0, 1.0) < 0.5:
                 # choose i, -v
                 movement_direction *= -1
             else:
@@ -344,10 +338,6 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
                 active_particle_index = veto_index
         
             return active_particle_index, movement_direction
-
-
-
-            
 
     def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
         """
@@ -478,16 +468,3 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         roots[3] = -cmath.sqrt(u1)
 
         return roots
-
-    def _action_gradient(self, active_particle_index, positions, veto_index):
-
-        east = self._get_east_worldline_neighbour(active_particle_index)
-        west = self._get_west_worldline_neighbour(active_particle_index)
-
-        if veto_index == east: #i+1
-            return -self._mass / self._timestep * (positions[east] - positions[active_particle_index])
-
-        elif veto_index == west: #i-1
-            return self._mass / self._timestep * (positions[active_particle_index] - positions[west])
-        else:
-            return self._mass * self._timestep * self._omega_squared * positions[active_particle_index]

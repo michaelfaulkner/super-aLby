@@ -417,7 +417,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
 
     if metrop_data:
         #ax.plot(metropolis_sorted_N[:m_fit_trim], np.exp(fitted_m), color="#f9a37bff")
-        #ax.errorbar(metropolis_sorted_N, metropolis_iact_mean_arr, metropolis_err, fmt='^', capsize=3, markersize=4, color="#e16f04ff", label="Metropolis MC")
+        ax.errorbar(metropolis_sorted_N, metropolis_iact_mean_arr, metropolis_err, fmt='^', capsize=3, markersize=4, color="#e16f04ff", label="Metropolis MC")
         #ax.annotate(f"M coeff: {m_coeffs[0]:.2f}", xy = (8*10e1, 3*10e1), weight = "bold")
 
         #ax.errorbar(metropolis_sorted_N_2, metropolis_iact_mean_arr_2, metropolis_err_2, fmt='^', capsize=3, markersize=4, color="#16e104ff", label="Metropolis MC 2 ")
@@ -433,15 +433,15 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
     #ax.errorbar(ecmc_sorted_N_5, ecmc_iact_mean_arr_5, ecmc_err_5, fmt='^', capsize=3, markersize=7, color="#ff001eff", label="ECMC sd=100, rf = Nt")
     #ax.errorbar(ecmc_sorted_N_6, ecmc_iact_mean_arr_6, ecmc_err_6, fmt='^', capsize=3, markersize=7, color="#2b0330ff", label="ECMC sd=120, rf = Nt")
     #ax.errorbar(ecmc_sorted_N_7, ecmc_iact_mean_arr_7, ecmc_err_7, fmt='o', capsize=3, markersize=4, color="#cdde37ff", label="ECMC sd = 1.0, rf = inf")
-    ax.errorbar(ecmc_sorted_N_8, ecmc_iact_mean_arr_8, ecmc_err_8, fmt='o', capsize=3, markersize=4, color="#3140aeff", label="ECMC sd = 120, rf = 10e12")
+    #ax.errorbar(ecmc_sorted_N_8, ecmc_iact_mean_arr_8, ecmc_err_8, fmt='o', capsize=3, markersize=4, color="#3140aeff", label="ECMC sd = 120, rf = 10e12")
     #ax.errorbar(ecmc_sorted_N_9, ecmc_iact_mean_arr_9, ecmc_err_9, fmt='o', capsize=3, markersize=4, color="#64e15dff", label="ECMC sd = 500, rf = 10e12")
     ax.errorbar(ecmc_sorted_N_10, ecmc_iact_mean_arr_10, ecmc_err_10, fmt='*', capsize=3, markersize=9, color="#b8aaffff", label="ECMC sd = 500, rf = inf")
     #ax.errorbar(ecmc_sorted_N_11, ecmc_iact_mean_arr_11, ecmc_err_11, fmt='o', capsize=3, markersize=4, color="#00f7ffff", label="ECMC sd = Nt, rf = inf")
     #ax.errorbar(ecmc_sorted_N_12, ecmc_iact_mean_arr_12, ecmc_err_12, fmt='o', capsize=3, markersize=4, color="#00f7ffff", label="ECMC sd = 500, rf = Nt")
-    ax.errorbar(ecmc_sorted_N_13, ecmc_iact_mean_arr_13, ecmc_err_13, fmt='o', capsize=3, markersize=4, color="#00ff2fff", label="ECMC sd = 50, rf = inf")
-    ax.errorbar(ecmc_sorted_N_14, ecmc_iact_mean_arr_14, ecmc_err_14, fmt='o', capsize=3, markersize=4, color="#982be6ff", label="ECMC sd = 200, rf = inf")
+    #ax.errorbar(ecmc_sorted_N_13, ecmc_iact_mean_arr_13, ecmc_err_13, fmt='o', capsize=3, markersize=4, color="#00ff2fff", label="ECMC sd = 50, rf = inf")
+    #ax.errorbar(ecmc_sorted_N_14, ecmc_iact_mean_arr_14, ecmc_err_14, fmt='o', capsize=3, markersize=4, color="#982be6ff", label="ECMC sd = 200, rf = inf")
     ax.errorbar(ecmc_sorted_N_15, ecmc_iact_mean_arr_15, ecmc_err_15, fmt='*', capsize=3, markersize=9, color="#0d5120ff", label="ECMC sd = 1000, rf = inf")
-    ax.errorbar(ecmc_sorted_N_16, ecmc_iact_mean_arr_16, ecmc_err_16, fmt='*', capsize=3, markersize=9, color="#beb513ff", label="ECMC sd = 250, rf = inf")
+    ax.errorbar(ecmc_sorted_N_16, ecmc_iact_mean_arr_16, ecmc_err_16, fmt='*', capsize=3, markersize=9, color="#be1313ff", label="ECMC sd = 250, rf = inf")
 
 
 
