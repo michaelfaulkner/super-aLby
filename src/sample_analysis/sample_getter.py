@@ -564,7 +564,7 @@ def get_structure_factor(sample_directory, temperature, checkpoint_index,
         np.load(f"{sample_directory}/checkpoint_{checkpoint_index:02d}_sample_of_structure_factor.npy").flatten(),
         number_of_equilibration_iterations, thinning_level)
 
-def get_active_particle(sample_directory, temperature, temperature_index, checkpoint_index, number_of_particles,
+def get_event_active_particle_index(sample_directory, temperature, checkpoint_index, number_of_particles,
                        number_of_equilibration_iterations=None, thinning_level=None):
     """
     Returns the sample of the mean particle positions (where each position may be corrected for periodic boundaries).
@@ -598,8 +598,8 @@ def get_active_particle(sample_directory, temperature, temperature_index, checkp
         sub-array is the ith Cartesian component the mean particle position at observation n.
     """
     return get_reduced_sample(
-        np.load(f"{sample_directory}/temperature_{temperature_index:02d}_checkpoint_{checkpoint_index:02d}_"
-                f"sample_of_active_particles.npy"), number_of_equilibration_iterations, thinning_level)
+        np.load(f"{sample_directory}/checkpoint_{checkpoint_index:02d}_"
+                f"sample_of_event_active_particle_index.npy"), number_of_equilibration_iterations, thinning_level)
 
 def get_structure_factor(sample_directory, temperature, temperature_index, checkpoint_index,
                          number_of_particles, number_of_equilibration_iterations=None, thinning_level=None):

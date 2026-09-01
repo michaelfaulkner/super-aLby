@@ -2,8 +2,8 @@ import sys
 import os
 import errno
 
-def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_position, sampling_dist, anharmonicity,
-         omega_squared, input_save_str, dir, x_shift, lifting_scheme, refreshment_dist):
+def main(timestep, N, equilibrium, samples, mass, total_T, initial_position, anharmonicity,
+         omega_squared, input_save_str, dir, x_shift):
     timestep_str = timestep.replace(".", "")
     timestep_str = timestep_str.rstrip("0")
     mass_str = mass.replace(".", "")
@@ -13,15 +13,13 @@ def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_po
     timestep = float(timestep)
     mass = float(mass)
     total_T = int(total_T)
-    #initial_position = float(initial_position)
-    sampling_dist = float(sampling_dist)
+    initial_position = float(initial_position)
     anharmonicity = float(anharmonicity)
     omega_squared = float(omega_squared)
     x_shift = float(x_shift)
     N = int(N)
-    refreshment_dist = float(refreshment_dist)
     for i in range(N):
-        output_dir = f"config_files/hpc/anharmonic_ecmc_largew2/{input_save_str}/{i}.ini"
+        output_dir = f"config_files/hpc/anharmonic_metropolis_largew2/{input_save_str}/{i}.ini"
         print(f"{output_dir}")
         if not os.path.exists(output_dir):
             try:
@@ -32,19 +30,18 @@ def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_po
 
         with open(output_dir, "w") as f:
             f.write("[Run] \n" \
-            "mediator = event_chain_mediator \n" \
+            "mediator = metropolis_mediator \n" \
             "number_of_jobs = 1 \n" \
             "max_number_of_cpus = 1 \n" \
             "\n" \
-            "[EventChainMediator] \n" \
+            "[MetropolisMediator] \n" \
             "potential = quantum_harmonic_oscillator_potential \n" \
-            "samplers = mean_squared_position_sampler\n" \
-            "factor_field = temporal_factor_field \n" \
+            "samplers = mean_squared_position_sampler \n" \
+            "noise_distribution = unbounded_gaussian_noise_distribution\n" \
             "temperature = 1.0 \n" \
             f"number_of_equilibration_iterations = {equilibrium} \n" \
             f"number_of_observations = {samples} \n" \
-            f"normalised_distance_between_measurements = {sampling_dist} \n" \
-            f"refreshment_distribution = constant_refreshment_distribution \n" \
+            f"proposal_dynamics_adaptor_is_on = True \n" \
             f"output_directory = output/{dir}/{input_save_str}/{i} \n" \
             "\n" \
             "[QuantumHarmonicOscillatorPotential] \n" \
@@ -53,16 +50,11 @@ def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_po
             f"anharmonicity = {anharmonicity} \n" \
             f"omega_squared = {omega_squared} \n" \
             f"x_shift = {x_shift} \n" \
-            f"fixed_lifting_scheme = {lifting_scheme} \n" \
-            "\n" \
-            "[TemporalFactorField] \n" \
-            f"prefactor = {prefactor} \n" \
             "\n" \
             "[MeanSquaredPositionSampler] \n" \
             f"x_shift = {x_shift} \n" \
             "\n" \
-            "[ConstantRefreshmentDistribution] \n" \
-            f"normalised_refreshment_distance = {refreshment_dist} \n " \
+            "[UnboundedGaussianNoiseDistribution] \n" \
             "\n" \
             "[ModelSettings] \n" \
             "number_of_quantum_particles = 1 \n" \
@@ -79,4 +71,4 @@ def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_po
 
 if __name__ == '__main__':
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8],
-         sys.argv[9], sys.argv[10], sys.argv[11], sys.argv[12], sys.argv[13], sys.argv[14], sys.argv[15], sys.argv[16])
+         sys.argv[9], sys.argv[10], sys.argv[11], sys.argv[12])

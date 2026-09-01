@@ -24,82 +24,77 @@ def main(config_folder, min, max, min_timestep, save_folder, max_timestep=3.0):
     max_timestep = float(max_timestep)
 
     for iact_index in range(min, max):
-        try:
-            iact_arr = np.zeros(len(os.listdir(config_folder)))
-            timestep_arr = np.zeros(len(os.listdir(config_folder)))
+        
+        iact_arr = np.zeros(len(os.listdir(config_folder)))
+        timestep_arr = np.zeros(len(os.listdir(config_folder)))
 
-            for index, folder in enumerate(os.listdir(config_folder)):
-                config_file_string = os.path.join(
-                    config_folder, folder, f"{iact_index}.ini")
-                print(config_file_string)
-                config = parsing.read_config(
-                    parsing.parse_options([config_file_string]).config_file)
-                (config_file_mediator, potential, _, samplers, sample_directory, temperature,
-                number_of_equilibration_iterations, number_of_observations, number_of_particles,
-                size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
+        for index, folder in enumerate(os.listdir(config_folder)):
+            config_file_string = os.path.join(
+                config_folder, folder, f"{iact_index}.ini")
+            print(config_file_string)
+            config = parsing.read_config(
+                parsing.parse_options([config_file_string]).config_file)
+            (config_file_mediator, potential, _, samplers, sample_directory, temperature,
+            number_of_equilibration_iterations, number_of_observations, number_of_particles,
+            size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
 
-                mass = parsing.get_value(
-                    config, strings.to_camel_case(potential), "mass")
-                timestep = parsing.get_value(
-                    config, strings.to_camel_case(potential), "timestep")
-                sample_directory = sample_directory
-                temperature_index = 0
-                thinning_level = None
-                if timestep >= min_timestep and timestep <= max_timestep and timestep != 0.1 and timestep != 0.2:
-                    print(timestep)
-                    timestep_arr[index] = timestep
+            mass = parsing.get_value(
+                config, strings.to_camel_case(potential), "mass")
+            timestep = parsing.get_value(
+                config, strings.to_camel_case(potential), "timestep")
+            sample_directory = sample_directory
+            temperature_index = 0
+            thinning_level = None
+            if timestep >= min_timestep and timestep <= max_timestep:
+                print(timestep)
+                timestep_arr[index] = timestep
 
-                    checkpointing_index = sample_getter.get_checkpointing_indices(sample_directory)
-                    
-                    if checkpointing_index != 0:
-                        max_len = 0
-                        for i in range(checkpointing_index + 1):
-                            new_len = len(sample_getter.get_mean_squared_positions(
-                                sample_directory, temperature, i, number_of_particles, 
-                                None, thinning_level=thinning_level)[:, 0])
-                            if new_len > max_len:
-                                max_len = new_len
+                checkpointing_index = sample_getter.get_checkpointing_indices(sample_directory)
+                
+                if checkpointing_index != 0:
+                    max_len = 0
+                    for i in range(checkpointing_index + 1):
+                        new_len = len(sample_getter.get_mean_squared_positions(
+                            sample_directory, temperature, i, number_of_particles, 
+                            None, thinning_level=thinning_level)[:, 0])
+                        if new_len > max_len:
+                            max_len = new_len
 
-                        mean_sample = np.zeros(max_len * (checkpointing_index + 1))
-                        for i in range(checkpointing_index + 1):
-                            sub_arr = sample_getter.get_mean_squared_positions(
-                                sample_directory, temperature, i, number_of_particles, 
-                                None, thinning_level=thinning_level)[:, 0]
-                            try:
-                                mean_sample[i * max_len : (i) * max_len + len(sub_arr)] = sub_arr
-                            except:
-                                mean_sample[i * max_len : (i) * max_len + len(sub_arr)] = sub_arr[1:]
+                    mean_sample = np.zeros(max_len * (checkpointing_index + 1))
+                    for i in range(checkpointing_index + 1):
+                        sub_arr = sample_getter.get_mean_squared_positions(
+                            sample_directory, temperature, i, number_of_particles, 
+                            None, thinning_level=thinning_level)[:, 0]
+                        try:
+                            mean_sample[i * max_len : (i) * max_len + len(sub_arr)] = sub_arr
+                        except:
+                            mean_sample[i * max_len : (i) * max_len + len(sub_arr)] = sub_arr[1:]
 
-                        mean_sample = mean_sample[np.nonzero(mean_sample)]
-                        mean_sample = mean_sample[3000:]
-                            
-                    else:
-                        mean_sample = sample_getter.get_mean_squared_positions(sample_directory, temperature, 0, number_of_particles, number_of_equilibration_iterations,
-                                        thinning_level=thinning_level)
-                    
-                    if len(np.shape(mean_sample)) > 1:
-                        mean_sample = mean_sample[:,0]
-            
+                    mean_sample = mean_sample[np.nonzero(mean_sample)]
+                    mean_sample = mean_sample[3000:]
+                        
+                else:
+                    mean_sample = sample_getter.get_mean_squared_positions(sample_directory, temperature, 0, number_of_particles, number_of_equilibration_iterations,
+                                    thinning_level=thinning_level)
+                
+                if len(np.shape(mean_sample)) > 1:
+                    mean_sample = mean_sample[:,0]
+        
 
-                    iact, acf = get_iact_and_acf(mean_sample[:])
+                iact, acf = get_iact_and_acf(mean_sample[:])
 
-                    iact_arr[index] = iact
+                iact_arr[index] = iact
 
-            argsort = np.argsort(timestep_arr)
-            timestep_arr = timestep_arr[argsort]
-            iact_arr = iact_arr[argsort]
-            timestep_arr = np.trim_zeros(timestep_arr, trim = "fb")
-            iact_arr = np.trim_zeros(iact_arr, trim = "fb")
-            save_arr = np.zeros((len(iact_arr), 2))
-            save_arr[:, 0] = iact_arr
-            save_arr[:, 1] = timestep_arr
+        argsort = np.argsort(timestep_arr)
+        timestep_arr = timestep_arr[argsort]
+        iact_arr = iact_arr[argsort]
+        timestep_arr = np.trim_zeros(timestep_arr, trim = "fb")
+        iact_arr = np.trim_zeros(iact_arr, trim = "fb")
+        save_arr = np.zeros((len(iact_arr), 2))
+        save_arr[:, 0] = iact_arr
+        save_arr[:, 1] = timestep_arr
 
-            np.save(f"output/{save_folder}/iact_ecmc_{iact_index}.npy", save_arr)
-
-        except FileNotFoundError:
-            print(f"could not find data for {iact_index}")
-        except:
-            print("other error")
+        np.save(f"output/{save_folder}/iact_ecmc_{iact_index}.npy", save_arr)
 
 
 if __name__ == '__main__':
