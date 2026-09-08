@@ -40,6 +40,7 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
         self.pointer_hop_distance = 0.0
         self.aggregate_pointer_hop_distance = 0.0
         self.cell_boundary_event = False
+        self.disk_radii = None # required for HardDiskPotential
 
     @abstractmethod
     def get_gradient(self, positions):

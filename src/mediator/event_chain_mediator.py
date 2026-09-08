@@ -135,14 +135,14 @@ class EventChainMediator(Mediator):
             distance_to_next_measurement += self._distance_between_measurements
             taken_measurement = False
             while True:
-                # todo looks like self._potential._disk_radii is an additional variable that might not have been
-                #  defined in get_next_event() in the main FactorField class; I'm also thinking we might not need the
-                #  radii as FF events leading to an overlap would be disqualified by an earlier potential event?
+                # todo (KEY TODO) looks like self._potential.disk_radii is an additional variable that might not have
+                #  been defined in get_next_event() in the main FactorField class; I'm also thinking we might not need
+                #  the radii as FF events leading to an overlap would be disqualified by an earlier potential event?
                 candidate_events = [
                     (self._potential.get_next_event(
                         self._positions, active_particle_index, self._temperature, movement_direction), "potential"),
                     (self._factor_field.get_next_event(
-                        self._positions, self._potential._disk_radii, active_particle_index, self._temperature,
+                        self._positions, self._potential.disk_radii, active_particle_index, self._temperature,
                         movement_direction), "factor_field")]
                 (event, event_source) = min(candidate_events, key=lambda x: x[0][0])
                 distance_to_next_event, vetoing_index, hop_displacement = event
@@ -182,7 +182,7 @@ class EventChainMediator(Mediator):
                             self._portal_probability):
                         candidate_positions = self._potential.get_portal_candidate(
                             self._positions, active_particle_index, vetoing_index, movement_direction)
-                        # todo think we need an alternative way of measuring this - I'd say instead of using
+                        # todo (KEY TODO) think we need an alternative way of measuring this - I'd say instead of using
                         #  'arrangements explored', store the value using a new EventSampler and don't exit the algo
                         if candidate_positions == 'arrangements explored':
                             print(f"iterations: {markov_chain_index}")
@@ -190,14 +190,8 @@ class EventChainMediator(Mediator):
                         if candidate_positions is not None and "HardDiskPotential" in str(self._potential):
                             self._positions[active_particle_index] = candidate_positions[0]
                             self._positions[vetoing_index] = candidate_positions[1]
-                            active_particle_index, movement_direction = self._potential.choose_next_active_particle(
-                                    self._positions, active_particle_index, movement_direction, vetoing_index)
-                        else:
-                            active_particle_index, movement_direction = self._potential.choose_next_active_particle(
-                                self._positions, active_particle_index, movement_direction, vetoing_index)
-                    else:
-                        active_particle_index, movement_direction = self._potential.choose_next_active_particle(
-                            self._positions, active_particle_index, movement_direction, vetoing_index)
+                    active_particle_index, movement_direction = self._potential.choose_next_active_particle(
+                        self._positions, active_particle_index, movement_direction, vetoing_index)
 
                     self._total_number_of_events += 1
                     distance_to_next_velocity_refreshment -= distance_to_next_event
@@ -236,8 +230,7 @@ class EventChainMediator(Mediator):
                 "state_space_velocity": state_space_velocity,
                 "index_space_velocity": index_space_velocity,
                 "index_velocity_small": index_velocity_small,
-                "index_velocity_large": index_velocity_large
-            }, f)
+                "index_velocity_large": index_velocity_large}, f)
 
     def _update_state_and_index_space_displacements(self, displacement_distance, active_particle_index, vetoing_index,
                                                     hop_displacement):
@@ -258,12 +251,13 @@ class EventChainMediator(Mediator):
                 displacement = -((active_particle_index - vetoing_index) % number_of_particles)
             else:
                 displacement = 0
-            if (self._potential._disk_radii[active_particle_index] == 1.0):
-                self._index_space_displacement_small += displacement
-                self._number_of_index_space_moves_small += 1
-            else:
-                self._index_space_displacement_large += displacement
-                self._number_of_index_space_moves_large += 1
+            if "HardDiskPotential" in str(self._potential) and len(size_of_particle_space) == 1:
+                if self._potential.disk_radii[active_particle_index] == 1.0:
+                    self._index_space_displacement_small += displacement
+                    self._number_of_index_space_moves_small += 1
+                else:
+                    self._index_space_displacement_large += displacement
+                    self._number_of_index_space_moves_large += 1
             self._index_space_displacement += displacement
             if displacement != 0:
                 self._number_of_index_space_moves += 1

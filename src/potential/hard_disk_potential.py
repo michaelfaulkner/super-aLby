@@ -91,8 +91,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
         self._disk_radius_b = disk_radius_b
         self._disk_radius = disk_radius_a if dimensionality_of_particle_space > 1 else None
         self._packing_fraction = packing_fraction
-        self._disk_radii = np.array([self._disk_radius_a if (i % particle_ratio != 0) else self._disk_radius_b
-                                     for i in range(number_of_particles)], dtype=float)
+        self.disk_radii = np.array([self._disk_radius_a if (i % particle_ratio != 0) else self._disk_radius_b
+                                    for i in range(number_of_particles)], dtype=float)
         self._measure_particle_orderings = measure_particle_orderings
         if self._measure_particle_orderings:
             self._array_of_explored_orderings = set()
@@ -104,7 +104,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
                 total += sympy.totient(n // d) * math.comb(2*d, d)
             burnside = total // (2 * n)
             self._counter_of_remaining_orderings = burnside - 1
-            binary_ordering_config = tuple((self._disk_radii == self._disk_radius_a).astype(int))
+            binary_ordering_config = tuple((self.disk_radii == self._disk_radius_a).astype(int))
             self._array_of_explored_orderings.add(binary_ordering_config)
 
         number_of_cells_in_each_direction = np.int_(size_of_particle_space /
@@ -446,7 +446,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         if dimensionality_of_particle_space != 1:
-            raise MediatorError("portals only implemented for 1D hard-sphere systems")
+            raise SystemError(f"The get_portal_candidate method of {self.__class__.__name__} has been written only for "
+                              f"models on the 1D torus.")
         if veto_index is None or veto_index == active_particle_index:
             return None
         active_radius = self._get_disk_radius(active_particle_index)
@@ -456,15 +457,11 @@ class HardDiskPotential(EuclideanSubspacePotential):
         left_boundary = (positions[active_particle_index, 0] - active_radius) % size_of_particle_space
         candidate_position_1 = get_shortest_vectors_on_torus(left_boundary + veto_radius)
         candidate_position_2 = get_shortest_vectors_on_torus(left_boundary + 2.0 * veto_radius + active_radius)
-        self._disk_radii[active_particle_index], self._disk_radii[veto_index] = veto_radius, active_radius
+        self.disk_radii[active_particle_index], self.disk_radii[veto_index] = veto_radius, active_radius
         if self._measure_particle_orderings:
-            binary_ordering_config = tuple((self._disk_radii == self._disk_radius_a).astype(int))
-            number = self._get_lowest_rotation(binary_ordering_config)
-            if number not in self._array_of_explored_orderings:
-                self._array_of_explored_orderings.add(number)
-                self._counter_of_remaining_orderings -=1
-                if self._counter_of_remaining_orderings == 0:
-                    return 'arrangements explored'
+            self._update_particle_orderings()
+            if self._counter_of_remaining_orderings == 0:
+                return 'arrangements explored'
         return candidate_position_1, candidate_position_2
 
     def get_swap_candidate(self, positions, active_particle_index):
@@ -472,26 +469,30 @@ class HardDiskPotential(EuclideanSubspacePotential):
         random_particle_index = np.random.randint(0, number_of_particles)
         while random_particle_index == active_particle_index:
             random_particle_index = np.random.randint(0, number_of_particles)
-        random_radius = self._get_disk_radius(random_particle_index)
         active_radius = self._get_disk_radius(active_particle_index)
-        self._disk_radii[active_particle_index], self._disk_radii[random_particle_index] = random_radius, active_radius
-        overlap_exists = self._check_for_disk_overlaps(positions)[0]
-        if overlap_exists:
-            self._disk_radii[active_particle_index], self._disk_radii[random_particle_index] = active_radius, random_radius
+        random_radius = self._get_disk_radius(random_particle_index)
+        self.disk_radii[active_particle_index], self.disk_radii[random_particle_index] = random_radius, active_radius
+        if self._check_for_disk_overlaps(positions)[0]:
+            self.disk_radii[active_particle_index], self.disk_radii[random_particle_index] = (active_radius,
+                                                                                                random_radius)
         if self._measure_particle_orderings:
-            binary_ordering_config = tuple((self._disk_radii == self._disk_radius_a).astype(int))
-            number = self._get_lowest_rotation(binary_ordering_config)
-            if number not in self._array_of_explored_orderings:
-                self._array_of_explored_orderings.add(number)
-                self._counter_of_remaining_orderings -= 1
-                if self._counter_of_remaining_orderings == 0:
-                    return 'arrangements explored'
+            self._update_particle_orderings()
+            if self._counter_of_remaining_orderings == 0:
+                return 'arrangements explored'
         return None
 
     def _get_disk_radius(self, particle_index: int) -> float:
         """Return disk radius for a given particle index."""
-        return float(self._disk_radii[particle_index])
+        return float(self.disk_radii[particle_index])
+
+    # todo (KEY TODO) see EventChainMediator for todo on modifying this process of measuring the particle orderings
+    def _update_particle_orderings(self):
+        binary_ordering_config = tuple((self.disk_radii == self._disk_radius_a).astype(int))
+        number = self._get_lowest_rotation(binary_ordering_config)
+        if number not in self._array_of_explored_orderings:
+            self._array_of_explored_orderings.add(number)
+            self._counter_of_remaining_orderings -= 1
 
     @staticmethod
-    def _get_lowest_rotation(self, binary):
-        return min(binary[i:] + binary[:i] for i in range(number_of_particles))
+    def _get_lowest_rotation(binary_ordering_config):
+        return min(binary_ordering_config[i:] + binary_ordering_config[:i] for i in range(number_of_particles))
