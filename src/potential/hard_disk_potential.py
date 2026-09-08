@@ -40,7 +40,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
     """
 
     def __init__(self, prefactor: float = 1.0, disk_radius_a: float = 1.0, disk_radius_b: float = 1.0,
-                 packing_fraction: float = 0.5, portal_probability: float = 0.5, particle_ratio: int = 2,
+                 packing_fraction: float = 0.5, particle_ratio: int = 2,
                  measure_particle_orderings: bool = False):
         r"""
         The constructor of the HardDiskPotential class
@@ -57,8 +57,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
             require disk_radius_a = disk_radius_b for dimensionality_of_particle_space > 1).
         packing_fraction : float, optional
             The packing fraction of the disks.  This corresponds to the mean disk density.
-        portal_probability : float, optional
-            The probability of proposing a teleportation portal at an event-chain collision.
         particle_ratio : int, optional
             The ratio of the number of particles in species a to the number of particles in species b.
         measure_particle_orderings : bool, optional
@@ -91,7 +89,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                      f"{self.__class__.__name__}.")
         self._disk_radius_a = disk_radius_a
         self._disk_radius_b = disk_radius_b
-        self._portal_probability = portal_probability
         self._disk_radius = disk_radius_a if dimensionality_of_particle_space > 1 else None
         self._packing_fraction = packing_fraction
         self._disk_radii = np.array([self._disk_radius_a if (i % particle_ratio != 0) else self._disk_radius_b
@@ -448,21 +445,17 @@ class HardDiskPotential(EuclideanSubspacePotential):
         return motion_index, other_index
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
-
-        
         if dimensionality_of_particle_space != 1:
             raise MediatorError("portals only implemented for 1D hard-sphere systems")
-        if veto_index is None or veto_index == active_particle_index or np.random.uniform() >= self._portal_probability:
+        if veto_index is None or veto_index == active_particle_index:
             return None
         active_radius = self._get_disk_radius(active_particle_index)
         veto_radius = self._get_disk_radius(veto_index)
         if active_radius == veto_radius:
             return None
         left_boundary = (positions[active_particle_index, 0] - active_radius) % size_of_particle_space
-        candidate_position_1 = left_boundary + veto_radius
-        candidate_position_2 = left_boundary + 2*veto_radius + active_radius
-        wrapped_position_1 = float(((candidate_position_1 + size_of_particle_space/2) % size_of_particle_space) - size_of_particle_space/2)
-        wrapped_position_2 = float(((candidate_position_2 + size_of_particle_space/2) % size_of_particle_space) - size_of_particle_space/2)
+        candidate_position_1 = get_shortest_vectors_on_torus(left_boundary + veto_radius)
+        candidate_position_2 = get_shortest_vectors_on_torus(left_boundary + 2.0 * veto_radius + active_radius)
         self._disk_radii[active_particle_index], self._disk_radii[veto_index] = veto_radius, active_radius
         if self._measure_particle_orderings:
             binary_ordering_config = tuple((self._disk_radii == self._disk_radius_a).astype(int))
@@ -470,10 +463,9 @@ class HardDiskPotential(EuclideanSubspacePotential):
             if number not in self._array_of_explored_orderings:
                 self._array_of_explored_orderings.add(number)
                 self._counter_of_remaining_orderings -=1
-                #print(self._counter)
                 if self._counter_of_remaining_orderings == 0:
                     return 'arrangements explored'
-        return wrapped_position_1, wrapped_position_2
+        return candidate_position_1, candidate_position_2
 
     def get_swap_candidate(self, positions, active_particle_index):
         """Propose candidate configuration via a Metropolis swap kernel."""

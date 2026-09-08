@@ -2,6 +2,7 @@
 import os
 import json
 import importlib
+import math
 import numpy as np
 from base.exceptions import ConfigurationError
 from .mediator import Mediator
@@ -25,7 +26,7 @@ class EventChainMediator(Mediator):
                  refreshment_distribution: RefreshmentDistribution = ConstantRefreshmentDistribution(),
                  temperature: float = 1.0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, output_directory: str = None,
-                 normalised_distance_between_measurements: float = 1.0, teleportation_portal: bool = True):
+                 normalised_distance_between_measurements: float = 1.0, portal_probability: float = 0.0):
         r"""
         Constructor of the EventChainMediator class.  Note that this class works only with potential classes that
             inherit from EuclideanSubspacePotential (essentially continuous spaces).
@@ -54,8 +55,9 @@ class EventChainMediator(Mediator):
             The name of the directory into which the sample file is written at the end of the run.
         normalised_distance_between_measurements : float, optional
             Total distance through state space between samples (normalised as indicated by the operations below).
-        teleportation_portal : bool, optional
-            When True, a teleportation portal is attempted at each event induced by the potential.
+        portal_probability : float, optional
+            When greater than 0.0, a teleportation portal is attempted (with probability portal_probability) at each
+            event induced by the potential.
 
         Raises
         ------
@@ -85,6 +87,10 @@ class EventChainMediator(Mediator):
         if not isinstance(refreshment_distribution, RefreshmentDistribution):
             raise ConfigurationError(f"Give a refreshment-distribution class as the value for refreshment_distribution "
                                      f"in {self.__class__.__name__}.")
+        if ((portal_probability < 0.0 and not math.isclose(portal_probability, 0.0)) or
+                (portal_probability > 1.0 and not math.isclose(portal_probability, 1.0))):
+            raise ConfigurationError(f"Give a value for the portal_probability greater than or equal to 0.0 and less "
+                                     f"than or equal to 1.0 in {self.__class__.__name__}.")
         """Re-instantiate self._potential as EuclideanSubspacePotential contains additional abstract methods."""
         self._potential = potential
         self._factor_field = factor_field
@@ -114,7 +120,10 @@ class EventChainMediator(Mediator):
         """The following object is set in self._set_arrays_and_counters()"""
         (self._total_number_of_events, self._state_space_displacement, self._total_event_distance,
          self._index_space_displacement, self._number_of_index_space_moves) = None, None, None, None, None
-        self._teleportation_portal = teleportation_portal
+        self._teleportation_portal = False
+        if not math.isclose(portal_probability, 0.0):
+            self._teleportation_portal = True
+        self._portal_probability = portal_probability
 
     def _run_markov_process(self):
         """Runs the Markov process with model temperature equal to self._temperature."""
@@ -125,27 +134,16 @@ class EventChainMediator(Mediator):
         for markov_chain_index in range(self._total_number_of_iterations):
             distance_to_next_measurement += self._distance_between_measurements
             taken_measurement = False
-            loop_counter = 0
             while True:
-                loop_counter += 1 
-                if loop_counter > 1000000:  
-                    print(f"infinite loop: {markov_chain_index}")
-                    print(f"loop iterations: {loop_counter}")
-                    print(f"distance_to_next_measurement: {distance_to_next_measurement}")
-                    print(f"distance_to_next_event: {distance_to_next_event}")
-                    print(f"taken_measurement: {taken_measurement}")
-                    print(f"active_particle_index: {active_particle_index}")
-                    print(f"positions:{self._positions}")
-                    print(f"radii:  {self._potential._disk_radii}")
-                    raise RuntimeError("loop not progressing")
+                # todo looks like self._potential._disk_radii is an additional variable that might not have been
+                #  defined in get_next_event() in the main FactorField class; I'm also thinking we might not need the
+                #  radii as FF events leading to an overlap would be disqualified by an earlier potential event?
                 candidate_events = [
                     (self._potential.get_next_event(
-                        self._positions, active_particle_index, self._temperature, movement_direction
-                    ), "potential"),
+                        self._positions, active_particle_index, self._temperature, movement_direction), "potential"),
                     (self._factor_field.get_next_event(
-                        self._positions, self._potential._disk_radii, active_particle_index, self._temperature, movement_direction
-                    ), "factor_field"),
-                ]
+                        self._positions, self._potential._disk_radii, active_particle_index, self._temperature,
+                        movement_direction), "factor_field")]
                 (event, event_source) = min(candidate_events, key=lambda x: x[0][0])
                 distance_to_next_event, vetoing_index, hop_displacement = event
                 self._update_state_and_index_space_displacements(distance_to_next_event, active_particle_index,
@@ -180,16 +178,18 @@ class EventChainMediator(Mediator):
                         for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
 
-                    if self._teleportation_portal and event_source == "potential":
-                        candidate_position = self._potential.get_portal_candidate(
+                    if (self._teleportation_portal and event_source == "potential" and np.random.uniform() <
+                            self._portal_probability):
+                        candidate_positions = self._potential.get_portal_candidate(
                             self._positions, active_particle_index, vetoing_index, movement_direction)
-                        if candidate_position == 'arrangements explored':
+                        # todo think we need an alternative way of measuring this - I'd say instead of using
+                        #  'arrangements explored', store the value using a new EventSampler and don't exit the algo
+                        if candidate_positions == 'arrangements explored':
                             print(f"iterations: {markov_chain_index}")
                             raise RuntimeError("all arrangements explored")
-                        if candidate_position is not None and "HardDiskPotential" in str(self._potential):
-                            candidate_position_1, candidate_position_2 = candidate_position
-                            self._positions[active_particle_index, 0] = candidate_position_1
-                            self._positions[vetoing_index, 0] = candidate_position_2
+                        if candidate_positions is not None and "HardDiskPotential" in str(self._potential):
+                            self._positions[active_particle_index] = candidate_positions[0]
+                            self._positions[vetoing_index] = candidate_positions[1]
                             active_particle_index, movement_direction = self._potential.choose_next_active_particle(
                                     self._positions, active_particle_index, movement_direction, vetoing_index)
                         else:
@@ -216,8 +216,10 @@ class EventChainMediator(Mediator):
     def _set_arrays_and_counters(self):
         """Sets the arrays (e.g. the sample array) and counters before the Markov process."""
         super()._set_arrays_and_counters()
-        self._total_number_of_events, self._number_of_index_space_moves, self._number_of_index_space_moves_small, self._number_of_index_space_moves_large = 0, 0, 0, 0
-        self._state_space_displacement, self._total_event_distance, self._index_space_displacement, self._index_space_displacement_small, self._index_space_displacement_large = 0.0, 0.0, 0.0, 0.0, 0.0
+        (self._total_number_of_events, self._number_of_index_space_moves, self._number_of_index_space_moves_small,
+         self._number_of_index_space_moves_large) = 0, 0, 0, 0
+        (self._state_space_displacement, self._total_event_distance, self._index_space_displacement,
+         self._index_space_displacement_small, self._index_space_displacement_large) = 0.0, 0.0, 0.0, 0.0, 0.0
 
     def _write_state_and_index_space_velocities(self):
         """Saves average state space and index space velocities"""
