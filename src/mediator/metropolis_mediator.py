@@ -79,6 +79,9 @@ class MetropolisMediator(DiffusiveMediator):
             """n.b. swap functionality only provided for hard-sphere models (accept-reject step needed otherwise)"""
             if self._particle_swap:
                 swap_result = self._potential.get_swap_candidate(self._positions, active_particle_index)
+                # todo (KEY TODO) as in EventChainMediator, I think we need an alternative way of measuring this - I'd
+                #  say instead of using 'all arrangements explored', store the value using a new EventSampler and don't
+                #  exit the algo
                 if swap_result == 'arrangements explored':
                     print("All arrangements explored — stopping Metropolis simulation.")
                     print(f"iterations: {markov_chain_step_index}")
