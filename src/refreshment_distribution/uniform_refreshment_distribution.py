@@ -46,5 +46,4 @@ class UniformRefreshmentDistribution(RefreshmentDistribution):
         numpy.ndarray
             A one-dimensional numpy array whose single element is equal to the refreshment distance.
         """
-        #return float('inf')
         return np.random.uniform(self._lower_limit, self._upper_limit, 1)
