@@ -22,7 +22,8 @@ class HardDiskFactorFieldSmall(FactorField):
         """
         super().__init__(prefactor)
 
-    def get_next_event(self, positions, disk_radii, active_particle_index, temperature, movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature, movement_direction,
+                       disk_radii):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -37,6 +38,9 @@ class HardDiskFactorFieldSmall(FactorField):
             The sampling temperature.
         movement_direction : int
             The active-particle direction of motion.
+        disk_radii : numpy.ndarray
+            A one-dimensional numpy array of length number_of_particles.  Element i is a float and represents the
+            relative radius of the particle i in hard-disk models.
 
         Returns
         ----------

@@ -142,8 +142,8 @@ class EventChainMediator(Mediator):
                     (self._potential.get_next_event(
                         self._positions, active_particle_index, self._temperature, movement_direction), "potential"),
                     (self._factor_field.get_next_event(
-                        self._positions, self._potential.disk_radii, active_particle_index, self._temperature,
-                        movement_direction), "factor_field")]
+                        self._positions, active_particle_index, self._temperature, movement_direction,
+                        self._potential.disk_radii), "factor_field")]
                 (event, event_source) = min(candidate_events, key=lambda x: x[0][0])
                 distance_to_next_event, vetoing_index, hop_displacement = event
                 self._update_state_and_index_space_displacements(distance_to_next_event, active_particle_index,
