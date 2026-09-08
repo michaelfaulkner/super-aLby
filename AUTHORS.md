@@ -11,4 +11,6 @@ All additional contributing authors are listed below in chronological order.
 
 [James Gulliford](https://github.com/jamesgulliford57)
 
+[Lily Lenton](https://github.com/lilylenton20)
+
 [Chris Brady](https://github.com/csbrady-warwick)
