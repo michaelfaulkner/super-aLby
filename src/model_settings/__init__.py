@@ -40,27 +40,30 @@ with open(args.config_file) as config_file:
                 f"positions must be ordered to avoid disk overlaps.")
     else:
         range_of_initial_particle_positions = get_value(config, "ModelSettings", "range_of_initial_particle_positions")
-        if dimensionality_of_particle_space == 1 and size_of_particle_space is not None:
-            if type(range_of_initial_particle_positions) is float or type(range_of_initial_particle_positions) is int \
-                or range_of_initial_particle_positions is None:
-                conditions = abs(range_of_initial_particle_positions) <= size_of_particle_space / 2
-            else:
-                conditions = (range_of_initial_particle_positions[0] >= - size_of_particle_space / 2 and
-                              range_of_initial_particle_positions[1] <= size_of_particle_space / 2)
-        elif dimensionality_of_particle_space > 1 and size_of_particle_space[0] is not None:
-            if (type(range_of_initial_particle_positions[0]) is float or
-                    type(range_of_initial_particle_positions[0]) is int):
-                conditions = [abs(range_of_initial_particle_positions[i]) <= size_of_particle_space[i] / 2
-                              for i in range(len(size_of_particle_space))]
-            else:
-                conditions = [range_of_initial_particle_positions[i][0] >= - size_of_particle_space[i] / 2 and
-                              range_of_initial_particle_positions[i][1] <= size_of_particle_space[i] / 2
-                              for i in range(len(size_of_particle_space))]
-            for condition in np.atleast_1d(conditions):
-                if not condition:
-                    raise ConfigurationError(
-                        "The absolute value of any float or integer given within range_of_initial_particle_positions "
-                        "must be less than half the size_of_particle_space.")
+        if type(range_of_initial_particle_positions) is str:
+            conditions = False  
+        else:
+            if dimensionality_of_particle_space == 1 and size_of_particle_space is not None:
+                if type(range_of_initial_particle_positions) is float or type(range_of_initial_particle_positions) is int \
+                    or range_of_initial_particle_positions is None:
+                    conditions = abs(range_of_initial_particle_positions) <= size_of_particle_space / 2
+                else:
+                    conditions = (range_of_initial_particle_positions[0] >= - size_of_particle_space / 2 and
+                                range_of_initial_particle_positions[1] <= size_of_particle_space / 2)
+            elif dimensionality_of_particle_space > 1 and size_of_particle_space[0] is not None:
+                if (type(range_of_initial_particle_positions[0]) is float or
+                        type(range_of_initial_particle_positions[0]) is int):
+                    conditions = [abs(range_of_initial_particle_positions[i]) <= size_of_particle_space[i] / 2
+                                for i in range(len(size_of_particle_space))]
+                else:
+                    conditions = [range_of_initial_particle_positions[i][0] >= - size_of_particle_space[i] / 2 and
+                                range_of_initial_particle_positions[i][1] <= size_of_particle_space[i] / 2
+                                for i in range(len(size_of_particle_space))]
+                for condition in np.atleast_1d(conditions):
+                    if not condition:
+                        raise ConfigurationError(
+                            "The absolute value of any float or integer given within range_of_initial_particle_positions "
+                            "must be less than half the size_of_particle_space.")
     if "QuantumHardDiskPotential" in config_file_as_str or "QuantumHarmonicOscillatorPotential" in config_file_as_str:
         number_of_quantum_particles = get_value(config, "ModelSettings", "number_of_quantum_particles")
         number_of_timeslices = get_value(config, "ModelSettings", "number_of_timeslices")
