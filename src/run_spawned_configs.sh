@@ -82,7 +82,11 @@ run_task() {
 
     local CONFIG_FILE
     for CONFIG_FILE in "$SUBDIR"/*.ini; do
-        python run.py "$CONFIG_FILE" || { echo "run.py failed for $CONFIG_FILE"; exit 1; }
+        if [[ "${RUN_WITH_EXECUTABLE:-false}" == true ]]; then
+            ./super-alby "$CONFIG_FILE" || { echo "run.py failed for $CONFIG_FILE"; exit 1; }
+        else
+            python run.py "$CONFIG_FILE" || { echo "run.py failed for $CONFIG_FILE"; exit 1; }
+        fi
     done
 }
 
