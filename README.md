@@ -146,9 +146,18 @@ quantum particle for Wick-rotated quantum actions).  It is either `None`, a `flo
 - `range_of_initial_particle_positions` represents the range of the initial position of each particle (or each quantum 
 particle for Wick-rotated quantum actions).  It is either a `float`, a one-dimensional Python `list` of length 
 `len(range_of_initial_particle_positions)` and composed of `float` values, or a two-dimensional Python `list` of size 
-`(len(range_of_initial_particle_positions), 2)` and composed of `float` values.
+`(len(range_of_initial_particle_positions), 2)` and composed of `float` values. Alternatively,
+`range_of_initial_particle_positions` may be passed as a `str` giving the path to a file containing an array of initial
+positions of the system. This must be a `.npy` file containing the array, or a `.txt` file formatted such that each row
+contains white-space-delimited values for the position of each particle for all dimensions. The below example shows
+a `.txt` file representing the initial positions for a 3-dimensional system consiting of 2 particle, one at 
+coordinates *(2.0, 1.0, 3.0)*, and one at *(4.1, 3.9, 2.7)*.
+```
+2.0 1.0 3.0
+4.1 3.9 2.7
+```
 
-The above example represents a two-particle system in which each particle exists on the entire real 
+The [above example](#configuration-files) represents a two-particle system in which each particle exists on the entire real 
 line and has initial position *1.0*, while
 
 ```INI
