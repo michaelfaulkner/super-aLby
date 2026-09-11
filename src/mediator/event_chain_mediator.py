@@ -8,8 +8,10 @@ from .mediator import Mediator
 from factor_field.factor_field import FactorField
 from factor_field.no_factor_field import NoFactorField
 from refreshment_distribution.refreshment_distribution import RefreshmentDistribution
+from refreshment_distribution.no_refreshment_distribution import NoRefreshmentDistribution
 from refreshment_distribution.constant_refreshment_distribution import ConstantRefreshmentDistribution
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
+from potential.worldline_potential import WorldlinePotential
 from sampler.sampler import Sampler
 from typing import Sequence
 from model_settings import number_of_particles, size_of_particle_space, dimensionality_of_particle_space
@@ -92,7 +94,13 @@ class EventChainMediator(Mediator):
         if normalised_distance_between_measurements <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 for normalised_distance_between_measurements in "
                                      f"{self.__class__.__name__}.")
-        self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
+
+        if isinstance(potential, WorldlinePotential):
+            refreshment_distribution = NoRefreshmentDistribution()
+            self._distance_between_measurements = normalised_distance_between_measurements
+        else:
+            self._distance_between_measurements = normalised_distance_between_measurements * number_of_particles
+
         if "HardDiskPotential" in str(potential) and len(size_of_particle_space) > 1:
             self._distance_between_measurements *= np.min(size_of_particle_space)
         self._free_space = np.atleast_1d(size_of_particle_space)[0]
