@@ -21,7 +21,7 @@ def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_po
     N = int(N)
     refreshment_dist = float(refreshment_dist)
     for i in range(N):
-        output_dir = f"config_files/hpc/anharmonic_ecmc_largew2/{input_save_str}/{i}.ini"
+        output_dir = f"config_files/hpc/anharmonic_ecmc_w2_100/{input_save_str}/{i}.ini"
         print(f"{output_dir}")
         if not os.path.exists(output_dir):
             try:

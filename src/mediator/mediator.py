@@ -116,7 +116,7 @@ class Mediator(metaclass=ABCMeta):
         [sampler.output_sample(self._samples[sampler_index], self._checkpoint_index, self._output_directory)
          for sampler_index, sampler in enumerate(self._samplers)]
         [event_sampler.output_sample(self._event_samples[event_sampler_index], self._checkpoint_index,
-                                     self._) for event_sampler_index, event_sampler in
+                                     self._output_directory) for event_sampler_index, event_sampler in
          enumerate(self._event_samplers)]
         self._write_checkpoint_index_and_configuration()
         self._print_markov_process_summary()

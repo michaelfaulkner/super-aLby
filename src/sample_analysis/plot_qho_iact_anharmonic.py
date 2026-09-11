@@ -60,12 +60,12 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, N, ff_N, propertime):
 
     
     if metrop_data:
-        m_fit_trim = -7
+        m_fit_trim = -10
         m_coeffs = np.polyfit(np.log(metropolis_sorted_N[:m_fit_trim]), np.log(metropolis_iact_mean_arr[:m_fit_trim]), deg=1)
         fitted_m = m_coeffs[1] + np.multiply(np.log(metropolis_sorted_N[:m_fit_trim]), m_coeffs[0])
         print(f"Metropolis: {m_coeffs[0]}")
 
-    e_fit_trim = -8
+    e_fit_trim = -9
     e_coeffs = np.polyfit(np.log(ecmc_sorted_N[:e_fit_trim]), np.log(ecmc_iact_mean_arr[:e_fit_trim]), deg=1)
     fitted_e = e_coeffs[1] + np.multiply(np.log(ecmc_sorted_N[:e_fit_trim]), e_coeffs[0])
     print(f"ECMC: {e_coeffs[0]}")
@@ -97,13 +97,13 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, N, ff_N, propertime):
     legend_properties = {'weight':'bold'}
     plt.legend(prop=legend_properties, bbox_to_anchor=(1.0, 1.0))
     #ax.set_ylim(0.17e5, 0.8e7)
-    ax.set_title(r"Anharmonic Oscillator - m=1.0, $\lambda = 1.0$, $\omega ^2 = -5.0$")
+    ax.set_title(r"Anharmonic Oscillator - m=1.0, $\lambda = 1.0$, $\omega ^2 = -50.0$")
    
 
 
     #plt.title(f"IACT of x^2 for QHO with (x+2)^2")
     plt.tight_layout()
-    plt.savefig("iact_anharmonic.png")#, transparent=True)
+    plt.savefig("iact_anharmonic_w2_50.png")#, transparent=True)
     plt.clf()
 
 

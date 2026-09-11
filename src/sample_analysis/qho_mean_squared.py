@@ -26,9 +26,8 @@ def main(data_path):
 
     fig, ax = plt.subplots(1,1)
     ax.plot(np.arange(np.shape(mean_sample)[0]), mean_sample, color="purple")
-    ax.set_xlim(-500, 80000)
 
-    plt.savefig("trace.png")
+    plt.savefig("trace_anharmonic_ecmc_w2_50.png")
 
 
 if __name__ == '__main__':

@@ -19,7 +19,7 @@ def main(timestep, N, equilibrium, samples, mass, total_T, initial_position, anh
     x_shift = float(x_shift)
     N = int(N)
     for i in range(N):
-        output_dir = f"config_files/hpc/anharmonic_metropolis_largew2/{input_save_str}/{i}.ini"
+        output_dir = f"config_files/hpc/anharmonic_metropolis_w2_20/{input_save_str}/{i}.ini"
         print(f"{output_dir}")
         if not os.path.exists(output_dir):
             try:
