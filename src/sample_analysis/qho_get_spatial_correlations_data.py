@@ -36,29 +36,22 @@ def spatial_correlation_function(positions, length, number_of_particles):
     return np.mean(corr_func)
 
 
-def main(config_file_string, min_length, max_length, N_repeats, output_directory):
+def main(config_folder, min_length, max_length, N_repeats, output_directory):
 
     min_length = int(min_length)
     max_length = int(max_length)
     N_repeats = int(N_repeats)
 
     timesteps = [3.0, 2.0, 1.0, 0.95, 0.9, 0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.075, 0.05, 0.025, 0.015]
+    timestep_strs = ["3", "2", "1", "095", "09", "075", "05", "04", "03", "02", "01", "0075", "005", "0025", "0015"]
 
     correlation_length = np.zeros(len(timesteps))
 
     for t_index, timestep in enumerate(timesteps):
         timestep_str = str(timestep)
-        timestep_str = timestep_str.split(".")[0] + timestep_str.split(".")[2]
+        timestep_str = timestep_strs[t_index]
         #####
         # iteration for a single timstep
-
-        config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
-        (config_file_mediator, potential, _, samplers, sample_directory, temperature, number_of_equilibration_iterations,
-        _, number_of_particles, size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
-        
-
-        thinning_level = None
-        timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
 
         lengths = np.arange(min_length, max_length, step = 5)
         spatial_correlations = np.zeros((len(lengths), N_repeats))
@@ -66,9 +59,18 @@ def main(config_file_string, min_length, max_length, N_repeats, output_directory
 
 
         for n in range(N_repeats):
+            config_file_string = os.path.join(
+                            config_folder, timestep_str, f"{n}.ini")
+    
+            config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
+            (config_file_mediator, potential, _, samplers, sample_directory, temperature, number_of_equilibration_iterations,
+            _, number_of_particles, size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
+            
+    
+            thinning_level = None
+            timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
             print(n)
-            n_sample_directory = os.path.join(sample_directory, f"{n}")
-            position_sample = sample_getter.get_positions(n_sample_directory, temperature, 0, number_of_particles,
+            position_sample = sample_getter.get_positions(sample_directory, temperature, 0, number_of_particles,
                                                     number_of_equilibration_iterations, thinning_level=thinning_level)
             for index, length in enumerate(lengths):
                 spatial_correlations[index, n]= spatial_correlation_function(position_sample, length, number_of_particles)
@@ -87,13 +89,13 @@ def main(config_file_string, min_length, max_length, N_repeats, output_directory
         correlation_length[t_index] = timestep / np.mean(spatial_correlations_pm_1) 
 
 
-        output_array = np.zeros(len(spatial_correlations), 4)
+        output_array = np.zeros((len(spatial_correlations), 4))
         output_array[:, 0] = spatial_correlations
         output_array[:, 1] = spatial_correlations_err
         output_array[:, 2] = spatial_correlations_pm_1
         output_array[:, 3] = lengths
 
-        np.save(f"{output_directory}/correlation_func_data_{timestep_str}.npy")
+        np.save(f"{output_directory}/correlation_func_data_{timestep_str}.npy", output_array)
     
 
 

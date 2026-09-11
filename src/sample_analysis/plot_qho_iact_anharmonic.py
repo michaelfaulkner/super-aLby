@@ -97,13 +97,13 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, N, ff_N, propertime):
     legend_properties = {'weight':'bold'}
     plt.legend(prop=legend_properties, bbox_to_anchor=(1.0, 1.0))
     #ax.set_ylim(0.17e5, 0.8e7)
-    ax.set_title(r"Anharmonic Oscillator - m=1.0, $\lambda = 1.0$, $\omega ^2 = -50.0$")
+    ax.set_title(r"Anharmonic Oscillator - m=1.0, $\lambda = 1.0$, $\omega ^2 = -100.0$")
    
 
 
     #plt.title(f"IACT of x^2 for QHO with (x+2)^2")
     plt.tight_layout()
-    plt.savefig("iact_anharmonic_w2_50.png")#, transparent=True)
+    plt.savefig("iact_anharmonic_w2_100.png")#, transparent=True)
     plt.clf()
 
 
