@@ -224,9 +224,9 @@ def get_initial_positions_of_smooth_potential(potential_class):
                             " len(range_of_initial_particle_positions) and composed of float values, or a" \
                             " two-dimensional Python list of size (len(range_of_initial_particle_positions), 2)"
                             " and composed of float values.")
-        assert len(initial_array[0]) == dimensionality_of_particle_space, "Initial positions textfile must contain the" \
+        assert len(initial_array[0]) == dimensionality_of_particle_space, "Rows in the initial positions textfile must contain the" \
                                                         " correct number of dimensional coordinates."
-        assert len(initial_array[:, 0]) == number_of_particles, "Initial positions textfile must contain the correct" \
+        assert len(initial_array[:, 0]) == number_of_particles, "Columns in the initial positions textfile must contain the correct" \
                                                         " number of particles."
         return initial_array
     else:

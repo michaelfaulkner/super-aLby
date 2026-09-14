@@ -150,7 +150,7 @@ particle for Wick-rotated quantum actions).  It is either a `float`, a one-dimen
 `range_of_initial_particle_positions` may be passed as a `str` giving the path to a file containing an array of initial
 positions of the system. This must be a `.npy` file containing the array, or a `.txt` file formatted such that each row
 contains white-space-delimited values for the position of each particle for all dimensions. The below example shows
-a `.txt` file representing the initial positions for a 3-dimensional system consiting of 2 particle, one at 
+a `.txt` file representing the initial positions for a 2 particle 3-dimensional system, one at 
 coordinates *(2.0, 1.0, 3.0)*, and one at *(4.0, 3.0, 2.0)*.
 ```
 2.0 1.0 3.0
