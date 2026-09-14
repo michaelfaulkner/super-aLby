@@ -17,6 +17,7 @@ src/config_files/factor_fields*
 src/config_files/qho_iact
 settings.json
 c_cpp_properties.json
+src/config_files/hpc
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
