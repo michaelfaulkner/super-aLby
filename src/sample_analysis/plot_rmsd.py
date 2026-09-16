@@ -74,7 +74,7 @@ def main(ecmc_rmsd_data_path, N, propertime):
 
     #plt.title(f"IACT of x^2 for QHO with (x+2)^2")
     plt.tight_layout()
-    plt.savefig("rmsd_ecmc.png")#, transparent=True)
+    plt.savefig("rmsd_ecmc_symm.png")#, transparent=True)
     plt.clf()
 
     fig, ax = plt.subplots(1, 1)
@@ -96,7 +96,7 @@ def main(ecmc_rmsd_data_path, N, propertime):
 
     #plt.title(f"IACT of x^2 for QHO with (x+2)^2")
     plt.tight_layout()
-    plt.savefig("er_ecmc.png")#, transparent=True)
+    plt.savefig("er_ecmc_symm.png")#, transparent=True)
     plt.clf()
 
 

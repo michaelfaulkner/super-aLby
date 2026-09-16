@@ -77,17 +77,17 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, N, ff_N, propertime):
     fig, ax = plt.subplots(1, 1, figsize = (9, 7))
 
     if metrop_data:
-        ax.plot(metropolis_sorted_N[:m_fit_trim], np.exp(fitted_m), color="#f9a37bff")
-        ax.errorbar(metropolis_sorted_N, metropolis_iact_mean_arr, metropolis_err, fmt='^', capsize=3, markersize=4, color="#e16f04ff", label="Metropolis MC")
+        ax.plot(metropolis_sorted_N[:m_fit_trim], np.exp(fitted_m), color="#ecce57ff")
+        ax.errorbar(metropolis_sorted_N, metropolis_iact_mean_arr, metropolis_err, fmt='^', capsize=3, markersize=4, color="#cf8f0fff", label="Metropolis MC")
         #ax.annotate(f"M coeff: {m_coeffs[0]:.2f}", xy = (8*10e1, 3*10e1), weight = "bold")
 
         #ax.errorbar(metropolis_sorted_N_2, metropolis_iact_mean_arr_2, metropolis_err_2, fmt='^', capsize=3, markersize=4, color="#16e104ff", label="Metropolis MC 2 ")
         #ax.annotate(f"M coeff: {m_coeffs[0]:.2f}", xy = (8*10e1, 3*10e1), weight = "bold")
         pass
-    ax.plot(ecmc_sorted_N[:e_fit_trim], np.exp(fitted_e), color="#d97dd9ff")
+    ax.plot(ecmc_sorted_N[:e_fit_trim], np.exp(fitted_e), color="#d97d8fff")
 
     
-    ax.errorbar(ecmc_sorted_N, ecmc_iact_mean_arr, ecmc_err, fmt='o', capsize=3, markersize=4, color="#e20acdff", label="ECMC, SD = 500")
+    ax.errorbar(ecmc_sorted_N, ecmc_iact_mean_arr, ecmc_err, fmt='o', capsize=3, markersize=4, color="#cb3381ff", label="ECMC - Asymmetric")
    
 
     ax.set_xlabel(r"$N_{\tau}$", fontsize=20, labelpad=-10, weight = "bold")
@@ -97,13 +97,13 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, N, ff_N, propertime):
     legend_properties = {'weight':'bold'}
     plt.legend(prop=legend_properties, bbox_to_anchor=(1.0, 1.0))
     #ax.set_ylim(0.17e5, 0.8e7)
-    ax.set_title(r"Anharmonic Oscillator - m=1.0, $\lambda = 1.0$, $\omega ^2 = -100.0$")
+   # ax.set_title(r"Anharmonic Oscillator - m=1.0, $\lambda = 1.0$, $\omega ^2 = -10.0$")
    
 
 
     #plt.title(f"IACT of x^2 for QHO with (x+2)^2")
     plt.tight_layout()
-    plt.savefig("iact_anharmonic_w2_100.png")#, transparent=True)
+    plt.savefig("iact_anharmonic_w2_5.pdf")#, transparent=True)
     plt.clf()
 
 
