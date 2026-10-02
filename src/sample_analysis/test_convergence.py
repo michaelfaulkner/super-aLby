@@ -69,7 +69,7 @@ def main(config_file_string):
         if not (len(samplers) == 1 and samplers[0] == "xy_magnetisation_norm_sampler"):
             raise ValueError("XY model reference data only available for XyMagnetisationNormSampler."
                              "  Please give only this value for samplers in the Mediator section.")
-    elif potential == "harmonic_chain_potential" or potential == "unfactorised_harmonic_chain_potential":
+    elif "harmonic_chain_potential" in potential:
         if not (len(samplers) == 1 and samplers[0] == "structure_factor_sampler"):
             raise ValueError("Harmonic chain model reference data only available for StructureFactorSampler."
                              "  Please give only this value for samplers in the Mediator section.")
@@ -259,7 +259,14 @@ def main(config_file_string):
         reference_sample = np.load(
             "permanent_data/reference_data/eight_harmonic_chain_particles_temp_1_L_16.npy").flatten()
     elif "quantum_harmonic_oscillator_potential" in potential:
-        reference_sample = np.load("permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_"
+        try:
+            anharmonicity = parsing.get_value(config, strings.to_camel_case(potential), "anharmonicity")
+            # anharmonic potential
+            reference_sample = np.load("permanent_data/reference_data/quantum_anharmonic_oscillator_m05_dt1_lambda1_"
+                                       "wsquared-15_Nt50_Nq1.npy").flatten()
+        except:
+            # else we have a harmonic potential with anharmonicity = 0
+            reference_sample = np.load("permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_"
                                    "reference_sample.npy").flatten()
     elif "hard_disk_potential" in potential and "quantum_hard_disk_potential" not in potential:
         if len(size_of_particle_space) == 1:
