@@ -15,7 +15,7 @@ class PolynomialPotential(EuclideanSubspacePotential):
     """
 
     def __init__(self, powers: typing.Sequence[float] = None, prefactors: typing.Sequence[float] = None,
-                 factor_field_prefactor: float = 0.0, cell_horizon: float = 1.0):
+                 factor_field_prefactor: float = 0.0, use_cell_horizon: bool = True, cell_horizon: float = 1.0):
         """
         The constructor of the PolynomialPotential class.
 
@@ -26,7 +26,9 @@ class PolynomialPotential(EuclideanSubspacePotential):
         prefactors : list
             The list of prefactors of the potential.
         factor_field_prefactor : float
-            Prefactor of the factor field contribution to the potential..
+            Prefactor of the factor field contribution to the potential.
+        use_cell_horizon : bool
+            Determines whether to use cell horizon method.
         cell_horizon : float
             Horizon over which to measure maximum potential gradient.
 
@@ -39,6 +41,7 @@ class PolynomialPotential(EuclideanSubspacePotential):
         self._powers = powers
         self._prefactors = prefactors
         self._factor_field_prefactor = factor_field_prefactor
+        self._use_cell_horizon = use_cell_horizon
         self._cell_horizon = cell_horizon
         if len(size_of_particle_space) > 1:
             raise ConfigurationError(f'{self.__class__.__name__} only supports 1D space. Provided: '
@@ -231,60 +234,82 @@ class PolynomialPotential(EuclideanSubspacePotential):
         elif active_particle_index == 0:
             neg_neighbour_position -= size_of_particle_space[0]
 
-        active_particle_position += self._cell_horizon * movement_direction
-        max_pos_grad, max_neg_grad = self._get_single_particle_gradient(positions, active_particle_index)
-        active_particle_position -= self._cell_horizon * movement_direction
-        if movement_direction > 0.0:
-            max_pos_grad += self._factor_field_prefactor
-            max_neg_grad -= self._factor_field_prefactor
-        else:
-            max_pos_grad -= self._factor_field_prefactor
-            max_neg_grad += self._factor_field_prefactor
-
-        max_rate_pos = np.maximum(0.0, movement_direction * max_pos_grad)
-        max_rate_neg = np.maximum(0.0, movement_direction * max_neg_grad)
-
-        candidate_distance_to_next_factor_event_pos = np.inf if max_rate_pos < 1e-12 else (
-                -np.log(np.random.uniform(0.0, 1.0)) * temperature / max_rate_pos)
-        candidate_distance_to_next_factor_event_neg = np.inf if max_rate_neg < 1e-12 else (
-                -np.log(np.random.uniform(0.0, 1.0)) * temperature / max_rate_neg)
-
-        if max_rate_pos < 1e-12 and max_rate_neg < 1e-12:
-            return self._cell_horizon, active_particle_index, self._cell_horizon
-
-        candidate_distance_to_next_factor_event, vetoing_index, max_rate = (
-            min((candidate_distance_to_next_factor_event_pos, pos_neighbour_index, max_rate_pos),
-                (candidate_distance_to_next_factor_event_neg, neg_neighbour_index, max_rate_neg)))
-
-        if candidate_distance_to_next_factor_event > self._cell_horizon:
-            shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
-                self._cell_horizon, active_particle_index, self._cell_horizon)
-
-        else:
-            active_particle_position += candidate_distance_to_next_factor_event * movement_direction
-            actual_pos_grad, actual_neg_grad = self._get_single_particle_gradient(positions, active_particle_index)
-            active_particle_position -= candidate_distance_to_next_factor_event * movement_direction
+        if self._use_cell_horizon:
+            active_particle_position += self._cell_horizon * movement_direction
+            max_pos_grad, max_neg_grad = self._get_single_particle_gradient(positions, active_particle_index)
+            active_particle_position -= self._cell_horizon * movement_direction
             if movement_direction > 0.0:
-                actual_pos_grad += self._factor_field_prefactor
-                actual_neg_grad -= self._factor_field_prefactor
+                max_pos_grad += self._factor_field_prefactor
+                max_neg_grad -= self._factor_field_prefactor
             else:
-                actual_pos_grad -= self._factor_field_prefactor
-                actual_neg_grad += self._factor_field_prefactor
+                max_pos_grad -= self._factor_field_prefactor
+                max_neg_grad += self._factor_field_prefactor
 
-            if vetoing_index == pos_neighbour_index:
-                actual_rate = np.maximum(0.0, movement_direction * actual_pos_grad)
-            else:
-                actual_rate = np.maximum(0.0, movement_direction * actual_neg_grad)
+            max_rate_pos = np.maximum(0.0, movement_direction * max_pos_grad)
+            max_rate_neg = np.maximum(0.0, movement_direction * max_neg_grad)
 
-            if np.random.uniform(0.0, 1.0) < actual_rate / max_rate:
-                shortest_distance_to_next_factor_event = candidate_distance_to_next_factor_event
-                hop_displacement = pos_neighbour_position - active_particle_position[0] if (
-                        vetoing_index == pos_neighbour_index) else (
-                        neg_neighbour_position - active_particle_position[0])
-            else:
+            candidate_distance_to_next_factor_event_pos = np.inf if max_rate_pos < 1e-12 else (
+                    -np.log(np.random.uniform(0.0, 1.0)) * temperature / max_rate_pos)
+            candidate_distance_to_next_factor_event_neg = np.inf if max_rate_neg < 1e-12 else (
+                    -np.log(np.random.uniform(0.0, 1.0)) * temperature / max_rate_neg)
+
+            if max_rate_pos < 1e-12 and max_rate_neg < 1e-12:
+                return self._cell_horizon, active_particle_index, self._cell_horizon
+
+            candidate_distance_to_next_factor_event, vetoing_index, max_rate = (
+                min((candidate_distance_to_next_factor_event_pos, pos_neighbour_index, max_rate_pos),
+                    (candidate_distance_to_next_factor_event_neg, neg_neighbour_index, max_rate_neg)))
+
+            if candidate_distance_to_next_factor_event > self._cell_horizon:
                 shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
-                    candidate_distance_to_next_factor_event, active_particle_index,
-                    candidate_distance_to_next_factor_event)
+                    self._cell_horizon, active_particle_index, self._cell_horizon)
+
+            else:
+                active_particle_position += candidate_distance_to_next_factor_event * movement_direction
+                actual_pos_grad, actual_neg_grad = self._get_single_particle_gradient(positions, active_particle_index)
+                active_particle_position -= candidate_distance_to_next_factor_event * movement_direction
+                if movement_direction > 0.0:
+                    actual_pos_grad += self._factor_field_prefactor
+                    actual_neg_grad -= self._factor_field_prefactor
+                else:
+                    actual_pos_grad -= self._factor_field_prefactor
+                    actual_neg_grad += self._factor_field_prefactor
+
+                if vetoing_index == pos_neighbour_index:
+                    actual_rate = np.maximum(0.0, movement_direction * actual_pos_grad)
+                else:
+                    actual_rate = np.maximum(0.0, movement_direction * actual_neg_grad)
+
+                if np.random.uniform(0.0, 1.0) < actual_rate / max_rate:
+                    shortest_distance_to_next_factor_event = candidate_distance_to_next_factor_event
+                    hop_displacement = pos_neighbour_position - active_particle_position[0] if (
+                            vetoing_index == pos_neighbour_index) else (
+                            neg_neighbour_position - active_particle_position[0])
+                else:
+                    shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
+                        candidate_distance_to_next_factor_event, active_particle_index,
+                        candidate_distance_to_next_factor_event)
+        else:
+            prefactor = self._prefactors[0]
+            neg_dist_to_eq, pos_dist_to_eq = (neg_neighbour_position - active_particle_position[0],
+                                              pos_neighbour_position - active_particle_position[0])
+            neg_dist_to_eq *= movement_direction
+            pos_dist_to_eq *= movement_direction
+            rand_neg, rand_pos = (- temperature * np.log(np.random.uniform(0.0, 1.0)) / prefactor,
+                                  - temperature * np.log(np.random.uniform(0.0, 1.0)) / prefactor)
+            power = self._powers[0]
+            inverse_power = 1.0 / power
+            distance_to_next_neg_factor_event = (neg_dist_to_eq + rand_neg ** inverse_power if neg_dist_to_eq > 0
+                                                 else neg_dist_to_eq + (rand_neg + (-neg_dist_to_eq) ** power) ** inverse_power)
+
+            distance_to_next_pos_factor_event = (pos_dist_to_eq + rand_pos ** inverse_power if pos_dist_to_eq > 0
+                                                 else pos_dist_to_eq + (rand_pos + (-pos_dist_to_eq) ** power) ** inverse_power)
+
+            shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
+                min((distance_to_next_neg_factor_event, neg_neighbour_index, neg_neighbour_position
+                     - active_particle_position[0]),
+                    (distance_to_next_pos_factor_event, pos_neighbour_index, pos_neighbour_position
+                     - active_particle_position[0])))
 
         return shortest_distance_to_next_factor_event, vetoing_index, hop_displacement
 

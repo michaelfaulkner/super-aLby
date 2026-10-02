@@ -165,9 +165,10 @@ class EventChainMediator(Mediator):
                 else:
                     self._potential.update_position(self._positions, distance_to_next_event,
                                                     active_particle_index, movement_direction)
-                    [self._event_samples[event_sampler_index].append(event_sampler.get_observation(
-                        self._positions, self._potential, active_particle_index, vetoing_index, distance_to_next_event))
-                        for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
+                    if active_particle_index != vetoing_index:
+                        [self._event_samples[event_sampler_index].append(event_sampler.get_observation(
+                            self._positions, self._potential, active_particle_index, vetoing_index, distance_to_next_event))
+                            for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
 
                     if self._teleportation_portal:
@@ -237,13 +238,11 @@ class EventChainMediator(Mediator):
             if hop_displacement:
                 self._state_space_displacement += hop_displacement
             if 'SoftDiskPotential' in str(self._potential):
-                particle_separation = self._positions[vetoing_index][0] - self._positions[active_particle_index][0]
-                particle_separation -= size_of_particle_space[0] * np.round(particle_separation /
-                                                                            size_of_particle_space[0])
-                if particle_separation > 0.0:
-                    self._index_space_displacement += (vetoing_index - active_particle_index) % number_of_particles
+                delta_index = (vetoing_index - active_particle_index) % number_of_particles
+                if delta_index <= number_of_particles / 2.0:
+                    self._index_space_displacement += delta_index
                 else:
-                    self._index_space_displacement -= (active_particle_index - vetoing_index) % number_of_particles
+                    self._index_space_displacement -= (number_of_particles - delta_index)
             else:
                 if vetoing_index == (active_particle_index + 1) % number_of_particles:
                     self._index_space_displacement += 1
