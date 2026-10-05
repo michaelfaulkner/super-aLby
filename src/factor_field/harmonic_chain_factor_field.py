@@ -65,4 +65,4 @@ class HarmonicChainFactorField(FactorField):
             vetoing_particle_position += size_of_particle_space[0]
         elif active_particle_index == 0 and vetoing_index == number_of_particles - 1:
             vetoing_particle_position -= size_of_particle_space[0]
-
+        return distance_to_next_factor_event[0], vetoing_index, vetoing_particle_position - active_particle_position
