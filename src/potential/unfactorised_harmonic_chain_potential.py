@@ -118,7 +118,7 @@ class UnfactorisedHarmonicChainPotential(HarmonicChainPotentials):
         float
             Value of the gradient of the potential for the single particle.
         """
-        single_particle_position = positions[single_particle_index]
+        single_particle_position = positions[single_particle_index][0]
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(single_particle_index)
         neg_neighbour_position, pos_neighbour_position = self._get_neighbour_positions(positions, single_particle_index,
                                                                                        neg_neighbour_index,

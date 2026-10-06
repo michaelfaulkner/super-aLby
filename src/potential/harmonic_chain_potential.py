@@ -101,12 +101,12 @@ class HarmonicChainPotential(HarmonicChainPotentials):
             max_rate_neg = np.maximum(0.0, movement_direction * max_neg_grad)
 
             candidate_distance_to_next_factor_event_pos = np.inf if max_rate_pos < 1e-12 else (
-                    -np.log(np.random.uniform(0.0, 1.0)) / max_rate_pos)
+                    -np.log(np.random.uniform(0.0, 1.0)) * temperature / max_rate_pos)
             candidate_distance_to_next_factor_event_neg = np.inf if max_rate_neg < 1e-12 else (
-                    -np.log(np.random.uniform(0.0, 1.0)) / max_rate_neg)
+                    -np.log(np.random.uniform(0.0, 1.0)) * temperature / max_rate_neg)
 
             if max_rate_pos < 1e-12 and max_rate_neg < 1e-12:
-                return self._cell_horizon, active_particle_index, self._cell_horizon
+                return self._cell_horizon, active_particle_index, self._cell_horizon * movement_direction
 
             candidate_distance_to_next_factor_event, vetoing_index, max_rate = (
                 min((candidate_distance_to_next_factor_event_pos, pos_neighbour_index, max_rate_pos),
@@ -114,7 +114,7 @@ class HarmonicChainPotential(HarmonicChainPotentials):
 
             if candidate_distance_to_next_factor_event > self._cell_horizon:
                 shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
-                    self._cell_horizon, active_particle_index, self._cell_horizon)
+                    self._cell_horizon, active_particle_index, self._cell_horizon * movement_direction)
 
             else:
                 active_particle_position += candidate_distance_to_next_factor_event * movement_direction
@@ -134,7 +134,9 @@ class HarmonicChainPotential(HarmonicChainPotentials):
 
                 if np.random.uniform(0.0, 1.0) < actual_rate / max_rate:
                     shortest_distance_to_next_factor_event = candidate_distance_to_next_factor_event
-                    hop_displacement = positions[vetoing_index][0] - active_particle_position[0]
+                    hop_displacement = pos_neighbour_position - active_particle_position[0] if (
+                            vetoing_index == pos_neighbour_index) else (
+                            neg_neighbour_position - active_particle_position[0])
                 else:
                     shortest_distance_to_next_factor_event, vetoing_index, hop_displacement = (
                         candidate_distance_to_next_factor_event, active_particle_index,

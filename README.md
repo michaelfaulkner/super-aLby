@@ -16,8 +16,9 @@ Hamiltonian and super-relativistic Monte Carlo (hence the name super-aLby, in re
 5. [Running multiple simulations](#running-multiple-simulations)
 6. [Checkpointing](#checkpointing)
 7. [Published works](#published-works)
-    1. [*Emergent electrostatics in planar XY spin models*](#emergent-electrostatics-in-planar-xy-spin-models)
-    2. [*Sampling algorithms in statistical physics*](#sampling-algorithms-in-statistical-physics)
+    1. [*Optimal sampling strategies in event-chain Monte Carlo*](#optimal-sampling-strategies-in-event-chain-monte-carlo)
+    2. [*Emergent electrostatics in planar XY spin models*](#emergent-electrostatics-in-planar-xy-spin-models)
+    3. [*Sampling algorithms in statistical physics*](#sampling-algorithms-in-statistical-physics)
 
 ## Installation
 
@@ -376,6 +377,58 @@ this method outputs the configuration only when the current simulation has finis
 in the configuration file and run the simulation ten times.
 
 ## Published works
+
+### *Optimal sampling strategies in event-chain Monte Carlo*
+From [\[Gulliford2026\]](https://doi.org/10.48550/arXiv.2610.01659) 
+
+This details how to make numerical figures (Figures 2-4 and 6-8).
+
+#### Figure 2
+
+1. Run each bash file in [`config_files/optimal_sampling_strategies_figs/fig2`](
+src/config_files/optimal_sampling_strategies_figs/fig2).
+2. Once all simulations are complete, run the plotting script via the command 
+`python sample_analysis/optimal_sampling_strategies/plot_fig2.py`.
+
+#### Figure 3
+
+1. Run each bash file in [`config_files/optimal_sampling_strategies_figs/fig3`](
+src/config_files/optimal_sampling_strategies_figs/fig3).
+2. Once all simulations are complete, run the plotting script via the command 
+`python sample_analysis/optimal_sampling_strategies/plot_fig3.py`.
+
+#### Figure 4
+
+1. Run each bash file in [`config_files/optimal_sampling_strategies_figs/fig4`](
+src/config_files/optimal_sampling_strategies_figs/fig4).
+2. Once all simulations are complete, run the plotting script via the command 
+`python sample_analysis/optimal_sampling_strategies/plot_fig4.py`.
+
+#### Figure 6
+
+1. Run each configuration file in [`config_files/optimal_sampling_strategies_figs/fig6`](
+src/config_files/optimal_sampling_strategies_figs/fig6) using python run.py <filename>.
+2. Once both simulations are complete, run the plotting script via the command 
+`python sample_analysis/optimal_sampling_strategies/plot_fig6.py`.
+
+#### Figure 7
+
+1. Run each bash file in [`config_files/optimal_sampling_strategies_figs/fig7`](
+src/config_files/optimal_sampling_strategies_figs/fig7).
+2. Once all simulations are complete, run the plotting script via the command 
+`python sample_analysis/optimal_sampling_strategies/plot_fig7.py`.
+
+#### Figure 8
+
+1. Run each bash file in [`config_files/optimal_sampling_strategies_figs/fig8`](
+src/config_files/optimal_sampling_strategies_figs/fig8).
+2. Once all simulations are complete, run the plotting script via the command 
+`python sample_analysis/optimal_sampling_strategies/plot_fig8.py`.
+
+To make the figures from the data presented in the paper instead of running the simulations, download the data from 
+[https://doi.org/10.5281/zenodo.23184198](https://doi.org/10.5281/zenodo.23184198), save the folder of figure data as `output/optimal_sampling_strategies_figs/actual_figure_data` and run 
+the plotting scripts above.
+
 
 ### *Emergent electrostatics in planar XY spin models*
 From [\[Faulkner2025\]](https://doi.org/10.1088/1367-2630/add7fd) 

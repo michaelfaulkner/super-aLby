@@ -210,4 +210,27 @@ def get_jackknife_error(sample, block_size, estimator, max_blocks=20):
     return jackknife_variance ** 0.5
 
 
+def get_mixing_time(sample, times=None, tol=0.0, m=None):
+    """
+    Calculate the mixing time of a sample via the time taken for the sample to fall to within some tolerance of its
+    equilibrium value.
 
+    Parameters
+    ----------
+    sample : numpy.ndarray
+        Sample to be analysed.
+    times : numpy.ndarray
+        Time array of sample.
+    tol : float
+        Defines mixing time via inf{t : t < (1 + tol) * equilibrium_value}.
+    m : float
+        Fraction of sample over which to measure equilibrium value.
+    """
+    n = len(sample)
+    if m is None:
+        m = int(0.5 * n)
+    equilibrium_value = np.mean(sample[-m:])
+    mixing_time = np.where(sample < (1 + tol) * equilibrium_value)[0][0]
+    if times is None:
+        return mixing_time, equilibrium_value
+    return times[mixing_time], equilibrium_value

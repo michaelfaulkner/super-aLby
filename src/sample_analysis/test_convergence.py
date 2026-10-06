@@ -73,6 +73,10 @@ def main(config_file_string):
         if not (len(samplers) == 1 and samplers[0] == "structure_factor_sampler"):
             raise ValueError("Harmonic chain model reference data only available for StructureFactorSampler."
                              "  Please give only this value for samplers in the Mediator section.")
+    elif potential == "soft_disk_potential":
+        if not (len(samplers) == 1 and samplers[0] == "structure_factor_sampler"):
+            raise ValueError("Soft-disk model reference data only available for StructureFactorSampler."
+                             "  Please give only this value for samplers in the Mediator section.")
     elif potential == "quantum_harmonic_oscillator_potential":
         if not (len(samplers) == 1 and samplers[0] == "mean_squared_position_sampler"):
             raise ValueError("1D quantum harmonic oscillator model reference data only available for "
@@ -258,6 +262,14 @@ def main(config_file_string):
     elif "harmonic_chain_potential" in potential:
         reference_sample = np.load(
             "permanent_data/reference_data/eight_harmonic_chain_particles_temp_1_L_16.npy").flatten()
+    elif potential == "soft_disk_potential":
+        if not (number_of_particles == 8 and size_of_particle_space == [16.0] and temperature == 1.0):
+            raise ValueError("SoftDiskPotential reference data only available for models for which number_of_particles "
+                             "equals 8, size_of_particle_space equals 16.0 and the sampling temperature equals 1.0 "
+                             "(n.b., number_of_particles and size_of_particle_space are set in the ModelSettings "
+                             "section).")
+        reference_sample = np.load(
+            "permanent_data/reference_data/eight_1d_soft_disks_particles_temp_1_L_16_reference_sample.npy").flatten()
     elif "quantum_harmonic_oscillator_potential" in potential:
         try:
             anharmonicity = parsing.get_value(config, strings.to_camel_case(potential), "anharmonicity")
@@ -292,7 +304,7 @@ def main(config_file_string):
             sample = sample_getter.get_xy_magnetisation_norm(sample_directory, temperature, 0,
                                                              number_of_particles,
                                                              number_of_equilibration_iterations).flatten()
-        elif "harmonic_chain" in potential:
+        elif "harmonic_chain" in potential or potential == "soft_disk_potential":
             sample = sample_getter.get_structure_factor(sample_directory, temperature, 0, number_of_particles,
                                                         number_of_equilibration_iterations).flatten()
         elif "quantum_harmonic_oscillator_potential" in potential:
