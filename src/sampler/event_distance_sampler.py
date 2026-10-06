@@ -41,7 +41,7 @@ class EventDistanceSampler(EventSampler):
             The active particle index
         vetoing_index : int
             The index of the particle that triggers the event.
-        distance_to_next_event : numpy.ndarray
+        distance_to_next_event : float
             Distance to next ECMC event.
 
         Returns
@@ -49,7 +49,7 @@ class EventDistanceSampler(EventSampler):
         float
             The observation of the event distance.
         """
-        return distance_to_next_event if distance_to_next_event is None else distance_to_next_event[0]
+        return distance_to_next_event
 
     def output_sample(self, sample, checkpoint_index, output_directory):
         """

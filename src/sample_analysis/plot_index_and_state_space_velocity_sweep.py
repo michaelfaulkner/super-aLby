@@ -5,6 +5,7 @@ import numpy as np
 import os
 import sys
 import json
+import glob
 
 # Add the directory that contains the module plotting_functions to sys.path
 this_directory = os.path.dirname(os.path.abspath(__file__))
@@ -23,18 +24,22 @@ def main(config_file_string, same_plot=1):
     num_jobs = int(helper_methods.read_variable_from_sh_file(sh_file_string, "NUM_JOBS"))
     sweep_name = helper_methods.read_variable_from_sh_file(sh_file_string, "CONFIG_VARIABLE")
     sweep_values = helper_methods.get_temps_from_bash_file(sh_file_string)
-    sample_paths = [[os.path.join(f"{sample_directory}/{sweep_name}_{temperature_index:02d}", f"job_{i:02d}")
-                     for i in range(num_jobs)] for temperature_index in range(len(sweep_values))]
+    sample_paths = [sorted(glob.glob(os.path.join(f"{sample_directory}/{sweep_name}_{temperature_index:02d}", "job_*")))
+                    for temperature_index in range(len(sweep_values))]
 
     state_space_velocities, index_space_velocities = [], []
     for sweep_index, sweep_sample in enumerate(sample_paths):
         sweep_state_space_velocities, sweep_index_space_velocities = [], []
         for sample_path in sweep_sample:
             try:
-                with open(os.path.join(sample_path, "state_and_index_space_velocities.json"), 'r') as f:
+                with open(os.path.join(sample_path, "sim_params.json"), 'r') as f:
                     sample = json.load(f)
             except FileNotFoundError:
-                continue
+                try:
+                    with open(os.path.join(sample_path, 'state_and_index_space_velocities.json'), 'r') as f:
+                        sample = json.load(f)
+                except FileNotFoundError:
+                    continue
             state_space_velocity, index_space_velocity = sample["state_space_velocity"], sample["index_space_velocity"]
             (sweep_state_space_velocities.append(state_space_velocity),
              sweep_index_space_velocities.append(index_space_velocity))

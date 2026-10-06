@@ -83,7 +83,7 @@ class SoftDiskPotential(EuclideanSubspacePotential):
             for j in range(i + 1, number_of_particles):
                 particle_separation = positions[j] - positions[i]
                 particle_separation -= size_of_particle_space * np.round(particle_separation / size_of_particle_space)
-                particle_separation = float(np.abs(particle_separation))
+                particle_separation = np.abs(particle_separation).item()
                 if 0.0 < particle_separation < self._cutoff:
                     potential += self._epsilon * (self._sigma / particle_separation) ** self._power
         return potential
