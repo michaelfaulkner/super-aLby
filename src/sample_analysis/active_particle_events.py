@@ -32,47 +32,44 @@ def main(config_file_string, cutoff):
                                 number_of_particles, 0, thinning_level)
 
     unwrapped_active_particle_sample = np.zeros(np.shape(active_particle_sample))
-    mask = np.zeros(np.shape(active_particle_sample))
+
     boundaries = 0
+    msd = np.zeros(np.shape(active_particle_sample))
+
+    initial_index =  active_particle_sample[0]
 
     for index, active_particle in enumerate(active_particle_sample[:cutoff]):
 
         if index != 0:
-            #print(f"before: {active_particle_sample[index-1]}, after: {active_particle}")
             boundaries = check_boundary(active_particle_sample[index-1], active_particle, number_of_particles,
                                         boundaries)
- 
-            if np.abs(active_particle - active_particle_sample[index-1]) != 1:
-                mask[index] = 1
 
         active_particle_unwrapped = active_particle + boundaries * number_of_particles
-        #print(f"{boundaries}, unwrapped: {active_particle}")
 
-
+        msd[index] = (active_particle_unwrapped - initial_index)**2 / number_of_particles
 
         unwrapped_active_particle_sample[index] = active_particle_unwrapped
 
         
 
     cutoff_unwrapped = unwrapped_active_particle_sample[:cutoff]
-    mask = mask[:cutoff]
-    mask = mask.flatten()
 
-    print(np.shape(mask))
+
     print(np.shape(cutoff_unwrapped))
 
     fig, ax = plt.subplots(1,1)
 
     ax.scatter(np.arange(len(cutoff_unwrapped)), cutoff_unwrapped, s= 5.0)
-    #ax.scatter(np.arange(len(cutoff_unwrapped))[mask == True], cutoff_unwrapped[mask == True], s = 5.0, color ="red")
+    ax.plot(np.arange(len(cutoff_unwrapped)), msd[:cutoff], color = "red")
+
 
     ax.set_xlabel("Event number")
     ax.set_ylabel("Active particle index (unwrapped)")
 
 
-    plt.savefig("active_particle_events_test.png")
+    plt.savefig("active_particle_events_asymm.png")
 
-    #print(cutoff_unwrapped[300:400])
+
             
 
 

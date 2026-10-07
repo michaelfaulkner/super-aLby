@@ -17,53 +17,35 @@ parsing = importlib.import_module("base.parsing")
 strings = importlib.import_module("base.strings")
 
 
-def main(metrop_config_file_string, ecmc_config_file_string):
-    config = parsing.read_config(
-        parsing.parse_options([metrop_config_file_string]).config_file)
-    (config_file_mediator, potential, _, samplers, metrop_sample_directory, temperature,
-        number_of_equilibration_iterations, number_of_observations, number_of_particles,
-        size_of_particle_space) = helper_methods.get_basic_config_data(metrop_config_file_string)
+def main(metrop_data, ecmc_data):
 
-    print(f"sample from {metrop_sample_directory}")
+    # /home/raichkel/super-aLby-private/src/output/iact_data/metropolis/001/0/checkpoint_00_sample_of_mean_squared_positions.npy
+    # /home/raichkel/super-aLby-private/src/output/iact_data/ecmc/001/0/checkpoint_00_sample_of_mean_squared_positions.npy
+    metrop_mean_squared_sample = np.load(metrop_data)
 
-    temperature_index = 0
-    thinning_level = None
-    number_of_equilibration_iterations = 0
-    metrop_mean_squared_sample = sample_getter.get_mean_squared_positions(metrop_sample_directory, temperature, 0, number_of_particles, number_of_equilibration_iterations,
-                                    thinning_level=thinning_level)
+    ecmc_mean_squared_sample = np.load(ecmc_data)
 
-    metrop_mean_squared_sample = np.mean(metrop_mean_squared_sample, axis = 1)
-
-    config = parsing.read_config(
-        parsing.parse_options([ecmc_config_file_string]).config_file)
-    (config_file_mediator, potential, _, samplers, sample_directory, temperature,
-        number_of_equilibration_iterations, number_of_observations, number_of_particles,
-        size_of_particle_space) = helper_methods.get_basic_config_data(ecmc_config_file_string)
-
-    print(f"sample from {sample_directory}")
-
-
-    temperature_index = 0
-    thinning_level = None
-    number_of_equilibration_iterations = 0
-    ecmc_mean_squared_sample = sample_getter.get_mean_squared_positions(sample_directory, temperature, 0, number_of_particles, number_of_equilibration_iterations,
-                                    thinning_level=thinning_level)
-
-    ecmc_mean_squared_sample = np.mean(ecmc_mean_squared_sample, axis = 1)
-
-    fig, ax = plt.subplots(2,1, sharex=True, sharey = True)
+    fig, ax = plt.subplots(1,1, figsize=(7,5))
     sample_index_cutoff = 10000
-    ax[0].plot(np.arange(sample_index_cutoff), metrop_mean_squared_sample[:sample_index_cutoff], color = "#e16f04ff", label ="Metropolis MC")
+    ax.plot(np.arange(sample_index_cutoff), metrop_mean_squared_sample[:sample_index_cutoff], color = "#e16f04ff", label ="Metropolis MC")
 
-    ax[1].plot(np.arange(sample_index_cutoff), ecmc_mean_squared_sample[:sample_index_cutoff], color = "#e20acdff", label = "ECMC")
-
-    ax[1].set_xlabel("sample index", fontsize = 15, weight = "bold")
-    ax[0].set_ylabel(r"$\langle x^2 \rangle$", fontsize = 15, weight = "bold")
-    ax[1].set_ylabel(r"$\langle x^2 \rangle$", fontsize = 15, weight = "bold")
+    ax.plot(np.arange(sample_index_cutoff), ecmc_mean_squared_sample[:sample_index_cutoff], color = "#e20acdff", label = "ECMC")
+    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=13)
+    ax.set_xlabel("Sample index", fontsize = 25, weight = "bold")
+    ax.set_ylabel(r"$X^2$", fontsize = 25, weight = "bold")
     legend_properties = {'weight':'bold'}
-    fig.legend(loc  = (0.65, 0.45), prop=legend_properties)
-    plt.savefig("thermalisation.pdf", transparent = True)
+    legend = fig.legend(loc  = (0.73, 0.21), prop=legend_properties)
+    legend.get_frame().set_edgecolor('k')
+    legend.get_frame().set_lw(1.5)
+    for tick in ax.get_xticklabels():
+        tick.set_fontweight('bold')
+    for tick in ax.get_yticklabels():
+        tick.set_fontweight('bold')
+    
+    plt.tight_layout()
+    plt.savefig("trace.pdf")
 
 
 if __name__ == '__main__':
     main(sys.argv[1], sys.argv[2])
+

@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.rcParams['mathtext.fontset'] = 'cm'
 matplotlib.use('Agg')
 
-def main(metropolis_iact_data_path, ecmc_iact_data_path, ecmc_symm_iact_data_path, N, ff_N, propertime):
+def main(metropolis_iact_data_path, ecmc_iact_data_path, N, ff_N, propertime):
 
     N = int(N)
     ff_N = int(ff_N)
@@ -39,27 +39,6 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, ecmc_symm_iact_data_pat
     except:
         metrop_data = False
 
-    ecmc_symm_timestep_data = np.load(os.path.join(ecmc_symm_iact_data_path, "iact_ecmc_0.npy"))[:, 1]
-    ecmc_symm_storage_arr = np.zeros((len(ecmc_symm_timestep_data), N))
-    ecmc_symm_sorted_timestep = ecmc_symm_timestep_data[np.argsort(ecmc_symm_timestep_data)]
-
-    for symm_index in range(N):
-        ecmc_symm_iact_timestep =  np.load(os.path.join(ecmc_symm_iact_data_path, f"iact_ecmc_{index}.npy"))
-        ecmc_symm_iact_data = ecmc_symm_iact_timestep[:, 0] 
-        ecmc_symm_timestep_data = ecmc_symm_iact_timestep[:, 1] 
-        symm_argsorted_data = np.argsort(ecmc_symm_timestep_data)
-        ecmc_symm_timestep_argsorted = ecmc_symm_timestep_data[symm_argsorted_data]
-        ecmc_symm_iact_data = ecmc_symm_iact_data[symm_argsorted_data] 
-        ecmc_symm_storage_arr[:, symm_index] = ecmc_symm_iact_data
-
-    ecmc_symm_iact_mean_arr = np.mean(ecmc_symm_storage_arr, axis = 1)
-    ecmc_symm_iact_mean_arr = ecmc_symm_iact_mean_arr[ecmc_symm_sorted_timestep >= 0.01]
-    ecmc_symm_err = np.std(ecmc_symm_storage_arr, axis=1)
-    ecmc_symm_err = ecmc_symm_err[ecmc_symm_sorted_timestep >= 0.01]
-    ecmc_symm_sorted_timestep = ecmc_symm_sorted_timestep[ecmc_symm_sorted_timestep >= 0.01]
-    ecmc_symm_sorted_N = propertime / ecmc_symm_sorted_timestep
-
-
 
     ecmc_timestep_data = np.load(os.path.join(ecmc_iact_data_path, "iact_ecmc_0.npy"))[:, 1]
     ecmc_storage_arr = np.zeros((len(ecmc_timestep_data), N))
@@ -88,13 +67,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, ecmc_symm_iact_data_pat
         fitted_m = m_coeffs[1] + np.multiply(np.log(metropolis_sorted_N[:m_fit_trim]), m_coeffs[0])
         print(f"Metropolis: {m_coeffs[0]}")
 
-    e_symm_fit_trim = -7
-    e_symm_coeffs = np.polyfit(np.log(ecmc_symm_sorted_N[:e_symm_fit_trim]), np.log(ecmc_symm_iact_mean_arr[:e_symm_fit_trim]), deg=1)
-    fitted_e_symm = e_symm_coeffs[1] + np.multiply(np.log(ecmc_symm_sorted_N[:e_symm_fit_trim]), e_symm_coeffs[0])
-    print(f"ECMC Symm: {e_symm_coeffs[0]}")
- 
-
-    e_fit_trim = -7
+    e_fit_trim = -1
     e_coeffs = np.polyfit(np.log(ecmc_sorted_N[:e_fit_trim]), np.log(ecmc_iact_mean_arr[:e_fit_trim]), deg=1)
     fitted_e = e_coeffs[1] + np.multiply(np.log(ecmc_sorted_N[:e_fit_trim]), e_coeffs[0])
     print(f"ECMC: {e_coeffs[0]}")
@@ -114,16 +87,13 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, ecmc_symm_iact_data_pat
         #ax.annotate(f"M coeff: {m_coeffs[0]:.2f}", xy = (8*10e1, 3*10e1), weight = "bold")
         pass
     ax.plot(ecmc_sorted_N[:e_fit_trim], np.exp(fitted_e), color="#8058c5ff")
-    ax.plot(ecmc_symm_sorted_N[:e_symm_fit_trim], np.exp(fitted_e_symm), color="#424299ff")
 
-    ax.errorbar(ecmc_symm_sorted_N, ecmc_symm_iact_mean_arr, ecmc_symm_err, fmt='o', capsize=3, markersize=6, color="#400f70ff", label="ECMC - Symmetric")
+
     ax.errorbar(ecmc_sorted_N, ecmc_iact_mean_arr, ecmc_err, fmt='o', capsize=3, markersize=6, color="#a34dc2ff", label="ECMC - Asymmetric")
 
 
-
-    ax.annotate(f"{e_symm_coeffs[0]:.2f}", xy = (1.2*10e2, 2.7*10e1), weight = "bold", fontsize=18)
     ax.annotate(f"{e_coeffs[0]:.2f}", xy = (2.5*10e2, 0.9*10e1), weight = "bold", fontsize=18)
-    ax.annotate(f"{m_coeffs[0]:.2f}", xy = (1*10e2, 8*10e3), weight = "bold", fontsize=18)
+    #ax.annotate(f"{m_coeffs[0]:.2f}", xy = (1*10e2, 8*10e3), weight = "bold", fontsize=18)
 
     ax.set_xlabel(r"$N_{\tau}$", fontsize=30, labelpad=-10, weight = "bold")
     ax.set_ylabel(r"$s_{int}$", fontsize=45, weight = "bold")
@@ -139,13 +109,16 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, ecmc_symm_iact_data_pat
         tick.set_fontweight('bold')
     for tick in ax.get_yticklabels():
         tick.set_fontweight('bold')
+
+    ax.set_ylim((np.float64(2.430347398106184), np.float64(5357991.877851403))) 
+    ax.set_xlim((np.float64(30.07488176098298), np.float64(15960.162497553652)))
     plt.tight_layout()
 
     #plt.title(f"IACT of x^2 for QHO with (x+2)^2")
     plt.tight_layout()
-    plt.savefig("iact_anharmonic_w2_5.pdf")#, transparent=True)
+    plt.savefig("iact_anharmonic_w2_100.pdf")#, transparent=True)
     plt.clf()
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])

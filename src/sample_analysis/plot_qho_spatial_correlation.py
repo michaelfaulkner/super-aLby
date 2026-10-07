@@ -15,16 +15,19 @@ helper_methods = importlib.import_module("helper_methods")
 parsing = importlib.import_module("base.parsing")
 strings = importlib.import_module("base.strings")
 matplotlib.rcParams['mathtext.fontset'] = 'cm'
+matplotlib.use('Agg')
 
 
 def main(output_directory, propertime):
     propertime = float(propertime)
-    
-    timesteps = [3.0, 2.0, 1.0, 0.95, 0.9, 0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.075, 0.05, 0.025, 0.015]
-    timestep_strs = ["3", "2", "1", "095", "09", "075", "05", "04", "03", "02", "01", "0075", "005", "0025", "0015"]
+    timesteps = [3.0, 2.0, 1.0, 0.95, 0.9, 0.75, 0.5, 0.4, 0.3, 0.2, 0.1, 0.075, 0.05, 0.025]
+    #timesteps = [ 0.015, 0.01]
+    timestep_strs = ["3", "2", "1", "095", "09", "075", "05", "04", "03", "02", "01", "0075", "005", "0025"]
+    #timestep_strs = [ "0015", "001"]
 
 
     for t_index, timestep in enumerate(timesteps):
+        print(timestep)
 
         timestep_str = timestep_strs[t_index]
 
@@ -34,6 +37,13 @@ def main(output_directory, propertime):
         spatial_correlations_err = output_array[:, 1]
         spatial_correlations_pm_1 = output_array[:, 2]
         lengths = output_array[:, 3]
+        print("lengths")
+        
+        spatial_correlations = spatial_correlations[lengths<200]
+        spatial_correlations_err = spatial_correlations_err[lengths<200]
+        lengths = lengths[lengths<200]
+
+        print("cutoff")
 
 
         fig, ax = plt.subplots(1,1)

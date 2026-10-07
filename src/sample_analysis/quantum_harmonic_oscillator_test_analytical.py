@@ -69,19 +69,12 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
             mass, omega, propertime/timestep, timestep)
         analytical_data[t_index] = analytical_x2_val
 
-    fig, ax1 = plt.subplots(1,2, sharex = True, sharey = True, figsize=(6.0, 4.0))
+    fig, ax = plt.subplots(1,1)
 
-    ax1[0].scatter(analytical_data, x2_mean_arr, color = "#e20acdff", label = "ECMC", marker = "x")
-    fig.supxlabel(r"analytical $\langle x^2 \rangle$", y = 0.08, fontsize = 15, weight = "bold")
-    fig.supylabel(r"numerical $\overline{x^2}$", x = 0.05,  y = 0.6, fontsize = 15, weight = "bold")
-    #ax1[0].set_yscale('log')
-    #ax1[0].set_xscale('log')
+    ax.errorbar(analytical_data, x2_mean_arr, err, color = "#5a0251ff", label = "ECMC", fmt='o', capsize=3, markersize=7)
+    ax.set_xlabel(r"$\langle x^2 \rangle$", y = 0.05, fontsize = 30, weight = "bold")
+    ax.set_ylabel(r"$\widebar{X^2}$", fontsize = 30, weight = "bold")
 
-
-    #ax1[0].set_xlabel(r"$\langle x^2 \rangle$ analytical",  fontsize=15)
-    # ax1[1].set_xlabel(r"$\delta \tau$",  fontsize=20)
-
-    #ax1[0].set_ylabel(r"$\langle x^2 \rangle$ numerical",  fontsize=15)
 
     timestep_data = np.load(os.path.join(x2_data_path_metrop, "x2_ecmc_0.npy"))[:, 1]
     storage_arr = np.zeros((len(timestep_data), N))
@@ -112,22 +105,25 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
             mass, omega, propertime/timestep, timestep)
         analytical_data[t_index] = analytical_x2_val    
 
-    ax1[1].scatter(analytical_data, x2_mean_arr_metrop, color = "#e16f04ff", label = "Metropolis MC", marker = "x")
-    #ax1[1].set_yscale('log')
-    #ax1[1].set_xscale('log')
+    ax.errorbar(analytical_data, x2_mean_arr_metrop, err, color = "#f6b67aff", label = "Metropolis MC", fmt='^', capsize=3, markersize=4)
 
-    #ax1[1].set_xlabel(r"$\langle x^2 \rangle$ analytical",  fontsize=15)
-    # ax1[1].set_xlabel(r"$\delta \tau$",  fontsize=20)
-
-    #ax1[1].set_ylabel(r"$\langle x^2 \rangle$ numerical",  fontsize=15)
+    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=15)
     legend_properties = {'weight':'bold'}
-    #plt.legend(prop=legend_properties)
-    fig.legend(loc  = "upper center", prop=legend_properties)
-    #ax1[1].legend()
-    ax1[0].set_ylim(2e-1, 6e-1)
-    ax1[1].set_ylim(2e-1, 6e-1)
+    legend = ax.legend(loc='lower right', fontsize=10, prop=legend_properties)
+    legend.get_frame().set_edgecolor('k')
+    legend.get_frame().set_lw(1.0)
+
+    for tick in ax.get_xticklabels():
+        tick.set_fontweight('bold')
+    for tick in ax.get_yticklabels():
+        tick.set_fontweight('bold')
+
+    #ax.set_xscale("log")
+    #ax.set_yscale("log")
+    #ax.set_ylim(2e-1, 6e-1)
+    #ax.set_ylim(2e-1, 6e-1)
     plt.tight_layout()
-    plt.savefig("qho_x2_analytical_FSEM_poster.pdf", bbox_inches='tight' , transparent =True)
+    plt.savefig("qho_x2_analytical_FSEM_poster.pdf",)
 
 
     # print(f"analytical 0.01: {analytical_x2_arr[-1]}, ecmc: {numerical_x2_e[-1]}")

@@ -65,12 +65,37 @@ def main(config_folder, min_length, max_length, N_repeats, output_directory):
             config = parsing.read_config(parsing.parse_options([config_file_string]).config_file)
             (config_file_mediator, potential, _, samplers, sample_directory, temperature, number_of_equilibration_iterations,
             _, number_of_particles, size_of_particle_space) = helper_methods.get_basic_config_data(config_file_string)
-            
-    
+
+            checkpointing_index = sample_getter.get_checkpointing_indices(sample_directory)
+
             thinning_level = None
             timestep = parsing.get_value(config, strings.to_camel_case(potential), "timestep")
             print(n)
-            position_sample = sample_getter.get_positions(sample_directory, temperature, 0, number_of_particles,
+
+            if checkpointing_index != 0:
+                max_len = 0
+                for i in range(checkpointing_index + 1):
+                    new_len = len(sample_getter.get_positions(
+                        sample_directory, temperature, i, number_of_particles, 
+                        None, thinning_level=thinning_level)[:, 0])
+                    if new_len > max_len:
+                        max_len = new_len
+
+                position_sample = np.zeros((max_len * (checkpointing_index + 1), number_of_particles))
+                for i in range(checkpointing_index + 1):
+                    sub_arr = sample_getter.get_positions(
+                        sample_directory, temperature, i, number_of_particles, 
+                        None, thinning_level=thinning_level)
+                    try:
+                        position_sample[i * max_len : (i) * max_len + len(sub_arr), :] = sub_arr
+                    except:
+                        position_sample[i * max_len : (i) * max_len + len(sub_arr), :] = sub_arr[1:]
+
+                position_sample = position_sample[np.nonzero(position_sample)]
+                position_sample = position_sample[number_of_equilibration_iterations:]
+
+            else:
+                position_sample = sample_getter.get_positions(sample_directory, temperature, 0, number_of_particles,
                                                     number_of_equilibration_iterations, thinning_level=thinning_level)
             for index, length in enumerate(lengths):
                 spatial_correlations[index, n]= spatial_correlation_function(position_sample, length, number_of_particles)

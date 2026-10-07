@@ -12,7 +12,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
           ecmc_iact_data_path_14, ecmc_iact_data_path_15, ecmc_iact_data_path_16, ecmc_iact_data_path_17,
           ecmc_iact_data_path_18, ecmc_iact_data_path_19,  ecmc_iact_data_path_20,  ecmc_iact_data_path_21,
           ecmc_iact_data_path_22, ecmc_iact_data_path_23, ecmc_iact_data_path_24, ecmc_iact_data_path_25,
-          ecmc_iact_data_path_26, ecmc_iact_data_path_27, ecmc_iact_data_path_28, N, ff_N, propertime):
+          ecmc_iact_data_path_26, ecmc_iact_data_path_27, ecmc_iact_data_path_28, ecmc_iact_data_path_29, N, ff_N, propertime):
 
     N = int(N)
     ff_N = int(ff_N)
@@ -642,6 +642,29 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
     ecmc_sorted_timestep_28 = ecmc_sorted_timestep_28[ecmc_sorted_timestep_28 >= 0.01]
     ecmc_sorted_N_28 = propertime / ecmc_sorted_timestep_28
 
+    ecmc_timestep_data_29 = np.load(os.path.join(ecmc_iact_data_path_29, "iact_ecmc_0.npy"))[:, 1]
+    ecmc_storage_arr_29 = np.zeros((len(ecmc_timestep_data_29), N))
+    ecmc_sorted_timestep_29 = ecmc_timestep_data_29[np.argsort(ecmc_timestep_data_29)]
+
+    for index_29 in range(N):
+        ecmc_iact_timestep_29 =  np.load(os.path.join(ecmc_iact_data_path_29, f"iact_ecmc_{index_29}.npy"))
+        ecmc_iact_data_29 = ecmc_iact_timestep_29[:, 0] 
+        ecmc_timestep_data_29 = ecmc_iact_timestep_29[:, 1] 
+        argsorted_data_29 = np.argsort(ecmc_timestep_data_29)
+        ecmc_timestep_argsorted_29 = ecmc_timestep_data_29[argsorted_data_29]
+        ecmc_iact_data_29 = ecmc_iact_data_29[argsorted_data_29] 
+        ecmc_storage_arr_29[:, index_29] = ecmc_iact_data_29
+
+    ecmc_iact_mean_arr_29 = np.mean(ecmc_storage_arr_29, axis = 1)
+    ecmc_iact_mean_arr_29 = ecmc_iact_mean_arr_29[ecmc_sorted_timestep_29 >= 0.01]
+    ecmc_err_29 = np.std(ecmc_storage_arr_29, axis=1)
+    ecmc_err_29 = ecmc_err_29[ecmc_sorted_timestep_29 >= 0.01]
+    ecmc_sorted_timestep_29 = ecmc_sorted_timestep_29[ecmc_sorted_timestep_29 >= 0.01]
+    ecmc_sorted_N_29 = propertime / ecmc_sorted_timestep_29
+    ecmc_iact_mean_arr_29 = ecmc_sorted_N_29 * ecmc_iact_mean_arr_29 
+
+
+
     if metrop_data:
         m_fit_trim = -7
         m_coeffs = np.polyfit(np.log(metropolis_sorted_N[:m_fit_trim]), np.log(metropolis_iact_mean_arr[:m_fit_trim]), deg=1)
@@ -653,6 +676,15 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
     fitted_e = e_coeffs[1] + np.multiply(np.log(ecmc_sorted_N[:e_fit_trim]), e_coeffs[0])
     print(f"old ECMC: {e_coeffs[0]}")
 
+    e_fit_trim_7 = -7
+    e_coeffs_7 = np.polyfit(np.log(ecmc_sorted_N_7[:e_fit_trim_7]), np.log(ecmc_iact_mean_arr_7[:e_fit_trim_7]), deg=1)
+    fitted_e_7 = e_coeffs_7[1] + np.multiply(np.log(ecmc_sorted_N_7[:e_fit_trim_7]), e_coeffs_7[0])
+    print(f"ECMC sd=1: {e_coeffs_7[0]}")
+
+    e_fit_trim_8 = -7
+    e_coeffs_8 = np.polyfit(np.log(ecmc_sorted_N_8[:e_fit_trim_8]), np.log(ecmc_iact_mean_arr_8[:e_fit_trim_8]), deg=1)
+    fitted_e_8 = e_coeffs_8[1] + np.multiply(np.log(ecmc_sorted_N_8[:e_fit_trim_7]), e_coeffs_8[0])
+    print(f"ECMC sd=120: {e_coeffs_8[0]}")
 
     e_fit_trim_10 = -7
     e_coeffs_10 = np.polyfit(np.log(ecmc_sorted_N_10[:e_fit_trim_10]), np.log(ecmc_iact_mean_arr_10[:e_fit_trim_10]), deg=1)
@@ -664,7 +696,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
     fitted_e_17 = e_coeffs_17[1] + np.multiply(np.log(ecmc_sorted_N_17[:e_fit_trim_17]), e_coeffs_17[0])
     print(f"ECMC ff=1.0, sd=500: {e_coeffs_17[0]}")
 
-    e_fit_trim_22 = -9
+    e_fit_trim_22 = -10
     e_coeffs_22 = np.polyfit(np.log(ecmc_sorted_N_22[:e_fit_trim_22]), np.log(ecmc_iact_mean_arr_22[:e_fit_trim_22]), deg=1)
     fitted_e_22 = e_coeffs_22[1] + np.multiply(np.log(ecmc_sorted_N_22[:e_fit_trim_22]), e_coeffs_22[0])
     print(f"ECMC alt lifitng scheme, sd=500: {e_coeffs_22[0]}")
@@ -683,7 +715,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
 
     if metrop_data:
         ax.plot(metropolis_sorted_N[:m_fit_trim], np.exp(fitted_m), color="#f9a37bff")
-        ax.errorbar(metropolis_sorted_N, metropolis_iact_mean_arr, metropolis_err, fmt='^', capsize=3, markersize=4, color="#e16f04ff", label="Metropolis MC")
+        ax.errorbar(metropolis_sorted_N, metropolis_iact_mean_arr, metropolis_err, fmt='^', capsize=3, markersize=6, color="#e16f04ff", label="Metropolis MC")
         #ax.annotate(f"M coeff: {m_coeffs[0]:.2f}", xy = (8*10e1, 3*10e1), weight = "bold")
 
         #ax.errorbar(metropolis_sorted_N_2, metropolis_iact_mean_arr_2, metropolis_err_2, fmt='^', capsize=3, markersize=4, color="#16e104ff", label="Metropolis MC 2 ")
@@ -693,7 +725,8 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
 
     #ax.plot(ecmc_sorted_N[:e_fit_trim], np.exp(fitted_e), color="#d97dd9ff")
     ax.plot(ecmc_sorted_N_10[:e_fit_trim_10], np.exp(fitted_e_10), color="#d97dd9ff")
-    #ax.plot(ecmc_sorted_N_17[:e_fit_trim_17], np.exp(fitted_e_17), color="#7c82edff")
+    #ax.plot(ecmc_sorted_N_7[:e_fit_trim_7], np.exp(fitted_e_7), color="#7c82edff")
+    #ax.plot(ecmc_sorted_N_8[:e_fit_trim_8], np.exp(fitted_e_8), color="#7c82edff")
     ax.plot(ecmc_sorted_N_22[:e_fit_trim_22], np.exp(fitted_e_22), color="#a7385eff")
     #ax.plot(ecmc_sorted_N_26[:e_fit_trim_26], np.exp(fitted_e_26), color="#6b4670ff")
     #ax.plot(ecmc_sorted_N_27[:e_fit_trim_27], np.exp(fitted_e_27), color="#a3bf32ff")
@@ -710,7 +743,7 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
     #ax.errorbar(ecmc_sorted_N_7, ecmc_iact_mean_arr_7, ecmc_err_7, fmt='o', capsize=3, markersize=4, color="#cdde37ff", label="ECMC sd = 1.0, rf = inf")
     #ax.errorbar(ecmc_sorted_N_8, ecmc_iact_mean_arr_8, ecmc_err_8, fmt='o', capsize=3, markersize=4, color="#3140aeff", label="ECMC sd = 120, rf = 10e12")
     #ax.errorbar(ecmc_sorted_N_9, ecmc_iact_mean_arr_9, ecmc_err_9, fmt='o', capsize=3, markersize=4, color="#64e15dff", label="ECMC sd = 500, rf = 10e12")
-    ax.errorbar(ecmc_sorted_N_10, ecmc_iact_mean_arr_10, ecmc_err_10, fmt='o', capsize=3, markersize=4, color="#e20acdff", label="ECMC - Asymmetric")# sd = 500, rf = inf")
+    ax.errorbar(ecmc_sorted_N_10, ecmc_iact_mean_arr_10, ecmc_err_10, fmt='o', capsize=3, markersize=6, color="#e20acdff", label="ECMC - Asymmetric")# sd = 500, rf = inf")
     #ax.errorbar(ecmc_sorted_N_11, ecmc_iact_mean_arr_11, ecmc_err_11, fmt='o', capsize=3, markersize=4, color="#00f7ffff", label="ECMC sd = Nt, rf = inf")
     #ax.errorbar(ecmc_sorted_N_12, ecmc_iact_mean_arr_12, ecmc_err_12, fmt='o', capsize=3, markersize=4, color="#00f7ffff", label="ECMC sd = 500, rf = Nt")
     #ax.errorbar(ecmc_sorted_N_13, ecmc_iact_mean_arr_13, ecmc_err_13, fmt='o', capsize=3, markersize=4, color="#a0e9adff", label="ECMC sd = 50, rf = inf")
@@ -722,41 +755,43 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
     #ax.errorbar(ecmc_sorted_N_19, ecmc_iact_mean_arr_19, ecmc_err_19, fmt='o', capsize=3, markersize=4, color="#22c31aff", label="ECMC FF = 0.1, sd = 500, rf = inf")
     #ax.errorbar(ecmc_sorted_N_20, ecmc_iact_mean_arr_20, ecmc_err_20, fmt='o', capsize=3, markersize=4, color="#76efd5ff", label="ECMC FF = 0.5, sd = 500, rf = inf")
     #ax.errorbar(ecmc_sorted_N_21, ecmc_iact_mean_arr_21, ecmc_err_21, fmt='o', capsize=3, markersize=4, color="#f11f14ff", label="ECMC FF = 1.0, sd = 50, rf = inf")
-    ax.errorbar(ecmc_sorted_N_22, ecmc_iact_mean_arr_22, ecmc_err_22, fmt='x', capsize=3, markersize=4, color="#950834ff", label="ECMC - Symmetric") # , sd = 500, rf = inf")
+    ax.errorbar(ecmc_sorted_N_22, ecmc_iact_mean_arr_22, ecmc_err_22, fmt='x', capsize=3, markersize=6, color="#950834ff", label="ECMC - Symmetric") # , sd = 500, rf = inf")
     #ax.errorbar(ecmc_sorted_N_23, ecmc_iact_mean_arr_23, ecmc_err_23, fmt='o', capsize=3, markersize=4, color="#e8a1d1ff", label="ECMC alt-lifting-scheme, FF 1.0, sd = 500, rf = inf")
     #ax.errorbar(ecmc_sorted_N_24, ecmc_iact_mean_arr_24, ecmc_err_24, fmt='o', capsize=3, markersize=4, color="#e8a1d1ff", label="ECMC FF 10.0, sd = 500, rf = Nt")
     #ax.errorbar(ecmc_sorted_N_25, ecmc_iact_mean_arr_25, ecmc_err_25, fmt='o', capsize=3, markersize=4, color="#24a245ff", label="ECMC alt-lifting-scheme, FF 10.0, sd = 500, rf = inf")
     #ax.errorbar(ecmc_sorted_N_26, ecmc_iact_mean_arr_26, ecmc_err_26, fmt='o', capsize=3, markersize=4, color="#b011e1ff", label="ECMC FF 1.0, sd = Nt, rf = inf")
     #ax.errorbar(ecmc_sorted_N_27, ecmc_iact_mean_arr_27, ecmc_err_27, fmt='o', capsize=3, markersize=4, color="#e15311ff", label="ECMC sd = Nt, rf = inf")
     #ax.errorbar(ecmc_sorted_N_28, ecmc_iact_mean_arr_28, ecmc_err_28, fmt='o', capsize=3, markersize=4, color="#289a11ff", label="ECMC FF 10.0, sd = Nt, rf = inf")
+    ax.errorbar(ecmc_sorted_N_29, ecmc_iact_mean_arr_29, ecmc_err_29, fmt='o', capsize=3, markersize=4, color="#289a11ff", label="ECMC sd = 100*Nt")
 
 
 
-
-
-
-
-
-
-
-
-    
-
-    
-    #ax.annotate(f"E coeff: {e_coeffs[0]:.2f}", xy = (4*10e2, 4*10e1), weight = "bold")
+    ax.annotate(f"{e_coeffs_10[0]:.2f}", xy = (4*10e2, 1*10e1), weight = "bold", fontsize=18)
+    ax.annotate(f"{e_coeffs_22[0]:.2f}", xy = (2.5*10e2, 1*10e2), weight = "bold", fontsize=18)
+    ax.annotate(f"{m_coeffs[0]:.2f}", xy = (1*10e2, 1*10e4), weight = "bold", fontsize=18)
     
 
 
 
     
    
-    ax.set_xlabel(r"$N_{\tau}$", fontsize=20, labelpad=-10, weight = "bold")
-    ax.set_ylabel("IACT", fontsize=15, weight = "bold")
+    ax.set_xlabel(r"$N_{\tau}$", fontsize=30, labelpad=-10, weight = "bold")
+    ax.set_ylabel(r"$s_{int}$", fontsize=45, weight = "bold")
     ax.set_xscale("log")
     ax.set_yscale("log")
+    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=20)
     legend_properties = {'weight':'bold'}
-    plt.legend(prop=legend_properties, bbox_to_anchor=(1.0, 1.0))
-    #ax.set_ylim(0.17e5, 0.8e7)
+    legend = ax.legend(loc='lower right', fontsize=10, prop=legend_properties)
+    legend.get_frame().set_edgecolor('k')
+    legend.get_frame().set_lw(1.5)
+
+    for tick in ax.get_xticklabels():
+        tick.set_fontweight('bold')
+    for tick in ax.get_yticklabels():
+        tick.set_fontweight('bold')
+    print(ax.get_ylim())
+    print(ax.get_xlim())
+    plt.tight_layout()
    
 
 
@@ -838,4 +873,4 @@ if __name__ == '__main__':
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7], sys.argv[8], sys.argv[9],
          sys.argv[10], sys.argv[11], sys.argv[12], sys.argv[13], sys.argv[14], sys.argv[15], sys.argv[16], sys.argv[17],
          sys.argv[18], sys.argv[19], sys.argv[20], sys.argv[21], sys.argv[22], sys.argv[23], sys.argv[24], sys.argv[25], 
-         sys.argv[26], sys.argv[27], sys.argv[28], sys.argv[29], sys.argv[30], sys.argv[31], sys.argv[32], sys.argv[33])
+         sys.argv[26], sys.argv[27], sys.argv[28], sys.argv[29], sys.argv[30], sys.argv[31], sys.argv[32], sys.argv[33], sys.argv[34])

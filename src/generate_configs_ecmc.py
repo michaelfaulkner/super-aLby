@@ -21,7 +21,7 @@ def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_po
     N = int(N)
     refreshment_dist = float(refreshment_dist)
     for i in range(N):
-        output_dir = f"config_files/hpc/anharmonic_ecmc_w2_100/{input_save_str}/{i}.ini"
+        output_dir = f"config_files/hpc/anharmonic_w2_100_x0_5/{input_save_str}/{i}.ini"
         print(f"{output_dir}")
         if not os.path.exists(output_dir):
             try:
@@ -38,8 +38,8 @@ def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_po
             "\n" \
             "[EventChainMediator] \n" \
             "potential = quantum_harmonic_oscillator_potential \n" \
-            "samplers = mean_squared_position_sampler\n" \
-            "factor_field = temporal_factor_field \n" \
+            "samplers = mean_squared_position_sampler \n" \
+            "factor_field = no_factor_field \n" \
             "temperature = 1.0 \n" \
             f"number_of_equilibration_iterations = {equilibrium} \n" \
             f"number_of_observations = {samples} \n" \
@@ -55,8 +55,7 @@ def main(timestep, N, equilibrium, samples, prefactor, mass, total_T, initial_po
             f"x_shift = {x_shift} \n" \
             f"fixed_lifting_scheme = {lifting_scheme} \n" \
             "\n" \
-            "[TemporalFactorField] \n" \
-            f"prefactor = {prefactor} \n" \
+            "[NoFactorField] \n" \
             "\n" \
             "[MeanSquaredPositionSampler] \n" \
             f"x_shift = {x_shift} \n" \
