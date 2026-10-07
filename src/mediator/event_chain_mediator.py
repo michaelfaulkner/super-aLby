@@ -27,7 +27,8 @@ class EventChainMediator(Mediator):
                  refreshment_distribution: RefreshmentDistribution = ConstantRefreshmentDistribution(),
                  temperature: float = 1.0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, output_directory: str = None,
-                 normalised_distance_between_measurements: float = 1.0, teleportation_portal: bool = False):
+                 normalised_distance_between_measurements: float = 1.0, teleportation_portal: bool = False,
+                 initial_active_particle_index: int = None):
         r"""
         Constructor of the EventChainMediator class.  Note that this class works only with potential classes that
             inherit from EuclideanSubspacePotential (essentially continuous spaces).
@@ -58,6 +59,8 @@ class EventChainMediator(Mediator):
             Total distance through state space between samples (normalised as indicated by the operations below).
         teleportation_portal : bool, optional
             When True, a teleportation portal is attempted at each event induced by the potential.
+        initial_active_particle_index : int, optional
+            Index of the first active particle of the event chain; if None, it is chosen uniformly at random.
 
         Raises
         ------
@@ -89,6 +92,7 @@ class EventChainMediator(Mediator):
                                      f"in {self.__class__.__name__}.")
         """Re-instantiate self._potential as EuclideanSubspacePotential contains additional abstract methods."""
         self._potential = potential
+        self._initial_active_particle_index = initial_active_particle_index
         self._factor_field = factor_field
         if normalised_distance_between_measurements <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 for normalised_distance_between_measurements in "
@@ -128,8 +132,9 @@ class EventChainMediator(Mediator):
 
     def _run_markov_process(self):
         """Runs the Markov process with model temperature equal to self._temperature."""
-        events = 0
-        active_particle_index = np.random.randint(0, number_of_particles)
+        active_particle_index = self._initial_active_particle_index
+        if active_particle_index is None:
+            active_particle_index = np.random.randint(0, number_of_particles)
         distance_to_next_measurement = 0.0
         movement_direction = self._potential.get_random_event_chain_velocity()
         distance_to_next_velocity_refreshment = self._refreshment_distribution.get_refreshment_distance()
@@ -180,10 +185,10 @@ class EventChainMediator(Mediator):
                 else:
                     self._potential.update_position(self._positions, distance_to_next_event,
                                                     active_particle_index, movement_direction)
-                    events += 1
-                    [self._event_samples[event_sampler_index].append(event_sampler.get_observation(
-                        self._positions, self._potential, active_particle_index, vetoing_index, distance_to_next_event))
-                        for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
+                    if active_particle_index != vetoing_index:
+                        [self._event_samples[event_sampler_index].append(event_sampler.get_observation(
+                            self._positions, self._potential, active_particle_index, vetoing_index, distance_to_next_event))
+                            for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
 
                     if self._teleportation_portal:
@@ -213,7 +218,6 @@ class EventChainMediator(Mediator):
 
 
         self._write_sim_params()
-        print(f"events: {events}")
 
     def _print_markov_process_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
@@ -256,7 +260,14 @@ class EventChainMediator(Mediator):
             self._total_event_distance += displacement_distance
             if hop_displacement:
                 self._state_space_displacement += hop_displacement
-            if vetoing_index == (active_particle_index + 1) % number_of_particles:
-                self._index_space_displacement += 1
-            elif vetoing_index == (active_particle_index - 1) % number_of_particles:
-                self._index_space_displacement -= 1
+            if 'SoftDiskPotential' in str(self._potential):
+                delta_index = (vetoing_index - active_particle_index) % number_of_particles
+                if delta_index <= number_of_particles / 2.0:
+                    self._index_space_displacement += delta_index
+                else:
+                    self._index_space_displacement -= (number_of_particles - delta_index)
+            else:
+                if vetoing_index == (active_particle_index + 1) % number_of_particles:
+                    self._index_space_displacement += 1
+                elif vetoing_index == (active_particle_index - 1) % number_of_particles:
+                    self._index_space_displacement -= 1
