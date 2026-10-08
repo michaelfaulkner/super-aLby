@@ -259,6 +259,14 @@ def main(config_file_string):
     elif "xy_potential" in potential:
         reference_sample = np.load(
             "permanent_data/reference_data/xy_8x8_sites_temp_0_point_8_magnetisation_norm_reference_sample.npy")
+    elif potential == "tethered_harmonic_chain_potential":
+        if not (number_of_particles == 8 and size_of_particle_space == [9.0] and temperature == 1.0):
+            raise ValueError("TetheredHarmonicChainPotential reference data only available for models for which "
+                             "number_of_particles equals 8, size_of_particle_space equals 9.0 and the sampling "
+                             "temperature equals 1.0 (n.b., number_of_particles and size_of_particle_space are set in "
+                             "the ModelSettings section).")
+        reference_sample = np.load("permanent_data/reference_data/"
+                                   "eight_tethered_harmonic_chain_particles_temp_1_L_9_reference_sample.npy").flatten()
     elif "harmonic_chain_potential" in potential:
         reference_sample = np.load(
             "permanent_data/reference_data/eight_harmonic_chain_particles_temp_1_L_16.npy").flatten()

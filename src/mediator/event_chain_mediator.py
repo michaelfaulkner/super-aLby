@@ -126,13 +126,11 @@ class EventChainMediator(Mediator):
         active_particle_index = self._initial_active_particle_index
         if active_particle_index is None:
             active_particle_index = np.random.randint(0, number_of_particles)
-        distance_to_next_measurement = 0.0
+        distance_to_next_measurement = self._distance_between_measurements
         movement_direction = self._potential.get_random_event_chain_velocity()
         distance_to_next_velocity_refreshment = self._refreshment_distribution.get_refreshment_distance()
         markov_chain_index = 0
         while markov_chain_index < self._total_number_of_iterations:
-            distance_to_next_measurement += self._distance_between_measurements
-            taken_measurement = False
             while True:
                 candidate_events = [self._potential.get_next_event(
                                         self._positions, active_particle_index, self._temperature, movement_direction),
@@ -156,8 +154,6 @@ class EventChainMediator(Mediator):
                         markov_chain_index += 1
                         self._total_number_of_events_at_samples.append(self._total_number_of_events)
                         super()._print_sample_progress(markov_chain_index)
-                    taken_measurement = True
-                    distance_to_next_measurement = 0.0
 
                 if distance_to_next_velocity_refreshment < distance_to_next_event:
                     self._potential.update_position(self._positions, distance_to_next_velocity_refreshment,
@@ -197,8 +193,7 @@ class EventChainMediator(Mediator):
                             self._positions, active_particle_index, movement_direction, vetoing_index)
                     distance_to_next_velocity_refreshment -= distance_to_next_event
                     distance_to_next_measurement -= distance_to_next_event
-                    if taken_measurement:
-                        break
+                    break
 
         self._write_sim_params()
 

@@ -90,12 +90,8 @@ class HarmonicChainPotential(HarmonicChainPotentials):
             active_particle_position += self._cell_horizon * movement_direction
             max_pos_grad, max_neg_grad = self._get_single_particle_gradient(positions, active_particle_index)
             active_particle_position -= self._cell_horizon * movement_direction
-            if movement_direction > 0.0:
-                max_pos_grad += self._equilibrium_length
-                max_neg_grad -= self._equilibrium_length
-            else:
-                max_pos_grad -= self._equilibrium_length
-                max_neg_grad += self._equilibrium_length
+            max_pos_grad += self._equilibrium_length
+            max_neg_grad -= self._equilibrium_length
 
             max_rate_pos = np.maximum(0.0, movement_direction * max_pos_grad)
             max_rate_neg = np.maximum(0.0, movement_direction * max_neg_grad)
@@ -120,12 +116,8 @@ class HarmonicChainPotential(HarmonicChainPotentials):
                 active_particle_position += candidate_distance_to_next_factor_event * movement_direction
                 actual_pos_grad, actual_neg_grad = self._get_single_particle_gradient(positions, active_particle_index)
                 active_particle_position -= candidate_distance_to_next_factor_event * movement_direction
-                if movement_direction > 0.0:
-                    actual_pos_grad += self._equilibrium_length
-                    actual_neg_grad -= self._equilibrium_length
-                else:
-                    actual_pos_grad -= self._equilibrium_length
-                    actual_neg_grad += self._equilibrium_length
+                actual_pos_grad += self._equilibrium_length
+                actual_neg_grad -= self._equilibrium_length
 
                 if vetoing_index == pos_neighbour_index:
                     actual_rate = np.maximum(0.0, movement_direction * actual_pos_grad)
