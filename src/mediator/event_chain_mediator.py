@@ -138,7 +138,7 @@ class EventChainMediator(Mediator):
                                         self._positions, active_particle_index, self._temperature, movement_direction)]
                 distance_to_next_event, vetoing_index, hop_displacement = min(candidate_events)
                 self._update_state_and_index_space_displacements(distance_to_next_event, active_particle_index,
-                                                                 vetoing_index, hop_displacement)
+                                                                 vetoing_index, hop_displacement, movement_direction)
 
                 if distance_to_next_measurement < min(distance_to_next_event, distance_to_next_velocity_refreshment):
                     while (markov_chain_index < self._total_number_of_iterations and distance_to_next_measurement <
@@ -226,7 +226,7 @@ class EventChainMediator(Mediator):
                        "mean_event_rate": mean_event_rate, "acceptance_rate": acceptance_rate}, f)
 
     def _update_state_and_index_space_displacements(self, displacement_distance, active_particle_index, vetoing_index,
-                                                    hop_displacement):
+                                                    hop_displacement, movement_direction=1):
         """Updates the state- and index-space displacements following each particle-event sampling.  This is to measure
             their mean values over the entire simulation.  N.B. we apply this method before checking whether the next
             event is the particle event, a velocity-refreshment event or a sampling/measurement event.  For the latter,
@@ -246,6 +246,6 @@ class EventChainMediator(Mediator):
                     self._index_space_displacement -= (number_of_particles - delta_index)
             else:
                 if vetoing_index == (active_particle_index + 1) % number_of_particles:
-                    self._index_space_displacement += 1
+                    self._index_space_displacement += movement_direction
                 elif vetoing_index == (active_particle_index - 1) % number_of_particles:
-                    self._index_space_displacement -= 1
+                    self._index_space_displacement -= movement_direction

@@ -1,10 +1,17 @@
 import os
 import sys
-import copy
 import configparser
 import fnmatch
 import shutil
 import time
+
+
+def copy_config(config):
+    """Returns an independent copy of a ConfigParser (copy.deepcopy fails for ConfigParser in Python 3.6)."""
+    config_copy = configparser.ConfigParser()
+    config_copy.optionxform = str
+    config_copy.read_dict({section: dict(config.items(section, raw=True)) for section in config.sections()})
+    return config_copy
 
 
 def spawn_identical_configs(config_file_location, number_of_jobs, config):
@@ -14,7 +21,7 @@ def spawn_identical_configs(config_file_location, number_of_jobs, config):
     mediator = next(section for section in config.sections() if fnmatch.fnmatch(section, "*Mediator"))
     output_directory = config.get(mediator, "output_directory")
     for job_index in range(number_of_jobs):
-        job_config = copy.deepcopy(config)
+        job_config = copy_config(config)
         job_config_file_path = os.path.join(config_file_directory, f"job_{job_index:02d}.ini")
         job_output_directory = os.path.join(output_directory, config_file_basename, f"job_{job_index:02d}")
         job_config.set(mediator, "output_directory", job_output_directory)
@@ -50,7 +57,7 @@ def main(config_file_location, number_of_jobs, sweep_start, sweep_end, number_of
         sweep_values = [sweep_start + sweep_increment * i for i in range(number_of_increments + 1)]
 
     for index, increment in enumerate(sweep_values):
-        increment_config = copy.deepcopy(config)
+        increment_config = copy_config(config)
         increment_config.set(config_header, config_variable, format(increment, ".15g"))
         increment_config_file_path = os.path.join(staging_root, f"{config_variable}_{index:02d}.ini")
         with open(increment_config_file_path, 'w') as f:
