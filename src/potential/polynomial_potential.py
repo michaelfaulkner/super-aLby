@@ -163,12 +163,9 @@ class PolynomialPotential(EuclideanSubspacePotential):
         """
         potential = 0.0
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(active_particle_index)
-        neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index][0],
-                                                          positions[pos_neighbour_index][0])
-        if active_particle_index == number_of_particles - 1:
-            pos_neighbour_position += size_of_particle_space
-        if active_particle_index == 0:
-            neg_neighbour_position -= size_of_particle_space
+        neg_neighbour_position, pos_neighbour_position = self._get_neighbour_positions(positions, active_particle_index,
+                                                                                       neg_neighbour_index,
+                                                                                       pos_neighbour_index)
         neg_displacement, pos_displacement = (candidate_position - neg_neighbour_position,
                                               pos_neighbour_position - candidate_position)
         for power, prefactor in zip(self._powers, self._prefactors):
@@ -199,6 +196,20 @@ class PolynomialPotential(EuclideanSubspacePotential):
                                                     (active_particle_index + 1) % number_of_particles)
         return neg_neighbour_index, pos_neighbour_index
 
+    @staticmethod
+    def _get_neighbour_positions(positions, active_particle_index, neg_neighbour_index, pos_neighbour_index):
+        """
+        Return the positions of the neighbours of the active particle, with the periodic image used for the neighbour
+        across the boundary.
+        """
+        neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index][0],
+                                                          positions[pos_neighbour_index][0])
+        if active_particle_index == number_of_particles - 1:
+            pos_neighbour_position += size_of_particle_space[0]
+        elif active_particle_index == 0:
+            neg_neighbour_position -= size_of_particle_space[0]
+        return neg_neighbour_position, pos_neighbour_position
+
     def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
@@ -226,24 +237,17 @@ class PolynomialPotential(EuclideanSubspacePotential):
         """
         active_particle_position = positions[active_particle_index]
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(active_particle_index)
-        neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index][0],
-                                                          positions[pos_neighbour_index][0])
-
-        if active_particle_index == number_of_particles - 1:
-            pos_neighbour_position += size_of_particle_space[0]
-        elif active_particle_index == 0:
-            neg_neighbour_position -= size_of_particle_space[0]
+        neg_neighbour_position, pos_neighbour_position = self._get_neighbour_positions(positions, active_particle_index,
+                                                                                       neg_neighbour_index,
+                                                                                       pos_neighbour_index)
 
         if self._use_cell_horizon:
             active_particle_position += self._cell_horizon * movement_direction
             max_pos_grad, max_neg_grad = self._get_single_particle_gradient(positions, active_particle_index)
             active_particle_position -= self._cell_horizon * movement_direction
-            if movement_direction > 0.0:
-                max_pos_grad += self._factor_field_prefactor
-                max_neg_grad -= self._factor_field_prefactor
-            else:
-                max_pos_grad -= self._factor_field_prefactor
-                max_neg_grad += self._factor_field_prefactor
+            # the factor field is a fixed tension, so these shifts do not depend on movement_direction
+            max_pos_grad += self._factor_field_prefactor
+            max_neg_grad -= self._factor_field_prefactor
 
             max_rate_pos = np.maximum(0.0, movement_direction * max_pos_grad)
             max_rate_neg = np.maximum(0.0, movement_direction * max_neg_grad)
@@ -268,12 +272,8 @@ class PolynomialPotential(EuclideanSubspacePotential):
                 active_particle_position += candidate_distance_to_next_factor_event * movement_direction
                 actual_pos_grad, actual_neg_grad = self._get_single_particle_gradient(positions, active_particle_index)
                 active_particle_position -= candidate_distance_to_next_factor_event * movement_direction
-                if movement_direction > 0.0:
-                    actual_pos_grad += self._factor_field_prefactor
-                    actual_neg_grad -= self._factor_field_prefactor
-                else:
-                    actual_pos_grad -= self._factor_field_prefactor
-                    actual_neg_grad += self._factor_field_prefactor
+                actual_pos_grad += self._factor_field_prefactor
+                actual_neg_grad -= self._factor_field_prefactor
 
                 if vetoing_index == pos_neighbour_index:
                     actual_rate = np.maximum(0.0, movement_direction * actual_pos_grad)
@@ -358,12 +358,9 @@ class PolynomialPotential(EuclideanSubspacePotential):
         pos_gradient_value = neg_gradient_value = 0.0
         single_particle_position = positions[single_particle_index][0]
         neg_neighbour_index, pos_neighbour_index = self._get_neighbours(single_particle_index)
-        neg_neighbour_position, pos_neighbour_position = (positions[neg_neighbour_index][0],
-                                                          positions[pos_neighbour_index][0])
-        if single_particle_index == number_of_particles - 1:
-            pos_neighbour_position += size_of_particle_space[0]
-        elif single_particle_index == 0:
-            neg_neighbour_position -= size_of_particle_space[0]
+        neg_neighbour_position, pos_neighbour_position = self._get_neighbour_positions(positions, single_particle_index,
+                                                                                       neg_neighbour_index,
+                                                                                       pos_neighbour_index)
         neg_separation = single_particle_position - neg_neighbour_position
         pos_separation = pos_neighbour_position - single_particle_position
         neg_sign = 1.0 if neg_separation >= 0.0 else -1.0
