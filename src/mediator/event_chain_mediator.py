@@ -28,7 +28,7 @@ class EventChainMediator(Mediator):
                  temperature: float = 1.0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, output_directory: str = None,
                  normalised_distance_between_measurements: float = 1.0, teleportation_portal: bool = False,
-                 initial_active_particle_index: int = None):
+                 initial_active_particle_index: int = None, auxillary_particle: bool = False):
         r"""
         Constructor of the EventChainMediator class.  Note that this class works only with potential classes that
             inherit from EuclideanSubspacePotential (essentially continuous spaces).
@@ -129,6 +129,7 @@ class EventChainMediator(Mediator):
         self._teleportation_portal = teleportation_portal
         self.active_particle_index = None # this is set in self._generate_sample_at_current_temperature()
         self._index_of_current_active_particle_sample = 0
+        self._auxillary_particle = auxillary_particle
 
     def _run_markov_process(self):
         """Runs the Markov process with model temperature equal to self._temperature."""
@@ -149,10 +150,6 @@ class EventChainMediator(Mediator):
                                         self._positions, active_particle_index, self._temperature, movement_direction)]
 
                 distance_to_next_event, vetoing_index, hop_displacement = min(candidate_events)
-                if np.argmin([candidate_events[0][0], candidate_events[1][0]]) == 1:
-                    FF_event = True
-                else:
-                    FF_event = False
                 self._update_state_and_index_space_displacements(distance_to_next_event, active_particle_index,
                                                                  vetoing_index, hop_displacement)
 

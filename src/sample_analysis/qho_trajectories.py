@@ -52,9 +52,9 @@ def main(metropolis_positions_data, ecmc_positions_data):
     ax[1].text(465, -1.2, "ECMC", color='black',  weight = "bold", 
         bbox=dict(facecolor='none', edgecolor='grey'))
 
-    ax[0].set_ylabel(r"$x_j$",  fontsize = 30, weight = "bold")
-    ax[1].set_ylabel(r"$x_j$",  fontsize = 30, weight = "bold")
-    ax[1].set_xlabel(r"$j$",  fontsize = 25, weight = "bold")
+    ax[0].set_ylabel(r"$x$",  fontsize = 30, weight = "bold")
+    ax[1].set_ylabel(r"$x$",  fontsize = 30, weight = "bold")
+    ax[1].set_xlabel(r"$\tau$",  fontsize = 25, weight = "bold")
 
     plt.tight_layout()
 

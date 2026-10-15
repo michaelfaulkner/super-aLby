@@ -73,7 +73,7 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
 
     ax.errorbar(analytical_data, x2_mean_arr, err, color = "#5a0251ff", label = "ECMC", fmt='o', capsize=3, markersize=7)
     ax.set_xlabel(r"$\langle x^2 \rangle$", y = 0.05, fontsize = 30, weight = "bold")
-    ax.set_ylabel(r"$\widebar{X^2}$", fontsize = 30, weight = "bold")
+    ax.set_ylabel(r"$\bar{X}^2$", fontsize = 30)
 
 
     timestep_data = np.load(os.path.join(x2_data_path_metrop, "x2_ecmc_0.npy"))[:, 1]
@@ -93,8 +93,8 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
     x2_mean_arr_metrop = np.mean(storage_arr, axis=1)
 
     x2_mean_arr_metrop = x2_mean_arr_metrop[sorted_timestep >= 0.01]
-    err = np.std(storage_arr, axis=1)
-    err = err[sorted_timestep >= 0.01]
+    metrop_err = np.std(storage_arr, axis=1)
+    metrop_err = metrop_err[sorted_timestep >= 0.01]
     sorted_timestep = sorted_timestep[sorted_timestep >= 0.01]
     sorted_N = propertime / sorted_timestep
     analytical_data = np.zeros(len(x2_mean_arr_metrop))
@@ -105,18 +105,14 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
             mass, omega, propertime/timestep, timestep)
         analytical_data[t_index] = analytical_x2_val    
 
-    ax.errorbar(analytical_data, x2_mean_arr_metrop, err, color = "#f6b67aff", label = "Metropolis MC", fmt='^', capsize=3, markersize=4)
+    ax.errorbar(analytical_data, x2_mean_arr_metrop, metrop_err, color = "#f6b67aff", label = "Metropolis MC", fmt='^', capsize=3, markersize=4)
 
     ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=15)
-    legend_properties = {'weight':'bold'}
-    legend = ax.legend(loc='lower right', fontsize=10, prop=legend_properties)
+    legend = ax.legend(loc='lower right', fontsize=10)
     legend.get_frame().set_edgecolor('k')
     legend.get_frame().set_lw(1.0)
 
-    for tick in ax.get_xticklabels():
-        tick.set_fontweight('bold')
-    for tick in ax.get_yticklabels():
-        tick.set_fontweight('bold')
+
 
     #ax.set_xscale("log")
     #ax.set_yscale("log")
@@ -125,8 +121,32 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
     plt.tight_layout()
     plt.savefig("qho_x2_analytical_FSEM_poster.pdf",)
 
+    plt.clf()
 
-    # print(f"analytical 0.01: {analytical_x2_arr[-1]}, ecmc: {numerical_x2_e[-1]}")
+    ratio_numerical_analytical_metrop = x2_mean_arr_metrop / analytical_data
+    ratio_err_metrop = metrop_err / analytical_data
+    ratio_numerical_analytical_ecmc = x2_mean_arr / analytical_data
+    ratio_err_ecmc = err / analytical_data
+
+    fig, ax = plt.subplots(1,1)
+
+    ax.errorbar(sorted_N, ratio_numerical_analytical_metrop, ratio_err_metrop, color = "#e16f04ff",
+                label = "Metropolis MC", fmt='^', capsize=3, markersize=4)
+    ax.errorbar(sorted_N, ratio_numerical_analytical_ecmc, ratio_err_ecmc, color = "#e20acdff",
+                label = "ECMC", fmt='o', capsize=3, markersize=7)
+
+    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=12)
+    legend = ax.legend(loc='lower left', fontsize=13)
+    legend.get_frame().set_edgecolor('k')
+    legend.get_frame().set_lw(1.5)
+    ax.set_yticks([0.85, 0.9, 0.95, 1.0])
+
+    ax.set_xlabel(r"$N_{\tau}$", fontsize = 30)
+    ax.set_ylabel(r"$|\mathbf{x}|^2/\langle x^2 \rangle$", fontsize = 30)
+    plt.setp(ax.spines.values(), lw=1.5, color='black')
+
+    plt.tight_layout()
+    plt.savefig("qho_numerical_analytical_ratio.pdf")
 
 
 if __name__ == '__main__':

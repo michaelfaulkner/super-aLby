@@ -65,19 +65,19 @@ def main(qho_config_file_string, aho_config_file_string):
                 label=f'ECMC - QHO')
    
 
-    ax.set_xlabel(r"$x$", fontsize=40, weight='bold')
-    ax.set_ylabel(r"$ F_n \left( X < x \right)$", fontsize=25, weight='bold')
+    ax.set_xlabel(r"$x$", fontsize=30)
+    ax.set_ylabel(r"$ F_n \left( X < x \right)$", fontsize=25)
     ax.tick_params(axis='both', which='major', labelsize=16)
 
 
-    legend_properties = {'weight':'bold'}
-    legend = ax.legend(fontsize=10, prop=legend_properties)
+   
+    legend = ax.legend(fontsize=13)
     legend.get_frame().set_edgecolor('k')
+    legend.get_frame().set_lw(1.5)
+    plt.setp(ax.spines.values(), lw=1.5, color='black')
     plt.tight_layout()
-    for tick in ax.get_xticklabels():
-        tick.set_fontweight('bold')
-    for tick in ax.get_yticklabels():
-        tick.set_fontweight('bold')
+
+ 
 
     #plt.show()
 

@@ -17,7 +17,7 @@ class MetropolisMediator(DiffusiveMediator):
     def __init__(self, potential: Potential, samplers: Sequence[Sampler], noise_distribution: NoiseDistribution,
                  temperature: float = 1.0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, output_directory: str = None,
-                 proposal_dynamics_adaptor_is_on: bool = True):
+                 proposal_dynamics_adaptor_is_on: bool = True, auxillary_particle: bool = False):
         r"""
         The constructor of the MetropolisMediator class.
 
@@ -67,6 +67,8 @@ class MetropolisMediator(DiffusiveMediator):
                                      f"{self.__class__.__name__}.")
         self._target_acceptance_rate = 0.44  # TODO add functionality so the user can set self._target_acceptance_rate
         self._noise_distribution = noise_distribution
+        self._auxillary_particle = auxillary_particle
+        self._auxillary_noise_distribution = noise_distribution
 
     def _advance_markov_chain(self, markov_chain_step_index):
         """Advances the Markov chain by one step."""
@@ -80,7 +82,20 @@ class MetropolisMediator(DiffusiveMediator):
                     np.exp(- potential_difference / self._temperature)):
                 self._positions[active_particle_index] = candidate_position
                 self._number_of_accepted_trajectories += 1
-       
+
+        if self._auxillary_particle:
+            candidate_auxillary_particle_value = self._auxillary_noise_distribution.get_candidate_position(0, 
+                                                                                        self._potential.auxillary_particle_value)
+
+            potential_difference = self._potential.get_potential_difference_of_auxillary_particle(
+                                            candidate_auxillary_particle_value, self._potential.auxillary_particle_value,
+                                            self._positions)
+            if (potential_difference < 0.0 or np.random.uniform(0.0, 1.0) <
+                                np.exp(- potential_difference / self._temperature)):
+                self._potential.auxillary_particle_value = candidate_auxillary_particle_value
+                self._number_of_accepted_trajectories += 1
+        
+
 
     def _proposal_dynamics_adaptor(self):
         """Tunes the size of either the numerical integration step or the width of the proposal distribution."""

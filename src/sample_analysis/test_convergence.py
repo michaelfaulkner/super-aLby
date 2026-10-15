@@ -78,10 +78,11 @@ def main(config_file_string):
             raise ValueError("Soft-disk model reference data only available for StructureFactorSampler."
                              "  Please give only this value for samplers in the Mediator section.")
     elif potential == "quantum_harmonic_oscillator_potential":
-        if not (len(samplers) == 1 and samplers[0] == "mean_squared_position_sampler"):
-            raise ValueError("1D quantum harmonic oscillator model reference data only available for "
-                             "MeanSquaredPositionSampler. Please give only this value for samplers in the Mediator "
-                             "section.")
+        # if not (len(samplers) == 1 and samplers[0] == "mean_squared_position_sampler"):
+        #     raise ValueError("1D quantum harmonic oscillator model reference data only available for "
+        #                      "MeanSquaredPositionSampler. Please give only this value for samplers in the Mediator "
+        #                      "section.")
+        pass
     elif potential == "hard_disk_potential" and len(size_of_particle_space) == 1:
         if not (len(samplers) == 1 and samplers[0] == "structure_factor_sampler"):
             raise ValueError("1D hard-disk model reference data only available for StructureFactorSampler. "

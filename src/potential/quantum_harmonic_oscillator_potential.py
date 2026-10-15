@@ -4,7 +4,7 @@ import cmath
 from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError
 from helper_methods import get_initial_positions_of_smooth_potential
-from model_settings import number_of_quantum_particles, number_of_timeslices
+from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
 try:
     from potential.cpp_quantum_harmonic_oscillator import cpp_qho
 except:
@@ -18,7 +18,9 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
     """
     def __init__(self, prefactor: float = 1.0, lattice_dimensionality: int = 1, mass: float = 1.0,
                  omega_squared: float = 1.0, timestep: float = 0.1, cpp_implementation: bool = True,
-                 anharmonicity: float = 0.0, x_shift : float = 0.0, fixed_lifting_scheme : bool = True):
+                 proper_time_integral : bool = True, anharmonicity: float = 0.0, x_shift : float = 0.0,
+                 asymmetric_lifting_scheme : bool = True,
+                ):
         r"""
         The constructor of the QuantumHarmonicOscillatorPotential class
 
@@ -36,8 +38,15 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             The size of the time step, \delta \tau.
         cpp_implementation : bool
             Whether or not to use the C++ implementation of the get_next_event() function -- provides a large speedup.
+        proper_time_integral: bool
+            Whether or not to integrate over the proper time 
         anharmonicity: float
             The anharmonicity parameter in the potential.
+        x_shift: float
+            The shift along the x axis for the QHO potential.
+        asymmetric_lifting_scheme: bool
+            Whether or not to use the asymmetric lifting scheme (i.e. that kinetic events lift (a, v)->(a+-1, v) with
+            probability 1).
         
         """
         super().__init__(prefactor=prefactor, lattice_dimensionality=lattice_dimensionality, mass=mass,
@@ -65,7 +74,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         else:
             self._magnitude_of_double_well_position = 0.0
         self._x_shift = x_shift
-        self._fixed_lifting_scheme = fixed_lifting_scheme
+        self._asymmetric_lifting_scheme = asymmetric_lifting_scheme
+
 
     def get_initial_positions(self):
         """
@@ -85,9 +95,9 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
     def get_potential_difference(self, active_particle_index, candidate_position, positions):
         """
         Returns the difference in dimensionless action resulting from moving the single active particle to
-            candidate_position.  Note that the dimensional action S * self._timestep is analogous to the potential of a
-            statistical-physics model (since hbar is considered analogous to the inverse temperature (beta) of a
-            stat-physics model; S denotes the raw action).
+        candidate_position.  Note that the dimensional action S * self._timestep is analogous to the potential of a
+        statistical-physics model (since hbar is considered analogous to the inverse temperature (beta) of a
+        stat-physics model; S denotes the raw action).
 
         Parameters
         ----------
@@ -137,9 +147,9 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         float
             The dimensionless-action gradient at active_particle_index.
         """
-        return (2.0 * self._mass / self._timestep + self._mass * self._timestep * self._omega_squared) \
-                * positions[active_particle_index] + 4.0 * self._anharmonicity * self._timestep \
-                * positions[active_particle_index]**3 - self._mass / self._timestep \
+        return (2.0 * self._mass * self.auxillary_particle_value + self._mass / self.auxillary_particle_value * self._omega_squared) \
+                * positions[active_particle_index] + 4.0 * self._anharmonicity / self.auxillary_particle_value \
+                * positions[active_particle_index]**3 - self._mass * self.auxillary_particle_value \
                 * (positions[self._get_west_worldline_neighbour(active_particle_index)] \
                    + positions[self._get_east_worldline_neighbour(active_particle_index)])
 
@@ -162,8 +172,9 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         float
             The potential energy contribution to the pairwise dimensionless action.
         """
-        return 0.5 * self._mass * self._timestep * self._omega_squared * position_at_active_particle_index ** 2 \
-                    + self._anharmonicity * self._timestep * position_at_active_particle_index**4
+        return 0.5 * self._mass * self._omega_squared * \
+                position_at_active_particle_index ** 2 / self.auxillary_particle_value \
+                    + self._anharmonicity * position_at_active_particle_index**4 / self.auxillary_particle_value
 
     @staticmethod
     def get_random_event_chain_velocity():
@@ -283,7 +294,6 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
                 final_position = self._get_final_position_of_single_well_event(movement_direction, roots)
 
             distance_to_next_factor_event = np.abs(final_position - initial_position)
-            #print(f"py potential proposed: {distance_to_next_factor_event}, {active_particle_index}")
 
             if distance_to_next_factor_event < shortest_distance_to_next_event:
                 shortest_distance_to_next_event = distance_to_next_factor_event
@@ -315,7 +325,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             The next active-particle direction of motion.
         """
 
-        if self._fixed_lifting_scheme:
+        if self._asymmetric_lifting_scheme:
             initial_a = active_particle_index
             initial_v = movement_direction
     
