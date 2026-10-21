@@ -64,8 +64,15 @@ class StructureFactorSampler(ObservationSampler):
         Returns
         -------
         float
-            The observation of the structure factor S(q,t).
+            The observation of the structure factor S(q,t).  For grand-canonical potentials this is |rho_q|^2 / N over
+            the N real particles (the ghost, if one exists, is excluded).
         """
+        if hasattr(potential, "get_number_of_real_particles"):
+            real_particles = potential.get_number_of_real_particles(positions)
+            if real_particles == 0:
+                return np.nan
+            rho_q = np.sum(np.exp(1j * np.dot(self._wave_vector, positions[:real_particles].T)))
+            return (np.abs(rho_q) ** 2) / float(real_particles)
         rho_q = np.sum(np.exp(1j * np.dot(self._wave_vector, positions.T)))
         return (np.abs(rho_q) ** 2) / float(number_of_particles)
 

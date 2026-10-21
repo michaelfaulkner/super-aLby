@@ -1,12 +1,17 @@
 """Module for the MetropolisMediator class."""
 from .diffusive_mediator import DiffusiveMediator
 from base.exceptions import ConfigurationError
+from grand_canonical_kernel.grand_canonical_kernel import GrandCanonicalKernel
+from grand_canonical_kernel.no_grand_canonical_kernel import NoGrandCanonicalKernel
+from grand_canonical_kernel.direct_grand_canonical_kernel import DirectGrandCanonicalKernel
 from model_settings import number_of_particles
 from noise_distribution.noise_distribution import NoiseDistribution
 from potential.potential import Potential
 from sampler.sampler import Sampler
 from typing import Sequence
+import json
 import numpy as np
+import os
 import random
 
 
@@ -17,7 +22,9 @@ class MetropolisMediator(DiffusiveMediator):
     def __init__(self, potential: Potential, samplers: Sequence[Sampler], noise_distribution: NoiseDistribution,
                  temperature: float = 1.0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, output_directory: str = None,
-                 proposal_dynamics_adaptor_is_on: bool = True):
+                 proposal_dynamics_adaptor_is_on: bool = True,
+                 grand_canonical_kernel: GrandCanonicalKernel = NoGrandCanonicalKernel(),
+                 grand_canonical_moves_per_sweep: int = 1):
         r"""
         The constructor of the MetropolisMediator class.
 
@@ -41,6 +48,11 @@ class MetropolisMediator(DiffusiveMediator):
             The name of the directory into which the sample file is written at the end of the run.
         proposal_dynamics_adaptor_is_on : bool, optional
             When True, the step size of the integrator is tuned during the equilibration process.
+        grand_canonical_kernel : grand_canonical_kernel.grand_canonical_kernel.GrandCanonicalKernel, optional
+            The default, no_grand_canonical_kernel, gives canonical Metropolis.  direct_grand_canonical_kernel (with a
+            GrandCanonicalPotential child class) adds insertion/deletion moves, making it grand-canonical Metropolis.
+        grand_canonical_moves_per_sweep : int, optional
+            Number of insertion/deletion attempts after each sweep of single-particle moves.
 
         Raises
         ------
@@ -59,6 +71,9 @@ class MetropolisMediator(DiffusiveMediator):
         base.exceptions.ConfigurationError
             If noise_distribution is not an instance of some child class of
             noise_distribution.noise_distribution.NoiseDistribution.
+        base.exceptions.ConfigurationError
+            If grand_canonical_kernel is neither no_grand_canonical_kernel nor direct_grand_canonical_kernel, or if
+            grand_canonical_moves_per_sweep is less than 1.
         """
         super().__init__(potential, samplers, temperature, number_of_equilibration_iterations, number_of_observations,
                          output_directory, proposal_dynamics_adaptor_is_on)
@@ -67,10 +82,43 @@ class MetropolisMediator(DiffusiveMediator):
                                      f"{self.__class__.__name__}.")
         self._target_acceptance_rate = 0.44  # TODO add functionality so the user can set self._target_acceptance_rate
         self._noise_distribution = noise_distribution
+        if not isinstance(grand_canonical_kernel, (NoGrandCanonicalKernel, DirectGrandCanonicalKernel)):
+            raise ConfigurationError(f"Give no_grand_canonical_kernel or direct_grand_canonical_kernel as the value "
+                                     f"for grand_canonical_kernel in {self.__class__.__name__} (the other kernels "
+                                     f"need event chains).")
+        if grand_canonical_moves_per_sweep < 1:
+            raise ConfigurationError(f"Give a value not less than 1 for grand_canonical_moves_per_sweep in "
+                                     f"{self.__class__.__name__}.")
+        """The kernel sets up the grand-canonical potential before the initial positions are generated."""
+        self._grand_canonical_kernel = grand_canonical_kernel
+        self._grand_canonical_kernel.initialize(potential, temperature)
+        self._grand_canonical_moves_per_sweep = grand_canonical_moves_per_sweep
+
+    def generate_sample(self, restart_flag):
+        """Generates the sample and, with a grand-canonical kernel, writes its summary to sim_params.json (as
+            EventChainMediator does, in units of sweeps)."""
+        super().generate_sample(restart_flag)
+        if not isinstance(self._grand_canonical_kernel, NoGrandCanonicalKernel):
+            sim_params = {"grand_canonical": dict(
+                self._grand_canonical_kernel.get_summary(), mediator="metropolis", temperature=self._temperature,
+                distance_between_measurements=1.0,
+                number_of_equilibration_iterations=self._number_of_equilibration_iterations,
+                number_of_observations=self._number_of_observations,
+                grand_canonical_moves_per_sweep=self._grand_canonical_moves_per_sweep)}
+            with open(os.path.join(self._output_directory, "sim_params.json"), "w") as f:
+                json.dump(sim_params, f)
+
+    def _reload_configuration_from_file_and_reset(self):
+        """Restarts are only supported for canonical Metropolis (the default kernel)."""
+        if not isinstance(self._grand_canonical_kernel, NoGrandCanonicalKernel):
+            raise ConfigurationError(f"Restarts are not supported with "
+                                     f"{self._grand_canonical_kernel.__class__.__name__}.  Delete the output directory "
+                                     f"{self._output_directory} and rerun.")
+        super()._reload_configuration_from_file_and_reset()
 
     def _advance_markov_chain(self, markov_chain_step_index):
         """Advances the Markov chain by one step."""
-        particles_to_update = [index for index in range(number_of_particles)]
+        particles_to_update = [index for index in range(len(self._positions))]  # N may change (grand canonical)
         random.shuffle(particles_to_update)  # randomises order of elements in particles_to_update
         for active_particle_index in particles_to_update:
             candidate_position = self._noise_distribution.get_candidate_position(active_particle_index, self._positions)
@@ -80,6 +128,8 @@ class MetropolisMediator(DiffusiveMediator):
                     np.exp(- potential_difference / self._temperature)):
                 self._positions[active_particle_index] = candidate_position
                 self._number_of_accepted_trajectories += 1
+        for _ in range(self._grand_canonical_moves_per_sweep):
+            self._positions, _, _ = self._grand_canonical_kernel.handle_event(self._positions, None, None)
 
     def _proposal_dynamics_adaptor(self):
         """Tunes the size of either the numerical integration step or the width of the proposal distribution."""

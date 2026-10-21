@@ -13,7 +13,8 @@ class DirectGrandCanonicalKernel(GrandCanonicalKernel):
     normalised_distance_between_direct_moves * number_of_particles (the initial number of particles).  At each event,
     with probability 1/2, a particle is proposed at a uniform position and accepted with
     min(1, z V exp(- beta dU) / (N + 1)) otherwise a uniformly chosen non-active particle is proposed for deletion and
-    accepted with min(1, N exp(beta dU) / (z V)).
+    accepted with min(1, N exp(beta dU) / (z V)).  With MetropolisMediator (no event-chain label, active particle index
+    None) the deleted particle is chosen among all N (down to N = 0), with the same acceptance probabilities.
     """
 
     def __init__(self, log_activity: float = 0.0, normalised_distance_between_direct_moves: float = 0.05):
@@ -66,12 +67,18 @@ class DirectGrandCanonicalKernel(GrandCanonicalKernel):
                 positions = np.vstack((positions, candidate_position))
             return positions, active_particle_index, movement_direction
         self._count("direct_deletion_attempts")
-        if number_of_real_particles <= 1:  # Can't delete only particle
-            self._count("direct_deletion_null_proposals")
-            return positions, active_particle_index, movement_direction
-        chosen_index = np.random.randint(0, number_of_real_particles - 1)
-        if chosen_index >= active_particle_index:  # Avoid picking the active particle
-            chosen_index += 1
+        if active_particle_index is None:  # Metropolis mediator used
+            if number_of_real_particles == 0:
+                self._count("direct_deletion_null_proposals")
+                return positions, active_particle_index, movement_direction
+            chosen_index = np.random.randint(0, number_of_real_particles)
+        else:
+            if number_of_real_particles <= 1:  # Can't delete only particle
+                self._count("direct_deletion_null_proposals")
+                return positions, active_particle_index, movement_direction
+            chosen_index = np.random.randint(0, number_of_real_particles - 1)
+            if chosen_index >= active_particle_index:  # Avoid picking the active particle
+                chosen_index += 1
         energy = self._potential.get_single_particle_energy(positions, chosen_index)
         # Grand canonical deletion acceptance probability
         if np.random.uniform(0.0, 1.0) < number_of_real_particles * np.exp(beta * energy) / self._activity_times_volume:

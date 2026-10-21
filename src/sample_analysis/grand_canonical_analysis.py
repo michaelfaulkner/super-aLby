@@ -85,7 +85,7 @@ def get_exact_distribution(exact, parameters, maximum_number):
                                 (n - 1) * np.log(length - n * sigma) - gammaln(n + 1))
     else:
         return None
-    if parameters["scheme"] == "direct":
+    if parameters["scheme"] == "direct" and parameters.get("mediator") != "metropolis":  # ECMC keeps N >= 1
         log_weights[0] = - np.inf
     log_weights -= np.max(log_weights)
     weights = np.exp(log_weights)
