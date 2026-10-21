@@ -9,6 +9,8 @@ from factor_field.factor_field import FactorField
 from factor_field.no_factor_field import NoFactorField
 from refreshment_distribution.refreshment_distribution import RefreshmentDistribution
 from refreshment_distribution.constant_refreshment_distribution import ConstantRefreshmentDistribution
+from grand_canonical_kernel.grand_canonical_kernel import GrandCanonicalKernel
+from grand_canonical_kernel.no_grand_canonical_kernel import NoGrandCanonicalKernel
 from potential.euclidean_subspace_potential import EuclideanSubspacePotential
 from sampler.sampler import Sampler
 from typing import Sequence
@@ -23,6 +25,7 @@ class EventChainMediator(Mediator):
     def __init__(self, potential: EuclideanSubspacePotential, samplers: Sequence[Sampler],
                  factor_field: FactorField = NoFactorField(),
                  refreshment_distribution: RefreshmentDistribution = ConstantRefreshmentDistribution(),
+                 grand_canonical_kernel: GrandCanonicalKernel = NoGrandCanonicalKernel(),
                  temperature: float = 1.0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, output_directory: str = None,
                  normalised_distance_between_measurements: float = 1.0, teleportation_portal: bool = False,
@@ -43,6 +46,10 @@ class EventChainMediator(Mediator):
         refreshment_distribution : refreshment_distribution.refreshment_distribution.RefreshmentDistribution
             Instance of the chosen child class of
             refreshment_distribution.refreshment_distribution.RefreshmentDistribution.
+        grand_canonical_kernel : grand_canonical_kernel.grand_canonical_kernel.GrandCanonicalKernel, optional
+            Instance of the chosen child class of grand_canonical_kernel.grand_canonical_kernel.GrandCanonicalKernel.
+            The default, no_grand_canonical_kernel, gives canonical event-chain Monte Carlo.  Any other kernel needs a
+            GrandCanonicalPotential child class and makes the number of particles part of the state.
         temperature : float, optional
             The model temperature, n.b., the temperature is the reciprocal of the inverse temperature, beta (up to a
             proportionality constant).
@@ -88,8 +95,14 @@ class EventChainMediator(Mediator):
         if not isinstance(refreshment_distribution, RefreshmentDistribution):
             raise ConfigurationError(f"Give a refreshment-distribution class as the value for refreshment_distribution "
                                      f"in {self.__class__.__name__}.")
+        if not isinstance(grand_canonical_kernel, GrandCanonicalKernel):
+            raise ConfigurationError(f"Give a grand-canonical-kernel class as the value for grand_canonical_kernel in "
+                                     f"{self.__class__.__name__}.")
         """Re-instantiate self._potential as EuclideanSubspacePotential contains additional abstract methods."""
         self._potential = potential
+        """The kernel sets up the ghost (if any) before the initial positions are generated."""
+        self._grand_canonical_kernel = grand_canonical_kernel
+        self._grand_canonical_kernel.initialize(potential, temperature)
         self._initial_active_particle_index = initial_active_particle_index
         self._factor_field = factor_field
         self._refreshment_distribution = refreshment_distribution
@@ -129,6 +142,7 @@ class EventChainMediator(Mediator):
         distance_to_next_measurement = self._distance_between_measurements
         movement_direction = self._potential.get_random_event_chain_velocity()
         distance_to_next_velocity_refreshment = self._refreshment_distribution.get_refreshment_distance()
+        distance_to_next_kernel_event = self._grand_canonical_kernel.get_distance_to_next_event()
         markov_chain_index = 0
         while markov_chain_index < self._total_number_of_iterations:
             while True:
@@ -140,9 +154,11 @@ class EventChainMediator(Mediator):
                 self._update_state_and_index_space_displacements(distance_to_next_event, active_particle_index,
                                                                  vetoing_index, hop_displacement, movement_direction)
 
-                if distance_to_next_measurement < min(distance_to_next_event, distance_to_next_velocity_refreshment):
+                if distance_to_next_measurement < min(distance_to_next_event, distance_to_next_velocity_refreshment,
+                                                      distance_to_next_kernel_event):
                     while (markov_chain_index < self._total_number_of_iterations and distance_to_next_measurement <
-                           min(distance_to_next_event, distance_to_next_velocity_refreshment)):
+                           min(distance_to_next_event, distance_to_next_velocity_refreshment,
+                               distance_to_next_kernel_event)):
                         self._potential.update_position(self._positions, distance_to_next_measurement,
                                                         active_particle_index, movement_direction)
                         for sampler_index, sampler in enumerate(self._samplers):
@@ -150,17 +166,31 @@ class EventChainMediator(Mediator):
                                 None, self._positions, self._potential)
                         distance_to_next_velocity_refreshment -= distance_to_next_measurement
                         distance_to_next_event -= distance_to_next_measurement
+                        distance_to_next_kernel_event -= distance_to_next_measurement
                         distance_to_next_measurement = self._distance_between_measurements
                         markov_chain_index += 1
                         self._total_number_of_events_at_samples.append(self._total_number_of_events)
                         super()._print_sample_progress(markov_chain_index)
+
+                if distance_to_next_kernel_event < min(distance_to_next_event, distance_to_next_velocity_refreshment):
+                    self._potential.update_position(self._positions, distance_to_next_kernel_event,
+                                                    active_particle_index, movement_direction)
+                    distance_to_next_measurement -= distance_to_next_kernel_event
+                    distance_to_next_velocity_refreshment -= distance_to_next_kernel_event
+                    self._potential.cell_boundary_event = False
+                    self._positions, active_particle_index, movement_direction = (
+                        self._grand_canonical_kernel.handle_event(self._positions, active_particle_index,
+                                                                  movement_direction))
+                    distance_to_next_kernel_event = self._grand_canonical_kernel.get_distance_to_next_event()
+                    break
 
                 if distance_to_next_velocity_refreshment < distance_to_next_event:
                     self._potential.update_position(self._positions, distance_to_next_velocity_refreshment,
                                                     active_particle_index, movement_direction)
                     self._potential.cell_boundary_event = False
                     distance_to_next_measurement -= distance_to_next_velocity_refreshment
-                    active_particle_index = np.random.randint(0, number_of_particles)
+                    distance_to_next_kernel_event -= distance_to_next_velocity_refreshment
+                    active_particle_index = np.random.randint(0, len(self._positions))
                     movement_direction = self._potential.get_random_event_chain_velocity()
                     distance_to_next_velocity_refreshment = self._refreshment_distribution.get_refreshment_distance()
 
@@ -169,7 +199,8 @@ class EventChainMediator(Mediator):
                                                     active_particle_index, movement_direction)
                     if active_particle_index != vetoing_index:
                         [self._event_samples[event_sampler_index].append(event_sampler.get_observation(
-                            self._positions, self._potential, active_particle_index, vetoing_index, distance_to_next_event))
+                            self._positions, self._potential, active_particle_index, vetoing_index,
+                            distance_to_next_event))
                             for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
 
@@ -180,7 +211,7 @@ class EventChainMediator(Mediator):
                                                                                         portal_candidate,
                                                                                         self._positions)
                         if (potential_difference < 0.0 or np.random.uniform(0.0, 1.0)
-                                < np.exp(- potential_difference / self._temperature)):
+                                < np.exp(-potential_difference / self._temperature)):
                             self._positions[active_particle_index] = portal_candidate
                         else:
                             active_particle_index, movement_direction = self._potential.choose_next_active_particle(
@@ -193,9 +224,18 @@ class EventChainMediator(Mediator):
                             self._positions, active_particle_index, movement_direction, vetoing_index)
                     distance_to_next_velocity_refreshment -= distance_to_next_event
                     distance_to_next_measurement -= distance_to_next_event
+                    distance_to_next_kernel_event -= distance_to_next_event
                     break
 
         self._write_sim_params()
+
+    def _reload_configuration_from_file_and_reset(self):
+        """Restarts are only supported for canonical event-chain Monte Carlo (the default kernel)."""
+        if not isinstance(self._grand_canonical_kernel, NoGrandCanonicalKernel):
+            kernel_name = self._grand_canonical_kernel.__class__.__name__
+            raise ConfigurationError(f"Restarts are not supported with {kernel_name}.  Delete the output directory "
+                                     f"{self._output_directory} and rerun.")
+        super()._reload_configuration_from_file_and_reset()
 
     def _print_markov_process_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
@@ -221,9 +261,16 @@ class EventChainMediator(Mediator):
                 self._total_number_of_events / self._total_event_distance)
         acceptance_rate = None if self._total_number_of_proposed_events == 0 else (
                 self._total_number_of_events / self._total_number_of_proposed_events)
+        sim_params = {"state_space_velocity": state_space_velocity, "index_space_velocity": index_space_velocity,
+                      "mean_event_rate": mean_event_rate, "acceptance_rate": acceptance_rate}
+        if not isinstance(self._grand_canonical_kernel, NoGrandCanonicalKernel):
+            sim_params["grand_canonical"] = dict(
+                self._grand_canonical_kernel.get_summary(), temperature=self._temperature,
+                distance_between_measurements=self._distance_between_measurements,
+                number_of_equilibration_iterations=self._number_of_equilibration_iterations,
+                number_of_observations=self._number_of_observations)
         with open(os.path.join(self._output_directory, "sim_params.json"), "w") as f:
-            json.dump({"state_space_velocity": state_space_velocity, "index_space_velocity": index_space_velocity,
-                       "mean_event_rate": mean_event_rate, "acceptance_rate": acceptance_rate}, f)
+            json.dump(sim_params, f)
 
     def _update_state_and_index_space_displacements(self, displacement_distance, active_particle_index, vetoing_index,
                                                     hop_displacement, movement_direction=1):
