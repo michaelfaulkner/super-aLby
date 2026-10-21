@@ -40,8 +40,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
     """
 
     def __init__(self, prefactor: float = 1.0, disk_radius_a: float = 1.0, disk_radius_b: float = 1.0,
-                 packing_fraction: float = 0.5, particle_ratio: int = 2,
-                 measure_particle_orderings: bool = False):
+                 packing_fraction: float = 0.5, particle_ratio_a: int = 1, particle_ratio_b: int = 1,
+                 measure_particle_orderings: bool = True):
         r"""
         The constructor of the HardDiskPotential class
 
@@ -89,23 +89,27 @@ class HardDiskPotential(EuclideanSubspacePotential):
                                      f"{self.__class__.__name__}.")
         self._disk_radius_a = disk_radius_a
         self._disk_radius_b = disk_radius_b
+        self._particle_ratio_a = particle_ratio_a
+        self._particle_ratio_b = particle_ratio_b
         self._disk_radius = disk_radius_a if dimensionality_of_particle_space > 1 else None
         self._packing_fraction = packing_fraction
-        self.disk_radii = np.array([self._disk_radius_a if (i % particle_ratio != 0) else self._disk_radius_b
-                                    for i in range(number_of_particles)], dtype=float)
+        self.disk_radii = np.array([self._disk_radius_a if i % (particle_ratio_a + particle_ratio_b) < particle_ratio_a
+                                    else self._disk_radius_b for i in range(number_of_particles)], dtype=float)
+        self._arrangements_explored = False
         self._measure_particle_orderings = measure_particle_orderings
         if self._measure_particle_orderings:
             self._array_of_explored_orderings = set()
+            number_a_particles = (number_of_particles // (particle_ratio_a + particle_ratio_b)) * particle_ratio_a
+            gcd = math.gcd(number_of_particles, number_a_particles)
             total = 0
-            n = number_of_particles // 2
-            for d in range(1, n + 1):
-                if n % d != 0:
+            for divisor in range(1, gcd + 1):
+                if gcd % divisor != 0:
                     continue
-                total += sympy.totient(n // d) * math.comb(2*d, d)
-            burnside = total // (2 * n)
+                total += int(sympy.totient(divisor)) * math.comb(number_of_particles // divisor, number_a_particles // divisor)
+            burnside = total // number_of_particles
             self._counter_of_remaining_orderings = burnside - 1
             binary_ordering_config = tuple((self.disk_radii == self._disk_radius_a).astype(int))
-            self._array_of_explored_orderings.add(binary_ordering_config)
+            self._array_of_explored_orderings.add(self._get_lowest_rotation(binary_ordering_config))
 
         number_of_cells_in_each_direction = np.int_(size_of_particle_space /
                                                     (2.0 * max(self._disk_radius_a, self._disk_radius_b)))
@@ -461,8 +465,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
         if self._measure_particle_orderings:
             self._update_particle_orderings()
             if self._counter_of_remaining_orderings == 0:
-                return 'arrangements explored'
-        return candidate_position_1, candidate_position_2
+                self._arrangements_explored = True
+        return candidate_position_1, candidate_position_2, self._arrangements_explored
 
     def get_swap_candidate(self, positions, active_particle_index):
         """Propose candidate configuration via a Metropolis swap kernel."""
@@ -478,8 +482,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
         if self._measure_particle_orderings:
             self._update_particle_orderings()
             if self._counter_of_remaining_orderings == 0:
-                return 'arrangements explored'
-        return None
+                self._arrangements_explored = True
+        return self._arrangements_explored
 
     def _get_disk_radius(self, particle_index: int) -> float:
         """Return disk radius for a given particle index."""
@@ -492,6 +496,7 @@ class HardDiskPotential(EuclideanSubspacePotential):
         if number not in self._array_of_explored_orderings:
             self._array_of_explored_orderings.add(number)
             self._counter_of_remaining_orderings -= 1
+
 
     @staticmethod
     def _get_lowest_rotation(binary_ordering_config):

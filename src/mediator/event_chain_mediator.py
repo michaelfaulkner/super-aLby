@@ -95,6 +95,7 @@ class EventChainMediator(Mediator):
         self._potential = potential
         self._factor_field = factor_field
         self._refreshment_distribution = refreshment_distribution
+        self._arrangements = 0
         if normalised_distance_between_measurements <= 0.0:
             raise ConfigurationError(f"Give a value greater than 0.0 for normalised_distance_between_measurements in "
                                      f"{self.__class__.__name__}.")
@@ -184,9 +185,9 @@ class EventChainMediator(Mediator):
                             self._positions, active_particle_index, vetoing_index, movement_direction)
                         # todo (KEY TODO) think we need an alternative way of measuring this - I'd say instead of using
                         #  'arrangements explored', store the value using a new EventSampler and don't exit the algo
-                        if candidate_positions == 'arrangements explored':
-                            print(f"iterations: {markov_chain_index}")
-                            raise RuntimeError("all arrangements explored")
+                        if candidate_positions is not None:
+                            if candidate_positions[2] and self._arrangements == 0:
+                                self._arrangements = markov_chain_index
                         if candidate_positions is not None and "HardDiskPotential" in str(self._potential):
                             self._positions[active_particle_index] = candidate_positions[0]
                             self._positions[vetoing_index] = candidate_positions[1]
@@ -225,12 +226,14 @@ class EventChainMediator(Mediator):
             self._index_space_displacement_small / self._number_of_index_space_moves_small)
         index_velocity_large = None if self._number_of_index_space_moves_large == 0 else (
             self._index_space_displacement_large / self._number_of_index_space_moves_large)
+        arrangements = None if self._arrangements == 0 else self._arrangements
         with open(os.path.join(self._output_directory, "state_and_index_space_velocities.json"), "w") as f:
             json.dump({
                 "state_space_velocity": state_space_velocity,
                 "index_space_velocity": index_space_velocity,
                 "index_velocity_small": index_velocity_small,
-                "index_velocity_large": index_velocity_large}, f)
+                "index_velocity_large": index_velocity_large,
+                "arrangements": arrangements}, f)
 
     def _update_state_and_index_space_displacements(self, displacement_distance, active_particle_index, vetoing_index,
                                                     hop_displacement):

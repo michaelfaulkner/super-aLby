@@ -70,6 +70,7 @@ class MetropolisMediator(DiffusiveMediator):
         self._target_acceptance_rate = 0.44  # TODO add functionality so the user can set self._target_acceptance_rate
         self._noise_distribution = noise_distribution
         self._particle_swap = particle_swap
+        self._arrangements = 0
 
     def _advance_markov_chain(self, markov_chain_step_index):
         """Advances the Markov chain by one step."""
@@ -82,10 +83,8 @@ class MetropolisMediator(DiffusiveMediator):
                 # todo (KEY TODO) as in EventChainMediator, I think we need an alternative way of measuring this - I'd
                 #  say instead of using 'all arrangements explored', store the value using a new EventSampler and don't
                 #  exit the algo
-                if swap_result == 'arrangements explored':
-                    print("All arrangements explored — stopping Metropolis simulation.")
-                    print(f"iterations: {markov_chain_step_index}")
-                    raise RuntimeError("all arrangements explored")
+                if swap_result and self._arrangements == 0:
+                    self._arrangements = markov_chain_step_index
             candidate_position = self._noise_distribution.get_candidate_position(active_particle_index, self._positions)
             potential_difference = self._potential.get_potential_difference(active_particle_index, candidate_position,
                                                                             self._positions)
@@ -107,6 +106,7 @@ class MetropolisMediator(DiffusiveMediator):
         """Prints a summary of the completed Markov process to the screen."""
         print(f"Acceptance rate = "
               f"{self._number_of_accepted_trajectories / self._number_of_observations / number_of_particles}")
+        print(f"Number of markov chains until all arrangments explored: " f"{self._arrangements}")
         if type(self._noise_distribution.width_of_noise_distribution) is float:
             if self._proposal_dynamics_adaptor_is_on:
                 print(f"Initial width of noise distribution = "
