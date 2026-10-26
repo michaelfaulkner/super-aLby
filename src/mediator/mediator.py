@@ -164,10 +164,10 @@ class Mediator(metaclass=ABCMeta):
 
     def _print_sample_progress(self, markov_chain_index):
         """Prints (to screen) details of the current sampling process."""
-        if (markov_chain_index % self._number_of_observations_between_screen_prints_for_clock == 0 and
-                markov_chain_index != 0):
-            print(f"{markov_chain_index} observations drawn out of a total of {self._total_number_of_iterations} "
-                  f"(including {self._number_of_equilibration_iterations} equilibration observations).")
+        # if (markov_chain_index % self._number_of_observations_between_screen_prints_for_clock == 0 and
+        #         markov_chain_index != 0):
+        #     print(f"{markov_chain_index} observations drawn out of a total of {self._total_number_of_iterations} "
+        #           f"(including {self._number_of_equilibration_iterations} equilibration observations).")
 
     def _write_checkpoint_index_and_configuration(self):
         """Saves current run index and final position state of the system."""

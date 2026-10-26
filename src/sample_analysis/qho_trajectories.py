@@ -34,27 +34,20 @@ def main(metropolis_positions_data, ecmc_positions_data):
     ax[1].plot(np.arange(len(ecmc_positions[sample_index_0,:])), ecmc_positions[sample_index_0,:], color="#e91f4e")
     ax[1].plot(np.arange(len(ecmc_positions[sample_index_1,:])), ecmc_positions[sample_index_1,:], color="#320968", linestyle="--")
 
-    ax[0].tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=10)
-    ax[1].tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=10)
+    ax[0].tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=15)
+    ax[1].tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=15)
 
 
-    for tick in ax[0].get_xticklabels():
-        tick.set_fontweight('bold')
-    for tick in ax[0].get_yticklabels():
-        tick.set_fontweight('bold')
-    for tick in ax[1].get_xticklabels():
-        tick.set_fontweight('bold')
-    for tick in ax[1].get_yticklabels():
-        tick.set_fontweight('bold')
 
-    ax[0].text(400, -1.2, "Metropolis MC", color='black', weight = "bold",
-        bbox=dict(facecolor='none', edgecolor='grey'))
-    ax[1].text(465, -1.2, "ECMC", color='black',  weight = "bold", 
-        bbox=dict(facecolor='none', edgecolor='grey'))
-
-    ax[0].set_ylabel(r"$x$",  fontsize = 30, weight = "bold")
-    ax[1].set_ylabel(r"$x$",  fontsize = 30, weight = "bold")
-    ax[1].set_xlabel(r"$\tau$",  fontsize = 25, weight = "bold")
+    ax[0].text(360, -1.2, "Metropolis MC", color='black',
+        bbox=dict(facecolor='none', edgecolor='black', boxstyle="round", lw=1.0), fontsize=15)
+    ax[1].text(449, -1.2, "ECMC", color='black', 
+        bbox=dict(facecolor='none', edgecolor='black', boxstyle="round", lw=1.0), fontsize=15)
+    plt.setp(ax[0].spines.values(), lw=2.0, color='black')
+    plt.setp(ax[1].spines.values(), lw=2.0, color='black')
+    ax[0].set_ylabel(r"$\mathbf{x}$",  fontsize = 35, labelpad = -10)
+    ax[1].set_ylabel(r"$\mathbf{x}$",  fontsize = 35, labelpad = -10)
+    ax[1].set_xlabel(r"$\tau / T$",  fontsize = 25)
 
     plt.tight_layout()
 

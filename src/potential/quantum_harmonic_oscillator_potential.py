@@ -174,7 +174,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         """
         return 0.5 * self._mass * self._omega_squared * \
                 position_at_active_particle_index ** 2 / self.auxillary_particle_value \
-                    + self._anharmonicity * position_at_active_particle_index**4 / self.auxillary_particle_value
+                    + self._anharmonicity * position_at_active_particle_index**4 / self.auxillary_particle_value[0]
 
     @staticmethod
     def get_random_event_chain_velocity():
@@ -216,6 +216,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         hop_displacement : numpy.ndarray
             Net displacement through state space from active to vetoing particle.
         """
+
+        #TODO spell check aucxillary
         
         worldline_neighbours = [self._get_west_worldline_neighbour(active_particle_index),
                                 self._get_east_worldline_neighbour(active_particle_index)]
@@ -238,68 +240,155 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
             (shortest_distance_to_next_event, vetoing_index) = \
                 self._get_next_kinetic_event(positions, active_particle_index, movement_direction, worldline_neighbours,
                                              kinetic_U_west, kinetic_U_east)
-            """now consider the potential part of the action"""
-            initial_position = positions[active_particle_index].item()
-            uphill_energy = potential_U  #- np.log(np.random.uniform(0.0, 1.0))
 
-            if self._anharmonicity == 0.0 or self._omega_squared == 0.0:
-                bottom_of_well = 0.0
-            else:
-                if initial_position != 0.0:
-                    bottom_of_well = self._magnitude_of_double_well_position * np.sign(initial_position)
-                else:
-                    if movement_direction > 0:
-                        bottom_of_well = self._magnitude_of_double_well_position
-                    else:
-                        bottom_of_well = -self._magnitude_of_double_well_position
-
-            if ((movement_direction > 0 and initial_position < bottom_of_well) or 
-                    (movement_direction < 0 and initial_position > bottom_of_well)):
-                """advance to the bottom of the potential well"""
-                intermediate_position = bottom_of_well
-            else:
-                intermediate_position = initial_position
-                    
-            initial_action = 0.5 * self._mass * self._timestep * self._omega_squared * intermediate_position ** 2 + \
-                            self._timestep * self._anharmonicity * intermediate_position ** 4
-            final_action = uphill_energy  + initial_action
-
-            if self._anharmonicity == 0.0:
-                roots = self._get_harmonic_potential_roots(final_action)
-            else:
-                roots = self._get_anharmonic_potential_roots(final_action)
-
-            if self._anharmonicity > 0.0 > self._omega_squared:
-                if np.isreal(roots).all():
-                    final_position = self._get_final_position_of_non_tunnel_event(intermediate_position, movement_direction,
-                                                                                roots)
-                else:
-                    if ((movement_direction > 0 and intermediate_position > 0.0) or
-                            (movement_direction < 0 and intermediate_position < 0.0)):
-                        final_position = self._get_final_position_of_single_well_event(movement_direction,
-                                                                                        roots[np.isreal(roots)])
-                    else:
-                        remaining_barrier_height = self._get_barrier_height(intermediate_position)
-                        bottom_of_well *= -1
-                        intermediate_position = bottom_of_well
-                        final_action -= remaining_barrier_height
-                        roots = self._get_anharmonic_potential_roots(final_action)
-                        if np.isreal(roots).all():
-                            final_position = self._get_final_position_of_non_tunnel_event(intermediate_position,
-                                                                                        movement_direction, roots)
-                        else:
-                            final_position = self._get_final_position_of_single_well_event(movement_direction,
-                                                                                        roots[np.isreal(roots)])
-            else:
-                final_position = self._get_final_position_of_single_well_event(movement_direction, roots)
-
-            distance_to_next_factor_event = np.abs(final_position - initial_position)
-
+            distance_to_next_factor_event = self._get_next_potential_event(positions, active_particle_index, temperature,
+                                                                          movement_direction, potential_U)
+           
             if distance_to_next_factor_event < shortest_distance_to_next_event:
                 shortest_distance_to_next_event = distance_to_next_factor_event
                 vetoing_index = active_particle_index
         
             return shortest_distance_to_next_event, vetoing_index, None
+
+    def _get_next_potential_event(self,  positions, active_particle_index, temperature, movement_direction, potential_U):
+        """now consider the potential part of the action"""
+        initial_position = positions[active_particle_index].item()
+        uphill_energy = potential_U  #- np.log(np.random.uniform(0.0, 1.0))
+
+        if self._anharmonicity == 0.0 or self._omega_squared == 0.0:
+            bottom_of_well = 0.0
+        else:
+            if initial_position != 0.0:
+                bottom_of_well = self._magnitude_of_double_well_position * np.sign(initial_position)
+            else:
+                if movement_direction > 0:
+                    bottom_of_well = self._magnitude_of_double_well_position
+                else:
+                    bottom_of_well = -self._magnitude_of_double_well_position
+
+        if ((movement_direction > 0 and initial_position < bottom_of_well) or 
+                (movement_direction < 0 and initial_position > bottom_of_well)):
+            """advance to the bottom of the potential well"""
+            intermediate_position = bottom_of_well
+        else:
+            intermediate_position = initial_position
+                
+        initial_action = 0.5 * self._mass / self.auxillary_particle_value[0] * self._omega_squared * \
+                    intermediate_position ** 2 + self._anharmonicity * intermediate_position ** 4 \
+                    / self.auxillary_particle_value[0]
+        final_action = uphill_energy  + initial_action
+
+        if self._anharmonicity == 0.0:
+            roots = self._get_harmonic_potential_roots(final_action)
+        else:
+            roots = self._get_anharmonic_potential_roots(final_action)
+
+        if self._anharmonicity > 0.0 > self._omega_squared:
+            if np.isreal(roots).all():
+                final_position = self._get_final_position_of_non_tunnel_event(intermediate_position, movement_direction,
+                                                                            roots)
+            else:
+                if ((movement_direction > 0 and intermediate_position > 0.0) or
+                        (movement_direction < 0 and intermediate_position < 0.0)):
+                    final_position = self._get_final_position_of_single_well_event(movement_direction,
+                                                                                    roots[np.isreal(roots)])
+                else:
+                    remaining_barrier_height = self._get_barrier_height(intermediate_position)
+                    bottom_of_well *= -1
+                    intermediate_position = bottom_of_well
+                    final_action -= remaining_barrier_height
+                    roots = self._get_anharmonic_potential_roots(final_action)
+                    if np.isreal(roots).all():
+                        final_position = self._get_final_position_of_non_tunnel_event(intermediate_position,
+                                                                                    movement_direction, roots)
+                    else:
+                        final_position = self._get_final_position_of_single_well_event(movement_direction,
+                                                                                    roots[np.isreal(roots)])
+        else:
+            final_position = self._get_final_position_of_single_well_event(movement_direction, roots)
+
+        distance_to_next_factor_event = np.abs(final_position - initial_position)
+
+        return distance_to_next_factor_event
+
+    def get_auxillary_particle_next_event(self, positions, active_particle_index, temperature, movement_direction):
+        """
+            Returns the distance to the next particle event (in ECMC) for the auxiliary particle.
+    
+            Parameters
+            ----------
+            positions : numpy.ndarray
+                A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+                is a float and represents the position of a single quantum particle.
+            active_particle_index : int
+                The index of the active particle.
+            temperature : float
+                The sampling temperature.  N.B. we set temperature = 1.0 (for QHO) as this quantity is for stat-phys models.
+            movement_direction : int
+                The active-particle direction of motion.
+            
+            Returns
+            ----------
+            distance_to_next_event : float
+                The distance to the next particle event
+            vetoing_particle_index : int
+                The index of the particle that triggers the event.
+            hop_displacement : numpy.ndarray
+                Net displacement through state space from active to vetoing particle.
+            """
+        if active_particle_index == number_of_particles:
+            # auxiliaray term event
+            initial_auxiliary_value = self.auxillary_particle_value[0]
+            initial_auxiliary_action = self._mass**2 * number_of_particles / self.auxillary_particle_value[0]
+
+            auxiliary_uphill = - np.log(np.random.uniform(0.0, 1.0))
+
+            final_auxiliary_action = initial_auxiliary_action + auxiliary_uphill
+
+            final_auxiliary_value = self._mass**2 * number_of_particles / final_auxiliary_action
+
+            shortest_distance_to_next_event = np.abs(final_auxiliary_value - initial_auxiliary_value)
+            vetoing_index = number_of_particles
+        else:
+            shortest_distance_to_next_event = 1.0e10
+            vetoing_index = None
+
+        # initialise long kinetic and potential events
+        shortest_distance_to_kinetic_event = 1.0e10
+        shortest_distance_to_potential_event = 1.0e10
+        kinetic_veto_index = None
+        potential_veto_index = None
+        # for all j in range(number_of_particles)
+        for current_particle_index in range(number_of_particles):
+            # currently this all duplicates effort by looking at event [j-1,j]; [j, j+1]
+            worldline_neighbours = [self._get_west_worldline_neighbour(current_particle_index),
+                                    self._get_east_worldline_neighbour(current_particle_index)]
+            kinetic_U_west = - np.log(np.random.uniform(0.0, 1.0))
+            kinetic_U_east = - np.log(np.random.uniform(0.0, 1.0))
+            (distance_to_next_kinetic_event, event_kinetic_vetoing_index) = self._get_next_kinetic_event(positions,
+                                                    current_particle_index, movement_direction, worldline_neighbours,
+                                                    kinetic_U_west, kinetic_U_east)
+
+            if distance_to_next_kinetic_event < shortest_distance_to_kinetic_event:
+                shortest_distance_to_kinetic_event = distance_to_next_kinetic_event
+                kinetic_veto_index = event_kinetic_vetoing_index
+      
+            potential_U = - np.log(np.random.uniform(0.0, 1.0))
+            distance_to_next_potential_event = self._get_next_potential_event(positions, current_particle_index, 
+                                                                        temperature, movement_direction, potential_U)
+            if distance_to_next_potential_event < shortest_distance_to_potential_event:
+                shortest_distance_to_potential_event = distance_to_next_potential_event
+                potential_veto_index = current_particle_index
+
+        if shortest_distance_to_kinetic_event < shortest_distance_to_next_event:
+            shortest_distance_to_next_event = shortest_distance_to_kinetic_event
+            vetoing_index = kinetic_veto_index
+        if shortest_distance_to_potential_event < shortest_distance_to_next_event:
+            shortest_distance_to_next_event = shortest_distance_to_potential_event
+            vetoing_index = potential_veto_index
+
+        return shortest_distance_to_next_event, vetoing_index, None 
+
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
         """
@@ -349,6 +438,48 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         
             return active_particle_index, movement_direction
 
+    def auxiliary_choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
+        """
+        Chooses the index and direction of motion of the next active particle in ECMC.
+
+        Parameters
+        ----------
+        positions : numpy.ndarray
+            A two-dimensional numpy array of size (number_of_particles, dimensionality_of_particle_space); each element
+            is a float and represents the position of a single quantum particle.
+        active_particle_index : int
+            The index of the active particle.
+        movement_direction : int
+            The active-particle direction of motion.
+        veto_index : int
+            The particle index responsible for the event. 
+
+        Returns
+        -------
+        active_particle_index: int
+            The index of the next active particle.
+        movement_direction : int
+            The next active-particle direction of motion.
+        """
+    #TODO throw ConfigError if symmetric lifting scheme and auxiliary particle used
+        if veto_index == number_of_particles:
+            # had an auxiliary event, 
+            active_particle_index = veto_index
+           
+        elif veto_index == active_particle_index:
+            if np.random.uniform(0.0, 1.0) < 0.25:
+                movement_direction *= -1
+            else:
+                movement_direction *= -1
+                active_particle_index = number_of_particles
+        else:
+            if np.random.uniform(0.0, 1.0) < 0.25:
+                active_particle_index = veto_index
+            else:
+                active_particle_index = number_of_particles
+    
+        return active_particle_index, movement_direction
+
     def update_position(self, positions, displacement_distance, active_particle_index, movement_direction):
         """
         Updates the position of the active particle following an event.
@@ -365,7 +496,10 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         movement_direction : int
             The active-particle direction of motion.
         """
-        positions[active_particle_index] += displacement_distance * movement_direction
+        if active_particle_index == number_of_particles:
+            self.auxillary_particle_value += displacement_distance * movement_direction
+        else:
+            positions[active_particle_index] += displacement_distance * movement_direction
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""
@@ -412,8 +546,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         -------
             The barrier height.
         """
-        barrier_height = np.abs(-(self._timestep * self._anharmonicity * position **4 + 
-                                0.5 * self._mass * self._timestep * self._omega_squared * position **2))
+        barrier_height = np.abs(-(self._anharmonicity * position **4 / self.auxillary_particle_value[0] + 
+                                0.5 * self._mass * self._omega_squared * position **2 / self.auxillary_particle_value[0]))
 
         return barrier_height
     
@@ -429,8 +563,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         ---------
             The value of the quartic action term.
         """
-        return self._timestep * self._anharmonicity * position**4 + \
-            0.5 * self._mass * self._timestep * self._omega_squared * position**2 
+        return self._anharmonicity * position**4 / self.auxillary_particle_value[0] + \
+            0.5 * self._mass * self._omega_squared * position**2 / self.auxillary_particle_value[0]
 
         
     def _get_harmonic_potential_roots(self, final_action):
@@ -445,7 +579,7 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         -------
             ndarray containing both roots of the equation
         """
-        a = 0.5 * self._mass * self._timestep * self._omega_squared
+        a = 0.5 * self._mass * self._omega_squared / self.auxillary_particle_value[0]
         b = 0.0
         c = -final_action
         return self._get_quadratic_roots(a, b, c)
@@ -466,8 +600,8 @@ class QuantumHarmonicOscillatorPotential(WorldlinePotential):
         """
         roots = np.zeros(4, dtype=complex)
 
-        a = self._timestep * self._anharmonicity
-        b = 0.5 * self._mass * self._timestep * self._omega_squared
+        a = self._anharmonicity / self.auxillary_particle_value[0]
+        b = 0.5 * self._mass * self._omega_squared / self.auxillary_particle_value[0]
         c = -final_action
 
         u0, u1 = self._get_quadratic_roots(a, b, c)

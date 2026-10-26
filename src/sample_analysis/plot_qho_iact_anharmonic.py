@@ -121,24 +121,22 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, ecmc_symm_iact_data_pat
 
 
 
-    ax.annotate(f"{e_symm_coeffs[0]:.2f}", xy = (1.2*10e2, 2.7*10e1), weight = "bold", fontsize=18)
-    ax.annotate(f"{e_coeffs[0]:.2f}", xy = (2.5*10e2, 0.9*10e1), weight = "bold", fontsize=18)
-    ax.annotate(f"{m_coeffs[0]:.2f}", xy = (1*10e2, 8*10e3), weight = "bold", fontsize=18)
+    ax.annotate(f"{e_symm_coeffs[0]:.2f}", xy = (1.2*10e2, 2.2*10e1), fontsize=23)
+    ax.annotate(f"{e_coeffs[0]:.2f}", xy = (2.5*10e2, 0.6*10e1), fontsize=23)
+    ax.annotate(f"{m_coeffs[0]:.2f}", xy = (1*10e2, 7.5*10e3), fontsize=23)
 
-    ax.set_xlabel(r"$N_{\tau}$", fontsize=30, labelpad=-10, weight = "bold")
-    ax.set_ylabel(r"$s_{int}$", fontsize=45, weight = "bold")
+    ax.set_xlabel(r"$N_{\tau}$", fontsize=40)
+    ax.set_ylabel(r"$s_{int}$", fontsize=50)
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=20)
-    legend_properties = {'weight':'bold'}
-    legend = ax.legend(loc='lower right', fontsize=10, prop=legend_properties)
+    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=25, pad=8)
+  
+    legend = ax.legend( fontsize=20)
     legend.get_frame().set_edgecolor('k')
     legend.get_frame().set_lw(1.5)
+    plt.setp(ax.spines.values(), lw=3.0, color='black')
 
-    for tick in ax.get_xticklabels():
-        tick.set_fontweight('bold')
-    for tick in ax.get_yticklabels():
-        tick.set_fontweight('bold')
+
     plt.tight_layout()
 
     #plt.title(f"IACT of x^2 for QHO with (x+2)^2")

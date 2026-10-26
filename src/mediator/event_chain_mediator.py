@@ -135,7 +135,10 @@ class EventChainMediator(Mediator):
         """Runs the Markov process with model temperature equal to self._temperature."""
         active_particle_index = self._initial_active_particle_index
         if active_particle_index is None:
-            active_particle_index = np.random.randint(0, number_of_particles)
+            if self._auxillary_particle:
+                active_particle_index = np.random.randint(0, number_of_particles+1)
+            else:
+                active_particle_index = np.random.randint(0, number_of_particles)
         distance_to_next_measurement = 0.0
         movement_direction = self._potential.get_random_event_chain_velocity()
         distance_to_next_velocity_refreshment = self._refreshment_distribution.get_refreshment_distance()
@@ -144,18 +147,25 @@ class EventChainMediator(Mediator):
             distance_to_next_measurement += self._distance_between_measurements
             taken_measurement = False
             while True:
-                candidate_events = [self._potential.get_next_event(
-                                        self._positions, active_particle_index, self._temperature, movement_direction),
-                                    self._factor_field.get_next_event(
-                                        self._positions, active_particle_index, self._temperature, movement_direction)]
+                if self._auxillary_particle and active_particle_index == number_of_particles:
+                    candidate_events = [self._potential.get_auxillary_particle_next_event(self._positions,
+                                            active_particle_index, self._temperature, movement_direction)]
+                   #print("active auxiliary particle")
+                else:
+                    candidate_events = [self._potential.get_next_event(
+                                            self._positions, active_particle_index, self._temperature, movement_direction),
+                                        self._factor_field.get_next_event(
+                                            self._positions, active_particle_index, self._temperature, movement_direction)]
+                    #print(f"active: {active_particle_index}")
 
                 distance_to_next_event, vetoing_index, hop_displacement = min(candidate_events)
                 self._update_state_and_index_space_displacements(distance_to_next_event, active_particle_index,
-                                                                 vetoing_index, hop_displacement)
+                                                                    vetoing_index, hop_displacement)
+                #print(distance_to_next_event, vetoing_index, hop_displacement)
 
                 if distance_to_next_measurement < min(distance_to_next_event, distance_to_next_velocity_refreshment):
                     while (markov_chain_index < self._total_number_of_iterations and distance_to_next_measurement <
-                           min(distance_to_next_event, distance_to_next_velocity_refreshment)):
+                        min(distance_to_next_event, distance_to_next_velocity_refreshment)):
                         self._potential.update_position(self._positions, distance_to_next_measurement,
                                                         active_particle_index, movement_direction)
                         for sampler_index, sampler in enumerate(self._samplers):
@@ -198,23 +208,33 @@ class EventChainMediator(Mediator):
                                 < np.exp(- potential_difference / self._temperature)):
                             self._positions[active_particle_index] = portal_candidate
                         else:
-                            active_particle_index, movement_direction = self._potential.choose_next_active_particle(
-                                self._positions, active_particle_index, movement_direction, vetoing_index)
+                            if self._auxillary_particle:
+                                active_particle_index, movement_direction = \
+                                self._potential.auxiliary_choose_next_active_particle(self._positions,
+                                                                                      active_particle_index, movement_direction, vetoing_index)
+                            else:
+                                active_particle_index, movement_direction = self._potential.choose_next_active_particle(
+                                    self._positions, active_particle_index, movement_direction, vetoing_index)
                     else:
                         self._total_number_of_proposed_events += 1
                         if active_particle_index != vetoing_index:
                             self._total_number_of_events += 1
-                        active_particle_index, movement_direction = self._potential.choose_next_active_particle(
-                            self._positions, active_particle_index, movement_direction, vetoing_index)
+                        if self._auxillary_particle:
+                            active_particle_index, movement_direction = \
+                            self._potential.auxiliary_choose_next_active_particle(self._positions,
+                                                                                    active_particle_index, movement_direction, vetoing_index)
+                        else:
+                            active_particle_index, movement_direction = self._potential.choose_next_active_particle(
+                                self._positions, active_particle_index, movement_direction, vetoing_index)
                     distance_to_next_velocity_refreshment -= distance_to_next_event
                     distance_to_next_measurement -= distance_to_next_event
                     
                     if taken_measurement:
                         break
-                
+            
 
 
-        self._write_sim_params()
+        #self._write_sim_params()
 
     def _print_markov_process_summary(self):
         """Prints a summary of the completed Markov process to the screen."""

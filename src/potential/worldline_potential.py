@@ -207,7 +207,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         """
 
         return 0.5 * self._mass * \
-        (position_at_neighbouring_worldline_index - position_at_active_particle_index) ** 2 * self.auxillary_particle_value
+        (position_at_neighbouring_worldline_index - position_at_active_particle_index) ** 2 * self.auxillary_particle_value[0]
     
     @abstractmethod
     def _get_potential_action_term(self, positions, active_particle_index, position_at_active_particle_index):
@@ -277,7 +277,7 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
                     intermediate_position = bottom_of_well
                 else:
                     intermediate_position = initial_position
-                initial_action = 0.5 * (self._mass / self._timestep) * (intermediate_position - neighbour_position) ** 2
+                initial_action = 0.5 * (self._mass * self.auxillary_particle_value[0]) * (intermediate_position - neighbour_position) ** 2
                 final_action = uphill_energy + initial_action
                 roots = self._analytic_kinetic_term_roots(neighbour_position, final_action)
                 final_position = self._get_final_position_of_single_well_event(movement_direction, roots)
@@ -348,8 +348,8 @@ class WorldlinePotential(EuclideanSubspacePotential, metaclass=ABCMeta):
             ndarray containing both roots of the equation
 
         """
-        a = 0.5 * self._mass / self._timestep
-        b = - self._mass / self._timestep * neighbour_position
+        a = 0.5 * self._mass * self.auxillary_particle_value[0]
+        b = - self._mass * self.auxillary_particle_value[0] * neighbour_position
         c = a * neighbour_position**2 - final_action
         return self._get_quadratic_roots(a, b, c)
 

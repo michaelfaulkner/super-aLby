@@ -135,11 +135,12 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
     ax.errorbar(sorted_N, ratio_numerical_analytical_ecmc, ratio_err_ecmc, color = "#e20acdff",
                 label = "ECMC", fmt='o', capsize=3, markersize=7)
 
-    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=12)
-    legend = ax.legend(loc='lower left', fontsize=13)
+    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=17)
+    legend = ax.legend(loc='lower left', fontsize=15)
     legend.get_frame().set_edgecolor('k')
-    legend.get_frame().set_lw(1.5)
+    legend.get_frame().set_lw(2.0)
     ax.set_yticks([0.85, 0.9, 0.95, 1.0])
+    ax.set_xscale("log")
 
     ax.set_xlabel(r"$N_{\tau}$", fontsize = 30)
     ax.set_ylabel(r"$|\mathbf{x}|^2/\langle x^2 \rangle$", fontsize = 30)

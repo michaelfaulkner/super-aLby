@@ -762,33 +762,31 @@ def main(metropolis_iact_data_path, ecmc_iact_data_path, metropolis_iact_data_pa
     #ax.errorbar(ecmc_sorted_N_26, ecmc_iact_mean_arr_26, ecmc_err_26, fmt='o', capsize=3, markersize=4, color="#b011e1ff", label="ECMC FF 1.0, sd = Nt, rf = inf")
     #ax.errorbar(ecmc_sorted_N_27, ecmc_iact_mean_arr_27, ecmc_err_27, fmt='o', capsize=3, markersize=4, color="#e15311ff", label="ECMC sd = Nt, rf = inf")
     #ax.errorbar(ecmc_sorted_N_28, ecmc_iact_mean_arr_28, ecmc_err_28, fmt='o', capsize=3, markersize=4, color="#289a11ff", label="ECMC FF 10.0, sd = Nt, rf = inf")
-    ax.errorbar(ecmc_sorted_N_29, ecmc_iact_mean_arr_29, ecmc_err_29, fmt='o', capsize=3, markersize=4, color="#289a11ff", label="ECMC sd = 100*Nt")
+    #ax.errorbar(ecmc_sorted_N_29, ecmc_iact_mean_arr_29, ecmc_err_29, fmt='o', capsize=3, markersize=4, color="#289a11ff", label="ECMC sd = 100*Nt")
 
 
 
-    ax.annotate(f"{e_coeffs_10[0]:.2f}", xy = (4*10e2, 1*10e1), weight = "bold", fontsize=18)
-    ax.annotate(f"{e_coeffs_22[0]:.2f}", xy = (2.5*10e2, 1*10e2), weight = "bold", fontsize=18)
-    ax.annotate(f"{m_coeffs[0]:.2f}", xy = (1*10e2, 1*10e4), weight = "bold", fontsize=18)
+    ax.annotate(f"{e_coeffs_10[0]:.2f}", xy = (4*10e2, 1*10e1), fontsize=23)
+    ax.annotate(f"{e_coeffs_22[0]:.2f}", xy = (2.5*10e2, 1*10e2), fontsize=23)
+    ax.annotate(f"{m_coeffs[0]:.2f}", xy = (1*10e2, 1*10e4), fontsize=23)
     
 
 
 
     
    
-    ax.set_xlabel(r"$N_{\tau}$", fontsize=30, labelpad=-10, weight = "bold")
-    ax.set_ylabel(r"$s_{int}$", fontsize=45, weight = "bold")
+    ax.set_xlabel(r"$N_{\tau}$", fontsize=40)
+    ax.set_ylabel(r"$s_{int}$", fontsize=50)
     ax.set_xscale("log")
     ax.set_yscale("log")
-    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=20)
-    legend_properties = {'weight':'bold'}
-    legend = ax.legend(loc='lower right', fontsize=10, prop=legend_properties)
+    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=25, pad=8)
+    legend_properties = {}
+    legend = ax.legend(fontsize=20)
     legend.get_frame().set_edgecolor('k')
     legend.get_frame().set_lw(1.5)
 
-    for tick in ax.get_xticklabels():
-        tick.set_fontweight('bold')
-    for tick in ax.get_yticklabels():
-        tick.set_fontweight('bold')
+    plt.setp(ax.spines.values(), lw=3.0, color='black')
+
     print(ax.get_ylim())
     print(ax.get_xlim())
     plt.tight_layout()

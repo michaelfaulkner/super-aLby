@@ -30,17 +30,13 @@ def main(metrop_data, ecmc_data):
     ax.plot(np.arange(sample_index_cutoff), metrop_mean_squared_sample[:sample_index_cutoff], color = "#e16f04ff", label ="Metropolis MC")
 
     ax.plot(np.arange(sample_index_cutoff), ecmc_mean_squared_sample[:sample_index_cutoff], color = "#e20acdff", label = "ECMC")
-    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=13)
-    ax.set_xlabel("Sample index", fontsize = 25, weight = "bold")
-    ax.set_ylabel(r"$X^2$", fontsize = 25, weight = "bold")
-    legend_properties = {'weight':'bold'}
-    legend = fig.legend(loc  = (0.73, 0.21), prop=legend_properties)
+    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=18)
+    ax.set_xlabel("Sample index", fontsize = 25)
+    ax.set_ylabel(r"$|\mathbf{x}|^2$", fontsize = 30)
+    legend = ax.legend(fontsize=18)
     legend.get_frame().set_edgecolor('k')
     legend.get_frame().set_lw(1.5)
-    for tick in ax.get_xticklabels():
-        tick.set_fontweight('bold')
-    for tick in ax.get_yticklabels():
-        tick.set_fontweight('bold')
+    plt.setp(ax.spines.values(), lw=2.0, color='black')
     
     plt.tight_layout()
     plt.savefig("trace.pdf")

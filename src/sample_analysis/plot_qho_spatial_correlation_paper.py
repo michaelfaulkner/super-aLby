@@ -56,46 +56,31 @@ def main(output_directory, propertime, cutoff):
             lengths = lengths[lengths<cutoff]
 
 
-    fig, ax = plt.subplots(1,2, figsize =(15,5), sharey=True, sharex=True)
-    ax[0].errorbar(lengths[spatial_correlations_err_01>0], spatial_correlations_01[spatial_correlations_err_01>0],
+    fig, ax = plt.subplots(1,1, sharey=True, sharex=True)
+    ax.errorbar(lengths[spatial_correlations_err_01>0], spatial_correlations_01[spatial_correlations_err_01>0],
                 yerr = spatial_correlations_err_01[spatial_correlations_err_01>0], fmt="o", capsize=5, color = "#ae2132ff", label = r"$N_{\tau}=600$")
 
-    ax[1].errorbar(lengths[spatial_correlations_err_0025>0], spatial_correlations_0025[spatial_correlations_err_0025>0],
+    ax.errorbar(lengths[spatial_correlations_err_0025>0], spatial_correlations_0025[spatial_correlations_err_0025>0],
                 yerr = spatial_correlations_err_0025[spatial_correlations_err_0025>0], fmt="o", capsize=5, color = "#7508c3ff", label = r"$N_{\tau}=4800$")
 
     
-    ax[0].set_xlabel(r"$r$", fontsize = 30, weight ="bold")
-    ax[0].set_ylabel(r"$G(r)$", fontsize = 30, weight ="bold")
-    ax[0].set_yscale("log")
-    ax[0].set_xscale("linear")
+    ax.set_xlabel(r"$r$", fontsize = 40, weight ="bold")
+    ax.set_ylabel(r"$G(r)$", fontsize = 30, weight ="bold")
+    ax.set_yscale("log")
+    ax.set_xscale("linear")
 
-    ax[1].set_xlabel(r"$r$", fontsize = 30, weight ="bold")
-    ax[1].set_ylabel(r"$G(r)$", fontsize = 30, weight ="bold")
-    ax[1].set_yscale("log")
-    ax[1].set_xscale("linear")
 
-    legend_properties = {'weight':'bold', 'size':20}
-    legend = ax[0].legend(prop=legend_properties)
+
+    legend_properties = {'size':17}
+    legend = ax.legend(prop=legend_properties)
     legend.get_frame().set_edgecolor('k')
     legend.get_frame().set_lw(1.5)
 
-    legend = ax[1].legend(prop=legend_properties)
-    legend.get_frame().set_edgecolor('k')
-    legend.get_frame().set_lw(1.5)
+   
 
-    
-    ax[0].tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=17)
-    ax[1].tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=17)
-
-    for tick in ax[0].get_xticklabels():
-        tick.set_fontweight('bold')
-    for tick in ax[0].get_yticklabels():
-        tick.set_fontweight('bold')
-
-    for tick in ax[1].get_xticklabels():
-        tick.set_fontweight('bold')
-    for tick in ax[1].get_yticklabels():
-        tick.set_fontweight('bold')
+    plt.setp(ax.spines.values(), lw=2.0, color='black')
+    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=19)
+    #ax.set_ylim(bottom=5e-5)
 
     plt.tight_layout()
     plt.savefig(f"correlation_func_paper.pdf")

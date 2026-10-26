@@ -56,25 +56,25 @@ def main(qho_config_file_string, aho_config_file_string):
     
     fig, ax = plt.subplots(1,1)
     ax.plot(qho_reference_cdf[0], qho_reference_cdf[1], color="#e61267", linewidth=4, linestyle='-',
-                label=f'Metropolis MC - QHO')
+                label=f'Metrop MC (QHO)')
     ax.plot(qho_sample_cdf[0], qho_sample_cdf[1], color="#352626", linewidth=3, linestyle='-',
-                label=f'ECMC - QHO')
+                label=f'ECMC (QHO)')
     ax.plot(aho_reference_cdf[0], aho_reference_cdf[1], color="#29e218", linewidth=3, linestyle='-',
-                label=f'Metropolis MC - Anharmonic')
+                label=f'Metropo MC (QAH)')
     ax.plot(aho_sample_cdf[0], aho_sample_cdf[1], color="#5D0B7B", linewidth=3, linestyle='-',
-                label=f'ECMC - QHO')
+                label=f'ECMC (QAH)')
    
 
-    ax.set_xlabel(r"$x$", fontsize=30)
-    ax.set_ylabel(r"$ F_n \left( X < x \right)$", fontsize=25)
-    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.set_xlabel(r"$y$", fontsize=35)
+    ax.set_ylabel(r"$ F_n \left( y \right)$", fontsize=25)
+    ax.tick_params(axis='both', which='major', labelsize=18)
 
 
    
-    legend = ax.legend(fontsize=13)
+    legend = ax.legend(fontsize=15)
     legend.get_frame().set_edgecolor('k')
     legend.get_frame().set_lw(1.5)
-    plt.setp(ax.spines.values(), lw=1.5, color='black')
+    plt.setp(ax.spines.values(), lw=2.0, color='black')
     plt.tight_layout()
 
  
