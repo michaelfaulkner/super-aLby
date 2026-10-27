@@ -1,0 +1,9 @@
+name: super-alby
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.8
+  - numpy
+  - matplotlib
+  - pip
+  - pybind11

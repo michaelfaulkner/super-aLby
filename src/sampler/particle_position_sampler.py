@@ -1,7 +1,7 @@
 """Module for the ParticlePositionSampler class."""
 from .observation_sampler import ObservationSampler
 import numpy as np
-from model_settings import number_of_particles, size_of_particle_space, dimensionality_of_particle_space
+from model_settings import number_of_particles, dimensionality_of_particle_space
 
 
 class ParticlePositionSampler(ObservationSampler):
@@ -99,4 +99,3 @@ class ParticlePositionSampler(ObservationSampler):
         """
         return self._read_sample_from_file(
             f"checkpoint_{checkpoint_index:02d}_sample_of_particle_position", output_directory)
- 

@@ -144,4 +144,3 @@ class EuclideanSubspacePotential(Potential, metaclass=ABCMeta):
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""
         raise NotImplementedError
-

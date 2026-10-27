@@ -22,10 +22,10 @@ class FactorField(metaclass=ABCMeta):
         Raises
         ------
         base.exceptions.ConfigurationError
-            If prefactor is not greater than 0.0.
+            If prefactor is less than 0.0.
         """
-        if prefactor == 0.0:
-            raise ConfigurationError(f"Give a value greater than 0.0 as prefactor for {self.__class__.__name__}.")
+        if prefactor < 0.0:
+            raise ConfigurationError(f"Give a value greater or equal to 0.0 as prefactor for {self.__class__.__name__}.")
         self._prefactor = prefactor
 
     @abstractmethod

@@ -26,7 +26,8 @@ class EventChainMediator(Mediator):
                  refreshment_distribution: RefreshmentDistribution = ConstantRefreshmentDistribution(),
                  temperature: float = 1.0, number_of_equilibration_iterations: int = 10000,
                  number_of_observations: int = 100000, output_directory: str = None,
-                 normalised_distance_between_measurements: float = 1.0, portal_probability: float = 0.0):
+                 normalised_distance_between_measurements: float = 1.0, portal_probability: float = 0.0, 
+                 initial_active_particle_index: int = None):
         r"""
         Constructor of the EventChainMediator class.  Note that this class works only with potential classes that
             inherit from EuclideanSubspacePotential (essentially continuous spaces).
@@ -58,6 +59,8 @@ class EventChainMediator(Mediator):
         portal_probability : float, optional
             When greater than 0.0, a teleportation portal is attempted (with probability portal_probability) at each
             event induced by the potential.
+        initial_active_particle_index : int, optional
+            Index of the first active particle of the event chain; if None, it is chosen uniformly at random.
 
         Raises
         ------
@@ -89,10 +92,16 @@ class EventChainMediator(Mediator):
                                      f"in {self.__class__.__name__}.")
         if ((portal_probability < 0.0 and not math.isclose(portal_probability, 0.0)) or
                 (portal_probability > 1.0 and not math.isclose(portal_probability, 1.0))):
-            raise ConfigurationError(f"Give a value for the portal_probability greater than or equal to 0.0 and less "
+            raise ConfigurationError(f"Give a value for portal_probability greater than or equal to 0.0 and less "
                                      f"than or equal to 1.0 in {self.__class__.__name__}.")
+        if (math.isclose(portal_probability, 0.0) and not ("HardDiskPotential" in str(self._potential) 
+                and dimensionality_of_particle_space == 1)):
+            raise ConfigurationError(f"Give a value of 0.0 for portal_probability in {self.__class__.__name__} "
+                                     f"(teleportation-portal functionality is availalbe only for 1D hard disks).")    
+
         """Re-instantiate self._potential as EuclideanSubspacePotential contains additional abstract methods."""
         self._potential = potential
+        self._initial_active_particle_index = initial_active_particle_index
         self._factor_field = factor_field
         self._refreshment_distribution = refreshment_distribution
         self._arrangements = 0
@@ -128,11 +137,14 @@ class EventChainMediator(Mediator):
 
     def _run_markov_process(self):
         """Runs the Markov process with model temperature equal to self._temperature."""
-        active_particle_index = np.random.randint(0, number_of_particles)
+        active_particle_index = self._initial_active_particle_index
+        if active_particle_index is None:
+            active_particle_index = np.random.randint(0, number_of_particles)
         distance_to_next_measurement = 0.0
         movement_direction = self._potential.get_random_event_chain_velocity()
         distance_to_next_velocity_refreshment = self._refreshment_distribution.get_refreshment_distance()
-        for markov_chain_index in range(self._total_number_of_iterations):
+        markov_chain_index = 0
+        while markov_chain_index < self._total_number_of_iterations:
             distance_to_next_measurement += self._distance_between_measurements
             taken_measurement = False
             while True:
@@ -147,17 +159,22 @@ class EventChainMediator(Mediator):
                 self._update_state_and_index_space_displacements(distance_to_next_event, active_particle_index,
                                                                  vetoing_index, hop_displacement)
 
-                if (distance_to_next_measurement < distance_to_next_event and
-                        distance_to_next_measurement < distance_to_next_velocity_refreshment):
-                    self._potential.update_position(self._positions, distance_to_next_measurement,
-                                                    active_particle_index, movement_direction)
-                    distance_to_next_velocity_refreshment -= distance_to_next_measurement
-                    distance_to_next_event -= distance_to_next_measurement
-                    distance_to_next_measurement = 0.0
-                    for sampler_index, sampler in enumerate(self._samplers):
-                        self._samples[sampler_index][markov_chain_index, :] = sampler.get_observation(
-                            None, self._positions, self._potential)
+                if distance_to_next_measurement < min(distance_to_next_event, distance_to_next_velocity_refreshment):
+                    while (markov_chain_index < self._total_number_of_iterations and distance_to_next_measurement <
+                           min(distance_to_next_event, distance_to_next_velocity_refreshment)):
+                        self._potential.update_position(self._positions, distance_to_next_measurement,
+                                                        active_particle_index, movement_direction)
+                        for sampler_index, sampler in enumerate(self._samplers):
+                            self._samples[sampler_index][markov_chain_index, :] = sampler.get_observation(
+                                None, self._positions, self._potential)
+                        distance_to_next_velocity_refreshment -= distance_to_next_measurement
+                        distance_to_next_event -= distance_to_next_measurement
+                        distance_to_next_measurement = self._distance_between_measurements
+                        markov_chain_index += 1
+                        self._total_number_of_events_at_samples.append(self._total_number_of_events)
+                        super()._print_sample_progress(markov_chain_index)
                     taken_measurement = True
+                    distance_to_next_measurement = 0.0
 
                 if distance_to_next_velocity_refreshment < distance_to_next_event:
                     self._potential.update_position(self._positions, distance_to_next_velocity_refreshment,
@@ -171,9 +188,10 @@ class EventChainMediator(Mediator):
                 else:
                     self._potential.update_position(self._positions, distance_to_next_event,
                                                     active_particle_index, movement_direction)
-                    [self._event_samples[event_sampler_index].append(event_sampler.get_observation(
-                        self._positions, self._potential, active_particle_index, vetoing_index, distance_to_next_event))
-                        for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
+                    if active_particle_index != vetoing_index:
+                        [self._event_samples[event_sampler_index].append(event_sampler.get_observation(
+                            self._positions, self._potential, active_particle_index, vetoing_index, distance_to_next_event))
+                            for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
 
                     if (self._teleportation_portal and event_source == "potential" and np.random.uniform() <
@@ -186,17 +204,18 @@ class EventChainMediator(Mediator):
                         if candidate_positions is not None and "HardDiskPotential" in str(self._potential):
                             self._positions[active_particle_index] = candidate_positions[0]
                             self._positions[vetoing_index] = candidate_positions[1]
+                    
                     active_particle_index, movement_direction = self._potential.choose_next_active_particle(
-                        self._positions, active_particle_index, movement_direction, vetoing_index)
-
-                    self._total_number_of_events += 1
+                        self._positions, active_particle_index, movement_direction, vetoing_index)                    
+                    self._total_number_of_proposed_events += 1
+                    if active_particle_index != vetoing_index:
+                        self._total_number_of_events += 1
                     distance_to_next_velocity_refreshment -= distance_to_next_event
                     distance_to_next_measurement -= distance_to_next_event
                     if taken_measurement: 
                         break
 
-            super()._print_sample_progress(markov_chain_index)
-        self._write_state_and_index_space_velocities()
+        self._write_sim_params()
 
     def _print_markov_process_summary(self):
         """Prints a summary of the completed Markov process to the screen."""
@@ -206,29 +225,36 @@ class EventChainMediator(Mediator):
     def _set_arrays_and_counters(self):
         """Sets the arrays (e.g. the sample array) and counters before the Markov process."""
         super()._set_arrays_and_counters()
-        (self._total_number_of_events, self._number_of_index_space_moves, self._number_of_index_space_moves_small,
-         self._number_of_index_space_moves_large) = 0, 0, 0, 0
-        (self._state_space_displacement, self._total_event_distance, self._index_space_displacement,
-         self._index_space_displacement_small, self._index_space_displacement_large) = 0.0, 0.0, 0.0, 0.0, 0.0
+        # todo could you convert to a single index_space_displacement array in which we store each species individually 
+        (self._total_number_of_events, self._total_number_of_proposed_events, self._state_space_displacement,
+         self._total_event_distance, self._index_space_displacement, self._index_space_displacement_small, 
+         self._index_space_displacement_large) = 0, 0, 0.0, 0.0, 0, 0, 0
+        (self._number_of_index_space_moves, self._number_of_index_space_moves_small,
+         self._number_of_index_space_moves_large) = 0, 0, 0
 
-    def _write_state_and_index_space_velocities(self):
-        """Saves average state space and index space velocities"""
+    def _write_sim_params(self):
+        """Saves simulation parameters, including mean event rate, number of events occurred at each sample,
+         and average state space and index space velocities."""
+        np.save(os.path.join(self._output_directory, "number_of_events_at_samples.npy"),
+                np.array(self._total_number_of_events_at_samples))
         state_space_velocity = None if self._total_event_distance == 0.0 else (
                 self._state_space_displacement / self._total_event_distance)
-        index_space_velocity = None if self._number_of_index_space_moves == 0.0 else (
-                self._index_space_displacement / self._number_of_index_space_moves)
-        index_velocity_small = None if self._number_of_index_space_moves_small == 0 else (
-            self._index_space_displacement_small / self._number_of_index_space_moves_small)
-        index_velocity_large = None if self._number_of_index_space_moves_large == 0 else (
-            self._index_space_displacement_large / self._number_of_index_space_moves_large)
+        index_space_velocity = None if self._total_event_distance == 0.0 else (
+                self._index_space_displacement / self._total_event_distance)
+        index_velocity_small = None if self._total_event_distance == 0.0 else (
+            self._index_space_displacement_small / self._total_event_distance)
+        index_velocity_large = None if self._total_event_distance == 0.0 else (
+            self._index_space_displacement_large / self._total_event_distance)
+        mean_event_rate = None if self._total_event_distance == 0.0 else (
+                self._total_number_of_events / self._total_event_distance)
+        acceptance_rate = None if self._total_number_of_proposed_events == 0 else (
+                self._total_number_of_events / self._total_number_of_proposed_events)
         arrangements = None if self._arrangements == 0 else self._arrangements
-        with open(os.path.join(self._output_directory, "state_and_index_space_velocities.json"), "w") as f:
-            json.dump({
-                "state_space_velocity": state_space_velocity,
-                "index_space_velocity": index_space_velocity,
-                "index_velocity_small": index_velocity_small,
-                "index_velocity_large": index_velocity_large,
-                "arrangements": arrangements}, f)
+        with open(os.path.join(self._output_directory, "sim_params.json"), "w") as f:
+            json.dump({"state_space_velocity": state_space_velocity, "index_space_velocity": index_space_velocity,
+                       "index_velocity_small": index_velocity_small, "index_velocity_large": index_velocity_large, 
+                       "mean_event_rate": mean_event_rate, "acceptance_rate": acceptance_rate, 
+                       "arrangements": arrangements}, f)
 
     def _update_state_and_index_space_displacements(self, displacement_distance, active_particle_index, vetoing_index,
                                                     hop_displacement):
@@ -240,22 +266,34 @@ class EventChainMediator(Mediator):
             piecewise trajectory (this may change at non-constant speed but we would have to check)."""
         # todo add functionality for greater than 1D particle space
         if dimensionality_of_particle_space == 1:
+            self._total_event_distance += displacement_distance
             if hop_displacement:
-                self._state_space_displacement += hop_displacement[0]
-                self._total_event_distance += displacement_distance[0]
-            if vetoing_index == (active_particle_index + 1) % number_of_particles:
-                displacement = 1
-            elif vetoing_index is not None:
-                displacement = -((active_particle_index - vetoing_index) % number_of_particles)
-            else:
-                displacement = 0
-            if "HardDiskPotential" in str(self._potential) and len(size_of_particle_space) == 1:
-                if self._potential.disk_radii[active_particle_index] == 1.0:
-                    self._index_space_displacement_small += displacement
-                    self._number_of_index_space_moves_small += 1
+                self._state_space_displacement += hop_displacement
+            if 'SoftDiskPotential' in str(self._potential):
+                delta_index = (vetoing_index - active_particle_index) % number_of_particles
+                if delta_index <= number_of_particles / 2.0:
+                    self._index_space_displacement += delta_index
                 else:
-                    self._index_space_displacement_large += displacement
-                    self._number_of_index_space_moves_large += 1
-            self._index_space_displacement += displacement
-            if displacement != 0:
-                self._number_of_index_space_moves += 1
+                    self._index_space_displacement -= (number_of_particles - delta_index)
+            else:
+                if vetoing_index == (active_particle_index + 1) % number_of_particles:
+                    self._index_space_displacement += 1
+                    displacement = 1
+                elif vetoing_index == (active_particle_index - 1) % number_of_particles:
+                    self._index_space_displacement -= 1
+                    displacement = -1
+                # todo should we have the following instead of the above? And if so, why wouldn't this also 
+                # cover the case of vetoing_index == (active_particle_index + 1) % number_of_particles?
+                #elif vetoing_index is not None:
+                #    displacement = -((active_particle_index - vetoing_index) % number_of_particles)
+                elif vetoing_index is not None:
+                    displacement = 0
+                if "HardDiskPotential" in str(self._potential) and dimensionality_of_particle_space == 1:
+                    if self._potential.disk_radii[active_particle_index] == 1.0:
+                        self._index_space_displacement_small += displacement
+                        self._number_of_index_space_moves_small += 1
+                    else:
+                        self._index_space_displacement_large += displacement
+                        self._number_of_index_space_moves_large += 1
+                if displacement != 0:
+                    self._number_of_index_space_moves += 1

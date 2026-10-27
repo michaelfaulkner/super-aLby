@@ -567,6 +567,7 @@ def get_structure_factor(sample_directory, temperature, checkpoint_index,
 
 """helper methods"""
 
+
 def get_checkpointing_indices(sample_directory):
     return np.loadtxt(os.path.join(f"{sample_directory}", "checkpoint_index.txt"), dtype='int')
     

@@ -22,7 +22,7 @@ class HarmonicChainFactorField(FactorField):
         Raises
         ------
         base.exceptions.ConfigurationError
-            If prefactor is not greater than 0.0.
+            If prefactor is less than 0.0.
         """
         super().__init__(prefactor)
         self._prefactor = prefactor
@@ -52,17 +52,17 @@ class HarmonicChainFactorField(FactorField):
         hop_displacement : numpy.ndarray
             Net displacement through state space from active to vetoing particle.
         """
+        if self._prefactor < 1.0e-10:
+            return np.inf, None, None
         neg_neighbour_index, pos_neighbour_index = ((active_particle_index - 1) % number_of_particles,
                                                     (active_particle_index + 1) % number_of_particles)
         vetoing_index = pos_neighbour_index if movement_direction > 0.0 else neg_neighbour_index
         distance_to_next_factor_event = - np.log(np.random.uniform(0.0, 1.0, 1)) / self._prefactor * temperature
 
-        active_particle_position = positions[active_particle_index].copy()
-        vetoing_particle_position = positions[vetoing_index].copy()
+        active_particle_position = positions[active_particle_index][0]
+        vetoing_particle_position = positions[vetoing_index][0]
         if active_particle_index == number_of_particles - 1 and vetoing_index == 0:
-            vetoing_particle_position += size_of_particle_space
+            vetoing_particle_position += size_of_particle_space[0]
         elif active_particle_index == 0 and vetoing_index == number_of_particles - 1:
-            vetoing_particle_position -= size_of_particle_space
-
-        return distance_to_next_factor_event, vetoing_index, vetoing_particle_position - active_particle_position
-
+            vetoing_particle_position -= size_of_particle_space[0]
+        return distance_to_next_factor_event[0], vetoing_index, vetoing_particle_position - active_particle_position

@@ -1,5 +1,6 @@
 #!/bin/bash
 export TEMPLATE_INI=config_files/hard_disks/event_chain_prefactor_sweep.ini
+export RUN_WITH_EXECUTABLE=false
 export NUM_JOBS=5
 export START=0.05
 export END=1.0

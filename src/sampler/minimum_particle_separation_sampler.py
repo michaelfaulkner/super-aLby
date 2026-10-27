@@ -1,8 +1,9 @@
 """Module for the MinimumParticleSeparationSampler class."""
-from base.exceptions import ConfigurationError
-from model_settings import size_of_particle_space, number_of_particles
-from .observation_sampler import ObservationSampler
 import numpy as np
+from base.exceptions import ConfigurationError
+from .observation_sampler import ObservationSampler
+from base.vectors import get_shortest_vectors_on_torus
+from model_settings import size_of_particle_space, number_of_particles
 
 
 class MinimumParticleSeparationSampler(ObservationSampler):
@@ -65,14 +66,14 @@ class MinimumParticleSeparationSampler(ObservationSampler):
         float
             The observation of the minimum particle-particle separation distance.
         """
-        min_separation = np.inf
-        for particle_index in range(number_of_particles):
-            neg_neighbour_index = (particle_index - 1) % number_of_particles
-            neg_neighbour_position = positions[neg_neighbour_index].copy()
-            if particle_index == 0:
-                neg_neighbour_position -= size_of_particle_space
-            min_separation = min(min_separation, abs(positions[particle_index] - neg_neighbour_position))
-        return min_separation
+        # for particle_index in range(number_of_particles):
+        #    neg_neighbour_index = (particle_index - 1) % number_of_particles
+        #    neg_neighbour_position = positions[neg_neighbour_index].copy()
+        #    if particle_index == 0:
+        #        neg_neighbour_position -= size_of_particle_space
+        #    min_separation = min(min_separation, abs(positions[particle_index] - neg_neighbour_position))
+        displacements = positions[:, 0] - np.roll(positions, 1)[:, 0]
+        return np.min(np.abs(get_shortest_vectors_on_torus(displacements)))
 
     def output_sample(self, sample, checkpoint_index, output_directory):
         """

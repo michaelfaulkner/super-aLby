@@ -1,5 +1,6 @@
 #!/bin/bash
 export TEMPLATE_INI=config_files/convergence_tests/ising_potential/swendsen_wang.ini
+export RUN_WITH_EXECUTABLE=false
 export NUM_JOBS=1
 export START=1.2
 export END=3.0
