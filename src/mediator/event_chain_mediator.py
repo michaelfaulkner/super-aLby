@@ -136,9 +136,6 @@ class EventChainMediator(Mediator):
             distance_to_next_measurement += self._distance_between_measurements
             taken_measurement = False
             while True:
-                # todo (KEY TODO) looks like self._potential.disk_radii is an additional variable that might not have
-                #  been defined in get_next_event() in the main FactorField class; I'm also thinking we might not need
-                #  the radii as FF events leading to an overlap would be disqualified by an earlier potential event?
                 candidate_events = [
                     (self._potential.get_next_event(
                         self._positions, active_particle_index, self._temperature, movement_direction), "potential"),
@@ -183,8 +180,6 @@ class EventChainMediator(Mediator):
                             self._portal_probability):
                         candidate_positions = self._potential.get_portal_candidate(
                             self._positions, active_particle_index, vetoing_index, movement_direction)
-                        # todo (KEY TODO) think we need an alternative way of measuring this - I'd say instead of using
-                        #  'arrangements explored', store the value using a new EventSampler and don't exit the algo
                         if candidate_positions is not None:
                             if candidate_positions[2] and self._arrangements == 0:
                                 self._arrangements = markov_chain_index

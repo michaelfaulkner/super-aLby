@@ -294,7 +294,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
         positions = get_shortest_vectors_on_torus(positions)
         return positions
 
-    
     @staticmethod
     def get_random_event_chain_velocity():
         """
@@ -496,7 +495,6 @@ class HardDiskPotential(EuclideanSubspacePotential):
         if number not in self._array_of_explored_orderings:
             self._array_of_explored_orderings.add(number)
             self._counter_of_remaining_orderings -= 1
-
 
     @staticmethod
     def _get_lowest_rotation(binary_ordering_config):
