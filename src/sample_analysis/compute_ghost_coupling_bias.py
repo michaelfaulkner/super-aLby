@@ -1,26 +1,3 @@
-"""Computes the ghost-coupling bias (the g values) from fixed-coupling calibration runs.
-
-Usage (from src):
-    python sample_analysis/compute_ghost_coupling_bias.py <calibration_directory> --output <bias.json>
-        [--sub-bins 4] [--target-number-of-particles N] [--figure <file.png>]
-
-<calibration_directory> holds one sub-directory per calibration coupling (e.g. ghost_coupling_XX, as produced by
-spawn_configs.py), each holding job_YY directories of EventChainMediator runs with fixed_ghost_coupling_kernel
-and a GhostProfileSampler.  The couplings lambda_0 = 0 < lambda_1 < ... < lambda_{K-1} < 1 define the bins
-[lambda_k, lambda_{k+1}] (lambda_K = 1).
-
-This is the analogue of pre-computing <U>_beta for temperature-augmented ECMC.  The bias eta(lambda) should be the
-dimensionless free energy beta F(lambda) of growing the ghost, so that the marginal of lambda is flat.  Within bin k, the
-run at lambda_k gives the free-energy change to any lambda in the bin by free-energy perturbation (Zwanzig):
-    eta(lambda) - eta(lambda_k) = - ln < exp(- beta [U_g(lambda) - U_g(lambda_k)]) >_{lambda_k},
-where U_g(lambda) = lambda^n A for soft spheres (A is the recorded profile) and, for hard spheres, the average is the
-probability that the ghost clearance c (the recorded profile) is at least lambda.  eta is evaluated on --sub-bins
-equally spaced points per bin and its slopes g on the resulting fine grid are written to the output file, which
-TabulatedGhostCouplingBias reads.  eta(1) is the estimated beta * mu_ex of the calibration system; the suggested
-log_activity ln((N + 1) / V) + eta(1) puts the maximum of P(N) near the calibration N (insertion and deletion
-acceptances near 1).  For soft spheres the thermodynamic-integration estimate (trapezoid of beta <dU_g/d lambda>) is
-also reported as a check.
-"""
 import argparse
 import glob
 import json
@@ -41,7 +18,8 @@ def get_ghost_energy_difference(potential, profile, coupling, new_coupling):
 
 
 def load_calibration(calibration_directory):
-    """Returns a list of (coupling, parameters, [profile sample of each job], [number of particles of each job])."""
+    """Returns a list of (coupling, parameters)."""
+    # One folder per fixed coupling lambda_k (ghost_coupling_XX), each with several jobs
     increment_directories = sorted(glob.glob(os.path.join(calibration_directory, "*_[0-9][0-9]")))
     if not increment_directories:
         increment_directories = [calibration_directory]
@@ -56,6 +34,7 @@ def load_calibration(calibration_directory):
             parameters, samples = load_job(job_directory)
             if parameters["scheme"] != "calibration":
                 raise ValueError(f"{job_directory} is not a calibration run.")
+            # The ghost profile (clearance or A) sampled at lambda_k
             profiles.append(samples["ghost_profile"])
             numbers.append(int(samples["particle_number"][0]))
         calibration.append((parameters["fixed_ghost_coupling"], parameters, profiles, numbers))
@@ -64,12 +43,16 @@ def load_calibration(calibration_directory):
 
 
 def compute_bias(calibration, sub_bins):
+    """
+    Implements eta(lambda) - eta(lambda_k) = - ln < exp(-beta [U_g(lambda) - U_g(lambda_k)]) >_{lambda_k}
+    """
     couplings = np.array([item[0] for item in calibration])
     if abs(couplings[0]) > 1.0e-12 or couplings[-1] >= 1.0:
         raise ValueError("The calibration couplings must start at 0 and stay below 1.")
     parameters = calibration[0][1]
     potential = parameters["potential"]
     beta = 1.0 / parameters["temperature"]
+    # Bin k runs from lambda_k to the next calibration coupling (the last one to 1)
     bin_edges = np.append(couplings, 1.0)
     number_of_jobs = min(len(item[2]) for item in calibration)
     nodes, eta = [0.0], [0.0]
@@ -77,14 +60,15 @@ def compute_bias(calibration, sub_bins):
     eta_per_job_at_nodes = [np.zeros(number_of_jobs)]
     bins = []
     for k, (coupling, _, profiles, numbers) in enumerate(calibration):
+        # Split the bin into sub_bins and reweight the lambda_k samples to each sub-node (free-energy perturbation)
         sub_nodes = np.linspace(bin_edges[k], bin_edges[k + 1], sub_bins + 1)[1:]
         pooled = np.concatenate(profiles)
         weights = np.exp(- beta * get_ghost_energy_difference(potential, pooled[:, None], coupling,
                                                               sub_nodes[None, :]))
         survival = np.mean(weights, axis=0)
         if np.any(survival <= 0.0):
-            raise ValueError(f"No calibration sample at lambda = {coupling} survives to the end of its bin.  Use a finer "
-                             f"calibration grid.")
+            raise ValueError(f"No calibration sample at lambda = {coupling} survives to the end of its bin.  "
+                             f"Use a finer calibration grid.")
         job_survival = np.array([np.mean(np.exp(- beta * get_ghost_energy_difference(
             potential, profile[:, None], coupling, sub_nodes[None, :])), axis=0) for profile in profiles[:number_of_jobs]])
         base = eta[-1]
@@ -104,6 +88,7 @@ def compute_bias(calibration, sub_bins):
         bins.append(bin_record)
     nodes = np.array(nodes)
     eta = np.array(eta)
+    # The g values with eta piecewise linear between the nodes
     slopes = np.diff(eta) / np.diff(nodes)
     finite_jobs = eta_per_job[np.isfinite(eta_per_job)]
     result = {"nodes": nodes.tolist(), "slopes": slopes.tolist(), "eta_at_nodes": eta.tolist(),
@@ -114,16 +99,19 @@ def compute_bias(calibration, sub_bins):
               "calibration_couplings": couplings.tolist(), "bins": bins,
               "number_of_real_particles": calibration[0][3][0], "volume": parameters["volume"],
               "temperature": parameters["temperature"], "potential": potential}
+    # Checks of eta(1) = beta mu_ex: thermodynamic integration (soft) or the exact result (1D hard disks)
     if potential["type"] == "soft_sphere":
         ti_couplings = np.append(couplings, 1.0)
         ti_slopes = [record["thermodynamic_integration_slope"] for record in bins]
-        """The slope at lambda = 1 is not measured: the last trapezoid uses the FEP increment of the last bin instead."""
-        result["thermodynamic_integration_total"] = float(np.trapezoid(ti_slopes, couplings) +
+        """The slope at lambda = 1 is not measured: the last trapezoid uses the FEP increment of the last bin 
+        instead."""
+        trapezoid = getattr(np, "trapezoid", None) or np.trapz
+        result["thermodynamic_integration_total"] = float(trapezoid(ti_slopes, couplings) +
                                                           bins[-1]["eta_increment"])
         result["thermodynamic_integration_slopes"] = ti_slopes
     if potential["type"] == "hard_sphere":
         length, sigma, n = potential["box"][0], potential["diameter"], calibration[0][3][0]
-        result["exact_total_tonks"] = float(- (n * math.log(length - (n + 1) * sigma) - math.log(length) -
+        result["exact_total_hard_disks"] = float(- (n * math.log(length - (n + 1) * sigma) - math.log(length) -
                                                (n - 1) * math.log(length - n * sigma)))
     return result
 
@@ -132,33 +120,25 @@ def plot_bias(result, file_name):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from plot_grand_canonical_experiments import PANEL_SIZE, PAPER_STYLE, save_figure, style_axes
     nodes, eta, slopes = np.array(result["nodes"]), np.array(result["eta_at_nodes"]), np.array(result["slopes"])
-    figure, axes = plt.subplots(1, 3, figsize=(15, 4.2))
-    axes[0].plot(nodes, eta, 'k-')
-    axes[0].set_xlabel(r"$\lambda$")
-    axes[0].set_ylabel(r"$\eta(\lambda)$")
     title = rf"$\eta(1) = {result['total']:.3f}$"
     if result.get("total_error"):
         title += rf"$\pm {result['total_error']:.3f}$"
-    if "exact_total_tonks" in result:
-        title += rf" (exact {result['exact_total_tonks']:.3f})"
+    if "exact_total_hard_disks" in result:
+        title += rf" (exact {result['exact_total_hard_disks']:.3f})"
     if "thermodynamic_integration_total" in result:
         title += rf" (TI {result['thermodynamic_integration_total']:.3f})"
-    axes[0].set_title(title)
-    axes[1].stairs(slopes, nodes, color='firebrick')
-    if "thermodynamic_integration_slopes" in result:
-        axes[1].plot(result["calibration_couplings"], result["thermodynamic_integration_slopes"], 'ko', ms=4,
-                     label=r"$\beta\langle \partial_\lambda U_g\rangle$ (TI)")
-        axes[1].legend()
-    axes[1].set_xlabel(r"$\lambda$")
-    axes[1].set_ylabel(r"$g(\lambda) = \eta'(\lambda)$")
-    survival = [record["survival_to_bin_end"] for record in result["bins"]]
-    axes[2].semilogy(result["calibration_couplings"], survival, 'ko-')
-    axes[2].set_xlabel(r"$\lambda_k$")
-    axes[2].set_ylabel(r"$\langle e^{-\beta \Delta U_g}\rangle_{\lambda_k}$ to bin end")
-    figure.tight_layout()
-    figure.savefig(file_name, dpi=150)
-    plt.close(figure)
+    with plt.rc_context(PAPER_STYLE):
+        figure, axes = plt.subplots(1, 2, figsize=(2 * PANEL_SIZE[0], PANEL_SIZE[1]))
+        axes[0].plot(nodes, eta, color="black", lw=2.5)
+        style_axes(axes[0], r"$\lambda$", r"$\eta(\lambda)$", title=title)
+        axes[1].stairs(slopes, nodes, color="firebrick", lw=2.5, baseline=None, label="calibration")
+        if "thermodynamic_integration_slopes" in result:
+            axes[1].plot(result["calibration_couplings"], result["thermodynamic_integration_slopes"], "D",
+                         color="black", ms=8, label=r"$\beta\langle \partial_\lambda U_g\rangle$ (TI)")
+        style_axes(axes[1], r"$\lambda$", r"$g(\lambda) = \eta'(\lambda)$", "lower right")
+        save_figure(figure, file_name)
 
 
 def main():
@@ -180,8 +160,8 @@ def main():
     message = f"eta(1) = beta mu_ex = {result['total']:.4f}"
     if result["total_error"] is not None:
         message += f" +- {result['total_error']:.4f}"
-    if "exact_total_tonks" in result:
-        message += f" (exact Tonks {result['exact_total_tonks']:.4f})"
+    if "exact_total_hard_disks" in result:
+        message += f" (exact hard disks {result['exact_total_hard_disks']:.4f})"
     if "thermodynamic_integration_total" in result:
         message += f" (TI {result['thermodynamic_integration_total']:.4f})"
     message += (f"; min bin survival = {min(record['survival_to_bin_end'] for record in result['bins']):.3g}; "

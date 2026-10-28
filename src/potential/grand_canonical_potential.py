@@ -2,25 +2,22 @@
 from abc import ABCMeta, abstractmethod
 from base.exceptions import ConfigurationError
 from .euclidean_subspace_potential import EuclideanSubspacePotential
+from helper_methods import get_initial_positions_of_smooth_potential
 from model_settings import dimensionality_of_particle_space, number_of_particles, size_of_particle_space
 import numpy as np
 
 
 class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     r"""
-    Abstract class for pairwise potentials of disks on a ring whose number of particles may change, for use with
-    EventChainMediator together with a grand-canonical kernel.
+    Abstract class for pairwise potentials of particles on a ring whose number of particles may change, for use with
+    EventChainMediator or MetropolisMediator together with a grand-canonical kernel.
 
-    Unlike the canonical potentials, the number of particles is not fixed: it is always read from the positions array,
-    which has shape (number_of_rows, 1).  Particles live on the periodic interval [0, L) (L = size_of_particle_space,
-    dimensionality_of_particle_space must be 1) and interact through all pairs with the minimum-image convention.  The
-    interaction does not depend on particle order, so particles can be appended and removed freely.  Event chains always
-    move in the positive direction (movement_direction = 1).
+    Unlike the canonical potentials, the number of particles is not fixed. It is always read from the positions array,
+    which has shape (number_of_rows, 1).
 
     If self.ghost_coupling is not None, the last row of positions is the ghost particle and self.ghost_coupling is
-    its coupling lambda in [- parked_length, 1].  Every ghost-real pair interacts as a real-real pair with its length
-    scale multiplied by lambda (lambda <= 0 means no interaction, lambda = 1 means a full particle).  Children define
-    the pair energy as a function of the distance and of this length-scale factor.
+    its coupling lambda in [-parked_length, 1].  Every ghost-real pair interacts as a real-real pair with its length
+    scale multiplied by lambda (lambda <= 0 means no interaction, lambda = 1 means a full particle).
     """
 
     def __init__(self, prefactor: float = 1.0, **kwargs):
@@ -46,17 +43,15 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         self.ghost_coupling = None
         self._ghost_profile = None
 
-    @property
-    def volume(self):
+    def get_volume(self):
         return float(size_of_particle_space[0])
 
-    @property
     def has_ghost(self):
         return self.ghost_coupling is not None
 
     def get_number_of_real_particles(self, positions):
         """Returns the number of real (non-ghost) particles."""
-        return len(positions) - 1 if self.has_ghost else len(positions)
+        return len(positions) - 1 if self.has_ghost() else len(positions)
 
     def wrap(self, position):
         """Returns position mapped onto the ring."""
@@ -70,16 +65,16 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         return separations - size_of_particle_space[0] * np.round(separations / size_of_particle_space[0])
 
     def _get_separations(self, positions, index):
-        """Returns the minimum-image separations positions[j] - positions[index] for all j (shape (number_of_rows,))."""
+        """Returns the minimum-image separations positions[j] - positions[index] for all j."""
         return self._get_minimum_image(positions[:, 0] - positions[index, 0])
 
     def _get_scales(self, number_of_rows, index):
         """
-        Returns the length-scale factor of each pair (index, j): 1 for real-real pairs, the effective ghost coupling
-        max(lambda, 0) for ghost-real pairs, and 0 for j = index.
+        Returns the factor that multiplies each pair interaction in the potential with the particle at index. It is 1
+        for two real particles, lambda for a pair with the ghost when lambda > 0, and 0 when the ghost is parked.
         """
         scales = np.ones(number_of_rows)
-        if self.has_ghost:
+        if self.has_ghost():
             ghost_index = number_of_rows - 1
             ghost_scale = max(self.ghost_coupling, 0.0)
             if index == ghost_index:
@@ -91,48 +86,44 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
 
     def get_initial_positions(self):
         """
-        Returns the initial positions: number_of_particles (+ 1 with a ghost) evenly spaced sites on the ring, randomly
-        assigned to the rows (so the ghost, the last row, sits on a random site).
+        Returns the initial positions of the particles (number_of_particles real, 1 ghost)
 
         Returns
         -------
         numpy.ndarray
             Array of shape (number_of_rows, 1).
         """
-        number_of_rows = self._initial_number_of_real_particles + (1 if self.has_ghost else 0)
-        spacing = size_of_particle_space[0] / number_of_rows
-        sites = (np.random.permutation(number_of_rows) + 0.5) * spacing
-        self._check_initial_positions(sites[:, None], spacing)
-        return sites[:, None]
+        positions = self.wrap(get_initial_positions_of_smooth_potential(self.__class__.__name__))
+        if self.has_ghost():
+            positions = np.concatenate([positions, self.get_random_position()[None, :]])
+        self._check_initial_positions(positions)
+        return positions
 
-    def _check_initial_positions(self, positions, spacing):
-        """
-        Raises a ConfigurationError if the initial positions have infinite energy (only relevant to hard cores).
-        Children may also check the spacing (see GrandCanonicalHardSpherePotential).
-        """
+    def _check_initial_positions(self, positions):
+        """Raises a ConfigurationError if the initial positions have infinite energy (e.g. overlapping hard disks)."""
         if not np.isfinite(self.get_total_value(positions)):
-            raise ConfigurationError(f"The initial lattice of {self.__class__.__name__} has overlapping particles.  "
-                                     f"Use a smaller density.")
+            raise ConfigurationError(f"The initial positions of {self.__class__.__name__} have infinite energy "
+                                     f"(overlapping or coinciding particles).  Change "
+                                     f"range_of_initial_particle_positions or the density.")
 
     @abstractmethod
     def _get_pair_energies(self, distances, scales):
         """
-        Returns the pair energies for the given (non-negative) distances and length-scale factors (vectorised).  A scale
-        of 0 means no interaction.
+        Returns the pair energies for the given distances and length-scale factors.
         """
         raise NotImplementedError
 
     def get_value(self, positions):
-        """Returns the potential energy of the real particles (the ghost is excluded)."""
+        """Returns the potential energy of the real particles."""
         real_positions = positions[:self.get_number_of_real_particles(positions), 0]
-        upper = np.triu_indices(len(real_positions), k=1)
-        distances = np.abs(self._get_minimum_image(real_positions[:, None] - real_positions[None, :]))[upper]
-        return float(np.sum(self._get_pair_energies(distances, np.ones(len(distances)))))
+        first_indices, second_indices = np.triu_indices(len(real_positions), k=1)
+        distances = np.abs(self._get_minimum_image(real_positions[second_indices] - real_positions[first_indices]))
+        return float(np.sum(self._get_pair_energies(distances, 1.0)))
 
     def get_total_value(self, positions):
         """Returns the potential energy of all particles, including the ghost at its current coupling."""
         energy = self.get_value(positions)
-        if self.has_ghost:
+        if self.has_ghost():
             energy += self.get_single_particle_energy(positions, len(positions) - 1)
         return energy
 
@@ -162,53 +153,53 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
         """
         Returns the distance to the next event of the active particle, the index of the particle that triggers it and
-        the hop displacement (the displacement from the active to the vetoing particle at the event).  If the vetoing
-        index equals active_particle_index, the event is a null event (no lift; the mediator simply re-evaluates).
+        the hop displacement.
 
         Parameters
         ----------
         positions : numpy.ndarray
             Array of shape (number_of_rows, 1).
         active_particle_index : int
-            The active particle index (may be the ghost).
+            The active particle index.
         temperature : float
             The sampling temperature.
         movement_direction : int
-            Always 1 (motion in the positive direction).
+            The active-particle direction of motion.
 
         Returns
-        -------
-        float
-            Distance to the next event (always finite).
-        int
-            Index of the vetoing particle.
-        float
-            Hop displacement.
+        ----------
+        distance_to_next_event : float
+            The distance to the next particle event
+        vetoing_index : int
+            The index of the particle that triggers the event.
+        hop_displacement : numpy.ndarray
+            Net displacement through state space from active to vetoing particle.
         """
         scales = self._get_scales(len(positions), active_particle_index)
-        partner_indices = np.nonzero(scales > 0.0)[0]
-        if len(partner_indices) == 0:
-            return size_of_particle_space[0], active_particle_index, size_of_particle_space[0]
-        separations = self._get_separations(positions, active_particle_index)[partner_indices]
-        distance, best = self._get_next_event_of_partners(separations, scales[partner_indices], temperature)
-        if best is None:
-            return distance, active_particle_index, distance
-        hop = self._get_minimum_image(separations[best] - distance)
-        return distance, int(partner_indices[best]), float(hop)
+        interacting_indices = np.nonzero(scales > 0.0)[0]
+        # If ghost is active all interactions are zero if lambda <= 0. Null event occurs and ghost moves around ring
+        if len(interacting_indices) == 0:
+            return size_of_particle_space[0], active_particle_index, 0.0
+        separations = self._get_separations(positions, active_particle_index)[interacting_indices]
+        distance, vetoing_index = self._get_next_event_from_separations(separations, scales[interacting_indices],
+                                                                        temperature)
+        if vetoing_index is None:
+            return distance, active_particle_index, 0.0
+        hop_displacement = self._get_minimum_image(separations[vetoing_index] - distance)
+        return distance, int(interacting_indices[vetoing_index]), float(hop_displacement)
 
     @abstractmethod
-    def _get_next_event_of_partners(self, separations, scales, temperature):
+    def _get_next_event_from_separations(self, separations, scales, temperature):
         """
-        Returns the distance to the next event of the active particle given the minimum-image separations of its
-        interacting partners (in (- L / 2, L / 2]) and their length-scale factors, and the index (into separations) of
-        the vetoing partner, or None for a null event (always a finite distance; see
-        EventChainMediator, which takes the minimum over candidate event tuples).
+        Returns the distance to the next event of the active particle given the minimum-image separations of the
+        particles it interacts with (in (-L/2, L/2]) and their length-scale factors, and the index of the vetoing
+        particle, or None for a null event.
         """
         raise NotImplementedError
 
     @staticmethod
     def get_random_event_chain_velocity():
-        """Returns 1: event chains always move in the positive direction."""
+        """Direction of event chain velocity."""
         return 1
 
     def choose_next_active_particle(self, positions, active_particle_index, movement_direction, veto_index):
@@ -233,20 +224,19 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     @abstractmethod
     def get_ghost_profile(self, positions):
         """
-        Returns a scalar that determines the ghost energy as a function of lambda at the current positions (see
-        get_ghost_energy), and caches it in self._ghost_profile for moves of lambda at fixed positions (read by
-        get_ghost_force, get_next_coupling_event and get_ghost_wall).
+        Returns a scalar that determines the ghost energy as a function of lambda at the current positions, and caches
+        it in self._ghost_profile for moves of lambda at fixed positions.
         """
         raise NotImplementedError
 
     @abstractmethod
     def get_ghost_energy(self, coupling, profile):
-        """Returns the ghost energy U_g(coupling) given the profile (vectorised over coupling or profile)."""
+        """Returns the ghost energy U_g(coupling) given the profile."""
         raise NotImplementedError
 
     @abstractmethod
     def get_ghost_force(self, coupling):
-        """Returns dU_g / d lambda at the cached profile (zero for hard cores, where the wall acts instead)."""
+        """Returns dU_g / d lambda at the cached profile."""
         raise NotImplementedError
 
     @abstractmethod
@@ -262,7 +252,20 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
 
     @abstractmethod
     def get_ghost_wall(self):
-        """Returns the coupling at which the cached ghost becomes blocked by a hard contact (numpy.inf if never)."""
+        """Returns the coupling at which the cached ghost becomes blocked by a hard contact (hard spheres only)."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def choose_coupling_event_particle(self, positions):
+        """
+        Returns the index of the real particle whose ghost pair interaction caused a coupling event of the growing ghost
+        (chosen in proportion to its share of dU_g / d lambda) and its separation from the ghost.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_lift_ratio(self, distance, coupling):
+        """Returns |d u / d r| / (d u / d lambda) for a ghost pair at the given distance and coupling."""
         raise NotImplementedError
 
     @abstractmethod

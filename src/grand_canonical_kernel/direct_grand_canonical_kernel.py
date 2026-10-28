@@ -12,9 +12,9 @@ class DirectGrandCanonicalKernel(GrandCanonicalKernel):
     Kernel events are separated by exponentially distributed distances through the state space with mean
     normalised_distance_between_direct_moves * number_of_particles (the initial number of particles).  At each event,
     with probability 1/2, a particle is proposed at a uniform position and accepted with
-    min(1, z V exp(- beta dU) / (N + 1)) otherwise a uniformly chosen non-active particle is proposed for deletion and
-    accepted with min(1, N exp(beta dU) / (z V)).  With MetropolisMediator (no event-chain label, active particle index
-    None) the deleted particle is chosen among all N (down to N = 0), with the same acceptance probabilities.
+    min(1, z V exp(-beta dU) / (N + 1)) otherwise a uniformly chosen non-active particle is proposed for deletion and
+    accepted with min(1, N exp(beta dU) / (z V)).  With MetropolisMediator the deleted particle is chosen among all N,
+    with the same acceptance probabilities.
     """
 
     def __init__(self, log_activity: float = 0.0, normalised_distance_between_direct_moves: float = 0.05):
@@ -24,7 +24,7 @@ class DirectGrandCanonicalKernel(GrandCanonicalKernel):
         Parameters
         ----------
         log_activity : float, optional
-            log z = beta * mu (thermal wavelength 1).
+            log z = beta * mu.
         normalised_distance_between_direct_moves : float, optional
             Mean distance through the state space between direct moves, per particle.
 
@@ -47,14 +47,14 @@ class DirectGrandCanonicalKernel(GrandCanonicalKernel):
     def initialize(self, potential, temperature):
         super().initialize(potential, temperature)
         potential.ghost_coupling = None
-        self._activity_times_volume = float(np.exp(self._log_activity)) * potential.volume
+        self._activity_times_volume = float(np.exp(self._log_activity)) * potential.get_volume()
 
     def get_distance_to_next_event(self):
         return -np.log(np.random.uniform(0.0, 1.0)) * self._mean_distance_between_direct_moves
 
     def handle_event(self, positions, active_particle_index, movement_direction):
         beta = 1.0 / self._temperature
-        number_of_real_particles = len(positions)  # Variable number of particles in GCE
+        number_of_real_particles = len(positions)
         # Attempt insertion/deletion with p=0.5 each
         if np.random.uniform(0.0, 1.0) < 0.5:
             self._count("direct_insertion_attempts")
@@ -62,7 +62,7 @@ class DirectGrandCanonicalKernel(GrandCanonicalKernel):
             energy = self._potential.get_insertion_energy(positions, candidate_position)
             # Grand canonical insertion acceptance probability
             if np.random.uniform(0.0, 1.0) < (
-                    self._activity_times_volume * np.exp(- beta * energy) / (number_of_real_particles + 1)):
+                    self._activity_times_volume * np.exp(-beta * energy) / (number_of_real_particles + 1)):
                 self._count("direct_insertion_acceptances")
                 positions = np.vstack((positions, candidate_position))
             return positions, active_particle_index, movement_direction
@@ -73,7 +73,7 @@ class DirectGrandCanonicalKernel(GrandCanonicalKernel):
                 return positions, active_particle_index, movement_direction
             chosen_index = np.random.randint(0, number_of_real_particles)
         else:
-            if number_of_real_particles <= 1:  # Can't delete only particle
+            if number_of_real_particles <= 1:  # Can't delete only (and active) particle
                 self._count("direct_deletion_null_proposals")
                 return positions, active_particle_index, movement_direction
             chosen_index = np.random.randint(0, number_of_real_particles - 1)
@@ -92,6 +92,6 @@ class DirectGrandCanonicalKernel(GrandCanonicalKernel):
         return positions, active_particle_index, movement_direction
 
     def get_summary(self):
-        return {"scheme": "direct", "log_activity": self._log_activity, "volume": self._potential.volume,
+        return {"scheme": "direct", "log_activity": self._log_activity, "volume": self._potential.get_volume(),
                 "mean_distance_between_direct_moves": self._mean_distance_between_direct_moves,
                 "potential": self._potential.get_description(), "statistics": self._statistics}

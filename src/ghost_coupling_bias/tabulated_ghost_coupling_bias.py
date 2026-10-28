@@ -7,20 +7,18 @@ import os
 
 class TabulatedGhostCouplingBias(GhostCouplingBias):
     """
-    Class for a ghost-coupling bias read from a JSON file with keys "nodes" and "slopes" (see GhostCouplingBias).  Such
-    files are written by sample_analysis/compute_ghost_coupling_bias.py from fixed-coupling calibration runs.
+    Class for ghost-coupling bias read from an existing JSON file. Such files are written by
+    sample_analysis/compute_ghost_coupling_bias.py from fixed-coupling calibration runs.
     """
 
-    def __init__(self, file_name: str = None, slope_scale: float = 1.0):
+    def __init__(self, file_name: str = None):
         """
         The constructor of the TabulatedGhostCouplingBias class.
 
         Parameters
         ----------
         file_name : str
-            Path (relative to the working directory) of the JSON file containing the nodes and slopes.
-        slope_scale : float, optional
-            Multiplies every slope (1.0 uses the tabulated bias; values other than 1.0 are for testing sensitivity).
+            Path of the JSON file.
 
         Raises
         ------
@@ -32,5 +30,5 @@ class TabulatedGhostCouplingBias(GhostCouplingBias):
                                      f"{self.__class__.__name__}.  Given: {file_name}")
         with open(file_name) as f:
             table = json.load(f)
-        super().__init__(table["nodes"], [slope_scale * slope for slope in table["slopes"]])
+        super().__init__(table["nodes"], table["slopes"])
         self.file_name = file_name

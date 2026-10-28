@@ -34,4 +34,4 @@ class FixedGhostCouplingKernel(GrandCanonicalKernel):
 
     def get_summary(self):
         return {"scheme": "calibration", "fixed_ghost_coupling": self._ghost_coupling,
-                "volume": self._potential.volume, "potential": self._potential.get_description()}
+                "volume": self._potential.get_volume(), "potential": self._potential.get_description()}

@@ -55,6 +55,13 @@ class GrandCanonicalKernel(metaclass=ABCMeta):
         """
         return positions, active_particle_index, movement_direction
 
+    def lifts_into_coupling(self, positions, active_particle_index, vetoing_index, hop_displacement):
+        """
+        Called at each particle event.  Returns True if the event lifts into the ghost coupling, in which case the
+        mediator calls handle_event straight away.
+        """
+        return False
+
     @abstractmethod
     def get_summary(self):
         """Returns a JSON-serialisable dictionary describing the kernel and its production-phase statistics."""

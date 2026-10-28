@@ -203,6 +203,9 @@ class EventChainMediator(Mediator):
                             distance_to_next_event))
                             for event_sampler_index, event_sampler in enumerate(self._event_samplers)]
                     self._potential.aggregate_pointer_hop_distance += self._potential.pointer_hop_distance
+                    distance_to_next_velocity_refreshment -= distance_to_next_event
+                    distance_to_next_measurement -= distance_to_next_event
+                    distance_to_next_kernel_event -= distance_to_next_event
 
                     if self._teleportation_portal:
                         portal_candidate = self._potential.get_portal_candidate(self._positions, active_particle_index,
@@ -220,11 +223,15 @@ class EventChainMediator(Mediator):
                         self._total_number_of_proposed_events += 1
                         if active_particle_index != vetoing_index:
                             self._total_number_of_events += 1
-                        active_particle_index, movement_direction = self._potential.choose_next_active_particle(
-                            self._positions, active_particle_index, movement_direction, vetoing_index)
-                    distance_to_next_velocity_refreshment -= distance_to_next_event
-                    distance_to_next_measurement -= distance_to_next_event
-                    distance_to_next_kernel_event -= distance_to_next_event
+                        if self._grand_canonical_kernel.lifts_into_coupling(self._positions, active_particle_index,
+                                                                            vetoing_index, hop_displacement):
+                            self._positions, active_particle_index, movement_direction = (
+                                self._grand_canonical_kernel.handle_event(self._positions, active_particle_index,
+                                                                          movement_direction))
+                            distance_to_next_kernel_event = self._grand_canonical_kernel.get_distance_to_next_event()
+                        else:
+                            active_particle_index, movement_direction = self._potential.choose_next_active_particle(
+                                self._positions, active_particle_index, movement_direction, vetoing_index)
                     break
 
         self._write_sim_params()

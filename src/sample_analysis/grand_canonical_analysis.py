@@ -1,19 +1,12 @@
-"""Analysis of grand-canonical EventChainMediator runs (any grand_canonical_kernel).
+"""
+Analysis of grand-canonical EventChainMediator runs for us with any grand_canonical_kernel.
 
-Usage (from src):
-    python sample_analysis/grand_canonical_analysis.py <run_directory> [<run_directory> ...]
-        [--exact poisson|tonks] [--output <file.json>]
+Usage: python sample_analysis/grand_canonical_analysis.py <run_directory> [<run_directory> ...]
+        [--exact ideal_gas|hard_disks] [--output <file.json>]
 
-Each run directory contains job_XX sub-directories (as produced by spawn_configs.py), or is itself a single job
-directory.  For every job the script keeps the post-equilibration observations, selects the physical ones (ghost
+For every job the script keeps the post-equilibration observations, selects the physical ones (ghost
 coupling lambda <= 0, or no ghost), and computes P(N), <N>, Var N, <U>, the integrated autocorrelation time of N and
 rates of completed insertions.  Results are pooled over jobs (mean and standard error over jobs).
-
-Exact references:
-    poisson: ideal gas, P(N) = (zV)^N exp(-zV) / N! (truncated to N >= 1 for the direct scheme).
-    tonks:   1D hard disks of diameter sigma on a ring of length L, P(N) proportional to
-             z^N L (L - N sigma)^(N - 1) / N! (N >= 1) and P(0) proportional to 1 (truncated to N >= 1 for the direct
-             scheme).
 """
 import argparse
 import glob
@@ -22,11 +15,14 @@ import math
 import os
 import sys
 import numpy as np
-from scipy.special import gammaln
+from markov_chain_diagnostics import get_iact
+try:
+    from scipy.special import gammaln
+except ImportError:  # e.g. a cluster environment without scipy
+    gammaln = np.vectorize(math.lgamma, otypes=[float])
 
 this_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, this_directory)
-from markov_chain_diagnostics import get_iact
 
 
 def get_job_directories(run_directory):
@@ -70,12 +66,12 @@ def get_exact_distribution(exact, parameters, maximum_number):
     """Returns the exact P(N) for N = 0..maximum_number (normalised), or None."""
     numbers = np.arange(maximum_number + 1)
     log_activity_volume = parameters["log_activity"] + math.log(parameters["volume"])
-    if exact == "poisson":
+    if exact == "ideal_gas":
         log_weights = numbers * log_activity_volume - gammaln(numbers + 1)
-    elif exact == "tonks":
+    elif exact == "hard_disks":
         potential = parameters["potential"]
         if potential["type"] != "hard_sphere":
-            raise ValueError("The tonks reference needs hard disks.")
+            raise ValueError("The hard_disks reference needs a hard-sphere potential.")
         length, sigma = potential["box"][0], potential["diameter"]
         log_weights = np.full(len(numbers), - np.inf)
         log_weights[0] = 0.0
@@ -148,7 +144,43 @@ def analyse_job(job_directory):
                                              statistics["direct_deletion_null_proposals"], 1))
     if "seconds_per_unit_time" in result and "insertions_per_unit_time" in result:
         result["insertions_per_second"] = result["insertions_per_unit_time"] / result["seconds_per_unit_time"]
+    result.update(get_effort(job_directory, parameters, result))
     return parameters, result
+
+
+def get_effort(job_directory, parameters, result):
+    """
+    Computational effort of an event-chain run, in proposed moves per independent physical sample, extending
+    effort = IACT * event rate / acceptance rate (sample_analysis/plot_comp_effort_vs_prefactor.py):
+        effort = tau_N (time) * (proposed particle events + kernel moves) per unit time / kept fraction.
+    The kept fraction (lambda <= 0) accounts for the samples thrown out; the kernel moves (the lambda proposals and
+    ghost-profile updates of the tempered kernel, the insertion/deletion attempts of the direct kernel) account for
+    the work outside the particle event chains. The particle events are counted exactly (number_of_events_at_samples
+    / acceptance rate over the whole run's displacement): sim_params' mean_event_rate divides by the sum of all
+    sampled event distances, which overcounts the displacement when kernel moves, refreshments and measurements
+    interrupt the chains. Returns {} for runs without event-chain statistics (e.g. Metropolis).
+    """
+    acceptance_rate = parameters.get("event_chain", {}).get("acceptance_rate")
+    events_file = os.path.join(job_directory, "number_of_events_at_samples.npy")
+    if not acceptance_rate or not os.path.isfile(events_file) or not np.isfinite(result["iact_number_in_time"]):
+        return {}
+    statistics, total_time = parameters["statistics"], parameters["statistics"]["total_time"]
+    events = float(np.load(events_file)[-1])  # events of the whole run (equilibration included, like total_time)
+    particle_rate = events / acceptance_rate / total_time  # proposed particle events per unit time
+    if parameters["scheme"] == "tempered":
+        kernel_moves = sum(statistics.get(key, 0) for key in ("coupling_moves", "coupling_bias_flips",
+                                                              "coupling_pair_flips", "coupling_thinning_rejections",
+                                                              "coupling_wall_flips", "lifts_to_particle",
+                                                              "coupling_pushes"))  # the old name of lifts_to_particle
+    elif parameters["scheme"] == "direct":
+        kernel_moves = statistics.get("direct_insertion_attempts", 0) + statistics.get("direct_deletion_attempts", 0)
+    else:
+        kernel_moves = 0
+    kernel_rate = kernel_moves / total_time
+    independent_samples_per_unit_time = result["physical_fraction"] / result["iact_number_in_time"]
+    return {"proposed_particle_events_per_unit_time": particle_rate, "kernel_moves_per_unit_time": kernel_rate,
+            "effort_particle_events_only": particle_rate / independent_samples_per_unit_time,
+            "effort": (particle_rate + kernel_rate) / independent_samples_per_unit_time}
 
 
 def mean_and_error(values):
@@ -209,7 +241,7 @@ def analyse_run(run_directory, exact=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("run_directories", nargs="+")
-    parser.add_argument("--exact", choices=["poisson", "tonks"], default=None)
+    parser.add_argument("--exact", choices=["ideal_gas", "hard_disks"], default=None)
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
     summaries = [analyse_run(run_directory, args.exact) for run_directory in args.run_directories]
