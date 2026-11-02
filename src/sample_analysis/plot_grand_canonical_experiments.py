@@ -1,28 +1,25 @@
-"""Summary figures and table of the grand-canonical tempering experiments.
+"""Figures of one grand-canonical experiment: the CDF of every sample array of every scheme, their comparison, and
+the calibrated bias.
 
 Usage (from src):
-    python sample_analysis/plot_grand_canonical_experiments.py [--root output/grand_canonical/experiments]
-        [--figure-directory <dir>]
+    python sample_analysis/plot_grand_canonical_experiments.py <experiment_dir or sweep_dir>
 
-Reads <root>/<experiment>/analysis.json and bias.json (written by config_files/grand_canonical/run_experiment.sh) and
-writes
-    p_of_n.png       P(N) of every scheme (and the exact distribution for hard disks) for every experiment, plus one
-                     p_of_n.png in each experiment's folder;
-    efficiency.png   completed insertions per unit time and tau_N (in units of time) against density;
-    bias.png         the calibrated eta(lambda) (g values = slopes) of every experiment;
-    summary.json     one row per experiment and scheme;
-    summary.md       the same as a markdown table.
-For every experiment (any folder below root with an analysis.json) it also writes, from the physical samples:
-    <scheme>/cdf_<array>.png      the CDF of each sample array (mean over jobs);
-    cdf_comparison_<array>.png    the CDFs of all schemes on the same axes, with the Kolmogorov-Smirnov p-value of each
-                                  scheme against the first;
-    cdf_comparison.json           the Kolmogorov-Smirnov statistics, effective sample sizes and p-values.
+The folder is the experiment's config folder written by make_experiments.py (config_files/grand_canonical/experiments/
+<name>, with experiment.env; for a sweep, every point is plotted). run_experiment.sh runs this at the end of the
+analysis stage (PLOT=false turns it off). Reads <OUTPUT>/analysis.json and <OUTPUT>/bias.json and writes, from the
+physical samples:
+    <OUTPUT>/<scheme>/cdf_<array>.png   the CDF of each sample array (mean over jobs);
+    <OUTPUT>/cdf_comparison_<array>.png the CDFs of all schemes on the same axes, with the Kolmogorov-Smirnov p-value
+                                        of each scheme against the first;
+    <OUTPUT>/cdf_comparison.json        the Kolmogorov-Smirnov statistics, effective sample sizes and p-values;
+    <OUTPUT>/bias.png                   eta(lambda) and its slopes g (if the experiment has a calibrated bias).
 """
 import argparse
 import glob
 import json
 import math
 import os
+import re
 import sys
 import numpy as np
 import matplotlib
@@ -41,7 +38,6 @@ SCHEME_STYLE = {"tempered": ("firebrick", "-", "o", "tempered"),
 """Colours and markers for any other scheme, in order of appearance (colour-blind safe)."""
 EXTRA_COLOURS = ["#009e73", "#e69f00", "#cc79a7", "#56b4e9", "#d55e00", "#7f7f7f"]
 EXTRA_MARKERS = ["D", "v", "P", "X", "*", "h"]
-FAMILIES = ["hard_disks_1d", "soft_disks_1d"]
 """The ghost's own samplers are not physical observables, so they get no CDF."""
 EXCLUDED_SAMPLERS = ("ghost_coupling", "ghost_profile")
 CDF_POINTS = 400
@@ -94,175 +90,6 @@ def get_schemes(runs_by_experiment):
 
 def scheme_name(run_directory):
     return os.path.basename(os.path.dirname(os.path.normpath(run_directory)))
-
-
-def load_experiments(root):
-    experiments = []
-    for directory in sorted(glob.glob(os.path.join(root, "*"))):
-        analysis_file, bias_file = os.path.join(directory, "analysis.json"), os.path.join(directory, "bias.json")
-        if not (os.path.isfile(analysis_file) and os.path.isfile(bias_file)):
-            continue
-        name = os.path.basename(directory)
-        family = next((f for f in FAMILIES if name.startswith(f)), None)
-        if family is None or "_density_" not in name:  # density sweeps only
-            continue
-        density = float(name.split("_")[-1])
-        with open(analysis_file) as f:
-            runs = json.load(f)
-        with open(bias_file) as f:
-            bias = json.load(f)
-        experiments.append({"name": name, "directory": directory, "family": family, "density": density, "bias": bias,
-                            "runs": {scheme_name(run["run_directory"]): run for run in runs}})
-    return experiments
-
-
-def plot_distribution(axes, experiment):
-    """P(N) of every scheme of one experiment, with the exact distribution for hard disks."""
-    schemes = get_schemes([experiment["runs"]])
-    for scheme in schemes:
-        colour, line, marker, label = get_scheme_style(scheme, schemes)
-        run = experiment["runs"].get(scheme)
-        if run is None:
-            continue
-        distribution = np.array(run["distribution"])
-        error = np.array(run["distribution_error"]) if run["distribution_error"] is not None else None
-        axes.errorbar(np.arange(len(distribution)), distribution, yerr=error, color=colour, ls=line, marker=marker,
-                      ms=8, lw=2.5, label=label, zorder=3)
-    exact = next((run["exact"] for run in experiment["runs"].values() if "exact" in run), None)
-    if exact is not None:
-        distribution = np.array(exact["distribution"])
-        axes.plot(np.arange(len(distribution)), distribution, color="grey", lw=7, alpha=0.4, zorder=2, label="exact")
-    reference = experiment["runs"].get("direct") or next(iter(experiment["runs"].values()))
-    spread = 5.0 * math.sqrt(max(reference["variance_number"][0], 1.0))
-    axes.set_xlim(reference["mean_number"][0] - spread, reference["mean_number"][0] + spread)
-    axes.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(integer=True))
-
-
-def plot_distributions(experiments, file_name):
-    """Writes the overview of every experiment to file_name and one P(N) figure into each experiment's folder."""
-    with plt.rc_context(PAPER_STYLE):
-        for experiment in experiments:
-            figure, axes = plt.subplots(figsize=PANEL_SIZE)
-            plot_distribution(axes, experiment)
-            style_axes(axes, "$N$", "$P(N)$", "upper right")
-            save_figure(figure, os.path.join(experiment["directory"], "p_of_n.png"))
-        columns = min(len(experiments), 4)
-        rows = math.ceil(len(experiments) / columns)
-        figure, axes = plt.subplots(rows, columns, figsize=(PANEL_SIZE[0] * columns, PANEL_SIZE[1] * rows),
-                                    squeeze=False)
-        for panel, experiment in zip(axes.flat, experiments):
-            plot_distribution(panel, experiment)
-            style_axes(panel, "$N$", "$P(N)$", "upper right", title=experiment["name"].replace("_", " "))
-        for panel in list(axes.flat)[len(experiments):]:
-            panel.axis("off")
-        save_figure(figure, file_name)
-
-def plot_efficiency(experiments, file_name):
-    families = [family for family in FAMILIES if any(e["family"] == family for e in experiments)]
-    with plt.rc_context(PAPER_STYLE):
-        figure, axes = plt.subplots(2, len(families), figsize=(PANEL_SIZE[0] * len(families), PANEL_SIZE[1] * 2),
-                                    squeeze=False)
-        for column, family in enumerate(families):
-            members = sorted([e for e in experiments if e["family"] == family], key=lambda e: e["density"])
-            densities = [e["density"] for e in members]
-            schemes = get_schemes([e["runs"] for e in members])
-            for scheme in schemes:
-                colour, line, marker, label = get_scheme_style(scheme, schemes)
-                for row, key in enumerate(["insertions_per_unit_time", "iact_number_in_time"]):
-                    values = [e["runs"][scheme][key] if scheme in e["runs"] else [np.nan, np.nan] for e in members]
-                    axes[row, column].errorbar(densities, [v[0] for v in values], yerr=[v[1] for v in values],
-                                               color=colour, ls=line, marker=marker, ms=9, lw=2.5, label=label)
-            for row in range(2):
-                axes[row, column].set_yscale("log")
-            style_axes(axes[0, column], r"density $\rho\sigma$", "insertions per unit time", "lower left",
-                       title=family.replace("_", " "))
-            style_axes(axes[1, column], r"density $\rho\sigma$", r"$\tau_N$ (time units)")
-            axes[1, column].get_legend().remove()
-        save_figure(figure, file_name)
-
-def plot_biases(experiments, file_name):
-    families = [family for family in FAMILIES if any(e["family"] == family for e in experiments)]
-    with plt.rc_context(PAPER_STYLE):
-        figure, axes = plt.subplots(1, len(families), figsize=(PANEL_SIZE[0] * len(families), PANEL_SIZE[1]),
-                                    squeeze=False)
-        for column, family in enumerate(families):
-            members = sorted([e for e in experiments if e["family"] == family], key=lambda e: e["density"])
-            colours = plt.cm.viridis(np.linspace(0.0, 0.85, len(members)))
-            for colour, experiment in zip(colours, members):
-                bias = experiment["bias"]
-                axes[0, column].plot(bias["nodes"], bias["eta_at_nodes"], color=colour, lw=2.5,
-                                     label=f"{experiment['density']}: $\\eta(1)$ = {bias['total']:.2f}")
-            style_axes(axes[0, column], r"$\lambda$", r"$\eta(\lambda)$", "lower right",
-                       title=family.replace("_", " "))
-        save_figure(figure, file_name)
-
-def write_summary(experiments, directory):
-    rows = []
-    for experiment in experiments:
-        bias = experiment["bias"]
-        for scheme in get_schemes([experiment["runs"]]):
-            run = experiment["runs"].get(scheme)
-            if run is None:
-                continue
-            """Independent check (no exact result needed): the canonical calibration at N_cal gives beta mu_ex(N_cal),
-                hence the predicted ratio P(N_cal + 1) / P(N_cal) = z V exp(- beta mu_ex) / (N_cal + 1)."""
-            calibration_number = bias["number_of_real_particles"]
-            distribution = np.array(run["distribution"])
-            distribution_error = np.array(run["distribution_error"]) if run["distribution_error"] else None
-            measured_ratio, measured_ratio_error = None, None
-            if calibration_number + 1 < len(distribution) and distribution[calibration_number] > 0.0:
-                measured_ratio = float(distribution[calibration_number + 1] / distribution[calibration_number])
-                if distribution_error is not None and distribution[calibration_number + 1] > 0.0:
-                    measured_ratio_error = float(measured_ratio * math.sqrt(
-                        (distribution_error[calibration_number] / distribution[calibration_number]) ** 2 +
-                        (distribution_error[calibration_number + 1] / distribution[calibration_number + 1]) ** 2))
-            predicted_ratio = math.exp(run["log_activity"] + math.log(run["volume"]) - bias["total"] -
-                                       math.log(calibration_number + 1))
-            predicted_ratio_error = predicted_ratio * bias["total_error"] if bias.get("total_error") else None
-            rows.append({"experiment": experiment["name"], "scheme": scheme, "jobs": run["number_of_jobs"],
-                         "calibration_number": calibration_number,
-                         "measured_ratio": [measured_ratio, measured_ratio_error],
-                         "predicted_ratio": [predicted_ratio, predicted_ratio_error],
-                         "iact_number_seconds": run.get("iact_number_in_seconds"),
-                         "insertions_per_second": run.get("insertions_per_second"),
-                         "log_activity": run["log_activity"], "eta_1": bias["total"],
-                         "eta_1_error": bias.get("total_error"), "eta_1_exact": bias.get("exact_total_hard_disks"),
-                         "eta_1_thermodynamic_integration": bias.get("thermodynamic_integration_total"),
-                         "mean_number": run["mean_number"], "variance_number": run["variance_number"],
-                         "exact_mean_number": run["exact"]["mean_number"] if "exact" in run else None,
-                         "mean_deviation_in_errors": run.get("mean_number_deviation_in_errors"),
-                         "insertions_per_unit_time": run.get("insertions_per_unit_time"),
-                         "insertion_acceptance": run.get("insertion_acceptance"),
-                         "tau_number_time": run["iact_number_in_time"],
-                         "physical_fraction": run["physical_fraction"],
-                         "coupling_density_spread": run.get("coupling_density_relative_spread_on_0_1")})
-    with open(os.path.join(directory, "summary.json"), "w") as f:
-        json.dump(rows, f, indent=1)
-
-    def fmt(pair, digits=3):
-        if pair is None or pair[0] is None or not np.isfinite(pair[0]):
-            return "-"
-        if pair[1] is None or not np.isfinite(pair[1]):
-            return f"{pair[0]:.{digits}f}"
-        return f"{pair[0]:.{digits}f} ± {pair[1]:.{digits}f}"
-
-    lines = ["| experiment | scheme | η(1) = βμ_ex (calibration) | ⟨N⟩ | exact ⟨N⟩ | Var N | "
-             "P(N_cal+1)/P(N_cal) measured | predicted from calibration | insertions / time | insertions / s | "
-             "τ_N (time) | τ_N (s) | λ-density spread on (0,1] | kept (λ ≤ 0) |", "|" + "---|" * 14]
-    for row in rows:
-        eta = f"{row['eta_1']:.3f}" + (f" ± {row['eta_1_error']:.3f}" if row["eta_1_error"] else "")
-        if row["eta_1_exact"] is not None:
-            eta += f" (exact {row['eta_1_exact']:.3f})"
-        if row["eta_1_thermodynamic_integration"] is not None:
-            eta += f" (TI {row['eta_1_thermodynamic_integration']:.3f})"
-        exact_mean = "-" if row["exact_mean_number"] is None else f"{row['exact_mean_number']:.3f}"
-        lines.append(f"| {row['experiment']} | {row['scheme']} | {eta} | {fmt(row['mean_number'])} | {exact_mean} | "
-                     f"{fmt(row['variance_number'])} | {fmt(row['measured_ratio'])} | {fmt(row['predicted_ratio'])} | "
-                     f"{fmt(row['insertions_per_unit_time'], 4)} | {fmt(row['insertions_per_second'], 1)} | "
-                     f"{fmt(row['tau_number_time'], 1)} | {fmt(row['iact_number_seconds'], 3)} | "
-                     f"{fmt(row['coupling_density_spread'], 2)} | {100.0 * row['physical_fraction'][0]:.1f}% |")
-    with open(os.path.join(directory, "summary.md"), "w") as f:
-        f.write("\n".join(lines) + "\n")
 
 
 def load_physical_observables(job_directory):
@@ -385,24 +212,42 @@ def plot_cdfs(experiment_directory):
     return True
 
 
+def get_output_directory(experiment_directory):
+    """OUTPUT from the experiment's experiment.env."""
+    with open(os.path.join(experiment_directory, "experiment.env")) as f:
+        match = re.search(r"^OUTPUT=(.*)$", f.read(), re.MULTILINE)
+    if match is None:
+        raise ValueError(f"No OUTPUT in {experiment_directory}/experiment.env")
+    return match.group(1).strip().strip('"')
+
+
+def plot_experiment(experiment_directory):
+    output = get_output_directory(experiment_directory)
+    if not os.path.isfile(os.path.join(output, "analysis.json")):
+        print(f"No analysis.json in {output} (run the analysis stage first)")
+        return
+    if plot_cdfs(output):
+        print(f"Wrote the CDF figures of {output}")
+    bias_file = os.path.join(output, "bias.json")
+    if os.path.isfile(bias_file):
+        from compute_ghost_coupling_bias import plot_bias
+        with open(bias_file) as f:
+            plot_bias(json.load(f), os.path.join(output, "bias.png"))
+        print(f"Wrote {output}/bias.png")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--root", default="output/grand_canonical/experiments")
-    parser.add_argument("--figure-directory", default=None)
-    args = parser.parse_args()
-    directory = args.figure_directory or args.root
-    os.makedirs(directory, exist_ok=True)
-    experiments = load_experiments(args.root)
-    plot_distributions(experiments, os.path.join(directory, "p_of_n.png"))
-    plot_efficiency(experiments, os.path.join(directory, "efficiency.png"))
-    plot_biases(experiments, os.path.join(directory, "bias.png"))
-    write_summary(experiments, directory)
-    print(f"Wrote figures and summary for {len(experiments)} experiments to {directory}")
-    # CDFs of every experiment, written next to its runs
-    experiment_directories = sorted(os.path.dirname(file_name) for file_name in
-                                    glob.glob(os.path.join(args.root, "**", "analysis.json"), recursive=True))
-    plotted = sum(plot_cdfs(experiment_directory) for experiment_directory in experiment_directories)
-    print(f"Wrote CDF figures for {plotted} experiments")
+    parser.add_argument("experiment_directory")
+    directory = parser.parse_args().experiment_directory
+    if not os.path.isfile(os.path.join(directory, "experiment.env")) and os.path.isfile(
+            os.path.join(directory, "sweep.json")):
+        points = sorted(os.path.dirname(file_name) for file_name in
+                        glob.glob(os.path.join(directory, "*", "experiment.env")))
+    else:
+        points = [directory]
+    for point in points:
+        plot_experiment(point)
 
 
 if __name__ == "__main__":

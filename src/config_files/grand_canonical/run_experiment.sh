@@ -4,15 +4,19 @@
 # The folder is one written by make_experiments.py (absolute, or relative to the current directory). With SULIS=true
 # in experiment.env (sulis = true in the spec) the stages are submitted to Slurm by sulis_experiment.sh instead of
 # being run here; run it on Sulis then.
-# Optional environment variables: STAGES (below), MAX_CPUS (default: number of cores - 1) and PYTHON (default:
-# /opt/homebrew/bin/python3.11 if present, else python3; it needs numpy, scipy and matplotlib).
+# Optional environment variables: STAGES (below), MAX_CPUS (default: number of cores - 1), PLOT (default true; false
+# skips the figures) and PYTHON (default: /opt/homebrew/bin/python3.11 if present, else python3; it needs numpy, scipy
+# and matplotlib).
 #
 # Stages (STAGES, default all four; e.g. STAGES="production analysis" ./run_experiment.sh <dir> to rerun only those):
 #   calibration  runs calibration.ini over ghost_coupling = 0, 1/K, ..., (K-1)/K (CALIBRATION_JOBS jobs each);
-#   bias         sample_analysis/compute_ghost_coupling_bias.py writes <OUTPUT>/bias.json (+ bias.png), including
-#                the suggested log_activity;
+#   bias         sample_analysis/compute_ghost_coupling_bias.py writes <OUTPUT>/bias.json, including the suggested
+#                log_activity, and (unless PLOT=false) bias.png, so the bias can be checked before production;
 #   production   runs <scheme>.ini for every scheme in SCHEMES (PRODUCTION_JOBS jobs each) at one log_activity;
-#   analysis     sample_analysis/grand_canonical_analysis.py writes <OUTPUT>/analysis.json.
+#   analysis     sample_analysis/grand_canonical_analysis.py writes <OUTPUT>/analysis.json; then (unless PLOT=false)
+#                sample_analysis/plot_grand_canonical_experiments.py plots the CDF of every sample array of every
+#                scheme, their comparison (cdf_comparison_*.png, cdf_comparison.json with Kolmogorov-Smirnov
+#                p-values) and redraws bias.png.
 # calibration and bias are skipped when nothing needs them (a fixed LOG_ACTIVITY and no tabulated bias).
 #
 # <experiment_dir>/experiment.env (written by make_experiments.py) holds the settings:
@@ -137,9 +141,10 @@ fi
 
 if has_stage bias && $NEEDS_CALIBRATION; then
     start_stage "Computing the ghost-coupling bias from the calibration runs."
+    BIAS_FIGURE=()
+    if [ "${PLOT:-true}" != false ]; then BIAS_FIGURE=(--figure "$OUTPUT/bias.png"); fi
     "$PYTHON" sample_analysis/compute_ghost_coupling_bias.py "$OUTPUT/calibration" --output "$OUTPUT/bias.json" \
-        --sub-bins "$SUB_BINS" --figure "$OUTPUT/bias.png" \
-        > "$EXPERIMENT_DIR/bias.log"
+        --sub-bins "$SUB_BINS" ${BIAS_FIGURE[@]+"${BIAS_FIGURE[@]}"} > "$EXPERIMENT_DIR/bias.log"
     "$PYTHON" config_files/grand_canonical/print_experiment_results.py bias "$OUTPUT/bias.json"
     end_stage "bias computation"
 fi
@@ -184,6 +189,9 @@ if has_stage analysis; then
     "$PYTHON" sample_analysis/grand_canonical_analysis.py "${RUNS[@]}" ${EXACT_FLAG[@]+"${EXACT_FLAG[@]}"} \
         --output "$OUTPUT/analysis.json" > "$EXPERIMENT_DIR/analysis.log"
     "$PYTHON" config_files/grand_canonical/print_experiment_results.py analysis "$OUTPUT/analysis.json"
+    if [ "${PLOT:-true}" != false ]; then
+        "$PYTHON" sample_analysis/plot_grand_canonical_experiments.py "$EXPERIMENT_DIR"
+    fi
     end_stage "analysis"
 fi
 

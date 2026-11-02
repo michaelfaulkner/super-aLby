@@ -30,13 +30,13 @@ OUTPUT_ROOT = "output/grand_canonical/experiments"
 SCHEME_KERNELS = {"tempered": "tempered_grand_canonical_kernel", "direct": "direct_grand_canonical_kernel",
                   "metropolis": "direct_grand_canonical_kernel"}
 INTEGER_KEYS = {"number_of_particles", "calibration_bins", "calibration_jobs", "calibration_observations", "sub_bins",
-                "production_jobs", "production_observations", "equilibration", "moves_per_sweep"}
+                "production_jobs", "production_observations", "equilibration", "moves_per_sweep", "compression_window"}
 FLOAT_KEYS = {"ring_length", "temperature", "distance_between_measurements", "parked_length",
               "distance_between_coupling_moves", "mean_coupling_move_length", "distance_between_direct_moves",
               "noise_width", "refreshment_lower_limit", "refreshment_upper_limit", "refreshment_distance"}
 LIST_KEYS = {"schemes", "samplers"}
 STRING_KEYS = {"potential", "log_activity", "refreshment", "range_of_initial_particle_positions"}
-BOOLEAN_KEYS = {"coupled_lifting", "redraw_ghost"}
+BOOLEAN_KEYS = {"coupled_lifting", "redraw_ghost", "compression_flow"}
 """Keys every experiment needs; the refreshment keys depend on the refreshment type."""
 """Optional per-scheme run lengths, e.g. tempered_production_observations, overriding the shared key for one scheme."""
 OVERRIDE_KEYS = {f"{scheme}_{key}" for scheme in SCHEME_KERNELS for key in ("production_observations", "equilibration")}
@@ -148,6 +148,8 @@ def make_experiment(name, s, potential_parameters, sulis):
                         f"mean_coupling_move_length = {s['mean_coupling_move_length']}",
                         f"coupled_lifting = {s['coupled_lifting']}",
                         f"redraw_ghost = {s['redraw_ghost']}",
+                        f"compression_flow = {s['compression_flow']}",
+                        f"compression_window = {s['compression_window']}",
                         "", "[TabulatedGhostCouplingBias]", f"file_name = {output}/bias.json"])
         elif scheme == "direct":
             write_ecmc("direct.ini", production_samplers, run_length(scheme, "equilibration"),

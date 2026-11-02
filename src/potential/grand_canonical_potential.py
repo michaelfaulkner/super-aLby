@@ -268,6 +268,112 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         """Returns |d u / d r| / (d u / d lambda) for a ghost pair at the given distance and coupling."""
         raise NotImplementedError
 
+    """Compression flow of TemperedGrandCanonicalKernel (compression_flow = True).  While lambda moves, the rows of a
+        chain around the ghost move with it: the excess gaps (spacing minus the reference contact c for real pairs,
+        lambda c for ghost pairs) are all scaled by the same factor, so their sum, the free length, shrinks by 2 c per
+        unit growth of lambda.  The flow is linear in lambda between synchronisations.  Below compression_split only the
+        ghost moves (between its two neighbours)."""
+    compression_split = 0.0
+
+    def get_compression_contact(self):
+        """Returns the reference contact distance c of real pairs in the compression flow."""
+        raise NotImplementedError(f"{self.__class__.__name__} has no compression flow.")
+
+    def get_compression_chain(self, positions, window):
+        """
+        Returns (left_wall, movers, right_wall) for the compression flow of the ghost (last row): the rows that move
+        with lambda, in ring order from the left wall, i.e. [L_w, ..., L_1, ghost, R_1, ..., R_w] with
+        w = min(window, (N - 1) // 2), and the two frozen rows just outside them (the same row if N is odd and the
+        window covers the ring).  window = 0 moves only the ghost between its two neighbours.
+        """
+        number_of_real_particles = len(positions) - 1
+        ghost_index = number_of_real_particles
+        window = min(window, (number_of_real_particles - 1) // 2)
+        forward = np.mod(positions[:-1, 0] - positions[-1, 0], size_of_particle_space[0])
+        if window == 0:  # Only the two neighbours of the ghost are needed
+            return int(np.argmax(forward)), np.array([ghost_index]), int(np.argmin(forward))
+        """Real particles in ring order going forwards from the ghost: R_1 first, L_1 last."""
+        order = np.argsort(forward)
+        movers = np.concatenate([order[number_of_real_particles - window:], [ghost_index], order[:window]])
+        return int(order[number_of_real_particles - 1 - window]), movers.astype(int), int(order[window])
+
+    def _get_compression_gaps(self, positions, chain, coupling):
+        """Returns the excess gaps between consecutive rows of the chain (from the left wall to the right wall), which
+        gaps belong to the ghost, and the reference contact distances at the given coupling."""
+        left_wall, movers, right_wall = chain
+        length = size_of_particle_space[0]
+        contact = self.get_compression_contact()
+        offsets = np.mod(positions[movers, 0] - positions[left_wall, 0], length)
+        span = np.mod(positions[right_wall, 0] - positions[left_wall, 0], length)
+        if right_wall == left_wall:
+            span = length
+        ghost_pairs = np.zeros(len(movers) + 1, dtype=bool)
+        ghost_position = int(np.nonzero(movers == len(positions) - 1)[0][0])
+        ghost_pairs[[ghost_position, ghost_position + 1]] = True
+        contacts = np.where(ghost_pairs, coupling * contact, contact)
+        gaps = np.diff(np.concatenate([[0.0], offsets, [span]])) - contacts
+        return gaps, ghost_pairs, contacts
+
+    def get_compression_flow(self, positions, chain, coupling):
+        """
+        Returns (rate_constant, free_length, free_length_slope, velocities) of the compression flow: the free length of
+        the chain shrinks by free_length_slope = 2 c per unit growth of lambda, the flow changes the configuration
+        volume at the relative rate rate_constant / free_length (rate_constant = 2 c * number of moving rows), and
+        velocities holds d x / d lambda of every row (zero for the rows that do not move).
+        """
+        gaps, ghost_pairs, _ = self._get_compression_gaps(positions, chain, coupling)
+        contact = self.get_compression_contact()
+        free_length = float(np.sum(gaps))
+        gap_velocities = -2.0 * contact * gaps / free_length + np.where(ghost_pairs, contact, 0.0)
+        velocities = np.zeros(len(positions))
+        velocities[chain[1]] = np.cumsum(gap_velocities)[:-1]
+        return 2.0 * contact * len(chain[1]), free_length, 2.0 * contact, velocities
+
+    def apply_compression(self, positions, chain, old_coupling, new_coupling):
+        """
+        Moves the rows of the chain along the compression flow from old_coupling to new_coupling: every excess gap of
+        the chain is scaled by the same factor.
+        """
+        left_wall, movers, _ = chain
+        gaps, ghost_pairs, _ = self._get_compression_gaps(positions, chain, old_coupling)
+        contact = self.get_compression_contact()
+        free_length = np.sum(gaps)
+        scale = (free_length - 2.0 * (new_coupling - old_coupling) * contact) / free_length
+        new_contacts = np.where(ghost_pairs, new_coupling * contact, contact)
+        offsets = np.cumsum(gaps * scale + new_contacts)[:-1]
+        positions[movers, 0] = np.mod(positions[left_wall, 0] + offsets, size_of_particle_space[0])
+
+    """The energy along the compression flow.  The defaults are for potentials whose energy does not change along the
+        flow (hard spheres); GrandCanonicalSoftSpherePotential overrides them.  Between synchronisations the flow line
+        is cached by prepare_compression, and the reversal rate of lambda is split into two factors: the near factor
+        [v_lambda (beta dU_near/dlambda + J - g)]^+ (pairs within a few ring neighbours, evaluated exactly) and one
+        factor per remaining (tail) pair, sampled together by thinning with a single random pair per proposal."""
+
+    def prepare_compression(self, positions, velocities, coupling, lowest, highest, temperature):
+        """Caches the flow line through positions (moving at velocities = d x / d lambda from coupling) and returns the
+        interval of lambda (inside [lowest, highest]) in which the cache and its bounds are valid."""
+        return lowest, highest
+
+    def get_compression_energy_rate(self, coupling, direction):
+        """Returns the near-factor energy rate beta d U_near / d t at coupling, with lambda moving in direction."""
+        return 0.0
+
+    def get_compression_energy_rate_bound(self, coupling, step, direction):
+        """Returns an upper bound of get_compression_energy_rate while lambda moves a further distance step."""
+        return 0.0
+
+    def get_compression_step_cap(self, coupling, direction):
+        """Returns the longest lambda step for which get_compression_energy_rate_bound is valid."""
+        return np.inf
+
+    def get_compression_tail_rate_bound(self):
+        """Returns the bound of the summed tail-pair reversal rates, valid in the interval of prepare_compression."""
+        return 0.0
+
+    def accept_compression_tail_event(self, coupling, direction):
+        """Thinning of a tail proposal at coupling: returns True if one random tail pair reverses lambda."""
+        return False
+
     @abstractmethod
     def get_description(self):
         """Returns a JSON-serialisable dictionary that describes the potential."""

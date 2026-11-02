@@ -1,6 +1,7 @@
 """Module for the abstract GhostCouplingBias class."""
 from abc import ABCMeta
 from base.exceptions import ConfigurationError
+import bisect
 import numpy as np
 
 
@@ -99,3 +100,21 @@ class GhostCouplingBias(metaclass=ABCMeta):
         """
         index = int(np.searchsorted(self._nodes, coupling, side='right' if direction > 0 else 'left')) - 1
         return self._slopes[min(max(index, 0), len(self._slopes) - 1)]
+
+    def get_next_node(self, coupling, direction):
+        """Returns the end of the interval in the given direction."""
+        if direction > 0:
+            index = int(np.searchsorted(self._nodes, coupling, side='right'))
+            return float(self._nodes[min(index, len(self._nodes) - 1)])
+        index = int(np.searchsorted(self._nodes, coupling, side='left')) - 1
+        return float(self._nodes[max(index, 0)])
+
+    def get_slope_range(self, lower, upper):
+        """Returns the smallest and largest slope g on the intervals that overlap [lower, upper] (0 <= lower <= upper
+        <= 1)."""
+        if not hasattr(self, "_node_list"):
+            self._node_list, self._slope_list = self._nodes.tolist(), self._slopes.tolist()
+        first = max(bisect.bisect_right(self._node_list, lower) - 1, 0)
+        last = min(max(bisect.bisect_left(self._node_list, upper) - 1, first), len(self._slope_list) - 1)
+        slopes = self._slope_list[first:last + 1]
+        return min(slopes), max(slopes)

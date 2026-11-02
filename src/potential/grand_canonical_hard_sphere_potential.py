@@ -11,6 +11,9 @@ class GrandCanonicalHardSpherePotential(GrandCanonicalPotential):
     kernel.
     """
 
+    """Below lambda = 1/2 the two neighbours of the ghost can touch across it, so their gaps are not a simplex."""
+    compression_split = 0.5
+
     def __init__(self, diameter: float = 1.0):
         """
         The constructor of the GrandCanonicalHardSpherePotential class.
@@ -92,6 +95,10 @@ class GrandCanonicalHardSpherePotential(GrandCanonicalPotential):
     def get_lift_ratio(self, distance, coupling):
         """The contact gap r - lambda * sigma closes at speed 1 in r and sigma in lambda."""
         return 1.0 / self._diameter
+
+    def get_compression_contact(self):
+        """Reference contact distance of the compression flow, the diameter (exact gaps of hard spheres)."""
+        return self._diameter
 
     def get_description(self):
         return {"type": "hard_sphere", "diameter": self._diameter, "box": [float(size_of_particle_space[0])]}

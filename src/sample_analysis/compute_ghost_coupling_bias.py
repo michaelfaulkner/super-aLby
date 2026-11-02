@@ -101,14 +101,16 @@ def compute_bias(calibration, sub_bins):
               "temperature": parameters["temperature"], "potential": potential}
     # Checks of eta(1) = beta mu_ex: thermodynamic integration (soft) or the exact result (1D hard disks)
     if potential["type"] == "soft_sphere":
-        ti_couplings = np.append(couplings, 1.0)
         ti_slopes = [record["thermodynamic_integration_slope"] for record in bins]
-        """The slope at lambda = 1 is not measured: the last trapezoid uses the FEP increment of the last bin 
-        instead."""
+        """The slope at lambda = 1 is not measured, and the one at lambda = 0 is not the limit lambda -> 0+ (a parked
+        ghost can sit on a particle, so <A> diverges while lambda <A>_lambda stays finite: g jumps at 0). The first
+        and the last trapezoid therefore use the FEP increments of the first and the last bin instead."""
         trapezoid = getattr(np, "trapezoid", None) or np.trapz
-        result["thermodynamic_integration_total"] = float(trapezoid(ti_slopes, couplings) +
+        result["thermodynamic_integration_total"] = float(bins[0]["eta_increment"] +
+                                                          trapezoid(ti_slopes[1:], couplings[1:]) +
                                                           bins[-1]["eta_increment"])
-        result["thermodynamic_integration_slopes"] = ti_slopes
+        result["thermodynamic_integration_slopes"] = ti_slopes[1:]
+        result["thermodynamic_integration_couplings"] = [float(coupling) for coupling in couplings[1:]]
     if potential["type"] == "hard_sphere":
         length, sigma, n = potential["box"][0], potential["diameter"], calibration[0][3][0]
         result["exact_total_hard_disks"] = float(- (n * math.log(length - (n + 1) * sigma) - math.log(length) -
@@ -135,7 +137,8 @@ def plot_bias(result, file_name):
         style_axes(axes[0], r"$\lambda$", r"$\eta(\lambda)$", title=title)
         axes[1].stairs(slopes, nodes, color="firebrick", lw=2.5, baseline=None, label="calibration")
         if "thermodynamic_integration_slopes" in result:
-            axes[1].plot(result["calibration_couplings"], result["thermodynamic_integration_slopes"], "D",
+            axes[1].plot(result.get("thermodynamic_integration_couplings", result["calibration_couplings"]),
+                         result["thermodynamic_integration_slopes"], "D",
                          color="black", ms=8, label=r"$\beta\langle \partial_\lambda U_g\rangle$ (TI)")
         style_axes(axes[1], r"$\lambda$", r"$g(\lambda) = \eta'(\lambda)$", "lower right")
         save_figure(figure, file_name)
