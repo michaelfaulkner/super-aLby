@@ -149,13 +149,18 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
         order = np.argsort(np.mod(coordinates - coordinates[ghost_index], length))
         rank = np.empty(number_of_rows, dtype=int)
         rank[order] = np.arange(number_of_rows)
-        pair_range = min(self._compression_pair_range, (number_of_rows - 1) // 2)
+        pair_range = min(self._compression_pair_range, number_of_rows // 2)
         offsets = np.arange(1, pair_range + 1)
         first = np.repeat(order, pair_range)
         second = order[(np.arange(number_of_rows)[:, None] + offsets[None, :]).ravel() % number_of_rows]
         moving = velocities != 0.0
         moving[ghost_index] = True
         keep = moving[first] | moving[second]
+        """With an even number of rows, the pairs half the ring apart are listed from both ends: keep one."""
+        if 2 * pair_range == number_of_rows:
+            keep &= (np.tile(offsets, number_of_rows) < pair_range) | (np.repeat(np.arange(number_of_rows), pair_range)
+                                                                       < pair_range)
+        tail_empty = 2 * pair_range + 1 >= number_of_rows
         first, second = first[keep], second[keep]
         distances = np.mod(coordinates[second] - coordinates[first], length)  # Forward, folded when used
         rates = velocities[second] - velocities[first]
@@ -169,12 +174,13 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
         half_width = max(coupling - lowest, highest - coupling)
         while True:
             low, high = max(lowest, coupling - half_width), min(highest, coupling + half_width)
-            shortest = min(float(np.min(stretches + stretch_rates * (low - coupling))),
-                           float(np.min(stretches + stretch_rates * (high - coupling))))
+            shortest = np.inf if tail_empty else min(float(np.min(stretches + stretch_rates * (low - coupling))),
+                                                     float(np.min(stretches + stretch_rates * (high - coupling))))
             near_ends = np.concatenate([distances + rates * (low - coupling), distances + rates * (high - coupling),
                                         [0.5 * length]])
             if shortest > 0.0 and np.min(near_ends) > 0.0 and np.max(near_ends) < length:
-                tail_bound = prefactor * (1.0 / shortest ** self._power + speed / shortest ** (self._power + 1.0))
+                tail_bound = 0.0 if tail_empty else prefactor * (1.0 / shortest ** self._power +
+                                                                 speed / shortest ** (self._power + 1.0))
                 total_tail_bound = len(moving_rows) * (number_of_rows - 1) * tail_bound
                 if total_tail_bound < 5.0 or half_width < 0.02:
                     break
