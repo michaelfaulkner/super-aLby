@@ -96,7 +96,7 @@ def load_physical_observables(job_directory):
     """Returns {sample array name: physical post-equilibration samples} for one job (one entry per column)."""
     parameters, samples = load_job(job_directory)
     start = parameters["number_of_equilibration_iterations"] + 1
-    physical = get_physical_mask(samples)
+    physical = get_physical_mask(samples, parameters)
     observables = {}
     for file_name in sorted(glob.glob(os.path.join(job_directory, "checkpoint_00_sample_of_*.npy"))):
         name = os.path.basename(file_name)[len("checkpoint_00_sample_of_"):-len(".npy")]

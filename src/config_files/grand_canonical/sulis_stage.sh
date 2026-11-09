@@ -52,8 +52,8 @@ run_task() {   # run_task <list of configs>: runs the config on line SLURM_ARRAY
 
 case "$STAGE" in
     spawn_calibration)
-        LAST_COUPLING="$("$PYTHON" -c "print(($CALIBRATION_BINS - 1) / $CALIBRATION_BINS)")"
-        spawn "$EXPERIMENT_DIR/calibration.ini" "$CALIBRATION_JOBS" 0.0 "$LAST_COUPLING" \
+        LAST_COUPLING="$("$PYTHON" -c "print(1.0 - 2.0 / $CALIBRATION_BINS)")"  # Grid -1, -1 + 2/K, ..., 1 - 2/K
+        spawn "$EXPERIMENT_DIR/calibration.ini" "$CALIBRATION_JOBS" -1.0 "$LAST_COUPLING" \
             "$((CALIBRATION_BINS - 1))" FixedGhostCouplingKernel ghost_coupling > "$EXPERIMENT_DIR/calibration_jobs.txt"
         ;;
     spawn_production)

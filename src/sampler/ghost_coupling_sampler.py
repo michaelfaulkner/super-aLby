@@ -6,7 +6,7 @@ import numpy as np
 class GhostCouplingSampler(ObservationSampler):
     """
     Class for taking observations of the ghost coupling lambda (for grand-canonical event-chain Monte Carlo).
-    Observations with lambda <= 0 are exact grand-canonical samples of the real particles; NaN is recorded if there is
+    Observations with lambda <= -1 are exact grand-canonical samples of the real particles; NaN is recorded if there is
     no ghost. This sample is used to determine which measurements are physical and to diagnose whether the lambda
     space is being sampled in the desired fashion e.g. uniformly.
     """

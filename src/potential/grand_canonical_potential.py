@@ -16,8 +16,9 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     which has shape (number_of_rows, 1).
 
     If self.ghost_coupling is not None, the last row of positions is the ghost particle and self.ghost_coupling is
-    its coupling lambda in [-parked_length, 1].  Every ghost-real pair interacts as a real-real pair with its length
-    scale multiplied by lambda (lambda <= 0 means no interaction, lambda = 1 means a full particle).
+    its coupling lambda in [-1 - parked_length, 1], the ghost diameter in units of sigma.  Every ghost-real pair
+    interacts as a real-real pair with its length scale multiplied by (1 + lambda) / 2, i.e. the additive contact
+    (1 + lambda) sigma / 2 (lambda <= -1 means no interaction, lambda = 1 means a full particle).
     """
 
     def __init__(self, prefactor: float = 1.0, **kwargs):
@@ -42,6 +43,8 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         self._initial_number_of_real_particles = number_of_particles
         self.ghost_coupling = None
         self._ghost_profile = None
+        """Coupling below which only the ghost moves in the compression flow (-1: the whole flow is one region)."""
+        self.compression_split = -1.0
 
     def get_volume(self):
         return float(size_of_particle_space[0])
@@ -61,6 +64,11 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         """Returns a position (array of shape (1,)) drawn uniformly from the ring."""
         return np.random.uniform(0.0, size_of_particle_space[0], 1)
 
+    @staticmethod
+    def get_ghost_scale(coupling):
+        """Returns the length-scale factor max((1 + lambda) / 2, 0) of the ghost-real pairs at coupling lambda."""
+        return np.maximum(0.5 * (1.0 + np.asarray(coupling, dtype=float)), 0.0)
+
     def _get_minimum_image(self, separations):
         return separations - size_of_particle_space[0] * np.round(separations / size_of_particle_space[0])
 
@@ -71,12 +79,13 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     def _get_scales(self, number_of_rows, index):
         """
         Returns the factor that multiplies each pair interaction in the potential with the particle at index. It is 1
-        for two real particles, lambda for a pair with the ghost when lambda > 0, and 0 when the ghost is parked.
+        for two real particles, (1 + lambda) / 2 for a pair with the ghost when lambda > -1, and 0 when the ghost is
+        parked.
         """
         scales = np.ones(number_of_rows)
         if self.has_ghost():
             ghost_index = number_of_rows - 1
-            ghost_scale = max(self.ghost_coupling, 0.0)
+            ghost_scale = float(self.get_ghost_scale(self.ghost_coupling))
             if index == ghost_index:
                 scales[:] = ghost_scale
             else:
@@ -128,7 +137,7 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         return energy
 
     def get_single_particle_energy(self, positions, index):
-        """Returns the interaction energy of particle index with all other rows (ghost pairs scaled by lambda)."""
+        """Returns the interaction energy of particle index with all other rows (ghost pairs at the ghost scale)."""
         scales = self._get_scales(len(positions), index)
         mask = scales > 0.0
         return float(np.sum(self._get_pair_energies(np.abs(self._get_separations(positions, index)[mask]),
@@ -177,7 +186,7 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         """
         scales = self._get_scales(len(positions), active_particle_index)
         interacting_indices = np.nonzero(scales > 0.0)[0]
-        # If ghost is active all interactions are zero if lambda <= 0. Null event occurs and ghost moves around ring
+        # If ghost is active all interactions are zero if lambda <= -1. Null event occurs and ghost moves around ring
         if len(interacting_indices) == 0:
             return size_of_particle_space[0], active_particle_index, 0.0
         separations = self._get_separations(positions, active_particle_index)[interacting_indices]
@@ -255,26 +264,6 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         """Returns the coupling at which the cached ghost becomes blocked by a hard contact (hard spheres only)."""
         raise NotImplementedError
 
-    @abstractmethod
-    def choose_coupling_event_particle(self, positions):
-        """
-        Returns the index of the real particle whose ghost pair interaction caused a coupling event of the growing ghost
-        (chosen in proportion to its share of dU_g / d lambda) and its separation from the ghost.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_lift_ratio(self, distance, coupling):
-        """Returns |d u / d r| / (d u / d lambda) for a ghost pair at the given distance and coupling."""
-        raise NotImplementedError
-
-    """Compression flow of TemperedGrandCanonicalKernel (compression_flow = True).  While lambda moves, the rows of a
-        chain around the ghost move with it: the excess gaps (spacing minus the reference contact c for real pairs,
-        lambda c for ghost pairs) are all scaled by the same factor, so their sum, the free length, shrinks by 2 c per
-        unit growth of lambda.  The flow is linear in lambda between synchronisations.  Below compression_split only the
-        ghost moves (between its two neighbours)."""
-    compression_split = 0.0
-
     def get_compression_contact(self):
         """Returns the reference contact distance c of real pairs in the compression flow."""
         raise NotImplementedError(f"{self.__class__.__name__} has no compression flow.")
@@ -310,24 +299,24 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         ghost_pairs = np.zeros(len(movers) + 1, dtype=bool)
         ghost_position = int(np.nonzero(movers == len(positions) - 1)[0][0])
         ghost_pairs[[ghost_position, ghost_position + 1]] = True
-        contacts = np.where(ghost_pairs, coupling * contact, contact)
+        contacts = np.where(ghost_pairs, self.get_ghost_scale(coupling) * contact, contact)
         gaps = np.diff(np.concatenate([[0.0], offsets, [span]])) - contacts
         return gaps, ghost_pairs, contacts
 
     def get_compression_flow(self, positions, chain, coupling):
         """
         Returns (rate_constant, free_length, free_length_slope, velocities) of the compression flow: the free length of
-        the chain shrinks by free_length_slope = 2 c per unit growth of lambda, the flow changes the configuration
-        volume at the relative rate rate_constant / free_length (rate_constant = 2 c * number of moving rows), and
+        the chain shrinks by free_length_slope = c per unit growth of lambda, the flow changes the configuration
+        volume at the relative rate rate_constant / free_length (rate_constant = c * number of moving rows), and
         velocities holds d x / d lambda of every row (zero for the rows that do not move).
         """
         gaps, ghost_pairs, _ = self._get_compression_gaps(positions, chain, coupling)
         contact = self.get_compression_contact()
         free_length = float(np.sum(gaps))
-        gap_velocities = -2.0 * contact * gaps / free_length + np.where(ghost_pairs, contact, 0.0)
+        gap_velocities = -contact * gaps / free_length + np.where(ghost_pairs, 0.5 * contact, 0.0)
         velocities = np.zeros(len(positions))
         velocities[chain[1]] = np.cumsum(gap_velocities)[:-1]
-        return 2.0 * contact * len(chain[1]), free_length, 2.0 * contact, velocities
+        return contact * len(chain[1]), free_length, contact, velocities
 
     def apply_compression(self, positions, chain, old_coupling, new_coupling):
         """
@@ -338,8 +327,8 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         gaps, ghost_pairs, _ = self._get_compression_gaps(positions, chain, old_coupling)
         contact = self.get_compression_contact()
         free_length = np.sum(gaps)
-        scale = (free_length - 2.0 * (new_coupling - old_coupling) * contact) / free_length
-        new_contacts = np.where(ghost_pairs, new_coupling * contact, contact)
+        scale = (free_length - (new_coupling - old_coupling) * contact) / free_length
+        new_contacts = np.where(ghost_pairs, self.get_ghost_scale(new_coupling) * contact, contact)
         offsets = np.cumsum(gaps * scale + new_contacts)[:-1]
         positions[movers, 0] = np.mod(positions[left_wall, 0] + offsets, size_of_particle_space[0])
 

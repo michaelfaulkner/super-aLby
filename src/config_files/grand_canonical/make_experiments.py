@@ -36,7 +36,7 @@ FLOAT_KEYS = {"ring_length", "temperature", "distance_between_measurements", "pa
               "noise_width", "refreshment_lower_limit", "refreshment_upper_limit", "refreshment_distance"}
 LIST_KEYS = {"schemes", "samplers"}
 STRING_KEYS = {"potential", "log_activity", "refreshment", "range_of_initial_particle_positions"}
-BOOLEAN_KEYS = {"coupled_lifting", "redraw_ghost", "compression_flow"}
+BOOLEAN_KEYS = {"compression_flow"}
 """Keys every experiment needs; the refreshment keys depend on the refreshment type."""
 """Optional per-scheme run lengths, e.g. tempered_production_observations, overriding the shared key for one scheme."""
 OVERRIDE_KEYS = {f"{scheme}_{key}" for scheme in SCHEME_KERNELS for key in ("production_observations", "equilibration")}
@@ -69,7 +69,7 @@ def make_experiment(name, s, potential_parameters, sulis):
     missing = sorted(required - set(samplers))
     if missing:
         raise SystemExit(f"Experiment [{name}]: samplers must include {', '.join(missing)} (the analysis needs N, and "
-                         f"lambda to keep only the physical lambda <= 0 samples of tempered runs).")
+                         f"lambda to keep only the physical lambda <= -1 samples of tempered runs).")
     directory = os.path.join(EXPERIMENT_ROOT, name)
     os.makedirs(directory, exist_ok=True)
     output = f"{OUTPUT_ROOT}/{name}"
@@ -136,7 +136,7 @@ def make_experiment(name, s, potential_parameters, sulis):
     production_samplers = ", ".join(samplers)
     write_ecmc("calibration.ini", "particle_number_sampler, ghost_profile_sampler", s["equilibration"],
                s["calibration_observations"],
-               "fixed_ghost_coupling_kernel", ["ghost_coupling = 0.0"])
+               "fixed_ghost_coupling_kernel", ["ghost_coupling = -1.0"])
     for scheme in schemes:
         if scheme == "tempered":
             write_ecmc("tempered.ini", production_samplers, run_length(scheme, "equilibration"),
@@ -146,8 +146,6 @@ def make_experiment(name, s, potential_parameters, sulis):
                         f"normalised_distance_between_coupling_moves = "
                         f"{normalised(s['distance_between_coupling_moves'])}",
                         f"mean_coupling_move_length = {s['mean_coupling_move_length']}",
-                        f"coupled_lifting = {s['coupled_lifting']}",
-                        f"redraw_ghost = {s['redraw_ghost']}",
                         f"compression_flow = {s['compression_flow']}",
                         f"compression_window = {s['compression_window']}",
                         "", "[TabulatedGhostCouplingBias]", f"file_name = {output}/bias.json"])

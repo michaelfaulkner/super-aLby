@@ -7,4 +7,4 @@ class NoGhostCouplingBias(GhostCouplingBias):
 
     def __init__(self):
         """The constructor of the NoGhostCouplingBias class."""
-        super().__init__([0.0, 1.0], [0.0])
+        super().__init__([-1.0, 1.0], [0.0])

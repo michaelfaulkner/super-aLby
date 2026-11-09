@@ -11,7 +11,8 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
     r"""
     Class for grand-canonical ECMC with nonreversible tempering of a single ghost particle.
 
-    The ghost is the last row of positions. Its coupling lambda lies in [-parked_length, 1] and moves at speed v_lambda.
+    The ghost is the last row of positions. Its coupling lambda (the ghost diameter in units of sigma) lies in
+    [-1 - parked_length, 1] and moves at speed v_lambda.
     The augmented target is z^N / N! * exp(- beta * U(x, y; lambda) + eta(lambda)) / V, uniform over the
     N + 1 event-chain labels and the directions. eta is given by ghost_coupling_bias.
 
@@ -21,18 +22,17 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
       - flips of v_lambda at rate [v_lambda * (beta * dU_g / d lambda - g(lambda))]^+, sampled by thinning
         the sum of the neighbour rate [v_lambda * beta * dU_g / d lambda]^+ and the bias rate [- v_lambda * g(lambda)]^+
       - a hard wall at the ghost clearance (only for hard spheres)
-      - uniform resampling of the ghost position when lambda crosses 0 upwards
       - insertion at lambda = 1: the ghost becomes real and a new parked ghost appears at a uniform position at
-        lambda = -parked_length, accepted with min(1, z V / (N + 2) * exp(eta(- parked_length) - eta(1)));
-      - deletion at lambda = -parked_length: null if the event-chain label is on the parked ghost, else the parked
+        lambda = -1 - parked_length, accepted with min(1, z V / (N + 2) * exp(eta(-1 - parked_length) - eta(1)));
+      - deletion at lambda = -1 - parked_length: null if the event-chain label is on the parked ghost, else the parked
         ghost is removed and a uniformly chosen real particle becomes the ghost at lambda = 1, accepted with
-        min(1, (N + 1) / (z V) * exp(eta(1) - eta(- parked_length))). A rejected jump flips v_lambda.
+        min(1, (N + 1) / (z V) * exp(eta(1) - eta(-1 - parked_length))). A rejected jump flips v_lambda.
     """
 
     def __init__(self, ghost_coupling_bias: GhostCouplingBias = NoGhostCouplingBias(), log_activity: float = 0.0,
-                 parked_length: float = 1.0, normalised_distance_between_coupling_moves: float = 0.05,
-                 mean_coupling_move_length: float = 1.0, coupled_lifting: bool = True,
-                 redraw_ghost: bool = False, compression_flow: bool = False, compression_window: int = 1000):
+                 parked_length: float = 2.0, normalised_distance_between_coupling_moves: float = 0.05,
+                 mean_coupling_move_length: float = 2.0, compression_flow: bool = False,
+                 compression_window: int = None):
         """
         The constructor of the TemperedGrandCanonicalKernel class.
 
@@ -43,22 +43,18 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
         log_activity : float, optional
             log z = beta * mu.
         parked_length : float, optional
-            Length of the parked interval [- parked_length, 0] of lambda.
+            Length of the parked interval [-1 - parked_length, -1] of lambda.
         normalised_distance_between_coupling_moves : float, optional
             Mean distance through the state space between coupling moves, per particle.
         mean_coupling_move_length : float, optional
             Mean distance travelled by lambda during one set of coupling moves.
-        coupled_lifting : bool, optional
-            If True, ghost-pair events can lift between lambda and the particles.
-        redraw_ghost : bool, optional
-            If True, the ghost position is redrawn uniformly whenever lambda crosses 0 upwards.
         compression_flow : bool, optional
-            If True, the ghost's neighbourhood moves with lambda during coupling moves: the excess gaps of the ghost
+            If True, the ghost's neighbourhood moves with lambda during coupling moves. The excess gaps of the ghost
             and its compression_window neighbours on each side are scaled together (for hard spheres, below
-            lambda = 1/2 only the ghost moves, keeping its relative place between its two neighbours).  Replaces
-            coupled_lifting.
+            lambda = 0 only the ghost moves, keeping its relative place between its two neighbours).
         compression_window : int, optional
-            Number of neighbours on each side of the ghost that move with lambda >= 1/2 (capped at (N - 1) // 2).
+            Number of neighbours on each side of the ghost that move during compression_flow moves (None: the whole
+            ring).
 
         Raises
         ------
@@ -75,37 +71,44 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
             raise ConfigurationError(f"Give values greater than 0.0 for parked_length, "
                                      f"normalised_distance_between_coupling_moves and mean_coupling_move_length in "
                                      f"{self.__class__.__name__}.")
-        if compression_flow and coupled_lifting:
-            raise ConfigurationError(f"compression_flow replaces coupled_lifting: set coupled_lifting = False in "
-                                     f"{self.__class__.__name__}.")
-        if compression_window < 0:
+        if compression_window is not None and compression_window < 0:
             raise ConfigurationError(f"Give a non-negative compression_window in {self.__class__.__name__}.")
         self._bias = ghost_coupling_bias
         self._log_activity = log_activity
         self._parked_length = parked_length
+        self._lowest_coupling = -1.0 - parked_length  # The bottom of the parked interval
         self._mean_distance_between_coupling_moves = normalised_distance_between_coupling_moves * number_of_particles
         self._mean_coupling_move_length = mean_coupling_move_length
-        self._coupled_lifting = coupled_lifting
-        self._redraw_ghost = redraw_ghost
         self._compression_flow = compression_flow
-        self._compression_window = compression_window
-        self._lifted_from_particles = False
+        self._compression_window = compression_window if compression_window is not None else number_of_particles
+        """Compression flow, set up by _set_up_compression_flow: the region of lambda (None = parked, inner or outer),
+            the coupling at which the particles were last moved, the chain of moving rows, J = rate constant / free
+            length, the free length and its decrease per unit lambda, the coupling interval in which the flow cache
+            is valid, and the last thinning step length."""
+        self._flow_region = None
+        self._synchronised_coupling = None
+        self._flow_chain = None
+        self._flow_rate_constant = None
+        self._free_length = None
+        self._free_length_slope = None
+        self._flow_lowest_coupling = None
+        self._flow_highest_coupling = None
+        self._thinning_step = None
         self._activity_times_volume = None
         self._coupling_direction = 1  # Lambda space velocity
         self._last_extreme = None
         self._statistics = {key: 0 for key in [
             "coupling_moves", "insertion_attempts", "insertion_acceptances", "deletion_attempts",
-            "deletion_null_proposals", "deletion_acceptances", "coupling_bias_flips", "coupling_pair_flips",
-            "coupling_thinning_rejections",
-            "coupling_wall_flips", "ghost_redraws", "upward_passages", "downward_passages", "lifts_to_particle",
-            "lifts_to_coupling", "compression_flips", "compression_thinning_rejections", "compression_tail_flips"]}
+            "deletion_null_proposals", "deletion_acceptances", "coupling_bias_flips", "coupling_thinning_rejections",
+            "coupling_wall_flips", "upward_passages", "downward_passages", "compression_flips",
+            "compression_thinning_rejections", "compression_tail_flips"]}
 
     def initialize(self, potential, temperature):
         super().initialize(potential, temperature)
         if self._compression_flow and not hasattr(potential, "get_compression_chain"):
             raise ConfigurationError(f"compression_flow in {self.__class__.__name__} needs a GrandCanonicalPotential "
                                      f"with a compression flow.")
-        potential.ghost_coupling = - 0.5 * self._parked_length
+        potential.ghost_coupling = self._lowest_coupling + 0.5 * self._parked_length
         self._activity_times_volume = float(np.exp(self._log_activity)) * potential.get_volume()  # z * V
 
     def get_distance_to_next_event(self):
@@ -117,11 +120,6 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
         distance with mean mean_coupling_move_length.
         """
         self._count("coupling_moves")
-        if self._lifted_from_particles:
-            # A particle hit the ghost and lifted into lambda so lambda shrinks and the active particle resampled
-            self._lifted_from_particles = False
-            self._coupling_direction = -1
-            active_particle_index = np.random.randint(0, len(positions))
         # How far we can move through lambda space before returning to particle state space
         remaining_length = -np.log(np.random.uniform(0.0, 1.0)) * self._mean_coupling_move_length
         if self._compression_flow:
@@ -134,25 +132,25 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
         while True:
             coupling = self._potential.ghost_coupling
             if self._coupling_direction > 0:
-                if coupling < 0.0:  # Moving through lambda < 0 is free as ghost potential is zero
-                    next_stop, kind = 0.0, "reach_zero"  # Ghost position redrawn at lambda = 0 (redraw_ghost)
+                if coupling < -1.0:  # Moving through lambda < -1 is free as ghost potential is zero
+                    next_stop, kind = -1.0, "reach_zero"  # The ghost starts interacting at lambda = -1
                 else:
                     next_stop, kind = 1.0, "top"
                     wall = self._potential.get_ghost_wall()  # Value of lambda that ghost hits hard stop (hard spheres)
                     if wall <= next_stop:  # Do we hit a hard wall before reaching lambda = 1?
                         next_stop, kind = wall, "wall"
             else:
-                if coupling > 0.0:
-                    next_stop, kind = 0.0, "park"  # Stop at 0: below it the ghost no longer interacts
+                if coupling > -1.0:
+                    next_stop, kind = -1.0, "park"  # Stop at -1: below it the ghost no longer interacts
                 else:
-                    next_stop, kind = -self._parked_length, "bottom"
+                    next_stop, kind = self._lowest_coupling, "bottom"
             if kind in ("reach_zero", "bottom"):  # Ghost particle not interacting
-                proposal_distance = pair_distance = np.inf
+                proposal_distance = np.inf
             else:
                 # Next flip proposal = the earlier of the ghost-pair event and the bias event
-                pair_distance = self._potential.get_next_coupling_event(coupling, self._temperature,
-                                                                        self._coupling_direction)
-                proposal_distance = min(pair_distance, self._bias.get_next_event(coupling, self._coupling_direction))
+                proposal_distance = min(self._potential.get_next_coupling_event(coupling, self._temperature,
+                                                                                self._coupling_direction),
+                                        self._bias.get_next_event(coupling, self._coupling_direction))
             distance_to_next_stop = max(self._coupling_direction * (next_stop - coupling), 0.0)
             candidates = [distance_to_next_stop, remaining_length, proposal_distance]
             choice = int(np.argmin(candidates))
@@ -163,31 +161,13 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
             if choice == 1:  # Return to particle space moves
                 return positions, active_particle_index, movement_direction
             if choice == 0:
-                if kind == "reach_zero" and self._redraw_ghost:
-                    self._count("ghost_redraws")
-                    positions[-1] = self._potential.get_random_position()
-                    self._potential.get_ghost_profile(positions)  # Profile of the redrawn ghost
-                elif kind == "wall":
-                    lifted_index = (self._attempt_lift_to_particle(positions, new_coupling)
-                                    if self._coupled_lifting else None)
-                    if lifted_index is not None:
-                        return positions, lifted_index, movement_direction
+                if kind == "wall":
                     self._count("coupling_wall_flips")
                     self._coupling_direction = -1
                 elif kind == "top":
                     positions = self._attempt_insertion(positions)
                 elif kind == "bottom":  # Deletion attempt (the label stays with its particle)
                     positions, active_particle_index = self._attempt_deletion(positions, active_particle_index)
-            elif self._coupled_lifting:
-                # Ghost pairs and the bias are separate factors (no thinning)
-                if proposal_distance == pair_distance:
-                    lifted_index = self._attempt_lift_to_particle(positions, new_coupling)
-                    if lifted_index is not None:
-                        return positions, lifted_index, movement_direction
-                    self._count("coupling_pair_flips")
-                else:
-                    self._count("coupling_bias_flips")
-                self._coupling_direction = -self._coupling_direction
             else:
                 force_rate = beta * self._potential.get_ghost_force(new_coupling)
                 bias_slope = self._bias.get_slope(new_coupling, self._coupling_direction)
@@ -201,11 +181,9 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
                     self._count("coupling_thinning_rejections")
 
     def _get_compression_region(self):
-        """None while the ghost is parked, "inner" for 0 <= lambda < 1/2 and "outer" for lambda >= 1/2 (at a region
-        boundary, the region that lambda is entering)."""
         coupling, direction = self._potential.ghost_coupling, self._coupling_direction
         split = self._potential.compression_split
-        if coupling < 0.0 or (coupling == 0.0 and direction < 0):
+        if coupling < -1.0 or (coupling == -1.0 and direction < 0):
             return None
         if coupling < split or (coupling == split and direction < 0):
             return "inner"
@@ -213,67 +191,32 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
 
     def _run_compression_moves(self, positions, active_particle_index, remaining_length):
         """
-        Coupling moves with the compression flow (compression_flow = True).  While the ghost interacts, lambda moves
-        together with its neighbourhood (GrandCanonicalHardSpherePotential.apply_compression): growing lambda scales
-        the free gaps of the moving rows down, so no hard wall is ever hit, and shrinking lambda scales them up.  The
-        flow changes the configuration volume at the relative rate J = rate_constant / free_length per unit lambda, so
-        lambda reverses at rate [v_lambda (J - g(lambda))]^+: only where the neighbourhood is denser (growing) or more
-        dilute (shrinking) than the bias expects.  The particles are moved lazily, at the end of the coupling moves,
-        at lambda = 1/2 and lambda = 0, and before jumps.  Returns the positions and the (stored) active particle
-        index.
+        Coupling moves with the compression flow.  While the ghost interacts, lambda moves
+        together with its neighbourhood growing lambda scales the free gaps of the moving rows down, so no hard wall is
+        ever hit, and shrinking lambda scales them up.  The flow changes the configuration volume at the relative rate
+        J = rate_constant / free_length per unit lambda, so lambda reverses at rate [v_lambda (J - g(lambda))]^+, only
+        where the neighbourhood is denser (growing) or more dilute (shrinking) than the bias expects.  The particles are
+        moved lazily, at the end of the coupling moves, at lambda = compression_split and lambda = -1, and before
+        jumps.  Returns the positions and the (stored) active particle index.
         """
         potential = self._potential
         split = potential.compression_split
-        state = {"step": 0.25}
-
-        def enter():
-            """Sets up the flow of the region lambda is in (or entering) through the current positions."""
-            state["region"] = self._get_compression_region()
-            state["coupling"] = potential.ghost_coupling
-            if state["region"] is None:
-                return
-            lowest, highest = (0.0, split) if state["region"] == "inner" else (split, 1.0)
-            if len(positions) == 1:  # No real particles: the ghost grows freely
-                state["chain"], state["constant"], state["free"], state["free_slope"] = None, 0.0, np.inf, 1.0
-                velocities = np.zeros(1)
-            else:
-                window = self._compression_window if state["region"] == "outer" else 0
-                state["chain"] = potential.get_compression_chain(positions, window)
-                state["constant"], state["free"], state["free_slope"], velocities = potential.get_compression_flow(
-                    positions, state["chain"], potential.ghost_coupling)
-                if state["free"] <= 0.0:
-                    raise RuntimeError(f"The compression flow has no free length ({state['free']}): reduce the "
-                                       f"compression_contact of {potential.__class__.__name__}.")
-            state["lowest"], state["highest"] = potential.prepare_compression(
-                positions, velocities, potential.ghost_coupling, lowest, highest, self._temperature)
-
-        def synchronise():
-            """Moves the particles along the flow to the current lambda (the flow line, and its cache, stay valid)."""
-            if (state["region"] is not None and state["chain"] is not None and
-                    potential.ghost_coupling != state["coupling"]):
-                potential.apply_compression(positions, state["chain"], state["coupling"], potential.ghost_coupling)
-                state["free"] -= state["free_slope"] * (potential.ghost_coupling - state["coupling"])
-            state["coupling"] = potential.ghost_coupling
-
-        enter()
+        self._thinning_step = 0.5
+        self._set_up_compression_flow(positions)
         while True:
             coupling, direction = potential.ghost_coupling, self._coupling_direction
-            if state["region"] is None:  # Parked ghost: lambda moves freely to 0 or to -parked_length
-                stop = 0.0 if direction > 0 else -self._parked_length
+            if self._flow_region is None:  # Parked ghost: lambda moves freely to -1 or to -1 - parked_length
+                stop = -1.0 if direction > 0 else self._lowest_coupling
                 if remaining_length < abs(stop - coupling):
                     potential.ghost_coupling = coupling + direction * remaining_length
                     return positions, active_particle_index
                 remaining_length -= abs(stop - coupling)
                 potential.ghost_coupling = stop
-                if direction > 0:
-                    if self._redraw_ghost:
-                        self._count("ghost_redraws")
-                        positions[-1] = potential.get_random_position()
-                else:
+                if direction < 0:
                     positions, active_particle_index = self._attempt_deletion(positions, active_particle_index)
-                enter()
+                self._set_up_compression_flow(positions)
                 continue
-            free = state["free"] - state["free_slope"] * (coupling - state["coupling"])
+            free = self._free_length - self._free_length_slope * (coupling - self._synchronised_coupling)
             if direction > 0 and free <= 1.0e-12:  # Jammed neighbourhood (reached only through round-off)
                 self._count("compression_flips")
                 self._coupling_direction = -1
@@ -282,25 +225,25 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
                 until the free length halves).  The near-factor rate is bounded with the extreme bias slope of that
                 step (also a bound for shorter ones).  If more than 3 proposals are expected, the step restarts from
                 twice the previous step length and is halved until the bound is tight."""
-            target = state["highest"] if direction > 0 else state["lowest"]
+            target = self._flow_highest_coupling if direction > 0 else self._flow_lowest_coupling
             step_length = min(abs(target - coupling), potential.get_compression_step_cap(coupling, direction))
             if direction > 0:
-                step_length = min(step_length, 0.25 * free / state["free_slope"])
+                step_length = min(step_length, 0.25 * free / self._free_length_slope)
             end = coupling + direction * step_length
             smallest_slope, largest_slope = self._bias.get_slope_range(min(coupling, end), max(coupling, end))
             slope_bound = smallest_slope if direction > 0 else -largest_slope
             restarted = False
             while True:
-                end_free = free - direction * state["free_slope"] * step_length
+                end_free = free - direction * self._free_length_slope * step_length
                 bound = max(potential.get_compression_energy_rate_bound(coupling, step_length, direction) +
-                            direction * state["constant"] / end_free - slope_bound, 0.0)
-                if bound * step_length <= 3.0 or step_length < 1.0e-12:
+                            direction * self._flow_rate_constant / end_free - slope_bound, 0.0)
+                if bound * step_length <= 3.0 or step_length < 2.0e-12:
                     break
-                if not restarted and 2.0 * state["step"] < step_length:
-                    step_length, restarted = 2.0 * state["step"], True
+                if not restarted and 2.0 * self._thinning_step < step_length:
+                    step_length, restarted = 2.0 * self._thinning_step, True
                 else:
                     step_length *= 0.5
-            state["step"] = max(step_length, 1.0e-6)
+            self._thinning_step = max(step_length, 2.0e-6)
             end = coupling + direction * step_length
             if step_length >= abs(target - coupling):
                 end = target  # Exactly, so that the edge of the interval is recognised below
@@ -313,10 +256,10 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
             potential.ghost_coupling = coupling + direction * step
             remaining_length -= step
             if choice == 0:
-                synchronise()
+                self._move_particles_along_compression_flow(positions)
                 return positions, active_particle_index
             if choice == 2:  # Near factor: J - g and the energy of the near pairs
-                rate = (direction * (state["constant"] / (free - direction * state["free_slope"] * step) -
+                rate = (direction * (self._flow_rate_constant / (free - direction * self._free_length_slope * step) -
                                      self._bias.get_slope(potential.ghost_coupling, direction)) +
                         potential.get_compression_energy_rate(potential.ghost_coupling, direction))
                 if np.random.uniform(0.0, 1.0) * bound < rate:
@@ -332,55 +275,48 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
                 continue
             potential.ghost_coupling = end
             if direction > 0 and end >= 1.0:
-                synchronise()
+                self._move_particles_along_compression_flow(positions)
                 number_of_rows = len(positions)
                 positions = self._attempt_insertion(positions)
                 if len(positions) != number_of_rows:
-                    enter()
-            elif end in (0.0, split, state["lowest"], state["highest"]):
-                synchronise()
-                enter()
+                    self._set_up_compression_flow(positions)
+            elif end in (-1.0, split, self._flow_lowest_coupling, self._flow_highest_coupling):
+                self._move_particles_along_compression_flow(positions)
+                self._set_up_compression_flow(positions)
 
-    def _get_lift_constant(self, number_of_rows):
-        """
-        K = (weight of one particle direction) / (weight of one lambda direction) = 2 * (mean particle distance between
-        coupling moves) / (mean coupling move length * number_of_rows). The particles and lambda share the time in the
-        ratio of their switching distances, the particle share is uniform over the rows and the lambda share over
-        the two directions.
-        """
-        return 2.0 * self._mean_distance_between_coupling_moves / (self._mean_coupling_move_length * number_of_rows)
+    def _set_up_compression_flow(self, positions):
+        """Sets up the flow of the region lambda is in (or entering) through the current positions."""
+        potential = self._potential
+        split = potential.compression_split
+        self._flow_region = self._get_compression_region()
+        self._synchronised_coupling = potential.ghost_coupling
+        if self._flow_region is None:  # Not in compression flow region
+            return
+        lowest, highest = (-1.0, split) if self._flow_region == "inner" else (split, 1.0)
+        if len(positions) == 1:  # No real particles: the ghost grows freely
+            self._flow_chain, self._flow_rate_constant = None, 0.0
+            self._free_length, self._free_length_slope = np.inf, 1.0
+            velocities = np.zeros(1)
+        else:
+            window = self._compression_window if self._flow_region == "outer" else 0
+            self._flow_chain = potential.get_compression_chain(positions, window)
+            (self._flow_rate_constant, self._free_length, self._free_length_slope,
+             velocities) = potential.get_compression_flow(positions, self._flow_chain, potential.ghost_coupling)
+            if self._free_length <= 0.0:
+                raise RuntimeError(f"The compression flow has no free length ({self._free_length}): reduce the "
+                                   f"compression_contact of {potential.__class__.__name__}.")
+        self._flow_lowest_coupling, self._flow_highest_coupling = potential.prepare_compression(
+            positions, velocities, potential.ghost_coupling, lowest, highest, self._temperature)
 
-    def _attempt_lift_to_particle(self, positions, coupling):
-        """
-        Lifts from growing lambda to the particle moving away from the ghost pair that caused the event, with
-        probability min(1, K * |du/dr| / (du/dlambda)).  Returns its index, or None (lambda then flips).  The lambda
-        direction stored for the next coupling moves is redrawn.
-        """
-        index, separation = self._potential.choose_coupling_event_particle(positions)
-        lifted_index = index if separation > 0.0 else len(positions) - 1
-        ratio = self._get_lift_constant(len(positions)) * self._potential.get_lift_ratio(abs(separation), coupling)
-        if np.random.uniform(0.0, 1.0) >= ratio:
-            return None
-        self._count("lifts_to_particle")
-        self._coupling_direction = 1 if np.random.uniform(0.0, 1.0) < 0.5 else -1
-        return lifted_index
-
-    def lifts_into_coupling(self, positions, active_particle_index, vetoing_index, hop_displacement):
-        """
-        At a ghost-pair event of a particle moving towards the interacting ghost, lifts into shrinking lambda with
-        probability min(1, 1 / (K * |du/dr| / (du/dlambda))). Otherwise, the usual lift to the vetoing particle.
-        """
-        ghost_index = len(positions) - 1
-        if (not self._coupled_lifting or active_particle_index == vetoing_index or
-                ghost_index not in (active_particle_index, vetoing_index) or self._potential.ghost_coupling <= 0.0):
-            return False
-        ratio = self._get_lift_constant(len(positions)) * self._potential.get_lift_ratio(abs(hop_displacement),
-                                                                                         self._potential.ghost_coupling)
-        if np.random.uniform(0.0, 1.0) >= 1.0 / ratio:
-            return False
-        self._count("lifts_to_coupling")
-        self._lifted_from_particles = True
-        return True
+    def _move_particles_along_compression_flow(self, positions):
+        """Moves the particles along the flow to the current lambda (the flow line, and its cache, stay valid)."""
+        potential = self._potential
+        if (self._flow_region is not None and self._flow_chain is not None and
+                potential.ghost_coupling != self._synchronised_coupling):
+            potential.apply_compression(positions, self._flow_chain, self._synchronised_coupling,
+                                        potential.ghost_coupling)
+            self._free_length -= self._free_length_slope * (potential.ghost_coupling - self._synchronised_coupling)
+        self._synchronised_coupling = potential.ghost_coupling
 
     def _attempt_insertion(self, positions):
         """Insertion attempt when lambda reaches 1 while growing."""
@@ -390,19 +326,19 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
         self._last_extreme = "top"
         number_of_real_particles = len(positions) - 1
         ratio = (self._activity_times_volume / (number_of_real_particles + 2) *
-                 np.exp(self._bias.get_value(-self._parked_length) - self._bias.get_value(1.0)))
+                 np.exp(self._bias.get_value(self._lowest_coupling) - self._bias.get_value(1.0)))
         if np.random.uniform(0.0, 1.0) < ratio:
             self._count("insertion_acceptances")
             self._last_extreme = "bottom"
-            self._potential.ghost_coupling = -self._parked_length  # New ghost parked at -parked_length, still growing
+            self._potential.ghost_coupling = self._lowest_coupling  # New parked ghost at the bottom, still growing
             positions = np.vstack((positions, self._potential.get_random_position()))
-            self._potential.get_ghost_profile(positions)  # Profile of the new ghost (needed when redraw_ghost = False)
+            self._potential.get_ghost_profile(positions)  # Profile of the new ghost
             return positions
         self._coupling_direction = -1  # Flip velocity if insertion rejected
         return positions
 
     def _attempt_deletion(self, positions, active_particle_index):
-        """Deletion attempt when lambda reaches -parked_length while shrinking."""
+        """Deletion attempt when lambda reaches -1 - parked_length while shrinking."""
         self._count("deletion_attempts")
         if self._last_extreme == "top":
             self._count("downward_passages")
@@ -413,7 +349,7 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
             self._coupling_direction = 1  # Can't delete active particle so flip velocity and grow lambda
             return positions, active_particle_index
         ratio = ((number_of_real_particles + 1) / self._activity_times_volume *
-                 np.exp(self._bias.get_value(1.0) - self._bias.get_value(-self._parked_length)))
+                 np.exp(self._bias.get_value(1.0) - self._bias.get_value(self._lowest_coupling)))
         if np.random.uniform(0.0, 1.0) >= ratio:
             self._coupling_direction = 1
             return positions, active_particle_index
@@ -433,12 +369,12 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
         return positions, active_particle_index
 
     def get_summary(self):
-        return {"scheme": "tempered", "log_activity": self._log_activity, "volume": self._potential.get_volume(),
+        return {"scheme": "tempered", "coupling_convention": "diameter", "log_activity": self._log_activity,
+                "volume": self._potential.get_volume(),
                 "parked_length": self._parked_length,
                 "mean_distance_between_coupling_moves": self._mean_distance_between_coupling_moves,
-                "mean_coupling_move_length": self._mean_coupling_move_length, "coupled_lifting": self._coupled_lifting,
-                "redraw_ghost": self._redraw_ghost, "compression_flow": self._compression_flow,
-                "compression_window": self._compression_window,
+                "mean_coupling_move_length": self._mean_coupling_move_length,
+                "compression_flow": self._compression_flow, "compression_window": self._compression_window,
                 "potential": self._potential.get_description(),
                 "bias": self._bias.get_description(),
                 "statistics": self._statistics}

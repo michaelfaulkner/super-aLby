@@ -9,7 +9,7 @@
 # and matplotlib).
 #
 # Stages (STAGES, default all four; e.g. STAGES="production analysis" ./run_experiment.sh <dir> to rerun only those):
-#   calibration  runs calibration.ini over ghost_coupling = 0, 1/K, ..., (K-1)/K (CALIBRATION_JOBS jobs each);
+#   calibration  runs calibration.ini over ghost_coupling = -1, -1 + 2/K, ..., 1 - 2/K (CALIBRATION_JOBS jobs each);
 #   bias         sample_analysis/compute_ghost_coupling_bias.py writes <OUTPUT>/bias.json, including the suggested
 #                log_activity, and (unless PLOT=false) bias.png, so the bias can be checked before production;
 #   production   runs <scheme>.ini for every scheme in SCHEMES (PRODUCTION_JOBS jobs each) at one log_activity;
@@ -130,9 +130,9 @@ echo "Setting up the grand-canonical experiment $NAME (schemes: $(IFS=,; echo "$
 if has_stage calibration && $NEEDS_CALIBRATION; then
     TOTAL=$((CALIBRATION_BINS * CALIBRATION_JOBS))
     start_stage "Starting the calibration runs ($CALIBRATION_BINS ghost couplings, $CALIBRATION_JOBS jobs each)."
-    # Grid stops at (K-1)/K where K = number of bins, as the final interval sweeps over [(K-1)/K, 1]
-    LAST_COUPLING="$("$PYTHON" -c "print(($CALIBRATION_BINS - 1) / $CALIBRATION_BINS)")"
-    "$RUN_LOCAL" "$EXPERIMENT_DIR/calibration.ini" "$CALIBRATION_JOBS" 0.0 "$LAST_COUPLING" \
+    # Grid stops at 1 - 2/K where K = number of bins, as the final interval sweeps over [1 - 2/K, 1]
+    LAST_COUPLING="$("$PYTHON" -c "print(1.0 - 2.0 / $CALIBRATION_BINS)")"
+    "$RUN_LOCAL" "$EXPERIMENT_DIR/calibration.ini" "$CALIBRATION_JOBS" -1.0 "$LAST_COUPLING" \
         "$((CALIBRATION_BINS - 1))" FixedGhostCouplingKernel ghost_coupling > "$EXPERIMENT_DIR/calibration.log" &
     PIDS=($!)
     wait_with_progress "$TOTAL" "calibration" "$EXPERIMENT_DIR/calibration.log"

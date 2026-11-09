@@ -5,8 +5,9 @@ Usage: python sample_analysis/grand_canonical_analysis.py <run_directory> [<run_
         [--exact ideal_gas|hard_disks] [--output <file.json>]
 
 For every job the script keeps the post-equilibration observations, selects the physical ones (ghost
-coupling lambda <= 0, or no ghost), and computes P(N), <N>, Var N, <U>, the integrated autocorrelation time of N and
-rates of completed insertions.  Results are pooled over jobs (mean and standard error over jobs).
+coupling lambda <= -1, or no ghost; lambda <= 0 for runs from before the diameter convention), and computes P(N),
+<N>, Var N, <U>, the integrated autocorrelation time of N and rates of completed insertions.  Results are pooled over
+jobs (mean and standard error over jobs).
 """
 import argparse
 import glob
@@ -55,11 +56,16 @@ def load_job(job_directory):
     return parameters, samples
 
 
-def get_physical_mask(samples):
+def get_physical_threshold(parameters):
+    """Returns the coupling at and below which the ghost is parked: -1 (diameter convention) or 0 (older runs)."""
+    return -1.0 if parameters is not None and parameters.get("coupling_convention") == "diameter" else 0.0
+
+
+def get_physical_mask(samples, parameters=None):
     coupling = samples.get("ghost_coupling")
     if coupling is None:
         return np.ones(len(samples["particle_number"]), dtype=bool)
-    return np.isnan(coupling) | (coupling <= 0.0)
+    return np.isnan(coupling) | (coupling <= get_physical_threshold(parameters))
 
 
 def get_exact_distribution(exact, parameters, maximum_number):
@@ -91,7 +97,7 @@ def get_exact_distribution(exact, parameters, maximum_number):
 def analyse_job(job_directory):
     parameters, samples = load_job(job_directory)
     numbers = samples["particle_number"]
-    physical = get_physical_mask(samples)
+    physical = get_physical_mask(samples, parameters)
     physical_numbers = numbers[physical].astype(int)
     statistics = parameters["statistics"]
     total_time = statistics["total_time"]
@@ -129,10 +135,11 @@ def analyse_job(job_directory):
                                          max(statistics["deletion_attempts"] -
                                              statistics["deletion_null_proposals"], 1))
         result["upward_passages_per_unit_time"] = statistics["upward_passages"] / total_time
-        """Flatness of the lambda marginal on (0, 1], from the observations of lambda (40 bins)."""
+        """Flatness of the lambda marginal on (-1, 1] (old runs: (0, 1]), from the observations of lambda (40 bins)."""
         couplings = samples.get("ghost_coupling")
-        if couplings is not None and np.any(couplings > 0.0):
-            density, _ = np.histogram(couplings[couplings > 0.0], bins=40, range=(0.0, 1.0))
+        threshold = get_physical_threshold(parameters)
+        if couplings is not None and np.any(couplings > threshold):
+            density, _ = np.histogram(couplings[couplings > threshold], bins=40, range=(threshold, 1.0))
             result["coupling_density_relative_spread_on_0_1"] = float(np.std(density) / np.mean(density))
     elif parameters["scheme"] == "direct":
         result["insertions_per_unit_time"] = statistics["direct_insertion_acceptances"] / total_time
@@ -153,7 +160,7 @@ def get_effort(job_directory, parameters, result):
     Computational effort of an event-chain run, in proposed moves per independent physical sample, extending
     effort = IACT * event rate / acceptance rate (sample_analysis/plot_comp_effort_vs_prefactor.py):
         effort = tau_N (time) * (proposed particle events + kernel moves) per unit time / kept fraction.
-    The kept fraction (lambda <= 0) accounts for the samples thrown out; the kernel moves (the lambda proposals and
+    The kept fraction (lambda <= -1) accounts for the samples thrown out; the kernel moves (the lambda proposals and
     ghost-profile updates of the tempered kernel, the insertion/deletion attempts of the direct kernel) account for
     the work outside the particle event chains. The particle events are counted exactly (number_of_events_at_samples
     / acceptance rate over the whole run's displacement): sim_params' mean_event_rate divides by the sum of all
@@ -257,7 +264,7 @@ def main():
         if "insertions_per_unit_time" in summary:
             line += f" | insertions/time={summary['insertions_per_unit_time'][0]:.4g}"
         line += f" | tau_N(time)={summary['iact_number_in_time'][0]:.4g}"
-        line += f" | kept (lambda <= 0)={100.0 * summary['physical_fraction'][0]:.1f}%"
+        line += f" | kept (parked)={100.0 * summary['physical_fraction'][0]:.1f}%"
         print(line)
     if args.output is not None:
         os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)

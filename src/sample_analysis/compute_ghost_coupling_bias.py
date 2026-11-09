@@ -11,10 +11,16 @@ sys.path.insert(0, this_directory)
 from grand_canonical_analysis import load_job
 
 
+def get_ghost_scale(coupling):
+    """Returns the ghost scale s = max((1 + lambda) / 2, 0) (the ghost-real contact in units of sigma)."""
+    return np.maximum(0.5 * (1.0 + np.asarray(coupling, dtype=float)), 0.0)
+
+
 def get_ghost_energy_difference(potential, profile, coupling, new_coupling):
+    scale, new_scale = get_ghost_scale(coupling), get_ghost_scale(new_coupling)
     if potential["type"] == "soft_sphere":
-        return (new_coupling ** potential["power"] - coupling ** potential["power"]) * profile
-    return np.where(profile >= new_coupling, 0.0, np.inf)
+        return (new_scale ** potential["power"] - scale ** potential["power"]) * profile
+    return np.where(profile >= new_scale, 0.0, np.inf)
 
 
 def load_calibration(calibration_directory):
@@ -37,7 +43,10 @@ def load_calibration(calibration_directory):
             # The ghost profile (clearance or A) sampled at lambda_k
             profiles.append(samples["ghost_profile"])
             numbers.append(int(samples["particle_number"][0]))
-        calibration.append((parameters["fixed_ghost_coupling"], parameters, profiles, numbers))
+        coupling = parameters["fixed_ghost_coupling"]
+        if parameters.get("coupling_convention") != "diameter":  # Old runs: lambda_old = (1 + lambda) / 2
+            coupling = 2.0 * coupling - 1.0
+        calibration.append((coupling, parameters, profiles, numbers))
     calibration.sort(key=lambda item: item[0])
     return calibration
 
@@ -47,15 +56,15 @@ def compute_bias(calibration, sub_bins):
     Implements eta(lambda) - eta(lambda_k) = - ln < exp(-beta [U_g(lambda) - U_g(lambda_k)]) >_{lambda_k}
     """
     couplings = np.array([item[0] for item in calibration])
-    if abs(couplings[0]) > 1.0e-12 or couplings[-1] >= 1.0:
-        raise ValueError("The calibration couplings must start at 0 and stay below 1.")
+    if abs(couplings[0] + 1.0) > 1.0e-12 or couplings[-1] >= 1.0:
+        raise ValueError("The calibration couplings must start at -1 and stay below 1.")
     parameters = calibration[0][1]
     potential = parameters["potential"]
     beta = 1.0 / parameters["temperature"]
     # Bin k runs from lambda_k to the next calibration coupling (the last one to 1)
     bin_edges = np.append(couplings, 1.0)
     number_of_jobs = min(len(item[2]) for item in calibration)
-    nodes, eta = [0.0], [0.0]
+    nodes, eta = [-1.0], [0.0]
     eta_per_job = np.zeros(number_of_jobs)
     eta_per_job_at_nodes = [np.zeros(number_of_jobs)]
     bins = []
@@ -83,15 +92,16 @@ def compute_bias(calibration, sub_bins):
                       "eta_increment": float(- math.log(survival[-1])), "number_of_real_particles": numbers[0]}
         if potential["type"] == "soft_sphere":
             bin_record["thermodynamic_integration_slope"] = float(
-                beta * np.mean(potential["power"] * coupling ** (potential["power"] - 1.0) * pooled)) \
-                if coupling > 0.0 else 0.0
+                beta * np.mean(0.5 * potential["power"] * get_ghost_scale(coupling) ** (potential["power"] - 1.0) *
+                               pooled)) if coupling > -1.0 else 0.0
         bins.append(bin_record)
     nodes = np.array(nodes)
     eta = np.array(eta)
     # The g values with eta piecewise linear between the nodes
     slopes = np.diff(eta) / np.diff(nodes)
     finite_jobs = eta_per_job[np.isfinite(eta_per_job)]
-    result = {"nodes": nodes.tolist(), "slopes": slopes.tolist(), "eta_at_nodes": eta.tolist(),
+    result = {"coupling_convention": "diameter", "nodes": nodes.tolist(), "slopes": slopes.tolist(),
+              "eta_at_nodes": eta.tolist(),
               "total": float(eta[-1]),
               "total_error": float(np.std(finite_jobs, ddof=1) / math.sqrt(len(finite_jobs)))
               if len(finite_jobs) > 1 else None,
@@ -102,8 +112,8 @@ def compute_bias(calibration, sub_bins):
     # Checks of eta(1) = beta mu_ex: thermodynamic integration (soft) or the exact result (1D hard disks)
     if potential["type"] == "soft_sphere":
         ti_slopes = [record["thermodynamic_integration_slope"] for record in bins]
-        """The slope at lambda = 1 is not measured, and the one at lambda = 0 is not the limit lambda -> 0+ (a parked
-        ghost can sit on a particle, so <A> diverges while lambda <A>_lambda stays finite: g jumps at 0). The first
+        """The slope at lambda = 1 is not measured, and the one at lambda = -1 is not the limit lambda -> -1+ (a parked
+        ghost can sit on a particle, so <A> diverges while s <A>_lambda stays finite: g jumps at -1). The first
         and the last trapezoid therefore use the FEP increments of the first and the last bin instead."""
         trapezoid = getattr(np, "trapezoid", None) or np.trapz
         result["thermodynamic_integration_total"] = float(bins[0]["eta_increment"] +

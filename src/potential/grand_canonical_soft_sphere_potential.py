@@ -10,9 +10,10 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
     Class for soft disks on a ring, U(r) = epsilon * (sigma / r) ** power, for use with EventChainMediator or
     MetropolisMediator and a grand-canonical kernel.
 
-    A ghost-real pair at coupling lambda > 0 has sigma -> lambda * sigma, i.e. U_g(r, lambda) = lambda ** power * U(r).
-    Hence, at fixed positions, the ghost energy is U_g(lambda) = lambda ** power * A with A = sum_j u(r_gj) (the energy
-    of a full particle at the ghost position), and dU_g / d lambda = power * lambda ** (power - 1) * A.
+    A ghost-real pair at coupling lambda > -1 has sigma -> s * sigma with the ghost scale s = (1 + lambda) / 2, i.e.
+    U_g(r, lambda) = s ** power * U(r).  Hence, at fixed positions, the ghost energy is U_g(lambda) = s ** power * A
+    with A = sum_j u(r_gj) (the energy of a full particle at the ghost position), and
+    dU_g / d lambda = (power / 2) * s ** (power - 1) * A.
     """
 
     def __init__(self, epsilon: float = 1.0, sigma: float = 1.0, power: float = 12.0,
@@ -30,7 +31,7 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
             The steepness of the potential.
         compression_contact : float, optional
             Reference contact distance c of the compression flow of TemperedGrandCanonicalKernel (excess gaps are the
-            spacings minus c, or minus lambda c next to the ghost); it must stay below the typical spacing.
+            spacings minus c, or minus (1 + lambda) c / 2 next to the ghost); it must stay below the typical spacing.
         compression_pair_range : int, optional
             Pairs up to this many ring neighbours apart are evaluated exactly along the compression flow; all others
             form a tail factor that is sampled by thinning with one random pair per proposal.
@@ -98,30 +99,20 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
 
     def get_ghost_energy(self, coupling, profile):
         coupling = np.asarray(coupling, dtype=float)
-        return np.where(coupling > 0.0, coupling ** self._power * profile, 0.0)
+        return np.where(coupling > -1.0, self.get_ghost_scale(coupling) ** self._power * profile, 0.0)
 
     def get_ghost_force(self, coupling):
-        return self._power * coupling ** (self._power - 1.0) * self._ghost_profile
+        return 0.5 * self._power * self.get_ghost_scale(coupling) ** (self._power - 1.0) * self._ghost_profile
 
     def get_next_coupling_event(self, coupling, temperature, direction):
         if direction < 0 or self._ghost_profile <= 0.0:  
             return np.inf
-        target = coupling ** self._power - np.log(np.random.uniform(0.0, 1.0)) * temperature / self._ghost_profile
-        return target ** (1.0 / self._power) - coupling
+        target = (self.get_ghost_scale(coupling) ** self._power -
+                  np.log(np.random.uniform(0.0, 1.0)) * temperature / self._ghost_profile)
+        return 2.0 * target ** (1.0 / self._power) - 1.0 - coupling
 
     def get_ghost_wall(self):
         return np.inf  # No hard walls for soft sphere potential
-
-    def choose_coupling_event_particle(self, positions):
-        """d u_j / d lambda is proportional to u_j at full coupling, i.e. to r_j ** (- power)."""
-        separations = self._get_minimum_image(positions[:-1, 0] - positions[-1, 0])
-        weights = (np.min(np.abs(separations)) / np.abs(separations)) ** self._power
-        index = int(np.random.choice(len(weights), p=weights / np.sum(weights)))
-        return index, float(separations[index])
-
-    def get_lift_ratio(self, distance, coupling):
-        """u = epsilon * (lambda * sigma / r) ** power, so |du/dr| / (du/dlambda) = lambda / r."""
-        return coupling / distance
 
     def get_compression_contact(self):
         return self._compression_contact
@@ -136,7 +127,7 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
         lambda, so checked at its ends) and v_max the largest rate of change of a pair distance.  Near pairs use the
         minimum image of their forward distance (linear in lambda), folded at L / 2.  The interval, at first the whole
         of [lowest, highest], is narrowed around coupling while a near pair or a stretch would close in it, or while
-        the summed tail bound exceeds 5 per unit lambda (down to a half width of 0.02).
+        the summed tail bound exceeds 2.5 per unit lambda (down to a half width of 0.04).
         """
         self._flow = None
         if self._epsilon == 0.0 or len(positions) < 2:
@@ -145,7 +136,7 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
         coordinates = positions[:, 0].copy()
         number_of_rows = len(positions)
         ghost_index = number_of_rows - 1
-        """Ring order starting at the ghost; particles never pass each other or the ghost while lambda > 0."""
+        """Ring order starting at the ghost; particles never pass each other or the ghost while lambda > -1."""
         order = np.argsort(np.mod(coordinates - coordinates[ghost_index], length))
         rank = np.empty(number_of_rows, dtype=int)
         rank[order] = np.arange(number_of_rows)
@@ -173,19 +164,23 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
         prefactor = self._power * self._epsilon * self._sigma ** self._power / temperature
         half_width = max(coupling - lowest, highest - coupling)
         while True:
-            low, high = max(lowest, coupling - half_width), min(highest, coupling + half_width)
+            """Exactly lowest / highest while the interval reaches them (coupling - (coupling - lowest) may round)."""
+            low = lowest if half_width >= coupling - lowest else coupling - half_width
+            high = highest if half_width >= highest - coupling else coupling + half_width
             shortest = np.inf if tail_empty else min(float(np.min(stretches + stretch_rates * (low - coupling))),
                                                      float(np.min(stretches + stretch_rates * (high - coupling))))
             near_ends = np.concatenate([distances + rates * (low - coupling), distances + rates * (high - coupling),
                                         [0.5 * length]])
             if shortest > 0.0 and np.min(near_ends) > 0.0 and np.max(near_ends) < length:
-                tail_bound = 0.0 if tail_empty else prefactor * (1.0 / shortest ** self._power +
+                """Per pair, beta |d u / d lambda| <= prefactor (s' / r^power + |d r / d lambda| / r^(power + 1)) with
+                    s <= 1 and s' = d s / d lambda = 1/2."""
+                tail_bound = 0.0 if tail_empty else prefactor * (0.5 / shortest ** self._power +
                                                                  speed / shortest ** (self._power + 1.0))
                 total_tail_bound = len(moving_rows) * (number_of_rows - 1) * tail_bound
-                if total_tail_bound < 5.0 or half_width < 0.02:
+                if total_tail_bound < 2.5 or half_width < 0.04:
                     break
             half_width *= 0.5
-            if half_width < 1.0e-6:
+            if half_width < 2.0e-6:
                 raise RuntimeError(f"The compression flow of {self.__class__.__name__} found no valid interval.")
         self._flow = {"coupling": coupling, "coordinates": coordinates, "velocities": velocities.copy(),
                       "distances": distances, "rates": rates, "ghost_pairs": (first == ghost_index) |
@@ -206,30 +201,31 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
 
     def get_compression_energy_rate(self, coupling, direction):
         """
-        beta d U_near / d t: real pairs -power u (d r / dt) / r, ghost pairs power u (v_lambda / lambda - (d r / dt) /
-        r) with u = epsilon (lambda sigma / r) ** power.
+        beta d U_near / d t: real pairs -power u (d r / dt) / r, ghost pairs power u (v_lambda / (2 s) - (d r / dt) /
+        r) with u = epsilon (s sigma / r) ** power and the ghost scale s = (1 + lambda) / 2.
         """
         if self._flow is None:
             return 0.0
         distances, rates, ghost_pairs = self._get_flow_terms(coupling)
-        if coupling <= 0.0:  # The ghost does not interact
+        if coupling <= -1.0:  # The ghost does not interact
             distances, rates, ghost_pairs = distances[~ghost_pairs], rates[~ghost_pairs], ghost_pairs[~ghost_pairs]
-        scales = np.where(ghost_pairs, coupling, 1.0)
+        scales = np.where(ghost_pairs, self.get_ghost_scale(coupling), 1.0)
         energies = (scales * self._sigma / distances) ** self._power
-        relative_rates = np.where(ghost_pairs, 1.0 / max(coupling, 1.0e-300), 0.0) - rates / distances
+        relative_rates = np.where(ghost_pairs, 1.0 / max(1.0 + coupling, 1.0e-300), 0.0) - rates / distances
         return direction * self._flow["prefactor"] * float(np.sum(energies * relative_rates)) / self._sigma ** \
             self._power
 
     def get_compression_energy_rate_bound(self, coupling, step, direction):
         """
         Upper bound of get_compression_energy_rate while lambda moves from coupling a further distance step (at most
-        get_compression_step_cap, inside the interval of prepare_compression).  Along the flow r and lambda are
-        linear in t.  A real pair's d u / dt = -power epsilon sigma^power (d r / dt) / r^(power + 1) is largest at the
-        end of the step.  A ghost pair's d u / dt = power epsilon sigma^power C f(t), with C = v_lambda r - lambda
-        (d r / dt) constant and f = lambda^(power - 1) / r^(power + 1), is bounded exactly: f' changes sign at most
-        once, at t* = ((power - 1) v_lambda r - (power + 1) lambda (d r / dt)) / (2 v_lambda (d r / dt)), so its
-        extreme values on the step are among f(0), f(step) and f(t*).  A pair whose minimum image changes during the
-        step (forward distance crossing L / 2, where it is far apart) is bounded by its modulus.
+        get_compression_step_cap, inside the interval of prepare_compression).  Along the flow r and the ghost scale
+        s = (1 + lambda) / 2 are linear in t, with d s / dt = v_lambda / 2.  A real pair's d u / dt = -power epsilon
+        sigma^power (d r / dt) / r^(power + 1) is largest at the end of the step.  A ghost pair's d u / dt = power
+        epsilon sigma^power C f(t), with C = (d s / dt) r - s (d r / dt) constant and f = s^(power - 1) / r^(power + 1),
+        is bounded exactly: f' changes sign at most once, at t* = ((power - 1) (d s / dt) r - (power + 1) s (d r / dt))
+        / (2 (d s / dt) (d r / dt)), so its extreme values on the step are among f(0), f(step) and f(t*).  A pair whose
+        minimum image changes during the step (forward distance crossing L / 2, where it is far apart) is bounded by its
+        modulus.
         """
         if self._flow is None:
             return 0.0
@@ -240,29 +236,31 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
         crossing = unfolded_end > half_length
         end = np.where(crossing, 2.0 * half_length - unfolded_end, unfolded_end)
         smallest = np.minimum(start, end)
-        end_coupling = max(coupling + direction * step, 0.0)
-        high = max(coupling, end_coupling)
+        scale = float(self.get_ghost_scale(coupling))
+        end_scale = float(self.get_ghost_scale(coupling + direction * step))
+        scale_rate = 0.5 * direction
+        high = max(scale, end_scale)
         bounds = np.where(crossing, np.abs(distance_rates) / smallest ** (self._power + 1.0),
                           -distance_rates / end ** (self._power + 1.0))
         bounds = np.where(ghost_pairs, 0.0, bounds)
         if np.any(ghost_pairs) and high > 0.0:
             ghost_start, ghost_rates = start[ghost_pairs], distance_rates[ghost_pairs]
             ghost_end, ghost_crossing = end[ghost_pairs], crossing[ghost_pairs]
-            constants = direction * ghost_start - coupling * ghost_rates
-            values = [coupling ** (self._power - 1.0) / ghost_start ** (self._power + 1.0),
-                      end_coupling ** (self._power - 1.0) / ghost_end ** (self._power + 1.0)]
-            products = direction * ghost_rates
+            constants = scale_rate * ghost_start - scale * ghost_rates
+            values = [scale ** (self._power - 1.0) / ghost_start ** (self._power + 1.0),
+                      end_scale ** (self._power - 1.0) / ghost_end ** (self._power + 1.0)]
+            products = scale_rate * ghost_rates
             with np.errstate(divide="ignore", invalid="ignore"):
-                critical = (((self._power - 1.0) * direction * ghost_start - (self._power + 1.0) * coupling *
+                critical = (((self._power - 1.0) * scale_rate * ghost_start - (self._power + 1.0) * scale *
                              ghost_rates) / (2.0 * products))
             inside = (products != 0.0) & (critical > 0.0) & (critical < step)
             critical = np.where(inside, critical, 0.0)
-            critical_value = ((coupling + direction * critical) ** (self._power - 1.0) /
+            critical_value = ((scale + scale_rate * critical) ** (self._power - 1.0) /
                               (ghost_start + ghost_rates * critical) ** (self._power + 1.0))
             largest = np.maximum(np.maximum(values[0], values[1]), np.where(inside, critical_value, 0.0))
             smallest_value = np.minimum(np.minimum(values[0], values[1]), np.where(inside, critical_value, np.inf))
             exact = constants * np.where(constants >= 0.0, largest, smallest_value)
-            modulus = ((half_length + high * np.abs(ghost_rates)) * high ** (self._power - 1.0) /
+            modulus = ((0.5 * half_length + high * np.abs(ghost_rates)) * high ** (self._power - 1.0) /
                        smallest[ghost_pairs] ** (self._power + 1.0))
             bounds[ghost_pairs] = np.where(ghost_crossing, modulus, exact)
         return self._flow["prefactor"] * float(np.sum(bounds))
@@ -303,10 +301,10 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
         distance = abs(difference)
         distance_rate = np.sign(difference) * (flow["velocities"][second] - flow["velocities"][first])
         ghost_pair = number_of_rows - 1 in (first, second)
-        if ghost_pair and coupling <= 0.0:
+        if ghost_pair and coupling <= -1.0:
             return False
-        scale = coupling if ghost_pair else 1.0
-        relative_rate = (1.0 / coupling if ghost_pair else 0.0) - distance_rate / distance
+        scale = float(self.get_ghost_scale(coupling)) if ghost_pair else 1.0
+        relative_rate = (1.0 / (1.0 + coupling) if ghost_pair else 0.0) - distance_rate / distance
         rate = direction * flow["prefactor"] * (scale / distance) ** self._power * relative_rate
         return np.random.uniform(0.0, 1.0) * flow["tail_bound"] < rate
 

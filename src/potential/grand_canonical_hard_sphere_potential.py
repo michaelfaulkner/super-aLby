@@ -11,9 +11,6 @@ class GrandCanonicalHardSpherePotential(GrandCanonicalPotential):
     kernel.
     """
 
-    """Below lambda = 1/2 the two neighbours of the ghost can touch across it, so their gaps are not a simplex."""
-    compression_split = 0.5
-
     def __init__(self, diameter: float = 1.0):
         """
         The constructor of the GrandCanonicalHardSpherePotential class.
@@ -32,6 +29,8 @@ class GrandCanonicalHardSpherePotential(GrandCanonicalPotential):
         if diameter <= 0.0 or diameter >= 0.5 * size_of_particle_space[0]:
             raise ConfigurationError(f"Give 0 < diameter < size_of_particle_space / 2 in {self.__class__.__name__}.")
         self._diameter = diameter
+        """Below lambda = 0 the two neighbours of the ghost can touch across it, so their gaps are not a simplex."""
+        self.compression_split = 0.0
 
     def get_initial_positions(self):
         """
@@ -65,7 +64,7 @@ class GrandCanonicalHardSpherePotential(GrandCanonicalPotential):
         return max(float(distances[vetoing_index]), 0.0), vetoing_index
 
     def get_ghost_profile(self, positions):
-        """Returns (and caches) the distance min_j r_gj / sigma in lambda space that the ghost particle can expand."""
+        """Returns (and caches) the clearance min_j r_gj / sigma, the largest ghost scale (1 + lambda) / 2 allowed."""
         if len(positions) == 1:
             self._ghost_profile = np.inf
         else:
@@ -74,7 +73,7 @@ class GrandCanonicalHardSpherePotential(GrandCanonicalPotential):
 
     def get_ghost_energy(self, coupling, profile):
         coupling = np.asarray(coupling, dtype=float)
-        return np.where(coupling > profile, np.inf, 0.0)
+        return np.where(self.get_ghost_scale(coupling) > profile, np.inf, 0.0)
 
     def get_ghost_force(self, coupling):
         return 0.0
@@ -83,18 +82,8 @@ class GrandCanonicalHardSpherePotential(GrandCanonicalPotential):
         return np.inf
 
     def get_ghost_wall(self):
-        return self._ghost_profile
-
-    def choose_coupling_event_particle(self, positions):
-        """Used during lifting moves from lambda space to particle space to select which particle subsequently
-        takes over."""
-        separations = self._get_minimum_image(positions[:-1, 0] - positions[-1, 0])
-        index = int(np.argmin(np.abs(separations)))
-        return index, float(separations[index])
-
-    def get_lift_ratio(self, distance, coupling):
-        """The contact gap r - lambda * sigma closes at speed 1 in r and sigma in lambda."""
-        return 1.0 / self._diameter
+        """The ghost touches a real particle at (1 + lambda) / 2 = min_j r_gj / sigma."""
+        return 2.0 * self._ghost_profile - 1.0
 
     def get_compression_contact(self):
         """Reference contact distance of the compression flow, the diameter (exact gaps of hard spheres)."""
