@@ -57,8 +57,10 @@ class HardDiskPotential(EuclideanSubspacePotential):
             require disk_radius_a = disk_radius_b for dimensionality_of_particle_space > 1).
         packing_fraction : float, optional
             The packing fraction of the disks.  This corresponds to the mean disk density.
-        particle_ratio : int, optional
-            The ratio of the number of particles in species a to the number of particles in species b.
+        particle_ratio_a : int, optional
+            The ratio of the number of particles in species a compared to the number of particles in species b.
+        particle_ratio_b: int, optional
+            The ratio of the number of particles in species b comapred to the number of particles in species a.
         measure_particle_orderings : bool, optional
             When True, the total number of unique particle orderings (in a 1D binary mixture) are tracked throughout
             the simulation.  Using this functionality terminates the simulation once all orderings have been explored.
@@ -344,6 +346,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
                     (active_particle_index - 1) % number_of_particles)
             active_radius = self._get_disk_radius(active_particle_index)
             veto_radius = self._get_disk_radius(vetoing_particle_index)
+            vetoing_particle_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index]
+                                                                          - positions[active_particle_index])[0]
             hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_particle_index] 
                                 - positions[active_particle_index])[0]
             distance_to_next_event = np.abs(vetoing_particle_displacement) - (active_radius + veto_radius)
@@ -426,6 +430,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
         positions[active_particle_index] = get_shortest_vectors_on_torus(positions[active_particle_index])
 
     def _check_for_disk_overlaps(self, positions):
+        """Checks whether there are any overlaps in the system, returns the overlapping
+        pair and their min seperation distance"""
         for particle_index_1 in range(number_of_particles):
             radius_particle_index_1 = self._get_disk_radius(particle_index_1)
             for particle_index_2 in range(particle_index_1 + 1, number_of_particles):
@@ -446,6 +452,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
         return motion_index, other_index
 
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
+        """Swaps the radius of two different sized particles with 100% probability keeping their 
+        current occupied space fixed. Implemented only for a 1D system."""
         if dimensionality_of_particle_space != 1:
             raise SystemError(f"The get_portal_candidate method of {self.__class__.__name__} has been written only for "
                               f"models on the 1D torus.")
@@ -486,8 +494,8 @@ class HardDiskPotential(EuclideanSubspacePotential):
         """Return disk radius for a given particle index."""
         return float(self.disk_radii[particle_index])
 
-    # todo (KEY TODO) see EventChainMediator for todo on modifying this process of measuring the particle orderings
     def _update_particle_orderings(self):
+        """Updates how many configurations the system has been in"""
         binary_ordering_config = tuple((self.disk_radii == self._disk_radius_a).astype(int))
         number = self._get_lowest_rotation(binary_ordering_config)
         if number not in self._array_of_explored_orderings:
@@ -496,4 +504,5 @@ class HardDiskPotential(EuclideanSubspacePotential):
 
     @staticmethod
     def _get_lowest_rotation(binary_ordering_config):
+        """Returns the lowest binary ordering of a configuration"""
         return min(binary_ordering_config[i:] + binary_ordering_config[:i] for i in range(number_of_particles))

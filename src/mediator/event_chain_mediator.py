@@ -128,8 +128,9 @@ class EventChainMediator(Mediator):
                                              f"calculation of pressure estimates made via the pointer-hop distance "
                                              f"(though this is not fully understood).")
         """The following object is set in self._set_arrays_and_counters()"""
-        (self._total_number_of_events, self._state_space_displacement, self._total_event_distance,
-         self._index_space_displacement, self._number_of_index_space_moves) = None, None, None, None, None
+        (self._total_number_of_events, self._total_number_of_proposed_events, self._total_number_of_events_at_samples,
+         self._state_space_displacement, self._total_event_distance, self._index_space_displacement, self._number_of_index_space_moves) = (
+            None, None, [0], None, None, None, None)
         self._teleportation_portal = False
         if not math.isclose(portal_probability, 0.0):
             self._teleportation_portal = True
@@ -225,12 +226,11 @@ class EventChainMediator(Mediator):
     def _set_arrays_and_counters(self):
         """Sets the arrays (e.g. the sample array) and counters before the Markov process."""
         super()._set_arrays_and_counters()
-        # todo could you convert to a single index_space_displacement array in which we store each species individually 
+        # todo could you convert to a single index_space_displacement array in which we store each species individually
         (self._total_number_of_events, self._total_number_of_proposed_events, self._state_space_displacement,
-         self._total_event_distance, self._index_space_displacement, self._index_space_displacement_small, 
-         self._index_space_displacement_large) = 0, 0, 0.0, 0.0, 0, 0, 0
-        (self._number_of_index_space_moves, self._number_of_index_space_moves_small,
-         self._number_of_index_space_moves_large) = 0, 0, 0
+                 self._total_event_distance) = 0, 0, 0.0, 0.0
+        self._index_space_displacement = np.zeros(3)
+        self._number_of_index_space_moves = np.zeros(3)
 
     def _write_sim_params(self):
         """Saves simulation parameters, including mean event rate, number of events occurred at each sample,
@@ -240,11 +240,11 @@ class EventChainMediator(Mediator):
         state_space_velocity = None if self._total_event_distance == 0.0 else (
                 self._state_space_displacement / self._total_event_distance)
         index_space_velocity = None if self._total_event_distance == 0.0 else (
-                self._index_space_displacement / self._total_event_distance)
+                self._index_space_displacement[0] / self._total_event_distance)
         index_velocity_small = None if self._total_event_distance == 0.0 else (
-            self._index_space_displacement_small / self._total_event_distance)
+            self._index_space_displacement[1] / self._total_event_distance)
         index_velocity_large = None if self._total_event_distance == 0.0 else (
-            self._index_space_displacement_large / self._total_event_distance)
+            self._index_space_displacement[2] / self._total_event_distance)
         mean_event_rate = None if self._total_event_distance == 0.0 else (
                 self._total_number_of_events / self._total_event_distance)
         acceptance_rate = None if self._total_number_of_proposed_events == 0 else (
@@ -272,28 +272,24 @@ class EventChainMediator(Mediator):
             if 'SoftDiskPotential' in str(self._potential):
                 delta_index = (vetoing_index - active_particle_index) % number_of_particles
                 if delta_index <= number_of_particles / 2.0:
-                    self._index_space_displacement += delta_index
+                    self._index_space_displacement[0] += delta_index
                 else:
-                    self._index_space_displacement -= (number_of_particles - delta_index)
+                    self._index_space_displacement[0] -= (number_of_particles - delta_index)
             else:
                 if vetoing_index == (active_particle_index + 1) % number_of_particles:
-                    self._index_space_displacement += 1
                     displacement = 1
-                elif vetoing_index == (active_particle_index - 1) % number_of_particles:
-                    self._index_space_displacement -= 1
-                    displacement = -1
-                # todo should we have the following instead of the above? And if so, why wouldn't this also 
-                # cover the case of vetoing_index == (active_particle_index + 1) % number_of_particles?
-                #elif vetoing_index is not None:
-                #    displacement = -((active_particle_index - vetoing_index) % number_of_particles)
                 elif vetoing_index is not None:
+                    displacement = -((active_particle_index - vetoing_index) % number_of_particles)
+                else:
                     displacement = 0
+
+                self._index_space_displacement[0] += displacement
                 if "HardDiskPotential" in str(self._potential) and dimensionality_of_particle_space == 1:
                     if self._potential.disk_radii[active_particle_index] == 1.0:
-                        self._index_space_displacement_small += displacement
-                        self._number_of_index_space_moves_small += 1
+                        self._index_space_displacement[1] += displacement
+                        self._number_of_index_space_moves[1] += 1
                     else:
-                        self._index_space_displacement_large += displacement
-                        self._number_of_index_space_moves_large += 1
+                        self._index_space_displacement[2] += displacement
+                        self._number_of_index_space_moves[2] += 1
                 if displacement != 0:
-                    self._number_of_index_space_moves += 1
+                    self._number_of_index_space_moves[0] += 1
