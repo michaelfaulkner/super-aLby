@@ -40,6 +40,8 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
         ------
         base.exceptions.ConfigurationError
             If epsilon < 0, sigma <= 0 or power <= 1.
+        base.exceptions.ConfigurationError
+            If compression_contact <= 0 or compression_pair_range < 1.
         """
         super().__init__(prefactor=1.0)
         if epsilon < 0.0 or sigma <= 0.0 or power <= 1.0:

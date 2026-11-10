@@ -10,7 +10,7 @@ class GrandCanonicalKernel(metaclass=ABCMeta):
 
     EventChainMediator races the next event of the kernel against the potential, refreshment and measurement events.
     When the kernel event wins, the mediator calls handle_event, which performs the whole kernel move (e.g. an
-    insertion or deletion attempt, or a set of coupling moves, during which the particles are frozen and the kernel
+    insertion or deletion attempt, or a set of coupling moves, during which the event chains are frozen and the kernel
     moves the ghost coupling).
     """
 
@@ -29,12 +29,12 @@ class GrandCanonicalKernel(metaclass=ABCMeta):
     def initialize(self, potential, temperature):
         """
         Stores the potential and temperature and sets the ghost coupling of the potential.  Called by the constructor of
-        EventChainMediator, before the initial positions are generated.
+        EventChainMediator or MetropolisMediator, before the initial positions are generated.
         """
         from potential.grand_canonical_potential import GrandCanonicalPotential
         if not isinstance(potential, GrandCanonicalPotential):
             raise ConfigurationError(f"{self.__class__.__name__} needs a GrandCanonicalPotential child class as the "
-                                     f"potential of EventChainMediator.")
+                                     f"potential of the mediator.")
         self._potential = potential
         self._temperature = temperature
 

@@ -273,18 +273,19 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         Returns (left_wall, movers, right_wall) for the compression flow of the ghost (last row): the rows that move
         with lambda, in ring order from the left wall, i.e. [L_w, ..., L_1, ghost, R_1, ..., R_w] with
         w = min(window, (N - 1) // 2), and the two frozen rows just outside them (the same row if N is odd and the
-        window covers the ring).  window = 0 moves only the ghost between its two neighbours.
+        window covers the ring).  window = 0 moves only the ghost between its two neighbours; None, the whole ring.
         """
         number_of_real_particles = len(positions) - 1
         ghost_index = number_of_real_particles
-        window = min(window, (number_of_real_particles - 1) // 2)
+        window = ((number_of_real_particles - 1) // 2 if window is None else
+                  min(window, (number_of_real_particles - 1) // 2))  # None = the whole ring
         forward = np.mod(positions[:-1, 0] - positions[-1, 0], size_of_particle_space[0])
         if window == 0:  # Only the two neighbours of the ghost are needed
-            return int(np.argmax(forward)), np.array([ghost_index]), int(np.argmin(forward))
+            return np.argmax(forward), np.array([ghost_index]), np.argmin(forward)
         """Real particles in ring order going forwards from the ghost: R_1 first, L_1 last."""
         order = np.argsort(forward)
         movers = np.concatenate([order[number_of_real_particles - window:], [ghost_index], order[:window]])
-        return int(order[number_of_real_particles - 1 - window]), movers.astype(int), int(order[window])
+        return order[number_of_real_particles - 1 - window], movers, order[window]
 
     def _get_compression_gaps(self, positions, chain, coupling):
         """Returns the excess gaps between consecutive rows of the chain (from the left wall to the right wall), which
@@ -308,7 +309,7 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         Returns (rate_constant, free_length, free_length_slope, velocities) of the compression flow: the free length of
         the chain shrinks by free_length_slope = c per unit growth of lambda, the flow changes the configuration
         volume at the relative rate rate_constant / free_length (rate_constant = c * number of moving rows), and
-        velocities holds d x / d lambda of every row (zero for the rows that do not move).
+        velocities holds d x / d lambda of every row.
         """
         gaps, ghost_pairs, _ = self._get_compression_gaps(positions, chain, coupling)
         contact = self.get_compression_contact()
@@ -320,7 +321,7 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
 
     def apply_compression(self, positions, chain, old_coupling, new_coupling):
         """
-        Moves the rows of the chain along the compression flow from old_coupling to new_coupling: every excess gap of
+        Moves the rows of the chain along the compression flow from old_coupling to new_coupling. Every excess gap of
         the chain is scaled by the same factor.
         """
         left_wall, movers, _ = chain
@@ -331,12 +332,6 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
         new_contacts = np.where(ghost_pairs, self.get_ghost_scale(new_coupling) * contact, contact)
         offsets = np.cumsum(gaps * scale + new_contacts)[:-1]
         positions[movers, 0] = np.mod(positions[left_wall, 0] + offsets, size_of_particle_space[0])
-
-    """The energy along the compression flow.  The defaults are for potentials whose energy does not change along the
-        flow (hard spheres); GrandCanonicalSoftSpherePotential overrides them.  Between synchronisations the flow line
-        is cached by prepare_compression, and the reversal rate of lambda is split into two factors: the near factor
-        [v_lambda (beta dU_near/dlambda + J - g)]^+ (pairs within a few ring neighbours, evaluated exactly) and one
-        factor per remaining (tail) pair, sampled together by thinning with a single random pair per proposal."""
 
     def prepare_compression(self, positions, velocities, coupling, lowest, highest, temperature):
         """Caches the flow line through positions (moving at velocities = d x / d lambda from coupling) and returns the
