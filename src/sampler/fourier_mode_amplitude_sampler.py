@@ -6,7 +6,7 @@ import numpy as np
 import math
 import cmath
 
-class FourierAmplitudeSampler(Sampler):
+class FourierModeAmplitudeSampler(Sampler):
     """
     Abstract class for taking observations of the Fourier amplitudes.
     """
@@ -103,8 +103,10 @@ class FourierAmplitudeSampler(Sampler):
         numpy.ndarray
             The observation of the positions.
         """
-        C_orig = positions * cmath.exp(positions * 2j * math.pi * self._mode_number)
-        C_conj = positions * cmath.exp(positions * -2j * math.pi * self._mode_number)
+        C_orig = positions * np.exp(-positions * 2j * math.pi * self._mode_number)
+        #print(C_orig)
+        C_conj = positions * np.exp(positions * 2j * math.pi * self._mode_number)
+        #print(C_conj)
 
         return np.mean(C_orig) * np.mean(C_conj)
         
