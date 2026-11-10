@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import os
 import sample_getter
 import sys
-
+from scipy.optimize import curve_fit
 
 this_directory = os.path.dirname(os.path.abspath(__file__))
 src_directory = os.path.abspath(this_directory + "/../")
@@ -17,6 +17,11 @@ strings = importlib.import_module("base.strings")
 matplotlib.rcParams['mathtext.fontset'] = 'cm'
 matplotlib.use('Agg')
 
+def exp_fit(r, a, E):
+    return np.exp(-(r-a) / E)
+
+def algebraic_fit(r, a, b, n):
+    return (a / (r-b))**n
 
 def main(output_directory, propertime, cutoff):
     propertime = float(propertime)
@@ -55,19 +60,27 @@ def main(output_directory, propertime, cutoff):
             spatial_correlations_err_0025  = spatial_correlations_err_0025[lengths<cutoff]
             lengths = lengths[lengths<cutoff]
 
+    popt_e, pcov_e = curve_fit(exp_fit, lengths[lengths<75], spatial_correlations_01[lengths<75])
 
     fig, ax = plt.subplots(1,1, sharey=True, sharex=True)
     ax.errorbar(lengths[spatial_correlations_err_01>0], spatial_correlations_01[spatial_correlations_err_01>0],
-                yerr = spatial_correlations_err_01[spatial_correlations_err_01>0], fmt="o", capsize=5, color = "#ae2132ff", label = r"$N_{\tau}=600$")
+                yerr = spatial_correlations_err_01[spatial_correlations_err_01>0], fmt="o", capsize=5, color = "#ae2132ff", label = r"$N_{\tau}=600$", zorder=1)
+    ax.plot(lengths[lengths<75], exp_fit(lengths[lengths<75], *popt_e), color = "#0e0d0dff", zorder=3)
+    print(popt_e)
 
+
+    popt_a, pcov_a = curve_fit(algebraic_fit, lengths[lengths>1], spatial_correlations_0025[lengths>1])
     ax.errorbar(lengths[spatial_correlations_err_0025>0], spatial_correlations_0025[spatial_correlations_err_0025>0],
-                yerr = spatial_correlations_err_0025[spatial_correlations_err_0025>0], fmt="o", capsize=5, color = "#7508c3ff", label = r"$N_{\tau}=4800$")
-
+                yerr = spatial_correlations_err_0025[spatial_correlations_err_0025>0], fmt="o", capsize=5, color = "#7508c3ff", label = r"$N_{\tau}=4800$", zorder=2)
+    ax.plot(lengths[spatial_correlations_err_0025>0], algebraic_fit(lengths[spatial_correlations_err_0025>0], *popt_a), color = "#161617ff", zorder=4)
+    print(popt_a)
     
     ax.set_xlabel(r"$r$", fontsize = 40, weight ="bold")
     ax.set_ylabel(r"$G(r)$", fontsize = 30, weight ="bold")
     ax.set_yscale("log")
     ax.set_xscale("linear")
+
+    ax.set_ylim(bottom = 10e-5)
 
 
 

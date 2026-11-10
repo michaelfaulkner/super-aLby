@@ -130,10 +130,10 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
 
     fig, ax = plt.subplots(1,1)
 
+    ax.errorbar(sorted_N, ratio_numerical_analytical_ecmc, ratio_err_ecmc, color = "#86137aff",
+                label = "ECMC", fmt='o', capsize=3, markersize=6)
     ax.errorbar(sorted_N, ratio_numerical_analytical_metrop, ratio_err_metrop, color = "#e16f04ff",
                 label = "Metropolis MC", fmt='^', capsize=3, markersize=4)
-    ax.errorbar(sorted_N, ratio_numerical_analytical_ecmc, ratio_err_ecmc, color = "#e20acdff",
-                label = "ECMC", fmt='o', capsize=3, markersize=7)
 
     ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=17)
     legend = ax.legend(loc='lower left', fontsize=15)

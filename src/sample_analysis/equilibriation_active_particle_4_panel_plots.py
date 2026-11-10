@@ -38,15 +38,45 @@ def main(active_particle_index_data_p_symm, active_particle_index_data_p_asymm, 
     print(lims_00)
     inset_ax_00.set_ylim(lims_00[0], lims_00[1])
 
-    inset_ax_10 = inset_axes(ax[1,0], width="30%", height="50%", loc="lower right", borderpad=2.5)
+    for index in range(1,50):
+        a = active_particle_index_p_symm[index]
+        a_1 = active_particle_index_p_symm[index-1]
+        if a_1 == 7 and a == 0:
+            active_particle_index_p_symm[index] = 8
+        elif a_1 == 0 and a == 7:
+            active_particle_index_p_symm[index] = -1
+
+        elif a_1 > 7 and a != 7:
+            active_particle_index_p_symm[index] += 8
+        elif a_1 < 0 and a != 0:
+            active_particle_index_p_symm[index] -= 8
+
+    for index in range(1,50):
+            a = active_particle_index_p_asymm[index]
+            a_1 = active_particle_index_p_asymm[index-1]
+            if a_1 == 7 and a == 0:
+                active_particle_index_p_asymm[index] = 8
+            elif a_1 == 0 and a == 7:
+                active_particle_index_p_asymm[index] = -1
+
+            elif a_1 > 7 and a != 7:
+                active_particle_index_p_asymm[index] += 8
+            elif a_1 < 0 and a != 0:
+                active_particle_index_p_asymm[index] -= 8
+
+    
+
+
+
+    inset_ax_10 = inset_axes(ax[1,0], width="40%", height="50%", loc="lower right", borderpad=2.5)
     inset_ax_10.plot(np.arange(len(active_particle_index_p_symm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#c11f70")
     inset_ax_10.scatter(np.arange(len(active_particle_index_p_symm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#c11f70", label =r"$x=100$", s=5.0)
-    inset_ax_10.set_xlim(0,25)
+    inset_ax_10.set_xlim(0,50)
 
-    inset_ax_11 = inset_axes(ax[1,1], width="30%", height="50%", loc="lower right", borderpad=2.5)
+    inset_ax_11 = inset_axes(ax[1,1], width="40%", height="50%", loc="lower right", borderpad=2.5)
     inset_ax_11.plot(np.arange(len(active_particle_index_p_asymm))[:cutoff], active_particle_index_p_asymm[:cutoff], color="#f0bf42")
     inset_ax_11.scatter(np.arange(len(active_particle_index_p_asymm))[:cutoff], active_particle_index_p_asymm[:cutoff], color="#f0bf42", label =r"$x=\pm100$", s=5.0)
-    inset_ax_11.set_xlim(0,25)
+    inset_ax_11.set_xlim(0,50)
     #inset_ax_11.set_ylim(3,7)
 
 
@@ -91,7 +121,7 @@ def main(active_particle_index_data_p_symm, active_particle_index_data_p_asymm, 
  
 
     plt.tight_layout()
-    plt.savefig("active_particle_thermalisation_both.pdf")
+    plt.savefig("active_particle_thermalisation_both.png")
     plt.clf()
 
     # print(np.shape(positions_p))
