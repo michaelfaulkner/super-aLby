@@ -126,7 +126,31 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
     plt.savefig("qho_x2_analytical_FSEM_poster.pdf",)
 
 
-    # print(f"analytical 0.01: {analytical_x2_arr[-1]}, ecmc: {numerical_x2_e[-1]}")
+    ratio_numerical_analytical_metrop = x2_mean_arr_metrop / analytical_data
+    ratio_err_metrop = metrop_err / analytical_data
+    ratio_numerical_analytical_ecmc = x2_mean_arr / analytical_data
+    ratio_err_ecmc = err / analytical_data
+
+    fig, ax = plt.subplots(1,1)
+
+    ax.errorbar(sorted_N, ratio_numerical_analytical_ecmc, ratio_err_ecmc, color = "#86137aff",
+                label = "ECMC", fmt='o', capsize=3, markersize=6)
+    ax.errorbar(sorted_N, ratio_numerical_analytical_metrop, ratio_err_metrop, color = "#e16f04ff",
+                label = "Metropolis MC", fmt='^', capsize=3, markersize=4)
+
+    ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=17)
+    legend = ax.legend(loc='lower left', fontsize=15)
+    legend.get_frame().set_edgecolor('k')
+    legend.get_frame().set_lw(2.0)
+    ax.set_yticks([0.85, 0.9, 0.95, 1.0])
+    ax.set_xscale("log")
+
+    ax.set_xlabel(r"$N_{\tau}$", fontsize = 30)
+    ax.set_ylabel(r"$|\mathbf{x}|^2/\langle x^2 \rangle$", fontsize = 30)
+    plt.setp(ax.spines.values(), lw=1.5, color='black')
+
+    plt.tight_layout()
+    plt.savefig("qho_numerical_analytical_ratio.pdf")
 
 
 if __name__ == '__main__':
