@@ -23,7 +23,7 @@ class NoFactorField(FactorField):
         """
         super().__init__(prefactor)
 
-    def get_next_event(self, positions, active_particle_index, temperature, movement_direction):
+    def get_next_event(self, positions, active_particle_index, temperature, movement_direction, disk_radii=None):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 

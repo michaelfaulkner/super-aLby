@@ -94,7 +94,7 @@ class EventChainMediator(Mediator):
                 (portal_probability > 1.0 and not math.isclose(portal_probability, 1.0))):
             raise ConfigurationError(f"Give a value for portal_probability greater than or equal to 0.0 and less "
                                      f"than or equal to 1.0 in {self.__class__.__name__}.")
-        if (math.isclose(portal_probability, 0.0) and not ("HardDiskPotential" in str(self._potential) 
+        if (not math.isclose(portal_probability, 0.0) and not ("HardDiskPotential" in str(self._potential) 
                 and dimensionality_of_particle_space == 1)):
             raise ConfigurationError(f"Give a value of 0.0 for portal_probability in {self.__class__.__name__} "
                                      f"(teleportation-portal functionality is availalbe only for 1D hard disks).")    

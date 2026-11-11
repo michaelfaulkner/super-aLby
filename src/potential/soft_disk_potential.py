@@ -405,3 +405,7 @@ class SoftDiskPotential(EuclideanSubspacePotential):
     def get_portal_candidate(self, positions, active_particle_index, veto_index, movement_direction):
         """Propose candidate via teleportation portal kernel."""
         raise SystemError(f"The get_portal_candidate method is not valid for {self.__class__.__name__}.")
+
+    def get_swap_candidate(self, *args, **kwargs):
+        """Propose candidate configuration via a Metropolis swap kernel."""
+        raise SystemError(f"The get_swap_candidate method is not valid for {self.__class__.__name__}.")

@@ -133,3 +133,7 @@ class UnfactorisedHarmonicChainPotential(HarmonicChainPotentials):
             return np.random.choice(np.arange(len(self._gradients)))
         probs = rates / total_rate
         return np.random.choice(np.arange(len(self._gradients)), p=probs)
+
+    def get_swap_candidate(self, *args, **kwargs):
+        """Propose candidate configuration via a Metropolis swap kernel."""
+        raise SystemError(f"The get_swap_candidate method is not valid for {self.__class__.__name__}.")
