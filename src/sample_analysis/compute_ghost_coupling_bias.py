@@ -181,7 +181,11 @@ def main():
                 f"suggested log_activity (N = {target}) = {result['suggested_log_activity']:.4f}")
     print(message)
     if args.figure is not None:
-        plot_bias(result, args.figure)
+        """The figure is optional: an old matplotlib (e.g. without Axes.stairs) must not fail the bias stage."""
+        try:
+            plot_bias(result, args.figure)
+        except Exception as error:
+            print(f"Warning: {args.figure} not drawn ({type(error).__name__}: {error}).", file=sys.stderr)
 
 
 if __name__ == "__main__":
