@@ -31,20 +31,27 @@ SCHEME_KERNELS = {"tempered": "tempered_grand_canonical_kernel", "direct": "dire
                   "metropolis": "direct_grand_canonical_kernel"}
 INTEGER_KEYS = {"number_of_particles", "calibration_bins", "calibration_jobs", "calibration_observations", "sub_bins",
                 "production_jobs", "production_observations", "equilibration", "moves_per_sweep", "compression_window"}
-FLOAT_KEYS = {"ring_length", "temperature", "distance_between_measurements", "parked_length",
-              "distance_between_coupling_moves", "mean_coupling_move_length", "distance_between_direct_moves",
-              "noise_width", "refreshment_lower_limit", "refreshment_upper_limit", "refreshment_distance"}
+FLOAT_KEYS = {"ring_length", "temperature", "normalised_distance_between_measurements", "parked_length",
+              "normalised_distance_between_coupling_moves", "mean_coupling_move_length",
+              "normalised_distance_between_direct_moves", "noise_width", "normalised_refreshment_lower_limit",
+              "normalised_refreshment_upper_limit", "normalised_refreshment_distance"}
+"""Spec keys renamed on 11 Nov 2026, when the spec switched from actual to normalised distances."""
+RENAMED_KEYS = {"distance_between_measurements": "normalised_distance_between_measurements",
+                "distance_between_coupling_moves": "normalised_distance_between_coupling_moves",
+                "distance_between_direct_moves": "normalised_distance_between_direct_moves",
+                "refreshment_lower_limit": "normalised_refreshment_lower_limit",
+                "refreshment_upper_limit": "normalised_refreshment_upper_limit",
+                "refreshment_distance": "normalised_refreshment_distance"}
 LIST_KEYS = {"schemes", "samplers"}
 STRING_KEYS = {"potential", "log_activity", "refreshment", "range_of_initial_particle_positions"}
 BOOLEAN_KEYS = {"compression_flow"}
 """Keys every experiment needs; the refreshment keys depend on the refreshment type."""
 """Optional per-scheme run lengths, e.g. tempered_production_observations, overriding the shared key for one scheme."""
 OVERRIDE_KEYS = {f"{scheme}_{key}" for scheme in SCHEME_KERNELS for key in ("production_observations", "equilibration")}
-REQUIRED_KEYS = (INTEGER_KEYS | FLOAT_KEYS | LIST_KEYS | STRING_KEYS | BOOLEAN_KEYS) - {"refreshment_lower_limit",
-                                                                          "refreshment_upper_limit",
-                                                                          "refreshment_distance"}
-REFRESHMENT_KEYS = {"uniform": ("refreshment_lower_limit", "refreshment_upper_limit"),
-                    "constant": ("refreshment_distance",)}
+REQUIRED_KEYS = (INTEGER_KEYS | FLOAT_KEYS | LIST_KEYS | STRING_KEYS | BOOLEAN_KEYS) - {
+    "normalised_refreshment_lower_limit", "normalised_refreshment_upper_limit", "normalised_refreshment_distance"}
+REFRESHMENT_KEYS = {"uniform": ("normalised_refreshment_lower_limit", "normalised_refreshment_upper_limit"),
+                    "constant": ("normalised_refreshment_distance",)}
 SWEEP_KEYS = ("sweep", "sweep_start", "sweep_end", "sweep_increments", "sweep_type")
 """Slurm settings (needed when sulis = true): written to experiment.env for run_experiment.sh / sulis_experiment.sh."""
 SULIS_KEYS = ("sulis_account", "sulis_partition", "sulis_memory_per_cpu", "sulis_calibration_time",
@@ -53,9 +60,9 @@ SULIS_KEYS = ("sulis_account", "sulis_partition", "sulis_memory_per_cpu", "sulis
 
 def make_experiment(name, s, potential_parameters, sulis):
     """
-    Writes one experiment from its settings s (a dict of the spec keys). Distances in the spec are actual distances
-    (particle displacement); the configs use the EventChainMediator convention of distances normalised by the initial
-    number of particles N, so every distance is divided by N here. Metropolis runs one observation per sweep, with
+    Writes one experiment from its settings s (a dict of the spec keys). Distances in the spec are normalised by the
+    initial number of particles N, as in the EventChainMediator configs, and are written unchanged. Metropolis runs
+    one observation per sweep, with
     moves_per_sweep insertion/deletion attempts after each sweep, and drops ghost_coupling_sampler (it has no ghost).
     """
     schemes, samplers, number_of_particles = s["schemes"], s["samplers"], s["number_of_particles"]
@@ -77,9 +84,6 @@ def make_experiment(name, s, potential_parameters, sulis):
     log_activity = s["log_activity"]
     start_log_activity = 0.0 if log_activity == "suggested" else log_activity
 
-    def normalised(distance):
-        return repr(distance / number_of_particles)
-
     def section(name_snake):
         return "".join(word.capitalize() for word in name_snake.split("_"))
 
@@ -89,10 +93,10 @@ def make_experiment(name, s, potential_parameters, sulis):
     def refreshment_lines():
         if s["refreshment"] == "uniform":
             return ["", "[UniformRefreshmentDistribution]",
-                    f"normalised_lower_limit = {normalised(s['refreshment_lower_limit'])}",
-                    f"normalised_upper_limit = {normalised(s['refreshment_upper_limit'])}"]
+                    f"normalised_lower_limit = {s['normalised_refreshment_lower_limit']}",
+                    f"normalised_upper_limit = {s['normalised_refreshment_upper_limit']}"]
         return ["", "[ConstantRefreshmentDistribution]",
-                f"normalised_refreshment_distance = {normalised(s['refreshment_distance'])}"]
+                f"normalised_refreshment_distance = {s['normalised_refreshment_distance']}"]
 
     def model_lines():
         return ["", "[ModelSettings]", f"number_of_particles = {number_of_particles}",
@@ -110,7 +114,7 @@ def make_experiment(name, s, potential_parameters, sulis):
                  f"grand_canonical_kernel = {kernel}",
                  f"temperature = {s['temperature']}", f"number_of_equilibration_iterations = {equilibration}",
                  f"number_of_observations = {observations}",
-                 f"normalised_distance_between_measurements = {normalised(s['distance_between_measurements'])}",
+                 f"normalised_distance_between_measurements = {s['normalised_distance_between_measurements']}",
                  f"output_directory = {output}/{os.path.splitext(file_name)[0]}"]
         lines += potential_lines() + refreshment_lines() + ["", f"[{section(kernel)}]"] + kernel_lines
         with open(os.path.join(directory, file_name), "w") as f:
@@ -144,7 +148,7 @@ def make_experiment(name, s, potential_parameters, sulis):
                        ["ghost_coupling_bias = tabulated_ghost_coupling_bias", f"log_activity = {start_log_activity}",
                         f"parked_length = {s['parked_length']}",
                         f"normalised_distance_between_coupling_moves = "
-                        f"{normalised(s['distance_between_coupling_moves'])}",
+                        f"{s['normalised_distance_between_coupling_moves']}",
                         f"mean_coupling_move_length = {s['mean_coupling_move_length']}",
                         f"compression_flow = {s['compression_flow']}",
                         f"compression_window = {s['compression_window']}",
@@ -153,7 +157,7 @@ def make_experiment(name, s, potential_parameters, sulis):
             write_ecmc("direct.ini", production_samplers, run_length(scheme, "equilibration"),
                        run_length(scheme, "production_observations"), SCHEME_KERNELS[scheme],
                        [f"log_activity = {start_log_activity}",
-                        f"normalised_distance_between_direct_moves = {normalised(s['distance_between_direct_moves'])}"])
+                        f"normalised_distance_between_direct_moves = {s['normalised_distance_between_direct_moves']}"])
         else:
             write_metropolis("metropolis.ini")
     with open(os.path.join(directory, "experiment.env"), "w") as f:
@@ -185,6 +189,9 @@ def read_experiment(section):
     for key, value in section.items():
         if key == "sulis" or key in SULIS_KEYS:
             continue
+        if key in RENAMED_KEYS:
+            raise SystemExit(f"Experiment [{section.name}]: {key} (an actual distance) is now {RENAMED_KEYS[key]} "
+                             f"(normalised by number_of_particles).")
         try:
             if key in INTEGER_KEYS or key in OVERRIDE_KEYS:
                 settings[key] = int(value)
