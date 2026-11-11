@@ -23,6 +23,7 @@ import argparse
 import configparser
 import json
 import os
+import shutil
 
 THIS_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 EXPERIMENT_ROOT = os.path.join(THIS_DIRECTORY, "experiments")
@@ -46,6 +47,9 @@ RENAMED_KEYS = {"distance_between_measurements": "normalised_distance_between_me
                 "refreshment_distance": "normalised_refreshment_distance"}
 LIST_KEYS = {"schemes", "samplers"}
 STRING_KEYS = {"potential", "log_activity", "refreshment", "range_of_initial_particle_positions"}
+"""Optional: bias_file = an existing bias.json of the same system, copied to the experiment's output folder (the
+    calibration and bias stages are then skipped)."""
+OPTIONAL_STRING_KEYS = {"bias_file"}
 BOOLEAN_KEYS = {"compression_flow"}
 """Keys every experiment needs; the refreshment keys depend on the refreshment type."""
 """Optional per-scheme run lengths, e.g. tempered_production_observations, overriding the shared key for one scheme."""
@@ -61,6 +65,37 @@ SULIS_KEYS = ("sulis_account", "sulis_partition", "sulis_memory_per_cpu", "sulis
 """Optional Slurm settings with defaults: the bias stage loads every calibration sample at once, so it needs more
     memory than the other stages (e.g. 1.5 GB of calibration data for N = 32)."""
 SULIS_OPTIONAL_KEYS = {"sulis_bias_memory": "8G"}
+
+
+def use_existing_bias(name, s, potential_parameters, output):
+    """
+    Checks that bias_file was calibrated for this system (potential type and parameters, ring length, number of
+    particles, temperature) and copies it to <output>/bias.json, where the production stage reads it.
+    """
+    path = s["bias_file"]
+    if not os.path.isfile(path):
+        raise SystemExit(f"Experiment [{name}]: bias_file {path} does not exist.")
+    with open(path) as file:
+        bias = json.load(file)
+    description = bias.get("potential", {})
+    kind = "hard_sphere" if "hard" in s["potential"] else "soft_sphere"
+    mismatches = []
+    if description.get("type") != kind:
+        mismatches.append(f"potential {description.get('type')} (experiment: {kind})")
+    for key, value in potential_parameters.items():
+        if key in description and abs(float(value) - float(description[key])) > 1e-9:
+            mismatches.append(f"{key} {description[key]} (experiment: {value})")
+    if abs(float(description.get("box", [float("nan")])[0]) - s["ring_length"]) > 1e-9:
+        mismatches.append(f"ring length {description.get('box')} (experiment: {s['ring_length']})")
+    if bias.get("number_of_real_particles") != s["number_of_particles"]:
+        mismatches.append(f"N {bias.get('number_of_real_particles')} (experiment: {s['number_of_particles']})")
+    if abs(float(bias.get("temperature", float("nan"))) - s["temperature"]) > 1e-9:
+        mismatches.append(f"temperature {bias.get('temperature')} (experiment: {s['temperature']})")
+    if mismatches:
+        raise SystemExit(f"Experiment [{name}]: bias_file {path} was calibrated for a different system: "
+                         f"{'; '.join(mismatches)}.")
+    os.makedirs(output, exist_ok=True)
+    shutil.copyfile(path, os.path.join(output, "bias.json"))
 
 
 def make_experiment(name, s, potential_parameters, sulis):
@@ -86,6 +121,8 @@ def make_experiment(name, s, potential_parameters, sulis):
     os.makedirs(directory, exist_ok=True)
     output = f"{OUTPUT_ROOT}/{name}"
     potential = s["potential"]
+    if s.get("bias_file"):
+        use_existing_bias(name, s, potential_parameters, output)
     log_activity = s["log_activity"]
     start_log_activity = 0.0 if log_activity == "suggested" else log_activity
 
@@ -171,6 +208,8 @@ def make_experiment(name, s, potential_parameters, sulis):
                 f"CALIBRATION_JOBS={s['calibration_jobs']}\nPRODUCTION_JOBS={s['production_jobs']}\n"
                 f"SUB_BINS={s['sub_bins']}\n"
                 f"LOG_ACTIVITY={log_activity}\nSCHEMES=\"{' '.join(schemes)}\"\n")
+        if s.get("bias_file"):
+            f.write(f"BIAS_FILE={s['bias_file']}\n")
         f.write(f"SULIS={'true' if sulis is not None else 'false'}\n")
         for key, value in (sulis or {}).items():
             f.write(f"{key.upper()}={value}\n")
@@ -209,7 +248,7 @@ def read_experiment(section):
                 settings[key] = None if value.strip().lower() in ("", "none") else int(value)
             elif key in LIST_KEYS:
                 settings[key] = tuple(item.strip() for item in value.split(",") if item.strip())
-            elif key in STRING_KEYS:
+            elif key in STRING_KEYS or key in OPTIONAL_STRING_KEYS:
                 settings[key] = value.strip()
             elif key in BOOLEAN_KEYS:
                 settings[key] = section.getboolean(key)
