@@ -636,6 +636,39 @@ def get_structure_factor(sample_directory, temperature, temperature_index, check
         number_of_equilibration_iterations, thinning_level)
 
 
+def get_fourier_mode_amplitude(sample_directory, temperature, checkpoint_index,
+                         number_of_particles, number_of_equilibration_iterations=None, thinning_level=None):
+    """
+    Returns the sample of the fourier mode amplitude.
+
+    Parameters
+    ----------
+    sample_directory : str
+        The location of the directory containing the sample(s).
+    temperature : float
+        The sampling temperature.
+    checkpoint_index : int
+        The index of the data file created as part of the checkpointing process
+    number_of_particles : int
+        The total number of particles.
+    number_of_equilibration_iterations : None or int, optional
+        The total number of equilibration iterations of the Markov process.  If None, the entire sample is returned.
+    thinning_level : None or int, optional
+        1 + the number of observations to be discarded between retained observations of the thinning process.  If None,
+        all observations are retained.
+
+    Returns
+    -------
+    numpy.ndarray
+        The sample of the fourier mode amplitude.
+    """
+
+    return get_reduced_sample(
+        np.load(f"{sample_directory}/checkpoint_{checkpoint_index:02d}_sample_of_fourier_amplitudes.npy").flatten(),
+        number_of_equilibration_iterations, thinning_level)
+
+
+
 """helper methods"""
 
 
