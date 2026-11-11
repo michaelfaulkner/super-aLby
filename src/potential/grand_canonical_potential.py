@@ -271,19 +271,24 @@ class GrandCanonicalPotential(EuclideanSubspacePotential, metaclass=ABCMeta):
     def get_compression_chain(self, positions, window):
         """
         Returns (left_wall, movers, right_wall) for the compression flow of the ghost (last row): the rows that move
-        with lambda, in ring order from the left wall, i.e. [L_w, ..., L_1, ghost, R_1, ..., R_w] with
-        w = min(window, (N - 1) // 2), and the two frozen rows just outside them (the same row if N is odd and the
-        window covers the ring).  window = 0 moves only the ghost between its two neighbours; None, the whole ring.
+        with lambda, in ring order from the left wall, i.e. [L_w, ..., L_1, ghost, R_1, ..., R_w], and the two frozen
+        rows just outside them.  window = 0 moves only the ghost between its two neighbours.  window = None, or a
+        window that would reach round the ring (2 window >= N - 1), uses the whole ring: one real particle is both
+        walls and every other row moves (if N is even, the extra mover is ahead of the ghost).
         """
         number_of_real_particles = len(positions) - 1
         ghost_index = number_of_real_particles
-        window = ((number_of_real_particles - 1) // 2 if window is None else
-                  min(window, (number_of_real_particles - 1) // 2))  # None = the whole ring
         forward = np.mod(positions[:-1, 0] - positions[-1, 0], size_of_particle_space[0])
         if window == 0:  # Only the two neighbours of the ghost are needed
             return np.argmax(forward), np.array([ghost_index]), np.argmin(forward)
         """Real particles in ring order going forwards from the ghost: R_1 first, L_1 last."""
         order = np.argsort(forward)
+        if window is None or 2 * window >= number_of_real_particles - 1:  # Whole ring, one wall
+            ahead = number_of_real_particles // 2
+            behind = number_of_real_particles - 1 - ahead
+            wall = order[ahead]
+            movers = np.concatenate([order[number_of_real_particles - behind:], [ghost_index], order[:ahead]])
+            return wall, movers, wall
         movers = np.concatenate([order[number_of_real_particles - window:], [ghost_index], order[:window]])
         return order[number_of_real_particles - 1 - window], movers, order[window]
 
