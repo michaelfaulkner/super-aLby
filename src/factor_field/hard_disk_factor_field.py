@@ -25,7 +25,7 @@ class HardDiskFactorField(FactorField):
         particle_ratio_a : int, optional
             The ratio of the number of particles in species a compared to the number of particles in species b.
         particle_ratio_b: int, optional
-            The ratio of the number of particles in species b comapred to the number of particles in species a.
+            The ratio of the number of particles in species b compared to the number of particles in species a.
         prefactor : float, optional
             A general multiplicative prefactor of the potential.
 
@@ -36,8 +36,8 @@ class HardDiskFactorField(FactorField):
         """
         ff_type_options = ['all', 'no','like_weight']
         if ff_type not in ff_type_options:
-            raise ConfigurationError('Binary factor field functionality only implemented for all' \
-                                        ',no,like_weight')
+            raise ConfigurationError(f'Factor-field functionality for {self.__class__.__name__} only implemented for '
+                                     f'the all, no and like_weight cases.')
         self._ff_type = ff_type
         self._disk_radius_a = disk_radius_a
         self._disk_radius_b = disk_radius_b
@@ -46,11 +46,11 @@ class HardDiskFactorField(FactorField):
         self._prefactor = number_of_particles / (
                 size_of_particle_space - number_of_particles * 2.0 * ((self._particle_ratio_a / (
                     self._particle_ratio_a + self._particle_ratio_b)) * self._disk_radius_a + (
-                        self._particle_ratio_b / (self._particle_ratio_a + self._particle_ratio_b)) * 
+                        self._particle_ratio_b / (self._particle_ratio_a + self._particle_ratio_b)) *
                         self._disk_radius_b))
 
     def get_next_event(self, positions, active_particle_index, temperature, movement_direction,
-                       disk_radii):
+                       disk_radii=None):
         """
         Returns the distance to the next particle event (in ECMC) and the index of the particle that triggers the event.
 
@@ -79,20 +79,20 @@ class HardDiskFactorField(FactorField):
             Net displacement through state space from active to vetoing particle.
         """
         if self._ff_type == 'like_weight':
-            return self.like_weight(positions, active_particle_index, temperature, movement_direction,
+            return self._like_weight(positions, active_particle_index, temperature, movement_direction,
                             disk_radii)
         elif self._ff_type == 'all':
-            return self.all(positions, active_particle_index, temperature, movement_direction)
+            return self._all(positions, active_particle_index, temperature, movement_direction)
         elif self._ff_type == 'no':
             return float('inf'), None, None
         else:
             raise ConfigurationError(f"Invalid ff_type '{self._ff_type}' in {self.__class__.__name__}.")
 
-    def all(self, positions, active_particle_index, temperature, movement_direction):
-        ''' 
-        This function samples factor field events based on a factor field implemented between 
-        all particle types in a 1D system.
-        '''
+    def _all(self, positions, active_particle_index, temperature, movement_direction):
+        """
+        This function samples factor field events based on a factor field implemented between all particle types in a
+        1D system.
+        """
         neg_neighbour_index, pos_neighbour_index = ((active_particle_index - 1) % number_of_particles,
                                                     (active_particle_index + 1) % number_of_particles)
         vetoing_index = neg_neighbour_index if movement_direction > 0.0 else pos_neighbour_index
@@ -102,30 +102,25 @@ class HardDiskFactorField(FactorField):
                                                          positions[active_particle_index, 0])
         return distance_to_next_factor_event[0], vetoing_index, hop_displacement[0]
 
-    def like_weight(self, positions, active_particle_index, temperature, movement_direction,
-                                disk_radii):
-        ''' 
-        This function samples factor field events based on a factor field implemented between 
-        like-sized particles in a 1D system, with a weighted prefactor for each individual 
-        species that depends on the relative proportion of each species.
-        '''
+    def _like_weight(self, positions, active_particle_index, temperature, movement_direction, disk_radii):
+        """
+        This function samples factor field events based on a factor field implemented between like-sized particles in a
+        1D system, with a weighted prefactor for each species that depends on the relative proportion of each species.
+        """
+        vetoing_index = None
         for index in range(1, number_of_particles):
             candidate = (active_particle_index - index) % number_of_particles
             if disk_radii[active_particle_index] == disk_radii[candidate]:
                 vetoing_index = candidate
                 break
         if vetoing_index is not None:
-            if disk_radii[active_particle_index] == self._disk_radius_a:
-                distance_to_next_factor_event = (- np.log(np.random.uniform(0.0, 1.0, 1)) /
-                                                 (self._prefactor * (self._particle_ratio_a/(self._particle_ratio_a+self._particle_ratio_b)) * temperature))
-                hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_index, 0] -
-                                                                 positions[active_particle_index, 0])
-                return distance_to_next_factor_event[0], vetoing_index, hop_displacement[0]
-            if disk_radii[active_particle_index] == self._disk_radius_b:
-                distance_to_next_factor_event = (- np.log(np.random.uniform(0.0, 1.0, 1)) /
-                                                 (self._prefactor * (self._particle_ratio_b/(self._particle_ratio_a+self._particle_ratio_b)) * temperature))
-                hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_index, 0] -
-                                                                 positions[active_particle_index, 0])
-                return distance_to_next_factor_event[0], vetoing_index, hop_displacement[0]
+            active_particle_ratio = (self._particle_ratio_a if disk_radii[active_particle_index] == self._disk_radius_a
+                                     else self._particle_ratio_b)
+            distance_to_next_factor_event = (- np.log(np.random.uniform(0.0, 1.0, 1)) / (
+                    self._prefactor * (active_particle_ratio / (
+                    self._particle_ratio_a + self._particle_ratio_b)) * temperature))
+            hop_displacement = get_shortest_vectors_on_torus(positions[vetoing_index, 0] -
+                                                             positions[active_particle_index, 0])
+            return distance_to_next_factor_event[0], vetoing_index, hop_displacement[0]
         else:
             return float('inf'), None, None
