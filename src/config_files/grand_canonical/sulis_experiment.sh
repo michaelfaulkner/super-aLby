@@ -39,12 +39,17 @@ done
 mkdir -p output/slurm
 SHORT_NAME="$(echo "$NAME" | tr '/' '_' | cut -c1-40)"
 COMMON=(--parsable --account="$SULIS_ACCOUNT" --partition="$SULIS_PARTITION" --nodes=1 --ntasks-per-node=1
-        --cpus-per-task=1 --mem-per-cpu="$SULIS_MEMORY_PER_CPU")
+        --cpus-per-task=1)
+MEMORY=(--mem-per-cpu="$SULIS_MEMORY_PER_CPU")
+BIAS_MEMORY=(--mem="${SULIS_BIAS_MEMORY:-8G}")   # the bias stage loads every calibration sample at once
 DEPENDENCY=()
 submit() {   # submit <stage> <time> [<array size>]: submits one stage after the previous one, prints its job id
     local array=(--output=output/slurm/slurm-%j.out)
     if [ "$#" -eq 3 ]; then array=(--array=0-$(( $3 - 1 )) --output=output/slurm/slurm-%A_%a.out); fi
-    JOB="$(sbatch "${COMMON[@]}" ${DEPENDENCY[@]+"${DEPENDENCY[@]}"} ${array[@]+"${array[@]}"} --time="$2" \
+    local memory=("${MEMORY[@]}")
+    if [ "$1" = bias ]; then memory=("${BIAS_MEMORY[@]}"); fi
+    JOB="$(sbatch "${COMMON[@]}" "${memory[@]}" ${DEPENDENCY[@]+"${DEPENDENCY[@]}"} ${array[@]+"${array[@]}"} \
+        --time="$2" \
         --job-name="${SHORT_NAME}_$1" "$STAGE_SCRIPT" "$EXPERIMENT_DIR" "$1")"
     DEPENDENCY=(--dependency=afterok:"$JOB")
 }

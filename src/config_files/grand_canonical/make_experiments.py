@@ -58,6 +58,9 @@ SWEEP_KEYS = ("sweep", "sweep_start", "sweep_end", "sweep_increments", "sweep_ty
 """Slurm settings (needed when sulis = true): written to experiment.env for run_experiment.sh / sulis_experiment.sh."""
 SULIS_KEYS = ("sulis_account", "sulis_partition", "sulis_memory_per_cpu", "sulis_calibration_time",
               "sulis_bias_time", "sulis_production_time", "sulis_analysis_time")
+"""Optional Slurm settings with defaults: the bias stage loads every calibration sample at once, so it needs more
+    memory than the other stages (e.g. 1.5 GB of calibration data for N = 32)."""
+SULIS_OPTIONAL_KEYS = {"sulis_bias_memory": "8G"}
 
 
 def make_experiment(name, s, potential_parameters, sulis):
@@ -189,8 +192,10 @@ def read_experiment(section):
         if missing:
             raise SystemExit(f"Experiment [{section.name}]: sulis = true needs {', '.join(missing)}.")
         sulis = {key: section[key].strip() for key in SULIS_KEYS}
+        sulis.update({key: section.get(key, default).strip() or default
+                      for key, default in SULIS_OPTIONAL_KEYS.items()})
     for key, value in section.items():
-        if key == "sulis" or key in SULIS_KEYS:
+        if key == "sulis" or key in SULIS_KEYS or key in SULIS_OPTIONAL_KEYS:
             continue
         if key in RENAMED_KEYS:
             raise SystemExit(f"Experiment [{section.name}]: {key} (an actual distance) is now {RENAMED_KEYS[key]} "
@@ -236,7 +241,8 @@ def get_sweep_values(section):
     if missing:
         raise SystemExit(f"Experiment [{name}]: a sweep needs {', '.join(missing)}.")
     key = section["sweep"].strip()
-    if key in SWEEP_KEYS or key == "sulis" or key in SULIS_KEYS or key in LIST_KEYS or key in (
+    if key in SWEEP_KEYS or key == "sulis" or key in SULIS_KEYS or key in SULIS_OPTIONAL_KEYS or key in LIST_KEYS or \
+            key in (
             "potential", "refreshment", "range_of_initial_particle_positions"):
         raise SystemExit(f"Experiment [{name}]: cannot sweep {key} (sweep a numerical key).")
     try:
