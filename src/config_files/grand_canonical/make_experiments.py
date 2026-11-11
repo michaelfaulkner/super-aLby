@@ -30,7 +30,9 @@ OUTPUT_ROOT = "output/grand_canonical/experiments"
 SCHEME_KERNELS = {"tempered": "tempered_grand_canonical_kernel", "direct": "direct_grand_canonical_kernel",
                   "metropolis": "direct_grand_canonical_kernel"}
 INTEGER_KEYS = {"number_of_particles", "calibration_bins", "calibration_jobs", "calibration_observations", "sub_bins",
-                "production_jobs", "production_observations", "equilibration", "moves_per_sweep", "compression_window"}
+                "production_jobs", "production_observations", "equilibration", "moves_per_sweep"}
+"""Optional integer keys: missing or none means the kernel default (compression_window: the whole ring)."""
+OPTIONAL_INTEGER_KEYS = {"compression_window"}
 FLOAT_KEYS = {"ring_length", "temperature", "normalised_distance_between_measurements", "parked_length",
               "normalised_distance_between_coupling_moves", "mean_coupling_move_length",
               "normalised_distance_between_direct_moves", "noise_width", "normalised_refreshment_lower_limit",
@@ -150,9 +152,10 @@ def make_experiment(name, s, potential_parameters, sulis):
                         f"normalised_distance_between_coupling_moves = "
                         f"{s['normalised_distance_between_coupling_moves']}",
                         f"mean_coupling_move_length = {s['mean_coupling_move_length']}",
-                        f"compression_flow = {s['compression_flow']}",
-                        f"compression_window = {s['compression_window']}",
-                        "", "[TabulatedGhostCouplingBias]", f"file_name = {output}/bias.json"])
+                        f"compression_flow = {s['compression_flow']}"] +
+                       ([f"compression_window = {s['compression_window']}"]
+                        if s.get("compression_window") is not None else []) +
+                       ["", "[TabulatedGhostCouplingBias]", f"file_name = {output}/bias.json"])
         elif scheme == "direct":
             write_ecmc("direct.ini", production_samplers, run_length(scheme, "equilibration"),
                        run_length(scheme, "production_observations"), SCHEME_KERNELS[scheme],
@@ -197,6 +200,8 @@ def read_experiment(section):
                 settings[key] = int(value)
             elif key in FLOAT_KEYS:
                 settings[key] = float(value)
+            elif key in OPTIONAL_INTEGER_KEYS:
+                settings[key] = None if value.strip().lower() in ("", "none") else int(value)
             elif key in LIST_KEYS:
                 settings[key] = tuple(item.strip() for item in value.split(",") if item.strip())
             elif key in STRING_KEYS:
