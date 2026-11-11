@@ -65,6 +65,11 @@ def main():
                                                               30, 10000
                                                               ).flatten()
 
+    analytical_proper_time_dt = np.load("/home/raichkel/super-aLby-private/src/output/propertime/propertime_analytical/checkpoint_00_sample_of_auxillary_particles.npy")
+    analytical_proper_time_x2 = sample_getter.get_analytical_sample_propertime("/home/raichkel/super-aLby-private/src/" \
+    "output/propertime/propertime_analytical", 1.0, 0, 30, 10000
+                                                                            ).flatten()
+
     metrop_fixed_dt_array = [1.5, 1.0, 0.75, 0.5, 0.25, 0.1, 0.05, 0.01]
 
 
@@ -85,7 +90,8 @@ def main():
     ax.plot(np.arange(len(metrop_005))[:cutoff], metrop_005[:cutoff], label="dt=0.05")
     ax.plot(np.arange(len(metrop_proper_time_x2))[:cutoff], metrop_proper_time_x2[:cutoff], label="propertime integral")
 
-    ax.plot(np.arange(len(metrop_proper_time_dt))[:cutoff], analytical_arr[:cutoff], label="analytical")
+    #ax.plot(np.arange(len(metrop_proper_time_dt))[:cutoff], analytical_arr[:cutoff], label="analytical")
+    ax.plot(np.arange(len(analytical_proper_time_dt))[:cutoff], analytical_proper_time_x2[:cutoff], label="x^2 analytical")
 
     ax.set_xlabel("sample index")
     ax.set_ylabel("x^2")
@@ -95,7 +101,8 @@ def main():
     plt.clf()
     fig, ax = plt.subplots(1,1)
 
-    ax.plot(np.arange(len(metrop_proper_time_dt))[:cutoff], metrop_proper_time_dt[:cutoff])
+    ax.plot(np.arange(len(metrop_proper_time_dt))[:cutoff], metrop_proper_time_dt[:cutoff], label = "numerical")
+    ax.plot(np.arange(len(analytical_proper_time_dt))[:cutoff], analytical_proper_time_dt[:cutoff], label = "analytical")
     ax.set_xlabel("sample index")
     ax.set_ylabel("dt'")
     plt.savefig("dt.png")
