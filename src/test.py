@@ -8,8 +8,10 @@ def main(mass: float = 1.0, omega_squared: float = 1.0, dt_prime: float = 0.1, n
     omega_squared = float(omega_squared)
     dt_prime = float(dt_prime)
     number_of_particles = int(number_of_particles)
+    dt = 1/dt_prime
+    print(f"dt = {dt}")
 
-    x2 = 1.0 / (2.0 * mass * np.sqrt(omega_squared) * (1.0 / dt_prime**2) 
+    x2 = 1.0 / (2.0 * mass * np.sqrt(omega_squared)
                             * np.sqrt(1 + omega_squared / (4.0 * dt_prime**2)))
 
     R = 1 + np.sqrt(omega_squared) / dt_prime * \
@@ -18,7 +20,16 @@ def main(mass: float = 1.0, omega_squared: float = 1.0, dt_prime: float = 0.1, n
 
 
 
-    print(x2 * ((1 + R**number_of_particles) / (1 - R**number_of_particles)))
+    print(f"<x2> w/ dt' = {x2 * ((1 + R**number_of_particles) / (1 - R**number_of_particles))}")
+
+
+    x2_ = 1.0 / (2.0 * mass * np.sqrt(omega_squared) * dt**2 * np.sqrt(1 + omega_squared * dt**2 / 4.0))
+    R_ = 1 + np.sqrt(omega_squared) * dt * (np.sqrt(omega_squared) * dt / 2.0 - np.sqrt(1 + omega_squared * dt**2 / 4.0))
+
+    print(f"<x2> w/ dt = {x2_ * ((1 + R_**number_of_particles) / (1 - R_**number_of_particles))}")
+
+
+
 
 if __name__ == "__main__":
     main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])

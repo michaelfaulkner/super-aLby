@@ -65,6 +65,7 @@ def main():
                                                               30, 10000
                                                               ).flatten()
 
+
     analytical_proper_time_dt = np.load("/home/raichkel/super-aLby-private/src/output/propertime/propertime_analytical/checkpoint_00_sample_of_auxillary_particles.npy")
     analytical_proper_time_x2 = sample_getter.get_analytical_sample_propertime("/home/raichkel/super-aLby-private/src/" \
     "output/propertime/propertime_analytical", 1.0, 0, 30, 10000
@@ -79,7 +80,7 @@ def main():
         analytical_arr[i] = analytical_x2(1.0, 1.0, 30, 1/metrop_proper_time_dt[i])
 
 
-    cutoff=10000
+    cutoff=500000
 
     fig, ax = plt.subplots(1,1)
     ax.plot(np.arange(len(metrop_10))[:cutoff], metrop_10[:cutoff], label="dt=10.0")
@@ -105,30 +106,31 @@ def main():
     ax.plot(np.arange(len(analytical_proper_time_dt))[:cutoff], analytical_proper_time_dt[:cutoff], label = "analytical")
     ax.set_xlabel("sample index")
     ax.set_ylabel("dt'")
+    ax.legend()
     plt.savefig("dt.png")
 
     dim = np.shape(metrop_01)[0]
 
-    fixed_dt_weighted = np.zeros((dim * 11))
+    # fixed_dt_weighted = np.zeros((dim * 11))
 
-    fixed_dt_weighted[:dim] = metrop_10
-    fixed_dt_weighted[dim:dim*2] = metrop_7
-    fixed_dt_weighted[dim*2:dim*3] = metrop_5
-    fixed_dt_weighted[dim*3:dim*4] = metrop_2
-    fixed_dt_weighted[dim*4:dim*5] = metrop_1
-    fixed_dt_weighted[dim*5:dim*6] = metrop_075
-    fixed_dt_weighted[dim*6:dim*7] = metrop_05
-    fixed_dt_weighted[dim*7:dim*8] = metrop_025
-    fixed_dt_weighted[dim*8:dim*9] = metrop_01
-    fixed_dt_weighted[dim*9:dim*10] = metrop_005
-    fixed_dt_weighted[dim*10:dim*11] = metrop_001
+    # fixed_dt_weighted[:dim] = metrop_10
+    # fixed_dt_weighted[dim:dim*2] = metrop_7
+    # fixed_dt_weighted[dim*2:dim*3] = metrop_5
+    # fixed_dt_weighted[dim*3:dim*4] = metrop_2
+    # fixed_dt_weighted[dim*4:dim*5] = metrop_1
+    # fixed_dt_weighted[dim*5:dim*6] = metrop_075
+    # fixed_dt_weighted[dim*6:dim*7] = metrop_05
+    # fixed_dt_weighted[dim*7:dim*8] = metrop_025
+    # fixed_dt_weighted[dim*8:dim*9] = metrop_01
+    # fixed_dt_weighted[dim*9:dim*10] = metrop_005
+    # fixed_dt_weighted[dim*10:dim*11] = metrop_001
 
 
-    fixed_cdf = get_cumulative_distribution(fixed_dt_weighted)
+    analytical_cdf = get_cumulative_distribution(analytical_proper_time_x2)
     propertime_cdf = get_cumulative_distribution(metrop_proper_time_x2)
     plt.clf()
-    plt.plot(fixed_cdf[0], fixed_cdf[1], color='r', linewidth=3, linestyle='-',
-                     label=f'fixed')
+    plt.plot(analytical_cdf[0], analytical_cdf[1], color='r', linewidth=3, linestyle='-',
+                     label=f'analytical')
     plt.plot(propertime_cdf[0], propertime_cdf[1], color='k', linewidth=2, linestyle='-',
                 label=f'propertime')
     #plt.vlines(bottom_of_well, 0 ,1.07,  linewidth=2, linestyle='-')

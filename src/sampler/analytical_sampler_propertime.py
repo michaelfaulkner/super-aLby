@@ -56,7 +56,7 @@ class AnalyticalSamplerPropertime(Sampler):
         """
 
         
-        x2 = 1.0 / (2.0 * potential._mass * np.sqrt(potential.omega_squared) * (1.0 / potential.auxillary_particle_value**2) 
+        x2 = 1.0 / (2.0 * potential._mass * np.sqrt(potential.omega_squared)
                                 * np.sqrt(1 + potential.omega_squared / (4.0 * potential.auxillary_particle_value**2)))
 
         R = 1 + np.sqrt(potential.omega_squared) / potential.auxillary_particle_value * \
