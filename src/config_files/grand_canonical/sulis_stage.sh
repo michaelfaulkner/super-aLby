@@ -2,11 +2,13 @@
 # One stage of a grand-canonical experiment on Slurm (submitted by sulis_experiment.sh; not meant to be run by hand):
 #   sulis_stage.sh <experiment_dir> spawn_calibration   writes the calibration job configs and calibration_jobs.txt
 #   sulis_stage.sh <experiment_dir> spawn_production    writes the production job configs and production_jobs.txt
-#   sulis_stage.sh <experiment_dir> calibration         array task: runs one line of calibration_jobs.txt
+#   sulis_stage.sh <experiment_dir> calibration         array task: runs RUNS_PER_TASK lines of calibration_jobs.txt
 #   sulis_stage.sh <experiment_dir> bias                computes bias.json, then spawns the production job configs
-#   sulis_stage.sh <experiment_dir> production          array task: runs one line of production_jobs.txt
+#   sulis_stage.sh <experiment_dir> production          array task: runs RUNS_PER_TASK lines of production_jobs.txt
 #   sulis_stage.sh <experiment_dir> analysis            writes analysis.json and prints the results
-# Each array task runs one job (one config file), so all jobs of a stage run in parallel. Paths are relative to src.
+# Array task t runs lines t * RUNS_PER_TASK + 1, ..., (t + 1) * RUNS_PER_TASK of the list (default 1) in parallel, one
+# per CPU of the task (sulis_experiment.sh sets RUNS_PER_TASK and --cpus-per-task to keep within the Slurm job limit).
+# Paths are relative to src.
 set -euo pipefail
 
 if [ "$#" -ne 2 ]; then
@@ -19,7 +21,7 @@ STAGE="$2"
 if [ -z "${PYTHON:-}" ]; then
     if [ -x .venv/bin/python ]; then PYTHON=.venv/bin/python; else PYTHON=python3; fi
 fi
-export PYTHONUNBUFFERED=1 PYTHONIOENCODING=utf-8
+export PYTHONUNBUFFERED=1 PYTHONIOENCODING=utf-8 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 source "$EXPERIMENT_DIR/experiment.env"
 read -r -a SCHEME_LIST <<< "$SCHEMES"
 
@@ -37,17 +39,34 @@ spawn() {   # spawn <template.ini> <jobs> <start> <end> <increments> <section> <
     fi
     find "$base_dir" -name "job_*.ini" | sort
 }
-run_task() {   # run_task <list of configs>: runs the config on line SLURM_ARRAY_TASK_ID (counting from 0)
-    local config output
-    config="$(sed -n "$(( ${SLURM_ARRAY_TASK_ID:?not an array task} + 1 ))p" "$1")"
-    output="$(get_value "$config" output_directory)"
+run_config() {   # run_config <config>: runs one config, unless it has already finished
+    local output
+    output="$(get_value "$1" output_directory)"
     if [ -f "$output/sim_params.json" ]; then
-        echo "The run of $config has already finished."
+        echo "The run of $1 has already finished."
         return 0
     fi
     mkdir -p "$output"
-    echo "Running $config."
-    "$PYTHON" run.py "$config" 2>&1 | tee "$output/run.log"
+    echo "Running $1."
+    "$PYTHON" run.py "$1" > "$output/run.log" 2>&1
+}
+run_task() {   # run_task <list of configs>: runs this array task's block of RUNS_PER_TASK lines in parallel
+    local runs_per_task="${RUNS_PER_TASK:-1}" first last config failed=0
+    local pids=() configs=()
+    first=$(( ${SLURM_ARRAY_TASK_ID:?not an array task} * runs_per_task + 1 ))
+    last=$(( first + runs_per_task - 1 ))
+    while IFS= read -r config; do
+        run_config "$config" &
+        pids+=("$!")
+        configs+=("$config")
+    done < <(sed -n "${first},${last}p" "$1")
+    for index in "${!pids[@]}"; do
+        if ! wait "${pids[$index]}"; then
+            echo "The run of ${configs[$index]} failed (see its run.log)." >&2
+            failed=1
+        fi
+    done
+    return "$failed"
 }
 
 case "$STAGE" in

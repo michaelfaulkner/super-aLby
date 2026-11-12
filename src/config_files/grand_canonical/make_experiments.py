@@ -23,7 +23,6 @@ import argparse
 import configparser
 import json
 import os
-import shutil
 
 THIS_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 EXPERIMENT_ROOT = os.path.join(THIS_DIRECTORY, "experiments")
@@ -47,8 +46,8 @@ RENAMED_KEYS = {"distance_between_measurements": "normalised_distance_between_me
                 "refreshment_distance": "normalised_refreshment_distance"}
 LIST_KEYS = {"schemes", "samplers"}
 STRING_KEYS = {"potential", "log_activity", "refreshment", "range_of_initial_particle_positions"}
-"""Optional: bias_file = an existing bias.json of the same system, copied to the experiment's output folder (the
-    calibration and bias stages are then skipped)."""
+"""Optional: bias_file = an existing bias.json of the same system, written as the file_name of tempered.ini (the run
+    scripts then copy it to the output folder and skip the calibration and bias stages)."""
 OPTIONAL_STRING_KEYS = {"bias_file"}
 BOOLEAN_KEYS = {"compression_flow"}
 """Keys every experiment needs; the refreshment keys depend on the refreshment type."""
@@ -64,13 +63,13 @@ SULIS_KEYS = ("sulis_account", "sulis_partition", "sulis_memory_per_cpu", "sulis
               "sulis_bias_time", "sulis_production_time", "sulis_analysis_time")
 """Optional Slurm settings with defaults: the bias stage loads every calibration sample at once, so it needs more
     memory than the other stages (e.g. 1.5 GB of calibration data for N = 32)."""
-SULIS_OPTIONAL_KEYS = {"sulis_bias_memory": "8G"}
+SULIS_OPTIONAL_KEYS = {"sulis_bias_memory": "8G", "sulis_max_jobs": "500"}
 
 
-def use_existing_bias(name, s, potential_parameters, output):
+def check_existing_bias(name, s, potential_parameters):
     """
     Checks that bias_file was calibrated for this system (potential type and parameters, ring length, number of
-    particles, temperature) and copies it to <output>/bias.json, where the production stage reads it.
+    particles, temperature).
     """
     path = s["bias_file"]
     if not os.path.isfile(path):
@@ -94,8 +93,6 @@ def use_existing_bias(name, s, potential_parameters, output):
     if mismatches:
         raise SystemExit(f"Experiment [{name}]: bias_file {path} was calibrated for a different system: "
                          f"{'; '.join(mismatches)}.")
-    os.makedirs(output, exist_ok=True)
-    shutil.copyfile(path, os.path.join(output, "bias.json"))
 
 
 def make_experiment(name, s, potential_parameters, sulis):
@@ -121,8 +118,9 @@ def make_experiment(name, s, potential_parameters, sulis):
     os.makedirs(directory, exist_ok=True)
     output = f"{OUTPUT_ROOT}/{name}"
     potential = s["potential"]
+    bias_file = s.get("bias_file") or f"{output}/bias.json"
     if s.get("bias_file"):
-        use_existing_bias(name, s, potential_parameters, output)
+        check_existing_bias(name, s, potential_parameters)
     log_activity = s["log_activity"]
     start_log_activity = 0.0 if log_activity == "suggested" else log_activity
 
@@ -195,7 +193,7 @@ def make_experiment(name, s, potential_parameters, sulis):
                         f"compression_flow = {s['compression_flow']}"] +
                        ([f"compression_window = {s['compression_window']}"]
                         if s.get("compression_window") is not None else []) +
-                       ["", "[TabulatedGhostCouplingBias]", f"file_name = {output}/bias.json"])
+                       ["", "[TabulatedGhostCouplingBias]", f"file_name = {bias_file}"])
         elif scheme == "direct":
             write_ecmc("direct.ini", production_samplers, run_length(scheme, "equilibration"),
                        run_length(scheme, "production_observations"), SCHEME_KERNELS[scheme],
@@ -208,8 +206,6 @@ def make_experiment(name, s, potential_parameters, sulis):
                 f"CALIBRATION_JOBS={s['calibration_jobs']}\nPRODUCTION_JOBS={s['production_jobs']}\n"
                 f"SUB_BINS={s['sub_bins']}\n"
                 f"LOG_ACTIVITY={log_activity}\nSCHEMES=\"{' '.join(schemes)}\"\n")
-        if s.get("bias_file"):
-            f.write(f"BIAS_FILE={s['bias_file']}\n")
         f.write(f"SULIS={'true' if sulis is not None else 'false'}\n")
         for key, value in (sulis or {}).items():
             f.write(f"{key.upper()}={value}\n")

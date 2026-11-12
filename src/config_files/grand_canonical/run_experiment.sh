@@ -1,30 +1,33 @@
 #!/bin/bash
-# Runs one grand-canonical experiment end to end, or every point of a sweep:
+# Runs one grand-canonical experiment end to end
 #   ./config_files/grand_canonical/run_experiment.sh <experiment_dir or sweep_dir>
-# The folder is one written by make_experiments.py (absolute, or relative to the current directory). With SULIS=true
-# in experiment.env (sulis = true in the spec) the stages are submitted to Slurm by sulis_experiment.sh instead of
-# being run here; run it on Sulis then.
-# Optional environment variables: STAGES (below), MAX_CPUS (default: number of cores - 1), PLOT (default true; false
-# skips the figures) and PYTHON (default: /opt/homebrew/bin/python3.11 if present, else python3; it needs numpy, scipy
-# and matplotlib).
-#
-# Stages (STAGES, default all four; e.g. STAGES="production analysis" ./run_experiment.sh <dir> to rerun only those):
-#   calibration  runs calibration.ini over ghost_coupling = -1, -1 + 2/K, ..., 1 - 2/K (CALIBRATION_JOBS jobs each);
+
+# Experiment directory created using make_experiments.py. With SULIS=true in experiment.env (sulis = true in the experiments.ini) 
+# the stages are submitted to Slurm by sulis_experiment.sh instead of being run locally.
+
+# Optional environment variables: STAGES (below), MAX_CPUS (default: number of cores - 1), PLOT (default true, false
+# skips the figures).
+
+# Stages (STAGES, default all four e.g. STAGES="production analysis" ./run_experiment.sh <dir> to rerun only those) e.g. if using
+# an existing tabulated bias:
+
+#   calibration  runs calibration.ini over ghost_coupling = -1, -1 + 2/K, ..., 1 - 2/K (CALIBRATION_JOBS jobs each). Generates
+#                coupling samples that the bias stage utilises.
 #   bias         sample_analysis/compute_ghost_coupling_bias.py writes <OUTPUT>/bias.json, including the suggested
-#                log_activity, and (unless PLOT=false) bias.png, so the bias can be checked before production;
-#   production   runs <scheme>.ini for every scheme in SCHEMES (PRODUCTION_JOBS jobs each) at one log_activity;
+#                log_activity, and (unless PLOT=false) bias.png, so the bias can be checked before production.
+#   production   runs <scheme>.ini for every scheme in SCHEMES (PRODUCTION_JOBS jobs each) at one log_activity.
 #   analysis     sample_analysis/grand_canonical_analysis.py writes <OUTPUT>/analysis.json; then (unless PLOT=false)
 #                sample_analysis/plot_grand_canonical_experiments.py plots the CDF of every sample array of every
 #                scheme, their comparison (cdf_comparison_*.png, cdf_comparison.json with Kolmogorov-Smirnov
 #                p-values) and redraws bias.png.
-# calibration and bias are skipped when nothing needs them (a fixed LOG_ACTIVITY and no tabulated bias).
-#
+
 # <experiment_dir>/experiment.env (written by make_experiments.py) holds the settings:
 #   NAME, OUTPUT, CALIBRATION_BINS (K), CALIBRATION_JOBS, PRODUCTION_JOBS, SUB_BINS,
 #   LOG_ACTIVITY  suggested (from the calibration, P(N) peaks near the calibration N) or a number (fixed activity);
 #   SCHEMES       production templates to run, e.g. "tempered direct" or "tempered metropolis";
 #   SULIS         true or false, with the Slurm settings SULIS_* when true.
 # Finished jobs are skipped, so an interrupted experiment can simply be rerun.
+
 set -euo pipefail
 
 ALL_STAGES="calibration bias production analysis"
@@ -34,8 +37,12 @@ if [ "$#" -ne 1 ]; then
 fi
 if [ ! -f "$1/experiment.env" ] && [ -f "$1/sweep.json" ]; then   # a sweep: run (or submit) every point in turn
     SWEEP_DIR="$(cd "$1" && pwd)"
+    POINTS=()
     for point in "$SWEEP_DIR"/*/; do
-        if [ -f "$point/experiment.env" ]; then "${BASH_SOURCE[0]}" "${point%/}"; fi
+        if [ -f "$point/experiment.env" ]; then POINTS+=("${point%/}"); fi
+    done
+    for index in "${!POINTS[@]}"; do   # on Sulis, each point gets an equal share of the Slurm job limit
+        SULIS_EXPERIMENTS_LEFT=$(( ${#POINTS[@]} - index )) "${BASH_SOURCE[0]}" "${POINTS[$index]}"
     done
     exit 0
 fi
@@ -82,6 +89,21 @@ if [ "$LOG_ACTIVITY" = suggested ]; then NEEDS_CALIBRATION=true; fi
 for scheme in "${SCHEME_LIST[@]}"; do
     if grep -q "tabulated_ghost_coupling_bias" "$EXPERIMENT_DIR/$scheme.ini"; then NEEDS_CALIBRATION=true; fi
 done
+# An existing bias: if tempered.ini reads its bias from somewhere other than <output>/bias.json, copy it there (the
+# production log activity and the analysis read it there) and skip the calibration and bias stages.
+if [ -f "$EXPERIMENT_DIR/tempered.ini" ] && [[ " ${SCHEME_LIST[*]} " == *" tempered "* ]]; then
+    TEMPERED_BIAS="$(awk -F '=' '$1 ~ /^file_name[[:space:]]*$/ { gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2; exit }' \
+        "$EXPERIMENT_DIR/tempered.ini")"
+    if [ -n "$TEMPERED_BIAS" ] && [ "$TEMPERED_BIAS" != "$OUTPUT/bias.json" ]; then
+        if [ ! -f "$TEMPERED_BIAS" ]; then
+            echo "tempered.ini reads the bias $TEMPERED_BIAS, which does not exist." >&2
+            exit 1
+        fi
+        mkdir -p "$OUTPUT"
+        cp "$TEMPERED_BIAS" "$OUTPUT/bias.json"
+        NEEDS_CALIBRATION=false
+    fi
+fi
 
 LINE="-----------------------------------------------------------------------------------------"
 now() { "$PYTHON" -c "import time; print(time.time())"; }
