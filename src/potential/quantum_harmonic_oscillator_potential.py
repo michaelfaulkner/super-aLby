@@ -5,7 +5,10 @@ from .worldline_potential import WorldlinePotential
 from base.exceptions import ConfigurationError
 from helper_methods import get_initial_positions_of_smooth_potential
 from model_settings import number_of_quantum_particles, number_of_timeslices, number_of_particles
-from potential.cpp_quantum_harmonic_oscillator import cpp_qho 
+try:
+    from potential.cpp_quantum_harmonic_oscillator import cpp_qho
+except:
+    cpp_qho = None
 class QuantumHarmonicOscillatorPotential(WorldlinePotential):
     r"""
     This class implements the (currently one-dimensional) potential for the quantum harmonic oscillator resulting
