@@ -35,11 +35,17 @@ def print_analysis(file_name):
     for run in runs:
         print(f"{name(run)} ({run['number_of_jobs']} jobs): <N> = {run['mean_number'][0]:.4f} +- "
               f"{run['mean_number'][1]:.4f}, Var N = {run['variance_number'][0]:.4f} +- "
-              f"{run['variance_number'][1]:.4f}, tau_N = {run['iact_number_in_time'][0]:.4g}, kept fraction = "
-              f"{run['physical_fraction'][0]:.3f}.")
+              f"{run['variance_number'][1]:.4f}, tau_N = {run['iact_number_in_observations'][0]:.4g} observations"
+              + (f", tau_S = {run['iact_structure_factor_in_observations'][0]:.4g} observations"
+                 if "iact_structure_factor_in_observations" in run else "")
+              + f", kept fraction = {run['physical_fraction'][0]:.3f}.")
         if "effort" in run:
+            efforts = ", ".join(f"{label} {run[key][0]:.4g} +- {run[key][1]:.2g}" for key, label in
+                                (("effort_number", "N"), ("effort_structure_factor", "S")) if key in run)
             print(f"{name(run)} computational effort = {run['effort'][0]:.4g} +- {run['effort'][1]:.2g} proposed "
-                  f"moves per independent sample ({run['effort_particle_events_only'][0]:.4g} from particle events).")
+                  f"events per independent sample ({efforts}; "
+                  f"{run['proposed_particle_events_per_observation'][0]:.4g} particle and "
+                  f"{run['kernel_events_per_observation'][0]:.4g} kernel events per observation).")
     exact = runs[0].get("exact")
     if exact:
         print(f"Exact (hard disks): <N> = {exact['mean_number']:.4f}, Var N = {exact['variance_number']:.4f}.")

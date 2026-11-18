@@ -6,8 +6,8 @@ Usage: python sample_analysis/grand_canonical_analysis.py <run_directory> [<run_
 
 For every job the script keeps the post-equilibration observations, selects the physical ones (ghost
 coupling lambda <= -1, or no ghost; lambda <= 0 for runs from before the diameter convention), and computes P(N),
-<N>, Var N, <U>, the integrated autocorrelation time of N and rates of completed insertions.  Results are pooled over
-jobs (mean and standard error over jobs).
+<N>, Var N, <U>, <S(k_min)>, the integrated autocorrelation times of N and S(k_min), rates of completed insertions and
+the computational effort (get_effort).  Results are pooled over jobs (mean and standard error over jobs).
 """
 import argparse
 import glob
@@ -49,7 +49,7 @@ def load_job(job_directory):
                                         parameters["distance_between_measurements"])
     start = parameters["number_of_equilibration_iterations"] + 1  # + 1 for the initial observation
     samples = {}
-    for name in ["particle_number", "ghost_coupling", "potential", "ghost_profile"]:
+    for name in ["particle_number", "ghost_coupling", "potential", "ghost_profile", "structure_factor"]:
         file_name = os.path.join(job_directory, f"checkpoint_00_sample_of_{name}.npy")
         if os.path.isfile(file_name):
             samples[name] = np.load(file_name)[start:, 0]
@@ -122,6 +122,15 @@ def analyse_job(job_directory):
                               * parameters["distance_between_measurements"])
             result["seconds_per_unit_time"] = runtimes[-1] / simulated_time
             result["iact_number_in_seconds"] = result["iact_number_in_time"] * result["seconds_per_unit_time"]
+    if "structure_factor" in samples:
+        values = samples["structure_factor"]
+        finite = np.isfinite(values)  # S(k_min) is NaN while there are no real particles
+        result["mean_structure_factor"] = float(np.mean(values[physical & finite]))
+        try:
+            result["iact_structure_factor_in_observations"] = (float(get_iact(values[finite]))
+                                                               if np.std(values[finite]) > 0.0 else float("nan"))
+        except IndexError:
+            result["iact_structure_factor_in_observations"] = float("nan")
     if "potential" in samples:
         result["mean_energy"] = float(np.mean(samples["potential"][physical]))
         result["mean_energy_per_particle"] = float(np.mean(samples["potential"][physical] /
@@ -157,37 +166,40 @@ def analyse_job(job_directory):
 
 def get_effort(job_directory, parameters, result):
     """
-    Computational effort of an event-chain run, in proposed moves per independent physical sample, extending
-    effort = IACT * event rate / acceptance rate (sample_analysis/plot_comp_effort_vs_prefactor.py):
-        effort = tau_N (time) * (proposed particle events + kernel moves) per unit time / kept fraction.
-    The kept fraction (lambda <= -1) accounts for the samples thrown out; the kernel moves (the lambda proposals and
-    ghost-profile updates of the tempered kernel, the insertion/deletion attempts of the direct kernel) account for
-    the work outside the particle event chains. The particle events are counted exactly (number_of_events_at_samples
-    / acceptance rate over the whole run's displacement): sim_params' mean_event_rate divides by the sum of all
-    sampled event distances, which overcounts the displacement when kernel moves, refreshments and measurements
-    interrupt the chains. Returns {} for runs without event-chain statistics (e.g. Metropolis).
+    Computational effort of an event-chain run, in proposed events per independent physical sample, as
+    effort = IACT * mean event rate / acceptance rate in our canonical work, with everything counted per observation:
+        effort_X = tau_X (observations) * proposed events per observation / kept fraction,
+    for X = N and S(k_min).  Proposed events per observation = (particle events / acceptance rate + kernel events) /
+    observations, over the whole run (equilibration included, like the kernel statistics).  The kernel events are the
+    work outside the particle event chains: for the tempered kernel the lambda phases, every lambda-reversal proposal
+    (accepted or thinned; compression flow and frozen particles) and the insertion and deletion attempts; for the
+    direct kernel the insertion and deletion attempts.  The kept fraction (lambda <= -1) accounts for the observations
+    that are thrown out.  Returns {} for runs without event-chain statistics (e.g. Metropolis).
     """
     acceptance_rate = parameters.get("event_chain", {}).get("acceptance_rate")
     events_file = os.path.join(job_directory, "number_of_events_at_samples.npy")
-    if not acceptance_rate or not os.path.isfile(events_file) or not np.isfinite(result["iact_number_in_time"]):
+    if not acceptance_rate or not os.path.isfile(events_file):
         return {}
-    statistics, total_time = parameters["statistics"], parameters["statistics"]["total_time"]
-    events = float(np.load(events_file)[-1])  # events of the whole run (equilibration included, like total_time)
-    particle_rate = events / acceptance_rate / total_time  # proposed particle events per unit time
+    statistics = parameters["statistics"]
+    observations = parameters["number_of_equilibration_iterations"] + parameters["number_of_observations"]
+    particle_events = float(np.load(events_file)[-1]) / acceptance_rate
     if parameters["scheme"] == "tempered":
-        kernel_moves = sum(statistics.get(key, 0) for key in ("coupling_moves", "coupling_bias_flips",
-                                                              "coupling_pair_flips", "coupling_thinning_rejections",
-                                                              "coupling_wall_flips", "lifts_to_particle",
-                                                              "coupling_pushes"))  # the old name of lifts_to_particle
+        kernel_events = sum(statistics.get(key, 0) for key in (
+            "coupling_moves", "compression_flips", "compression_thinning_rejections", "compression_tail_flips",
+            "compression_tail_rejections", "coupling_bias_flips", "coupling_thinning_rejections", "coupling_wall_flips",
+            "insertion_attempts", "deletion_attempts"))
     elif parameters["scheme"] == "direct":
-        kernel_moves = statistics.get("direct_insertion_attempts", 0) + statistics.get("direct_deletion_attempts", 0)
+        kernel_events = statistics.get("direct_insertion_attempts", 0) + statistics.get("direct_deletion_attempts", 0)
     else:
-        kernel_moves = 0
-    kernel_rate = kernel_moves / total_time
-    independent_samples_per_unit_time = result["physical_fraction"] / result["iact_number_in_time"]
-    return {"proposed_particle_events_per_unit_time": particle_rate, "kernel_moves_per_unit_time": kernel_rate,
-            "effort_particle_events_only": particle_rate / independent_samples_per_unit_time,
-            "effort": (particle_rate + kernel_rate) / independent_samples_per_unit_time}
+        kernel_events = 0
+    effort = {"proposed_particle_events_per_observation": particle_events / observations,
+              "kernel_events_per_observation": kernel_events / observations}
+    events_per_observation = (particle_events + kernel_events) / observations
+    for name in ("number", "structure_factor"):
+        iact = result.get(f"iact_{name}_in_observations")
+        if iact is not None and np.isfinite(iact):
+            effort[f"effort_{name}"] = iact * events_per_observation / result["physical_fraction"]
+    return effort
 
 
 def mean_and_error(values):
@@ -215,6 +227,11 @@ def analyse_run(run_directory, exact=None):
         if key in ["job_directory", "histogram"]:
             continue
         pooled[key] = mean_and_error([result.get(key) for result in results])
+    """The effort of the run is that of its slower observable (pooled over jobs first)."""
+    efforts = [pooled[key] for key in ("effort_number", "effort_structure_factor")
+               if key in pooled and np.isfinite(pooled[key][0])]
+    if efforts:
+        pooled["effort"] = max(efforts, key=lambda effort: effort[0])
     maximum_number = max(len(result["histogram"]) for result in results) - 1
     histograms = np.array([np.pad(result["histogram"], (0, maximum_number + 1 - len(result["histogram"])))
                            for result in results], dtype=float)
@@ -263,7 +280,11 @@ def main():
                      f"{summary['variance_number_deviation_in_errors']:+.2f}sig")
         if "insertions_per_unit_time" in summary:
             line += f" | insertions/time={summary['insertions_per_unit_time'][0]:.4g}"
-        line += f" | tau_N(time)={summary['iact_number_in_time'][0]:.4g}"
+        line += f" | tau_N(observations)={summary['iact_number_in_observations'][0]:.4g}"
+        if "iact_structure_factor_in_observations" in summary:
+            line += f" tau_S(observations)={summary['iact_structure_factor_in_observations'][0]:.4g}"
+        if "effort" in summary:
+            line += f" | effort={summary['effort'][0]:.4g}"
         line += f" | kept (parked)={100.0 * summary['physical_fraction'][0]:.1f}%"
         print(line)
     if args.output is not None:

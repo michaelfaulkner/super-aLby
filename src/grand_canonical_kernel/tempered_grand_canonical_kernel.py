@@ -109,7 +109,7 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
             "coupling_moves", "insertion_attempts", "insertion_acceptances", "deletion_attempts",
             "deletion_null_proposals", "deletion_acceptances", "coupling_bias_flips", "coupling_thinning_rejections",
             "coupling_wall_flips", "upward_passages", "downward_passages", "compression_flips",
-            "compression_thinning_rejections", "compression_tail_flips"]}
+            "compression_thinning_rejections", "compression_tail_flips", "compression_tail_rejections"]}
 
     def initialize(self, potential, temperature):
         super().initialize(potential, temperature)
@@ -280,6 +280,8 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
                 if potential.accept_compression_tail_event(potential.ghost_coupling, direction):
                     self._count("compression_tail_flips")
                     self._coupling_direction = -direction
+                else:
+                    self._count("compression_tail_rejections")
                 continue
             potential.ghost_coupling = step_end_coupling
             if direction > 0 and step_end_coupling >= 1.0:
