@@ -97,7 +97,7 @@ class EventChainMediator(Mediator):
         if (not math.isclose(portal_probability, 0.0) and not ("HardDiskPotential" in str(self._potential) 
                 and dimensionality_of_particle_space == 1)):
             raise ConfigurationError(f"Give a value of 0.0 for portal_probability in {self.__class__.__name__} "
-                                     f"(teleportation-portal functionality is availalbe only for 1D hard disks).")    
+                                     f"(teleportation-portal functionality is available only for 1D hard disks).")
 
         """Re-instantiate self._potential as EuclideanSubspacePotential contains additional abstract methods."""
         self._potential = potential

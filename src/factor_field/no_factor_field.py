@@ -38,6 +38,9 @@ class NoFactorField(FactorField):
             The sampling temperature.
         movement_direction : int
             The active-particle direction of motion.
+        disk_radii : numpy.ndarray
+            A one-dimensional numpy array of length number_of_particles.  Element i is a float and represents the
+            relative radius of the particle i in hard-disk models.
 
         Returns
         ----------
