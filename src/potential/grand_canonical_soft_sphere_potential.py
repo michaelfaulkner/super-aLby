@@ -17,7 +17,7 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
     """
 
     def __init__(self, epsilon: float = 1.0, sigma: float = 1.0, power: float = 12.0,
-                 compression_contact: float = 0.5, compression_pair_range: int = 3):
+                 compression_contact: float = 0.5, compression_pair_range: int = 3, compression_split: float = -1.0):
         """
         The constructor of the GrandCanonicalSoftSpherePotential class.
 
@@ -35,6 +35,10 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
         compression_pair_range : int, optional
             Pairs up to this many ring neighbours apart are evaluated exactly along the compression flow; all others
             form a tail factor that is sampled by thinning with one random pair per proposal.
+        compression_split : float, optional
+            Coupling below which only the ghost moves in the compression flow, between its two neighbours (as for hard
+            spheres at 0.0); -1.0 = one region, the whole window moves from lambda = -1.  With 0.0 the ghost's two
+            neighbours are not pulled together while the ghost is smaller than a point.
 
         Raises
         ------
@@ -42,6 +46,8 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
             If epsilon < 0, sigma <= 0 or power <= 1.
         base.exceptions.ConfigurationError
             If compression_contact <= 0 or compression_pair_range < 1.
+        base.exceptions.ConfigurationError
+            If compression_split is not in [-1, 1).
         """
         super().__init__(prefactor=1.0)
         if epsilon < 0.0 or sigma <= 0.0 or power <= 1.0:
@@ -49,6 +55,9 @@ class GrandCanonicalSoftSpherePotential(GrandCanonicalPotential):
         if compression_contact <= 0.0 or compression_pair_range < 1:
             raise ConfigurationError(f"Give compression_contact > 0 and compression_pair_range >= 1 in "
                                      f"{self.__class__.__name__}.")
+        if not -1.0 <= compression_split < 1.0:
+            raise ConfigurationError(f"Give -1 <= compression_split < 1 in {self.__class__.__name__}.")
+        self.compression_split = compression_split
         self._epsilon = epsilon
         self._sigma = sigma
         self._power = power

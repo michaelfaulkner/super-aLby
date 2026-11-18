@@ -58,8 +58,8 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
             Number of neighbours on each side of the ghost that move during compression_flow moves (None = the whole
             ring).
         maximum_free_length_fraction_per_step : float, optional
-            Largest fraction of the free length a growing thinning step of the compression-flow reversal rate may use
-            (between 0.0 and 1.0).  It only tunes the speed of the thinning, never the sampled distribution.
+            Largest fraction of the free length |F| a thinning step of the compression-flow reversal rate may use
+            when it moves F towards 0 (between 0.0 and 1.0).  It only tunes the speed of the thinning, never the sampled distribution.
 
         Raises
         ------
@@ -235,11 +235,11 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
             current_free_length = self._free_length - self._free_length_slope * (coupling - self._synchronised_coupling)
             target = self._flow_highest_coupling if direction > 0 else self._flow_lowest_coupling
             step_length = min(abs(target - coupling), potential.get_compression_step_cap(coupling, direction))
-            if direction > 0:
-                # Upper bound on how lambda can grow before ghost uses up given fraction of remaining empty space.
-                # Protects against step surpassing F = 0.
+            if direction * current_free_length > 0.0:
+                # F moves towards 0 (growing with F > 0, or shrinking with F < 0, which soft spheres allow): use at
+                # most a given fraction of |F| per step.  Protects against a step crossing F = 0, where J diverges.
                 step_length = min(step_length, self._maximum_free_length_fraction_per_step *
-                                  current_free_length / self._free_length_slope)
+                                  abs(current_free_length) / self._free_length_slope)
             step_end_coupling = coupling + direction * step_length
             smallest_slope, largest_slope = self._bias.get_slope_range(min(coupling, step_end_coupling),
                                                                        max(coupling, step_end_coupling))
@@ -313,9 +313,11 @@ class TemperedGrandCanonicalKernel(GrandCanonicalKernel):
             (self._flow_rate_constant, self._free_length, self._free_length_slope,
              velocities) = self._potential.get_compression_flow(positions, self._flow_chain,
                                                                 self._potential.ghost_coupling)
-            if self._free_length <= 0.0:
-                raise RuntimeError(f"The compression flow has no free length ({self._free_length}): reduce the "
-                                   f"compression_contact of {self._potential.__class__.__name__}.")
+            """F < 0 is allowed (soft spheres closer than the reference spacing): the flow is still invertible,
+                J = rate_constant / F < 0, and lambda never crosses F = 0, where |J| diverges."""
+            if self._free_length == 0.0:
+                raise RuntimeError(f"The compression flow has zero free length: reduce the compression_contact of "
+                                   f"{self._potential.__class__.__name__}.")
         self._flow_lowest_coupling, self._flow_highest_coupling = self._potential.prepare_compression(
             positions, velocities, self._potential.ghost_coupling, lowest, highest, self._temperature)
 
