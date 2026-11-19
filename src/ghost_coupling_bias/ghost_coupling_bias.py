@@ -114,7 +114,8 @@ class GhostCouplingBias(metaclass=ABCMeta):
         <= 1)."""
         if not hasattr(self, "_node_list"):
             self._node_list, self._slope_list = self._nodes.tolist(), self._slopes.tolist()
-        first = max(bisect.bisect_right(self._node_list, lower) - 1, 0)
+        """lower can be exactly 1 (a reversal proposal that rounds onto the top, then a zero-length step there)."""
+        first = min(max(bisect.bisect_right(self._node_list, lower) - 1, 0), len(self._slope_list) - 1)
         last = min(max(bisect.bisect_left(self._node_list, upper) - 1, first), len(self._slope_list) - 1)
         slopes = self._slope_list[first:last + 1]
         return min(slopes), max(slopes)
