@@ -93,8 +93,8 @@ def main(x2_data_path, x2_data_path_metrop, N, propertime, mass, omega):
     x2_mean_arr_metrop = np.mean(storage_arr, axis=1)
 
     x2_mean_arr_metrop = x2_mean_arr_metrop[sorted_timestep >= 0.01]
-    err = np.std(storage_arr, axis=1)
-    err = err[sorted_timestep >= 0.01]
+    metrop_err = np.std(storage_arr, axis=1)
+    metrop_err = metrop_err[sorted_timestep >= 0.01]
     sorted_timestep = sorted_timestep[sorted_timestep >= 0.01]
     sorted_N = propertime / sorted_timestep
     analytical_data = np.zeros(len(x2_mean_arr_metrop))
