@@ -24,16 +24,17 @@ def main(active_particle_index_data_p_symm, active_particle_index_data_p_asymm, 
 
     mean_squared_positions_p_symm = np.mean(np.square(positions_p_symm), axis=1)
     mean_squared_positions_p_asymm = np.mean(np.square(positions_p_asymm), axis =1)
+    r_0 = np.sqrt(0.01)
 
 
     fig, ax = plt.subplots(2,2, sharey = "row", sharex=True, figsize = (12,6))
-    ax[0,0].plot(np.arange(len(mean_squared_positions_p_symm))[start:cutoff], mean_squared_positions_p_symm[start:cutoff], color="#c11f70", label ="ECMC - \nSymmetric lifting", linewidth=2.0)
-    ax[0,1].plot(np.arange(len(mean_squared_positions_p_asymm))[start:cutoff], mean_squared_positions_p_asymm[start:cutoff], color="#f0bf42", label ="ECMC - \nAsymmetric lifting", linewidth=2.0)
+    ax[0,0].plot(np.arange(len(mean_squared_positions_p_symm))[start:cutoff], mean_squared_positions_p_symm[start:cutoff]/(r_0**2), color="#c11f70", label ="ECMC - \nSymmetric lifting", linewidth=2.0)
+    ax[0,1].plot(np.arange(len(mean_squared_positions_p_asymm))[start:cutoff], mean_squared_positions_p_asymm[start:cutoff]/(r_0**2), color="#f0bf42", label ="ECMC - \nAsymmetric lifting", linewidth=2.0)
     ax[1,0].scatter(np.arange(len(active_particle_index_p_symm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#c11f70", label ="Symmetric lifting", s=1.0)
     ax[1,1].scatter(np.arange(len(active_particle_index_p_asymm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#f0bf42", label ="Asymmetric lifting", s=1.0)
 
     inset_ax_00 = inset_axes(ax[0,0], width = "40%", height="50%", loc = "lower right", borderpad = 1.7)
-    inset_ax_00.plot(np.arange(len(metrop_p))[start:cutoff], metrop_p[start:cutoff], color = "#2e8316", label = "Metrop MC")
+    inset_ax_00.plot(np.arange(len(metrop_p))[start:cutoff], metrop_p[start:cutoff]/(r_0**2), color = "#2e8316", label = "Metropolis")
     lims_00 = ax[0,0].get_ylim()
     print(lims_00)
     inset_ax_00.set_ylim(lims_00[0], lims_00[1])
@@ -54,6 +55,7 @@ def main(active_particle_index_data_p_symm, active_particle_index_data_p_asymm, 
     for index in range(1,50):
             a = active_particle_index_p_asymm[index]
             a_1 = active_particle_index_p_asymm[index-1]
+            print(a_1, a)
             if a_1 == 7 and a == 0:
                 active_particle_index_p_asymm[index] = 8
             elif a_1 == 0 and a == 7:
@@ -64,24 +66,51 @@ def main(active_particle_index_data_p_symm, active_particle_index_data_p_asymm, 
             elif a_1 < 0 and a != 0:
                 active_particle_index_p_asymm[index] -= 8
 
-    
+    for index in range(1,50):
+        a = active_particle_index_p_symm[index]
+        a_1 = active_particle_index_p_symm[index-1]
+        if a_1 == 15 and a == 0:
+            active_particle_index_p_symm[index] = 16
+        elif a_1 == -7 and a == 7:
+            active_particle_index_p_symm[index] = -9
 
+        elif a_1 > 15 and a != 15:
+            active_particle_index_p_symm[index] += 8
+        elif a_1 < -7 and a != -7:
+            active_particle_index_p_symm[index] -= 8
 
+    for index in range(1,50):
+            a = active_particle_index_p_asymm[index]
+            a_1 = active_particle_index_p_asymm[index-1]
+            print(a_1, a)
+            if a_1 == 15 and a == 0:
+                active_particle_index_p_asymm[index] = 16
+            elif a_1 == -7 and a == 0:
+                active_particle_index_p_asymm[index] = -9
+            elif a_1 == -14 and a == -7:
+                active_particle_index_p_asymm[index] = -17
 
+            elif a_1 > 15 and a != 15:
+                active_particle_index_p_asymm[index] += 8
+            elif a_1 < -7 and a != -7:
+                active_particle_index_p_asymm[index] -= 8
+            elif a_1 < -14 and a != -14:
+                active_particle_index_p_asymm[index] -= 8
+
+    cutoff = 25
     inset_ax_10 = inset_axes(ax[1,0], width="40%", height="50%", loc="lower right", borderpad=2.5)
     inset_ax_10.plot(np.arange(len(active_particle_index_p_symm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#c11f70")
     inset_ax_10.scatter(np.arange(len(active_particle_index_p_symm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#c11f70", label =r"$x=100$", s=5.0)
-    inset_ax_10.set_xlim(0,50)
+    #inset_ax_10.set_xlim(0,50)
 
     inset_ax_11 = inset_axes(ax[1,1], width="40%", height="50%", loc="lower right", borderpad=2.5)
     inset_ax_11.plot(np.arange(len(active_particle_index_p_asymm))[:cutoff], active_particle_index_p_asymm[:cutoff], color="#f0bf42")
     inset_ax_11.scatter(np.arange(len(active_particle_index_p_asymm))[:cutoff], active_particle_index_p_asymm[:cutoff], color="#f0bf42", label =r"$x=\pm100$", s=5.0)
-    inset_ax_11.set_xlim(0,50)
-    #inset_ax_11.set_ylim(3,7)
+    #inset_ax_11.set_xlim(0,50)
 
 
-    ax[1,0].set_ylabel("Active particle index", fontsize =19)
-    ax[0,0].set_ylabel(r"$|\mathbf{x}|^2$", fontsize =30, labelpad=-5)
+    ax[1,0].set_ylabel(r"$a$", fontsize =40)
+    ax[0,0].set_ylabel(r"$|\mathbf{x}/r_0|^2$", fontsize =30)
 
     ax[1,0].set_xlabel("Event index", fontsize =20)
     ax[1,1].set_xlabel("Event index", fontsize =20)
@@ -121,7 +150,7 @@ def main(active_particle_index_data_p_symm, active_particle_index_data_p_asymm, 
  
 
     plt.tight_layout()
-    plt.savefig("active_particle_thermalisation_both.png")
+    plt.savefig("active_particle_thermalisation_both.pdf")
     plt.clf()
 
     # print(np.shape(positions_p))
