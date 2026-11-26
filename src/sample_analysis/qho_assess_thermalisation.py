@@ -27,9 +27,9 @@ def main(metrop_data, ecmc_data):
     r_0 = np.sqrt(0.01)
     fig, ax = plt.subplots(1,1, figsize=(7,5))
     sample_index_cutoff = 10000
-    ax.plot(np.arange(sample_index_cutoff), metrop_mean_squared_sample[:sample_index_cutoff]/(r_0**2), color = "#e16f04ff", label ="Metropolis MC")
+    ax.plot(np.arange(sample_index_cutoff), metrop_mean_squared_sample[:sample_index_cutoff]/(r_0**2), color = "#0d7d87", label ="Metropolis", linewidth=2.0)
 
-    ax.plot(np.arange(sample_index_cutoff), ecmc_mean_squared_sample[:sample_index_cutoff]/(r_0**2), color = "#e20acdff", label = "ECMC")
+    ax.plot(np.arange(sample_index_cutoff), ecmc_mean_squared_sample[:sample_index_cutoff]/(r_0**2), color = "#f55f74", label = "ECMC", linewidth=2.0)
     ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=18)
     ax.set_xlabel("Sample index", fontsize = 25)
     ax.set_ylabel(r"$|\mathbf{x}/r_0|^2$", fontsize = 30)

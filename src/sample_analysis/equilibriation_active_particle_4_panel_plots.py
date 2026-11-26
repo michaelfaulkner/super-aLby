@@ -28,13 +28,13 @@ def main(active_particle_index_data_p_symm, active_particle_index_data_p_asymm, 
 
 
     fig, ax = plt.subplots(2,2, sharey = "row", sharex=True, figsize = (12,6))
-    ax[0,0].plot(np.arange(len(mean_squared_positions_p_symm))[start:cutoff], mean_squared_positions_p_symm[start:cutoff]/(r_0**2), color="#c11f70", label ="ECMC - \nSymmetric lifting", linewidth=2.0)
-    ax[0,1].plot(np.arange(len(mean_squared_positions_p_asymm))[start:cutoff], mean_squared_positions_p_asymm[start:cutoff]/(r_0**2), color="#f0bf42", label ="ECMC - \nAsymmetric lifting", linewidth=2.0)
-    ax[1,0].scatter(np.arange(len(active_particle_index_p_symm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#c11f70", label ="Symmetric lifting", s=1.0)
-    ax[1,1].scatter(np.arange(len(active_particle_index_p_asymm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#f0bf42", label ="Asymmetric lifting", s=1.0)
+    ax[0,0].plot(np.arange(len(mean_squared_positions_p_symm))[start:cutoff], mean_squared_positions_p_symm[start:cutoff]/(r_0**2), color="#f55f74", label ="ECMC - \nSymmetric lifting", linewidth=2.0)
+    ax[0,1].plot(np.arange(len(mean_squared_positions_p_asymm))[start:cutoff], mean_squared_positions_p_asymm[start:cutoff]/(r_0**2), color="#4a2377", label ="ECMC - \nAsymmetric lifting", linewidth=2.0)
+    ax[1,0].scatter(np.arange(len(active_particle_index_p_symm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#f55f74", label ="Symmetric lifting", s=1.0)
+    ax[1,1].scatter(np.arange(len(active_particle_index_p_asymm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#4a2377", label ="Asymmetric lifting", s=1.0)
 
     inset_ax_00 = inset_axes(ax[0,0], width = "40%", height="50%", loc = "lower right", borderpad = 1.7)
-    inset_ax_00.plot(np.arange(len(metrop_p))[start:cutoff], metrop_p[start:cutoff]/(r_0**2), color = "#2e8316", label = "Metropolis")
+    inset_ax_00.plot(np.arange(len(metrop_p))[start:cutoff], metrop_p[start:cutoff]/(r_0**2), color = "#0d7d87", label = "Metropolis", linewidth=2.0)
     lims_00 = ax[0,0].get_ylim()
     print(lims_00)
     inset_ax_00.set_ylim(lims_00[0], lims_00[1])
@@ -99,13 +99,13 @@ def main(active_particle_index_data_p_symm, active_particle_index_data_p_asymm, 
 
     cutoff = 25
     inset_ax_10 = inset_axes(ax[1,0], width="40%", height="50%", loc="lower right", borderpad=2.5)
-    inset_ax_10.plot(np.arange(len(active_particle_index_p_symm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#c11f70")
-    inset_ax_10.scatter(np.arange(len(active_particle_index_p_symm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#c11f70", label =r"$x=100$", s=5.0)
+    inset_ax_10.plot(np.arange(len(active_particle_index_p_symm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#f55f74")
+    inset_ax_10.scatter(np.arange(len(active_particle_index_p_symm))[:cutoff], active_particle_index_p_symm[:cutoff], color="#f55f74", label =r"$x=100$", s=5.0)
     #inset_ax_10.set_xlim(0,50)
 
     inset_ax_11 = inset_axes(ax[1,1], width="40%", height="50%", loc="lower right", borderpad=2.5)
-    inset_ax_11.plot(np.arange(len(active_particle_index_p_asymm))[:cutoff], active_particle_index_p_asymm[:cutoff], color="#f0bf42")
-    inset_ax_11.scatter(np.arange(len(active_particle_index_p_asymm))[:cutoff], active_particle_index_p_asymm[:cutoff], color="#f0bf42", label =r"$x=\pm100$", s=5.0)
+    inset_ax_11.plot(np.arange(len(active_particle_index_p_asymm))[:cutoff], active_particle_index_p_asymm[:cutoff], color="#4a2377")
+    inset_ax_11.scatter(np.arange(len(active_particle_index_p_asymm))[:cutoff], active_particle_index_p_asymm[:cutoff], color="#4a2377", label =r"$x=\pm100$", s=5.0)
     #inset_ax_11.set_xlim(0,50)
 
 
