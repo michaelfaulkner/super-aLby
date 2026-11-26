@@ -37,8 +37,8 @@ def main(qho_config_file_string, aho_config_file_string):
 
     
     
-    qho_reference_sample = np.load("/home/raichkel/super-aLby-private/src/output/convergence_tests/quantum_harmonic_oscillator_potential/metropolis/checkpoint_00_sample_of_mean_squared_positions.npy").flatten()
-    aho_reference_sample = np.load("/home/raichkel/super-aLby-private/src/output/convergence_tests/quantum_anharmonic_oscillator_potential/metropolis/checkpoint_00_sample_of_mean_squared_positions.npy").flatten()
+    qho_reference_sample = np.load("/home/raichkel/super-aLby-private/src/permanent_data/reference_data/quantum_harmonic_oscillator_m08_dt15_Nt30_Nq1_reference_sample.npy").flatten()#"/home/raichkel/super-aLby-private/src/output/convergence_tests/quantum_harmonic_oscillator_potential/metropolis/checkpoint_00_sample_of_mean_squared_positions.npy").flatten()
+    aho_reference_sample = np.load("/home/raichkel/super-aLby-private/src/permanent_data/reference_data/quantum_anharmonic_oscillator_m05_dt1_lambda1_wsquared-15_Nt50_Nq1.npy").flatten()#"/home/raichkel/super-aLby-private/src/output/convergence_tests/quantum_anharmonic_oscillator_potential/metropolis/checkpoint_00_sample_of_mean_squared_positions.npy").flatten()
 
     qho_reference_cdf = get_cumulative_distribution(qho_reference_sample)
     aho_reference_cdf = get_cumulative_distribution(aho_reference_sample)
@@ -55,18 +55,18 @@ def main(qho_config_file_string, aho_config_file_string):
     aho_sample_cdf = get_cumulative_distribution(aho_sample)
     
     fig, ax = plt.subplots(1,1)
-    ax.plot(qho_reference_cdf[0], qho_reference_cdf[1], color="#e61267", linewidth=4, linestyle='-',
-                label=f'Metropolis MC - QHO')
-    ax.plot(qho_sample_cdf[0], qho_sample_cdf[1], color="#352626", linewidth=3, linestyle='-',
+    ax.plot(qho_reference_cdf[0], qho_reference_cdf[1], color="#f55f74", linewidth=4, linestyle='-',
+                label=f'Metropolis - QHO')
+    ax.plot(qho_sample_cdf[0], qho_sample_cdf[1], color="#0d7d87", linewidth=3, linestyle='-',
                 label=f'ECMC - QHO')
-    ax.plot(aho_reference_cdf[0], aho_reference_cdf[1], color="#29e218", linewidth=3, linestyle='-',
-                label=f'Metropolis MC - Anharmonic')
-    ax.plot(aho_sample_cdf[0], aho_sample_cdf[1], color="#5D0B7B", linewidth=3, linestyle='-',
-                label=f'ECMC - QHO')
+    ax.plot(aho_reference_cdf[0], aho_reference_cdf[1], color="#8cc5e3", linewidth=3, linestyle='-',
+                label=f'Metropolis - QAH')
+    ax.plot(aho_sample_cdf[0], aho_sample_cdf[1], color="#4a2377", linewidth=3, linestyle='-',
+                label=f'ECMC - QAH')
    
 
-    ax.set_xlabel(r"$x$", fontsize=40, weight='bold')
-    ax.set_ylabel(r"$ F_n \left( X < x \right)$", fontsize=25, weight='bold')
+    ax.set_xlabel(r"$y$", fontsize=40, weight='bold')
+    ax.set_ylabel(r"$ F_n \left( Y < y \right)$", fontsize=25, weight='bold')
     ax.tick_params(axis='both', which='major', labelsize=16)
 
 

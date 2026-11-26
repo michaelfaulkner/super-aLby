@@ -44,73 +44,73 @@ def main(output_directory, propertime, cutoff):
             spatial_correlations_02 = output_array[:, 0]
             spatial_correlations_err_02  = output_array[:, 1]
             spatial_correlations_pm_1_02  = output_array[:, 2]
-            lengths = output_array[:, 3]
+            lengths_02 = output_array[:, 3]
             
-            spatial_correlations_02  = spatial_correlations_02 [lengths<cutoff]
-            spatial_correlations_err_02  = spatial_correlations_err_02 [lengths<cutoff]
-    
+            spatial_correlations_02  = spatial_correlations_02 [lengths_02<cutoff]
+            spatial_correlations_err_02  = spatial_correlations_err_02 [lengths_02<cutoff]
+            lengths_02 = lengths_02[lengths_02<cutoff]
 
         elif timestep == 0.025:
             print("0.025")
             spatial_correlations_0025 = output_array[:, 0]
             spatial_correlations_err_0025  = output_array[:, 1]
             spatial_correlations_pm_1_0025  = output_array[:, 2]
-            lengths = output_array[:, 3]
+            lengths_0025 = output_array[:, 3]
             
-            spatial_correlations_0025  = spatial_correlations_0025[lengths<cutoff]
-            spatial_correlations_err_0025  = spatial_correlations_err_0025[lengths<cutoff]
-            lengths = lengths[lengths<cutoff]
+            spatial_correlations_0025  = spatial_correlations_0025[lengths_0025<cutoff]
+            spatial_correlations_err_0025  = spatial_correlations_err_0025[lengths_0025<cutoff]
+            lengths_0025 = lengths_0025[lengths_0025<cutoff]
 
         elif timestep == 0.1:
             print("0.1")
             spatial_correlations_01 = output_array[:, 0]
             spatial_correlations_err_01  = output_array[:, 1]
             spatial_correlations_pm_1_01  = output_array[:, 2]
-            lengths = output_array[:, 3]
+            lengths_01 = output_array[:, 3]
             
-            spatial_correlations_01  = spatial_correlations_01[lengths<cutoff]
-            spatial_correlations_err_01  = spatial_correlations_err_01[lengths<cutoff]
-            lengths = lengths[lengths<cutoff]
+            spatial_correlations_01  = spatial_correlations_01[lengths_01<cutoff]
+            spatial_correlations_err_01  = spatial_correlations_err_01[lengths_01<cutoff]
+            lengths_01 = lengths_01[lengths_01<cutoff]
         
         elif timestep == 0.05:
             print("0.05")
             spatial_correlations_005 = output_array[:, 0]
             spatial_correlations_err_005  = output_array[:, 1]
             spatial_correlations_pm_1_005  = output_array[:, 2]
-            lengths = output_array[:, 3]
+            lengths_005 = output_array[:, 3]
             
-            spatial_correlations_005  = spatial_correlations_005[lengths<cutoff]
-            spatial_correlations_err_005  = spatial_correlations_err_005[lengths<cutoff]
-            lengths = lengths[lengths<cutoff]
+            spatial_correlations_005  = spatial_correlations_005[lengths_005<cutoff]
+            spatial_correlations_err_005  = spatial_correlations_err_005[lengths_005<cutoff]
+            lengths_005 = lengths_005[lengths_005<cutoff]
 
 
-    popt_02, pcov_02 = curve_fit(exp_fit, lengths[lengths<75], spatial_correlations_02[lengths<75])
+    popt_02, pcov_02 = curve_fit(exp_fit, lengths_02[lengths_02<75], spatial_correlations_02[lengths_02<75])
 
     fig, ax = plt.subplots(1,1, sharey=True, sharex=True)
-    ax.errorbar(lengths[spatial_correlations_err_02>0], spatial_correlations_02[spatial_correlations_err_02>0],
-                yerr = spatial_correlations_err_02[spatial_correlations_err_02>0], fmt="o", capsize=5, color = "#d54e5dff", label = r"$N_{\tau}=600$", zorder=2)
-    ax.plot(lengths[lengths<75], exp_fit(lengths[lengths<75], *popt_02), color = "#0e0d0dff", zorder=6)
+    ax.errorbar(lengths_02[spatial_correlations_err_02>0][lengths_02<80], spatial_correlations_02[spatial_correlations_err_02>0][lengths_02<80],
+                yerr = spatial_correlations_err_02[spatial_correlations_err_02>0][lengths_02<80], fmt="o", capsize=5, color = "#d54e5dff", label = r"$N_{\tau}=600$", zorder=2)
+    ax.plot(lengths_02[lengths_02<80], exp_fit(lengths_02[lengths_02<80], *popt_02), color = "#0e0d0dff", zorder=6)
     print(f"0.2: {popt_02}")
 
 
-    popt_01, pcov_01 = curve_fit(exp_fit, lengths[lengths>1], spatial_correlations_01[lengths>1])
-    ax.errorbar(lengths[spatial_correlations_err_01>0], spatial_correlations_01[spatial_correlations_err_01>0],
-                yerr = spatial_correlations_err_01[spatial_correlations_err_01>0], fmt="o", capsize=5, color = "#e79d3cff", label = r"$N_{\tau}=1200$", zorder=3)
-    ax.plot(lengths[spatial_correlations_err_01>0], exp_fit(lengths[spatial_correlations_err_01>0], *popt_01), color = "#161617ff", zorder=6)
+    popt_01, pcov_01 = curve_fit(exp_fit, lengths_01[lengths_01<100], spatial_correlations_01[lengths_01<100])
+    ax.errorbar(lengths_01[spatial_correlations_err_01>0][lengths_01<100], spatial_correlations_01[spatial_correlations_err_01>0][lengths_01<100],
+                yerr = spatial_correlations_err_01[spatial_correlations_err_01>0][lengths_01<100], fmt="o", capsize=5, color = "#e79d3cff", label = r"$N_{\tau}=1200$", zorder=3)
+    ax.plot(lengths_01[lengths_01<100], exp_fit(lengths_01[lengths_01<100], *popt_01), color = "#161617ff", zorder=6)
     print(f"0.1: {popt_01}")
 
 
-    popt_005, pcov_005 = curve_fit(exp_fit, lengths[lengths>1], spatial_correlations_005[lengths>1])
-    ax.errorbar(lengths[spatial_correlations_err_005>0], spatial_correlations_005[spatial_correlations_err_005>0],
-                yerr = spatial_correlations_err_005[spatial_correlations_err_005>0], fmt="o", capsize=5, color = "#ee5be9ff", label = r"$N_{\tau}=2400$", zorder=4)
-    ax.plot(lengths[spatial_correlations_err_005>0], exp_fit(lengths[spatial_correlations_err_005>0], *popt_005), color = "#161617ff", zorder=6)
+    popt_005, pcov_005 = curve_fit(exp_fit, lengths_005[lengths_005<180], spatial_correlations_005[lengths_005<180])
+    ax.errorbar(lengths_005[spatial_correlations_err_005>0][lengths_005<200], spatial_correlations_005[spatial_correlations_err_005>0][lengths_005<200],
+                yerr = spatial_correlations_err_005[spatial_correlations_err_005>0][lengths_005<200], fmt="o", capsize=5, color = "#ee5be9ff", label = r"$N_{\tau}=2400$", zorder=4)
+    ax.plot(lengths_005[lengths_005<180], exp_fit(lengths_005[lengths_005<180], *popt_005), color = "#161617ff", zorder=6)
     print(f"0.05: {popt_005}")
 
 
-    popt_0025, pcov_0025 = curve_fit(exp_fit, lengths[lengths>1], spatial_correlations_0025[lengths>1])
-    ax.errorbar(lengths[spatial_correlations_err_0025>0], spatial_correlations_0025[spatial_correlations_err_0025>0],
+    popt_0025, pcov_0025 = curve_fit(exp_fit, lengths_0025[lengths_0025>1], spatial_correlations_0025[lengths_0025>1])
+    ax.errorbar(lengths_0025[spatial_correlations_err_0025>0], spatial_correlations_0025[spatial_correlations_err_0025>0],
                 yerr = spatial_correlations_err_0025[spatial_correlations_err_0025>0], fmt="o", capsize=5, color = "#b662f1ff", label = r"$N_{\tau}=4800$", zorder=5)
-    ax.plot(lengths[spatial_correlations_err_0025>0], exp_fit(lengths[spatial_correlations_err_0025>0], *popt_0025), color = "#161617ff", zorder=6)
+    ax.plot(lengths_0025[lengths_0025>0], exp_fit(lengths_0025[lengths_0025>0], *popt_0025), color = "#161617ff", zorder=6)
     print(f"0.025: {popt_0025}")
 
 

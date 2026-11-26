@@ -27,20 +27,16 @@ def main(metrop_data, ecmc_data):
 
     fig, ax = plt.subplots(1,1, figsize=(7,5))
     sample_index_cutoff = 10000
-    ax.plot(np.arange(sample_index_cutoff), metrop_mean_squared_sample[:sample_index_cutoff], color = "#e16f04ff", label ="Metropolis MC")
+    ax.plot(np.arange(sample_index_cutoff), metrop_mean_squared_sample[:sample_index_cutoff], color = "#0d7d87", label ="Metropolis")
 
-    ax.plot(np.arange(sample_index_cutoff), ecmc_mean_squared_sample[:sample_index_cutoff], color = "#e20acdff", label = "ECMC")
+    ax.plot(np.arange(sample_index_cutoff), ecmc_mean_squared_sample[:sample_index_cutoff], color = "#f55f74", label = "ECMC")
     ax.tick_params(direction="in", left="off",labelleft="off", axis='both', which='both', labelsize=13)
     ax.set_xlabel("Sample index", fontsize = 25, weight = "bold")
     ax.set_ylabel(r"$X^2$", fontsize = 25, weight = "bold")
-    legend_properties = {'weight':'bold'}
+    legend_properties = {}
     legend = fig.legend(loc  = (0.73, 0.21), prop=legend_properties)
     legend.get_frame().set_edgecolor('k')
     legend.get_frame().set_lw(1.5)
-    for tick in ax.get_xticklabels():
-        tick.set_fontweight('bold')
-    for tick in ax.get_yticklabels():
-        tick.set_fontweight('bold')
     
     plt.tight_layout()
     plt.savefig("trace.pdf")
